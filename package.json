@@ -1,0 +1,20 @@
+{
+  "name": "dnd-newsystem",
+  "version": "1.0.0",
+  "description": "Pagina web para una partida de D&amp;D",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ztevenx100/DnD-newSystem.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ztevenx100/DnD-newSystem/issues"
+  },
+  "homepage": "https://github.com/ztevenx100/DnD-newSystem#readme"
+}

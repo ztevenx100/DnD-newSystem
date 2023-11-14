@@ -1,6 +1,6 @@
 import reactLogo from './assets/react.svg'
 
-import { Home } from './components/pages/Home'
+import { CharacterSheet } from './components/pages/CharacterSheet/CharacterSheet'
 // import { useState } from 'react'
 
 import "@unocss/reset/tailwind.css";
@@ -13,7 +13,7 @@ function App() {
   return (
     <>
         <main className='container mx-auto' >
-          <Home/>
+          <CharacterSheet/>
         </main>
     </>
   )

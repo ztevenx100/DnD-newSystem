@@ -1,0 +1,255 @@
+/*
+    Created on : 04/11/2023
+    Author     : Steven
+*/
+
+.fieldset-form {
+    display: grid;
+    grid-template-columns:100px 1fr;
+    grid-row-gap: 10px;
+    padding: 1rem 0;
+}
+
+.fieldset-form legend{
+    position: relative;
+    top: 15px;
+    left: 5px;
+}
+
+.fieldset-form input[type=number]::-webkit-inner-spin-button,
+.fieldset-form input[type=number]::-webkit-outer-spin-button{
+    -webkit-appearance: none;
+    appearance: none;
+}
+.fieldset-form input[type=number]{
+    appearance: textfield;
+}
+.fieldset-form input[type=number].form-input-y{
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.fieldset-form select.form-input{
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    background: #fff;
+}
+
+.fieldset-form textarea.form-input-y{
+    min-height: 7.5rem;
+    max-height: 10.5rem;
+}
+
+/* info-player */
+.fieldset-form.info-player {
+    grid-template-columns:100px 1fr;
+    grid-template-rows:repeat(6, 2.5rem);
+    grid-row-gap: 0px;
+}
+@media (min-width: 640px) {
+    .fieldset-form.info-player {
+        grid-template-columns:100px 1fr 120px 1fr;
+    }
+}
+
+.fieldset-form .form-lbl{
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.25rem;
+    margin-left: 0.5rem;
+    background: #e5e7eb;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    --un-border-opacity: 1;
+    border-color: rgb(0 0 0 / var(--un-border-opacity));
+    border-top-left-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem; 
+    line-height: 1.5rem;
+    font-size: 1rem;
+}
+.fieldset-form .form-lbl-y{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.75rem;
+    margin-top: 0.5rem;
+    margin-right: 0.5rem;
+    margin-left: 0.5rem;
+    background: #e5e7eb;
+    border-width: 1px;
+    --un-border-opacity: 1;
+    border-color: rgb(0 0 0 / var(--un-border-opacity));
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem; 
+    line-height: 1.5rem;
+    font-size: 1rem;
+}
+
+.fieldset-form.info-player .form-lbl{
+    margin-top: 0.5rem;
+}
+
+.fieldset-form .form-input{
+    padding: 0.5rem 0.75rem;
+    margin-top: 0.5rem;
+    border-radius: 0.5rem;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0; 
+    line-height: 1.5rem;
+    border-width: 1px;
+    --un-border-opacity: 1;
+    border-color: rgb(0 0 0 / var(--un-border-opacity));
+}
+.fieldset-form .form-input-y{
+    padding: 0.5rem 0.75rem;
+    margin-right: 0.5rem;
+    margin-left: 0.5rem;
+    border-width: 1px;
+    --un-border-opacity: 1;
+    border-color: rgb(0 0 0 / var(--un-border-opacity));
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    line-height: 1.5rem;
+    font-size: 1rem;
+    text-align: center;
+}
+
+/* stats-player */
+.fieldset-form.stats-player {
+    grid-template-columns:repeat(3, 1fr);
+    grid-template-rows:repeat(4, 2.5rem);
+    grid-row-gap: 0px;
+}
+.fieldset-form.stats-player .form-lbl{
+    /* margin-top: 1rem; */
+    margin-right: 0.5rem;
+    border-width: 1px;
+    border-top-right-radius: 0rem;
+    border-top-left-radius: 0rem;
+    border-bottom-left-radius: 0rem; 
+}
+
+.fieldset-form.stats-player .stats-main{
+    min-width: 80px;
+    text-align: center;
+    margin-top: 0rem;
+    margin-right: 0.5rem;
+    margin-left: 0.5rem;
+    border-radius: 0;
+}
+
+.fieldset-form.stats-player .stats-sub{
+    min-width: 80px;
+    margin-top: 0rem;
+    margin-right: 0rem;
+    border-top-right-radius: 0rem;
+    border-bottom-right-radius: 0rem; 
+}
+
+.fieldset-form.stats-player .stats-sub-end,
+.fieldset-form.skills-player .stats-sub-end{
+    min-width: 80px;
+    margin-top: 0rem;
+    border-top-right-radius: 0rem;
+    border-bottom-right-radius: 0rem; 
+}
+
+/* skills-player */
+.fieldset-form.skills-player{
+    grid-row-gap: 0px;
+}
+
+.fieldset-form.skills-player .form-lbl-skills{
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.25rem;
+    margin-top: 0.5rem;
+    background: #e5e7eb;
+    border-width: 1px;
+    --un-border-opacity: 1;
+    border-color: rgb(0 0 0 / var(--un-border-opacity));
+    line-height: 1.5rem;
+    font-size: 1rem;
+}
+
+.fieldset-form.skills-player .skill-level{
+    min-width: 80px;
+    margin-top: 0rem;
+    border-top-right-radius: 0rem;
+    border-bottom-right-radius: 0rem;
+    text-align: center;
+    font-weight: 700;
+    font-size: 2rem;
+}
+.fieldset-form.skills-player .stats-sub,
+.fieldset-form.inventory-player .form-input{
+    min-width: 80px;
+    margin-top: 0rem;
+    border-top-right-radius: 0rem;
+    border-bottom-right-radius: 0rem; 
+}
+
+/* initial-armament */
+.fieldset-form.initial-armament .form-lbl{
+    margin-top: 0rem;
+}
+.fieldset-form.initial-armament .form-input{
+    margin-top: 0rem;
+}
+
+/* inventory-player */
+.fieldset-form.inventory-player {
+    grid-template-columns: 1fr 1fr 100px;
+    grid-template-rows:repeat(8, 2.5rem);
+    grid-row-gap: 0px;
+}
+.fieldset-form.inventory-player .form-lbl{
+    margin-top: 0.5rem;
+    margin-right: 0.5rem;
+    border-width: 1px;
+    border-radius: 0.25rem;
+}
+.fieldset-form.inventory-player .form-lbl-coins{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.25rem;
+    background: #e5e7eb;
+    border-width: 1px;
+    --un-border-opacity: 1;
+    border-color: rgb(0 0 0 / var(--un-border-opacity));
+    line-height: 1.5rem;
+    font-size: 1rem;
+}
+
+.fieldset-form.inventory-player .form-input{
+    margin-top: 0rem;
+}
+.fieldset-form.inventory-player .object-item{
+    display: grid;
+    grid-template-columns: 1fr 60px 40px;
+    padding: 0 0.5rem;
+    margin-top: 0rem;
+    margin-right: 0.5rem;
+}
+
+.fieldset-form.inventory-player .form-input-count{
+    max-width: 60px;
+    border-color: lightgrey;
+    text-align: right;
+}
+
+.fieldset-form.inventory-player .btn-delete-object{
+    padding: 0 0.25rem;
+    max-width: 40px;
+    color: red;
+}
+
+.fieldset-form.inventory-player .btn-add-object{
+    border-width: 1px;
+    --un-border-opacity: 1;
+    border-color: rgb(0 0 0 / var(--un-border-opacity));
+}
+
+

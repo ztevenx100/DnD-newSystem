@@ -5,6 +5,7 @@
 
 .fieldset-form {
     display: grid;
+    min-width: 100%;
     grid-template-columns:100px 1fr;
     grid-row-gap: 10px;
     padding: 1rem 0;
@@ -46,7 +47,7 @@
     grid-template-rows:repeat(6, 2.5rem);
     grid-row-gap: 0px;
 }
-@media (min-width: 640px) {
+@media (min-width: 768px) {
     .fieldset-form.info-player {
         grid-template-columns:100px 1fr 120px 1fr;
     }

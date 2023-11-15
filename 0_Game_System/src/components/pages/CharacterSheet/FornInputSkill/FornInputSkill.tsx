@@ -13,7 +13,7 @@ interface InputNumberProps {
 }
 
 const FornInputSkill: React.FC<InputNumberProps> = ({inputskill })  => {
-  const [inputValues, setInputValues] = useState<number[]>([0, 0, 0, 0]);
+  const [inputValues, setInputValues] = useState<number[]>([0, 0, 0]);
 
   const handleInputChange = (index: number, value: string) => {
     const newValues = [...inputValues];
@@ -53,14 +53,17 @@ const FornInputSkill: React.FC<InputNumberProps> = ({inputskill })  => {
             value={sum}
             readOnly
         />
-        <input type="number" 
-            id={inputskill.id + "Dice"} 
-            placeholder="Dado" 
-            min="1" 
-            className="form-input stats-sub ml-2 col-start-1 col-end-2 focus:border-black focus:shadow"
-            onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(0, e.target.value)}
-            value={inputValues[0]}
-        />
+        <Tooltip className="bg-dark text-light px-2 py-1" placement="bottom" content={ "Dado" } >
+            <input type="number" 
+                id={inputskill.id + "Dice"} 
+                placeholder="Dado" 
+                min="1" 
+                className="form-input stats-sub ml-2 col-start-1 col-end-2 focus:border-black focus:shadow"
+                onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(0, e.target.value)}
+                value={inputValues[0]}
+            />
+        </Tooltip>
+        <Tooltip className="bg-dark text-light px-2 py-1" placement="bottom" content={ "Clase" } >
         <input type="number" 
             id={inputskill.id + "Class"} 
             placeholder="Clase" 
@@ -69,7 +72,9 @@ const FornInputSkill: React.FC<InputNumberProps> = ({inputskill })  => {
             onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(1, e.target.value)}
             value={inputValues[1]}
             readOnly
-        />
+            />
+        </Tooltip>
+        <Tooltip className="bg-dark text-light px-2 py-1" placement="bottom" content={ "Nivel" } >
         <input type="number" 
             id={inputskill.id + "Level"} 
             placeholder="Nivel" 
@@ -77,7 +82,8 @@ const FornInputSkill: React.FC<InputNumberProps> = ({inputskill })  => {
             className="form-input stats-sub-end mr-2 col-start-3 col-end-4 focus:border-black focus:shadow"
             onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(2, e.target.value)}
             value={inputValues[2]}
-        />
+           />
+        </Tooltip>
     
     </>
   );

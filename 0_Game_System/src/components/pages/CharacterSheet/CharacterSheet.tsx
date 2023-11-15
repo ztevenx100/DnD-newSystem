@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Tooltip, Typography } from "@material-tailwind/react";
 
 import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
@@ -106,11 +106,10 @@ export function CharacterSheet () {
    ];
 
     return (
-        <form className="min-h-screen grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-3 bg-gray-2">
+        <form className="min-h-screen form-sheet grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 sm:gap-x-4 p-3 bg-gray-2">
             
             {/* Informacion del jugador */}
-            <fieldset className="fieldset-form info-player col-span-2 sm:col-span-3 bg-white shadow-md rounded">
-               
+            <fieldset className="fieldset-form info-player col-span-2 md:col-span-2 lg:col-span-3 bg-white shadow-md rounded">
                <legend>Informacion del jugador</legend>
 
                <label htmlFor="player" className="form-lbl col-start-1 col-end-2 bg-grey-lighter ">Jugador</label>
@@ -146,7 +145,7 @@ export function CharacterSheet () {
                   required
                />
                <label htmlFor="characterDescription" className="form-lbl-y col-start-2 md:col-start-4 row-start-2 md:row-start-1 bg-grey-lighter ">Descripcion</label>
-               <textarea 
+               <textarea
                   id="characterDescription" 
                   placeholder="Descripcion del personaje" 
                   className="form-input-y col-start-2 md:col-start-4 row-start-3 md:row-start-2 row-span-4 focus:border-black focus:shadow"
@@ -156,9 +155,9 @@ export function CharacterSheet () {
                <FormCardCheckbox id="characterKnowledge" label="Conocimientos" checkboxes={checkboxesData} />
                 
             </fieldset>
+
             {/* Estadisticas del personaje */}
             <fieldset className="fieldset-form stats-player row-span-3 col-span-1 col-start-1 bg-white shadow-md rounded">
-               
                <legend>Estadisticas del personaje</legend>
 
                {/* STRENGTH */}
@@ -180,9 +179,9 @@ export function CharacterSheet () {
                <FornInputSkill inputskill={InputsSkillData[5]} />
                 
             </fieldset>
+
             {/* Armamento inicial */}
-            <fieldset className="fieldset-form initial-armament col-span-1 row-span-1 col-start-1 sm:col-start-2 bg-white shadow-md rounded">
-               
+            <fieldset className="fieldset-form initial-armament col-span-1 row-span-1 col-start-1 md:col-start-2 bg-white shadow-md rounded">
                <legend>Armamento inicial</legend>
 
                <label htmlFor="mainWeapon" className="form-lbl bg-grey-lighter ">Arma principal</label>
@@ -203,64 +202,9 @@ export function CharacterSheet () {
                <FormSelectInfoPlayer id="skillExtra" label="Habilidad extra" options={optionsSkillExtra} onSelectChange={handleSelectChange} ></FormSelectInfoPlayer>
                 
             </fieldset>
-            {/* Inventario */}
-            <fieldset className="fieldset-form inventory-player row-span-3 col-span-1 col-start-1 sm:col-start-3 bg-white shadow-md rounded">
-               
-               <legend>Inventario</legend>
 
-               <label htmlFor="objectInput" className="form-lbl mb-2 col-span-3 bg-grey-lighter ">Bolsa</label>
-               <label htmlFor="object" className="form-lbl object-item col-span-3 bg-grey-lighter "> Gema 
-                  <input type="number" 
-                     id="object" 
-                     placeholder="Cantidad" 
-                     className="form-input-count focus:border-black focus:shadow"
-                  />
-                  <button type="button" className="btn-delete-object">X</button>
-               </label>
-               <label htmlFor="object" className="form-lbl object-item col-span-3 bg-grey-lighter "> Gema 
-                  <input type="number" 
-                     id="object" 
-                     placeholder="Cantidad" 
-                     className="form-input-count focus:border-black focus:shadow"
-                  />
-                  <button type="button" className="btn-delete-object">X</button>
-               </label>
-               <input type="text" 
-                  id="objectInput" 
-                  placeholder="Objeto" 
-                  className="form-input ml-2 col-span-2 row-span-2 focus:border-black focus:shadow"
-               />
-               <input type="number" 
-                  id="countObject" 
-                  placeholder="Cantidad" 
-                  className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
-               />
-               <button type="button" className="btn-add-object mr-2" >Añadir</button>
-
-               <label htmlFor="goldCoins" className="form-lbl col-span-3 bg-grey-lighter ">Monedero</label>
-               <label htmlFor="goldCoins" className="form-lbl-coins ml-2 col-span-1 bg-grey-lighter ">Oro</label>
-               <label htmlFor="silverCoins" className="form-lbl-coins col-span-1 bg-grey-lighter ">Plata</label>
-               <label htmlFor="bronzeCoins" className="form-lbl-coins mr-2 col-span-1 bg-grey-lighter ">Bronce</label>
-               <input type="number" 
-                  id="goldCoins" 
-                  placeholder="Oro" 
-                  className="form-input ml-2 col-span-1 focus:border-black focus:shadow"
-               />
-               <input type="number" 
-                  id="silverCoins" 
-                  placeholder="Plata" 
-                  className="form-input col-span-1 focus:border-black focus:shadow"
-               />
-               <input type="number" 
-                  id="bronzeCoins" 
-                  placeholder="Bronce" 
-                  className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
-               />
-                
-            </fieldset>
             {/* Habilidades */}
-            <fieldset className="fieldset-form skills-player col-span-1 col-start-1 sm:col-start-2 bg-white shadow-md rounded">
-               
+            <fieldset className="fieldset-form skills-player col-span-1 row-span-2 col-start-1 md:col-start-2 bg-white shadow-md rounded">
                <legend>Habilidades</legend>
 
                <label htmlFor="alineacion" className="form-lbl mt-2 ">Alineación</label>
@@ -349,6 +293,61 @@ export function CharacterSheet () {
                >
                   <option value=""/>
                </select>
+                
+            </fieldset>
+
+            {/* Inventario */}
+            <fieldset className="fieldset-form inventory-player row-span-3 col-span-1 col-start-1 lg:col-start-3 lg:row-start-2 bg-white shadow-md rounded">
+               <legend>Inventario</legend>
+
+               <label htmlFor="objectInput" className="form-lbl mb-2 col-span-3 bg-grey-lighter ">Bolsa</label>
+               <label htmlFor="object" className="form-lbl object-item col-span-3 bg-grey-lighter "> Gema 
+                  <input type="number" 
+                     id="object" 
+                     placeholder="Cantidad" 
+                     className="form-input-count focus:border-black focus:shadow"
+                  />
+                  <button type="button" className="btn-delete-object">X</button>
+               </label>
+               <label htmlFor="object" className="form-lbl object-item col-span-3 bg-grey-lighter "> Gema 
+                  <input type="number" 
+                     id="object" 
+                     placeholder="Cantidad" 
+                     className="form-input-count focus:border-black focus:shadow"
+                  />
+                  <button type="button" className="btn-delete-object">X</button>
+               </label>
+               <input type="text" 
+                  id="objectInput" 
+                  placeholder="Objeto" 
+                  className="form-input ml-2 col-span-2 row-span-2 focus:border-black focus:shadow"
+               />
+               <input type="number" 
+                  id="countObject" 
+                  placeholder="Cantidad" 
+                  className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
+               />
+               <button type="button" className="btn-add-object mr-2" >Añadir</button>
+
+               <label htmlFor="goldCoins" className="form-lbl col-span-3 bg-grey-lighter ">Monedero</label>
+               <label htmlFor="goldCoins" className="form-lbl-coins ml-2 col-span-1 bg-grey-lighter ">Oro</label>
+               <label htmlFor="silverCoins" className="form-lbl-coins col-span-1 bg-grey-lighter ">Plata</label>
+               <label htmlFor="bronzeCoins" className="form-lbl-coins mr-2 col-span-1 bg-grey-lighter ">Bronce</label>
+               <input type="number" 
+                  id="goldCoins" 
+                  placeholder="Oro" 
+                  className="form-input ml-2 col-span-1 focus:border-black focus:shadow"
+               />
+               <input type="number" 
+                  id="silverCoins" 
+                  placeholder="Plata" 
+                  className="form-input col-span-1 focus:border-black focus:shadow"
+               />
+               <input type="number" 
+                  id="bronzeCoins" 
+                  placeholder="Bronce" 
+                  className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
+               />
                 
             </fieldset>
             

@@ -3,7 +3,8 @@ import { Tooltip, Typography } from "@material-tailwind/react";
 
 import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
 import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
-import FornInputSkill from './FornInputSkill/FornInputSkill';
+import FormInputStats from './FormInputStats/FormInputStats';
+import FormInputSkillsRing from './FormInputSkillsRing/FormInputSkillsRing';
 
 import "@unocss/reset/tailwind.css";
 import "uno.css";
@@ -71,7 +72,7 @@ export function CharacterSheet () {
    ];
 
    // Listado de skills
-   const InputsSkillData = [
+   const InputsStatsData = [
       { id: 'str', label: 'Fuerza', description: 'Su capacidad física excepcional lo distingue como un héroe. Este individuo supera los desafíos con determinación, llevando a cabo hazañas que van más allá de los límites convencionales' },
       { id: 'int', label: 'Inteligencia', description: 'Su capacidad para absorber conocimiento, procesar información y forjar juicios fundamentados. Este individuo enfrenta cada desafío con resolución, una destreza mental que va más allá de la normal' },
       { id: 'dex', label: 'Destreza', description: 'Su capacidad se manifiesta con maestría en diversas actividades, como agilidad, equilibrio, elasticidad, fuerza y coordinación. Este individuo enfrentando desafíos demostrando agilidad en cualquier tarea, se erige como un sello distintivo en todas las actividades emprendidas.' },
@@ -105,6 +106,16 @@ export function CharacterSheet () {
       { value: 'SE12', name: 'Persuasión' },
    ];
 
+   // Listado del select skillTypeRing
+   const optionsRingTypes = [
+      { value: 'STR', name: 'Fuerza' },
+      { value: 'INT', name: 'Inteligencia' },
+      { value: 'DEX', name: 'Destreza' },
+      { value: 'HEA', name: 'Sanidad' },
+      { value: 'CRE', name: 'Creación' },
+      { value: 'SUP', name: 'Soporte' },
+   ];
+   
     return (
         <form className="min-h-screen form-sheet grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 sm:gap-x-4 p-3 bg-gray-2">
             
@@ -161,22 +172,22 @@ export function CharacterSheet () {
                <legend>Estadisticas del personaje</legend>
 
                {/* STRENGTH */}
-               <FornInputSkill inputskill={InputsSkillData[0]} />
+               <FormInputStats inputstats={InputsStatsData[0]} />
                
                {/* INTELLIGENCE */}
-               <FornInputSkill inputskill={InputsSkillData[1]} />
+               <FormInputStats inputstats={InputsStatsData[1]} />
                
                {/* DEXTERITY */}
-               <FornInputSkill inputskill={InputsSkillData[2]} />
+               <FormInputStats inputstats={InputsStatsData[2]} />
 
                {/* CONSTITUTION */}
-               <FornInputSkill inputskill={InputsSkillData[3]} />
+               <FormInputStats inputstats={InputsStatsData[3]} />
                
                {/* PERCEPTION */}
-               <FornInputSkill inputskill={InputsSkillData[4]} />
+               <FormInputStats inputstats={InputsStatsData[4]} />
 
                {/* CHARISMA */}
-               <FornInputSkill inputskill={InputsSkillData[5]} />
+               <FormInputStats inputstats={InputsStatsData[5]} />
                 
             </fieldset>
 
@@ -218,81 +229,12 @@ export function CharacterSheet () {
                </select>
                <label className="form-lbl-skills ml-2 mb-1 ">Nivel</label>
                <label className="form-lbl-skills mr-2 mb-1 ">Anillo de poder</label>
-               <input type="text" 
-                  id="levelSkill1" 
-                  placeholder="Nivel"
-                  className="form-input skill-level ml-2 row-span-2 focus:border-black focus:shadow"
-                  value={3}
-                  readOnly
-               />
-               <select 
-                  id="skillRing1"  
-                  className="form-input stats-sub mr-2"
-               >
-                  <option value=""/>
-                  <option value="STR">Fuerza</option>
-                  <option value="INT">Inteligencia</option>
-                  <option value="DEX">Destreza</option>
-                  <option value="HEA">Sanidad</option>
-                  <option value="CRE">Creación</option>
-                  <option value="SUP">Soporte</option>
-               </select>
-               <select 
-                  id="skill1"  
-                  className="form-input stats-sub mr-2"
-               >
-                  <option value=""/>
-               </select>
-               <input type="text" 
-                  id="levelSkill2" 
-                  placeholder="Nivel"
-                  className="form-input skill-level ml-2 row-span-2 focus:border-black focus:shadow"
-                  value={6}
-                  readOnly
-               />
-               <select 
-                  id="skillRing2"  
-                  className="form-input stats-sub mr-2"
-               >
-                  <option value=""/>
-                  <option value="STR">Fuerza</option>
-                  <option value="INT">Inteligencia</option>
-                  <option value="DEX">Destreza</option>
-                  <option value="HEA">Sanidad</option>
-                  <option value="CRE">Creación</option>
-                  <option value="SUP">Soporte</option>
-               </select>
-               <select 
-                  id="skill2"  
-                  className="form-input stats-sub mr-2"
-               >
-                  <option value=""/>
-               </select>
-               <input type="text" 
-                  id="levelSkill3" 
-                  placeholder="Nivel"
-                  className="form-input skill-level ml-2 row-span-2 focus:border-black focus:shadow"
-                  value={9}
-                  readOnly
-               />
-               <select 
-                  id="skillRing3"  
-                  className="form-input stats-sub mr-2"
-               >
-                  <option value=""/>
-                  <option value="STR">Fuerza</option>
-                  <option value="INT">Inteligencia</option>
-                  <option value="DEX">Destreza</option>
-                  <option value="HEA">Sanidad</option>
-                  <option value="CRE">Creación</option>
-                  <option value="SUP">Soporte</option>
-               </select>
-               <select 
-                  id="skill3"  
-                  className="form-input stats-sub mr-2"
-               >
-                  <option value=""/>
-               </select>
+
+               <FormInputSkillsRing level={characterLevel} levelEvaluated={3} ringTypes={optionsRingTypes}/>
+
+               <FormInputSkillsRing level={characterLevel} levelEvaluated={6} ringTypes={optionsRingTypes}/>
+
+               <FormInputSkillsRing level={characterLevel} levelEvaluated={9} ringTypes={optionsRingTypes}/>
                 
             </fieldset>
 

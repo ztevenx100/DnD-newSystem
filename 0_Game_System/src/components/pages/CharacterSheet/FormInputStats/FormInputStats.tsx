@@ -2,17 +2,17 @@ import React, { useState, ChangeEvent } from 'react';
 
 import { Tooltip, Typography } from "@material-tailwind/react";
 
-interface InputSkill {
+interface InputStats {
     id: string;
     label: string;
     description: string;
 }
 
 interface InputNumberProps {
-    inputskill: InputSkill;
+    inputstats: InputStats;
 }
 
-const FornInputSkill: React.FC<InputNumberProps> = ({inputskill })  => {
+const FormInputStats: React.FC<InputNumberProps> = ({inputstats })  => {
   const [inputValues, setInputValues] = useState<number[]>([0, 0, 0]);
 
   const handleInputChange = (index: number, value: string) => {
@@ -31,23 +31,23 @@ const FornInputSkill: React.FC<InputNumberProps> = ({inputskill })  => {
             content={
                 <div className="w-80">
                 <Typography color="blue-gray" className="font-medium">
-                    {inputskill.label}
+                    {inputstats.label}
                 </Typography>
                 <Typography
                     variant="small"
                     color="blue-gray"
                     className="font-normal opacity-80"
                     >
-                    {inputskill.description}
+                    {inputstats.description}
                 </Typography>
                 </div>
             }
         >
-            <label htmlFor={inputskill.id + "Main"} className="form-lbl col-span-3 bg-grey-lighter ">{inputskill.label}</label>
+            <label htmlFor={inputstats.id + "Main"} className="form-lbl col-span-3 bg-grey-lighter ">{inputstats.label}</label>
         </Tooltip>
         <input type="number" 
-            id={inputskill.id + "Main"} 
-            placeholder={inputskill.id.toUpperCase()} 
+            id={inputstats.id + "Main"} 
+            placeholder={inputstats.id.toUpperCase()} 
             min="1"
             className="form-input stats-main col-span-3 focus:border-black focus:shadow"
             value={sum}
@@ -55,7 +55,7 @@ const FornInputSkill: React.FC<InputNumberProps> = ({inputskill })  => {
         />
         <Tooltip className="bg-dark text-light px-2 py-1" placement="bottom" content={ "Dado" } >
             <input type="number" 
-                id={inputskill.id + "Dice"} 
+                id={inputstats.id + "Dice"} 
                 placeholder="Dado" 
                 min="1" 
                 className="form-input stats-sub ml-2 col-start-1 col-end-2 focus:border-black focus:shadow"
@@ -65,7 +65,7 @@ const FornInputSkill: React.FC<InputNumberProps> = ({inputskill })  => {
         </Tooltip>
         <Tooltip className="bg-dark text-light px-2 py-1" placement="bottom" content={ "Clase" } >
         <input type="number" 
-            id={inputskill.id + "Class"} 
+            id={inputstats.id + "Class"} 
             placeholder="Clase" 
             min="1" 
             className="form-input stats-sub col-start-2 col-end-3 focus:border-black focus:shadow"
@@ -76,7 +76,7 @@ const FornInputSkill: React.FC<InputNumberProps> = ({inputskill })  => {
         </Tooltip>
         <Tooltip className="bg-dark text-light px-2 py-1" placement="bottom" content={ "Nivel" } >
         <input type="number" 
-            id={inputskill.id + "Level"} 
+            id={inputstats.id + "Level"} 
             placeholder="Nivel" 
             min="1" 
             className="form-input stats-sub-end mr-2 col-start-3 col-end-4 focus:border-black focus:shadow"
@@ -89,4 +89,4 @@ const FornInputSkill: React.FC<InputNumberProps> = ({inputskill })  => {
   );
 };
 
-export default FornInputSkill;
+export default FormInputStats;

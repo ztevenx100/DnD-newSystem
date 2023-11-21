@@ -10,10 +10,10 @@ import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./CharacterSheet.css";
 
-export function CharacterSheet () {
+const CharacterSheet: React.FC = () => {
    const [characterLevel,setCharacterLevel] = useState(1);
    // Definir el estado para la selección
-  const [selectedValue, setSelectedValue] = useState<string>(''); // Tipo de dato depende de lo que necesites
+   const [selectedValue, setSelectedValue] = useState<string>(''); // Tipo de dato depende de lo que necesites
 
    const handleChangeCharacterLevel = (event: any) => {
       // Actualizar el estado con el nuevo valor ingresado por el usuario
@@ -296,3 +296,6 @@ export function CharacterSheet () {
         </form>
     )
 }
+
+
+export default CharacterSheet

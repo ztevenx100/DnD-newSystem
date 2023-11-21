@@ -1,21 +1,36 @@
 import reactLogo from './assets/react.svg'
+import {createBrowserRouter, RouterProvider} from "react-router-dom";
 
-import { CharacterSheet } from './components/pages/CharacterSheet/CharacterSheet'
+import Navbar from './components/UI/Navbar/Navbar';
+import Home from './components/pages/Home'
+import CharacterSheet from './components/pages/CharacterSheet/CharacterSheet'
 // import { useState } from 'react'
 
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import './App.css'
 
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Navbar />,
+    children:[
+      { index: true, element: <Home /> },
+      {
+        path: "/CharacterSheet",
+        element: <CharacterSheet />,
+      }
+    ]
+  },
+]);
+
 function App() {
   // const [count, setCount] = useState(0)
 
   return (
-    <>
-        <main className='container mx-auto' >
-          <CharacterSheet/>
-        </main>
-    </>
+    <main className='container mx-auto' >
+        <RouterProvider router={router} />
+    </main>
   )
 }
 

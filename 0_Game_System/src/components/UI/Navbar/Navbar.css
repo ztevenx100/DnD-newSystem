@@ -12,20 +12,26 @@
     backdrop-filter: blur(2px);
 }
   
-menu li {
+menu li a{
+    display: list-item;
     margin-bottom: 5px;
     padding: 8px;
     border: none;
-    background-color: #0000;
+    background: #0000;
     color: #fff;
     cursor: pointer;
     list-style: none;
     transition-duration: .5s;
-    transition-property: backdrop-filter, background;
+    transition-property: backdrop-filter, background, border-radius;
     transition-timing-function: ease;
 }
 
-li:hover {
-    background: #0008;
+li a:hover{
+    background: #0006;
     backdrop-filter: blur(5px);
+
+}
+li a.active{
+    background: #000;
+    border-radius: 10px;
 }

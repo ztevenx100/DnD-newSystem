@@ -1,0 +1,31 @@
+.navbar {
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 10px;
+    border-radius: 5px;
+    color: #fff;
+    background-color: rgba(51, 51, 51, 0.5); /* Agregamos transparencia al color de fondo */
+    backdrop-filter: blur(2px);
+}
+  
+menu li {
+    margin-bottom: 5px;
+    padding: 8px;
+    border: none;
+    background-color: #0000;
+    color: #fff;
+    cursor: pointer;
+    list-style: none;
+    transition-duration: .5s;
+    transition-property: backdrop-filter, background;
+    transition-timing-function: ease;
+}
+
+li:hover {
+    background: #0008;
+    backdrop-filter: blur(5px);
+}

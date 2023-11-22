@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Tooltip, Typography } from "@material-tailwind/react";
 
 import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
 import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
@@ -12,8 +11,14 @@ import "./CharacterSheet.css";
 
 const CharacterSheet: React.FC = () => {
    const [characterLevel,setCharacterLevel] = useState(1);
+   const [goldCoins,setGoldCoins] = useState(0);
+   const [silverCoins,setSilverCoins] = useState(3);
+   const [bronzeCoins,setBronzeCoins] = useState(0);
+
+   const [skillClassValue,setSkillClassValue] = useState('');
    // Definir el estado para la selección
    const [selectedValue, setSelectedValue] = useState<string>(''); // Tipo de dato depende de lo que necesites
+   const [selectedCheckValues, setSelectedCheckValues] = useState<string[]>([]);
 
    const handleChangeCharacterLevel = (event: any) => {
       // Actualizar el estado con el nuevo valor ingresado por el usuario
@@ -25,15 +30,33 @@ const CharacterSheet: React.FC = () => {
       setSelectedValue(value);
       // Realizar otras acciones según sea necesario
    };
+    // Manejar el cambio en la selección characterClass
+   const handleCharacterClassChange = (value: string) => {
+      setSelectedValue(value);
+      
+      // Usar el método find para obtener el objeto con el valor específico
+      const selectedOption = optionsCharacterClass.find(option => option.value === value);
+      if (selectedOption) {
+         setSelectedCheckValues([selectedOption.work]);
+      } else {
+         setSelectedCheckValues([]);
+      }
+
+   };
+
+   const handleSelectedCheckValuesChange = (newValues: string[]) => {
+      setSelectedCheckValues(newValues);
+      console.log(newValues);
+    };
 
    // Listado del select characterClass
     const optionsCharacterClass = [
-      { value: 'WAR', name: 'Guerrero' },
-      { value: 'MAG', name: 'Mago' },
-      { value: 'SCO', name: 'Explorador' },
-      { value: 'MED', name: 'Médico' },
-      { value: 'RES', name: 'Investigador' },
-      { value: 'ACT', name: 'Actor' },
+      { value: 'WAR', name: 'Guerrero', work: 'FOR' },
+      { value: 'MAG', name: 'Mago', work: 'ARC' },
+      { value: 'SCO', name: 'Explorador', work: 'NSC' },
+      { value: 'MED', name: 'Médico', work: 'BOT' },
+      { value: 'RES', name: 'Investigador', work: 'ALC' },
+      { value: 'ACT', name: 'Actor', work: 'PSY' },
     ];
 
    // Listado del select characterRace
@@ -138,7 +161,7 @@ const CharacterSheet: React.FC = () => {
                   required
                />
 
-               <FormSelectInfoPlayer id="characterClass" label="Clase" options={optionsCharacterClass} onSelectChange={handleSelectChange} ></FormSelectInfoPlayer>
+               <FormSelectInfoPlayer id="characterClass" label="Clase" options={optionsCharacterClass} onSelectChange={handleCharacterClassChange} ></FormSelectInfoPlayer>
                
                <FormSelectInfoPlayer id="characterRace" label="Raza" options={optionsCharacterRace} onSelectChange={handleSelectChange} ></FormSelectInfoPlayer>
                
@@ -163,7 +186,7 @@ const CharacterSheet: React.FC = () => {
                   required
                />
                
-               <FormCardCheckbox id="characterKnowledge" label="Conocimientos" checkboxes={checkboxesData} />
+               <FormCardCheckbox id="characterKnowledge" label="Conocimientos" checkboxes={checkboxesData} selectedValues={selectedCheckValues} onSelectedValuesChange={handleSelectedCheckValuesChange} />
                 
             </fieldset>
 
@@ -279,16 +302,19 @@ const CharacterSheet: React.FC = () => {
                   id="goldCoins" 
                   placeholder="Oro" 
                   className="form-input ml-2 col-span-1 focus:border-black focus:shadow"
+                  value={goldCoins}
                />
                <input type="number" 
                   id="silverCoins" 
                   placeholder="Plata" 
                   className="form-input col-span-1 focus:border-black focus:shadow"
+                  value={silverCoins}
                />
                <input type="number" 
                   id="bronzeCoins" 
                   placeholder="Bronce" 
                   className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
+                  value={bronzeCoins}
                />
                 
             </fieldset>

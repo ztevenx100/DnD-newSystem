@@ -1,11 +1,5 @@
-import React, { useState } from 'react';
-import { Checkbox
-    , Card
-    , List
-    , ListItem
-    , ListItemPrefix
-    , Typography
-   } from "@material-tailwind/react";
+import React, { ChangeEvent } from 'react';
+import { Checkbox, Card, List, ListItem, ListItemPrefix, Typography } from "@material-tailwind/react";
 
 interface CheckboxItem {
     id: string;
@@ -17,19 +11,18 @@ interface CardWithCheckboxesProps {
     id: string;
     label: string;
     checkboxes: CheckboxItem[];
+    selectedValues: string[];
+    onSelectedValuesChange: (newValues: string[]) => void;
 }
 
-const FormCardCheckbox: React.FC<CardWithCheckboxesProps> = ({ id, label, checkboxes }) => {
-  const [selectedCheckboxes, setSelectedCheckboxes] = useState<string[]>([]);
+const FormCardCheckbox: React.FC<CardWithCheckboxesProps> = ({ id, label, checkboxes, selectedValues, onSelectedValuesChange }) => {
 
-  const handleCheckboxChange = (value: string) => {
-    // Verificar si el checkbox está seleccionado
-    if (selectedCheckboxes.includes(value)) {
-      // Si está seleccionado, quitarlo de la lista
-      setSelectedCheckboxes((prevSelected) => prevSelected.filter((checkboxValue) => checkboxValue !== value));
+  const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (e.target.checked) {
+      onSelectedValuesChange([...selectedValues, value]);
     } else {
-      // Si no está seleccionado, agregarlo a la lista
-      setSelectedCheckboxes((prevSelected) => [...prevSelected, value]);
+      onSelectedValuesChange(selectedValues.filter(item => item !== value));
     }
   };
 
@@ -48,8 +41,8 @@ const FormCardCheckbox: React.FC<CardWithCheckboxesProps> = ({ id, label, checkb
                             ripple={false} 
                             className="hover:before:opacity-0" 
                             crossOrigin="" 
-                            checked={selectedCheckboxes.includes(checkbox.value)}
-                            onChange={() => handleCheckboxChange(checkbox.value)}
+                            checked={selectedValues.includes(checkbox.value)}
+                            onChange={handleCheckboxChange}
                             value={checkbox.value}
                         />
                     </ListItemPrefix>

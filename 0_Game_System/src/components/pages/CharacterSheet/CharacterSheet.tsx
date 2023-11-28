@@ -1,62 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent } from 'react';
+
+import "@unocss/reset/tailwind.css";
+import "uno.css";
+import "./CharacterSheet.css";
+
+import { InputStats } from '../../interfaces/typesCharacterSheet';
 
 import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
 import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
 import FormInputStats from './FormInputStats/FormInputStats';
 import FormInputSkillsRing from './FormInputSkillsRing/FormInputSkillsRing';
 
-import "@unocss/reset/tailwind.css";
-import "uno.css";
-import "./CharacterSheet.css";
-
 const CharacterSheet: React.FC = () => {
    const [characterLevel,setCharacterLevel] = useState(1);
-   const [goldCoins,setGoldCoins] = useState(0);
-   const [silverCoins,setSilverCoins] = useState(3);
-   const [bronzeCoins,setBronzeCoins] = useState(0);
+   const [coins,setCoins] = useState<number[]>([0,3,0]);
 
-   const [skillClassValue,setSkillClassValue] = useState('');
    // Definir el estado para la selección
-   const [selectedValue, setSelectedValue] = useState<string>(''); // Tipo de dato depende de lo que necesites
+   const [selectedValue, setSelectedValue] = useState<string>('');
+   const [selectedSkillValue, setSelectedSkillValue] = useState<string>(''); 
+   const [selectedJobValue, setSelectedJobValue] = useState<string>(''); 
    const [selectedCheckValues, setSelectedCheckValues] = useState<string[]>([]);
 
-   const handleChangeCharacterLevel = (event: any) => {
-      // Actualizar el estado con el nuevo valor ingresado por el usuario
-      setCharacterLevel(event.target.value);
-   };
-
-    // Manejar el cambio en la selección
-   const handleSelectChange = (value: string) => {
-      setSelectedValue(value);
-      // Realizar otras acciones según sea necesario
-   };
-    // Manejar el cambio en la selección characterClass
-   const handleCharacterClassChange = (value: string) => {
-      setSelectedValue(value);
-      
-      // Usar el método find para obtener el objeto con el valor específico
-      const selectedOption = optionsCharacterClass.find(option => option.value === value);
-      if (selectedOption) {
-         setSelectedCheckValues([selectedOption.work]);
-      } else {
-         setSelectedCheckValues([]);
-      }
-
-   };
-
-   const handleSelectedCheckValuesChange = (newValues: string[]) => {
-      setSelectedCheckValues(newValues);
-      console.log(newValues);
-    };
 
    // Listado del select characterClass
     const optionsCharacterClass = [
-      { value: 'WAR', name: 'Guerrero', work: 'FOR' },
-      { value: 'MAG', name: 'Mago', work: 'ARC' },
-      { value: 'SCO', name: 'Explorador', work: 'NSC' },
-      { value: 'MED', name: 'Médico', work: 'BOT' },
-      { value: 'RES', name: 'Investigador', work: 'ALC' },
-      { value: 'ACT', name: 'Actor', work: 'PSY' },
+      { value: 'WAR', name: 'Guerrero', work: 'FOR', mainStat: 'STR' },
+      { value: 'MAG', name: 'Mago', work: 'ARC', mainStat: 'INT' },
+      { value: 'SCO', name: 'Explorador', work: 'NSC', mainStat: 'DEX' },
+      { value: 'MED', name: 'Médico', work: 'BOT', mainStat: 'CON' },
+      { value: 'RES', name: 'Investigador', work: 'ALC', mainStat: 'PER' },
+      { value: 'ACT', name: 'Actor', work: 'PSY', mainStat: 'CHA' },
     ];
 
    // Listado del select characterRace
@@ -94,15 +67,15 @@ const CharacterSheet: React.FC = () => {
       { id: 'KAPP', name: 'Tasación', value: 'APP' },
    ];
 
-   // Listado de skills
-   const InputsStatsData = [
-      { id: 'str', label: 'Fuerza', description: 'Su capacidad física excepcional lo distingue como un héroe. Este individuo supera los desafíos con determinación, llevando a cabo hazañas que van más allá de los límites convencionales' },
-      { id: 'int', label: 'Inteligencia', description: 'Su capacidad para absorber conocimiento, procesar información y forjar juicios fundamentados. Este individuo enfrenta cada desafío con resolución, una destreza mental que va más allá de la normal' },
-      { id: 'dex', label: 'Destreza', description: 'Su capacidad se manifiesta con maestría en diversas actividades, como agilidad, equilibrio, elasticidad, fuerza y coordinación. Este individuo enfrentando desafíos demostrando agilidad en cualquier tarea, se erige como un sello distintivo en todas las actividades emprendidas.' },
-      { id: 'con', label: 'Constitucion', description: 'La estructura física, o constitución corporal, se define como el conjunto de características que conforman el cuerpo y que establecen las limitaciones y posibilidades individuales. A través de esta constitución, se revelan las distintivas fortalezas y potenciales, dando forma a las habilidades y oportunidades que definen la singularidad de cada individuo.' },
-      { id: 'per', label: 'Percepcion', description: 'Su capacidad para interpretar las sensaciones recibidas a través de los sentidos, dando lugar a una impresión, ya sea consciente o inconsciente, de la realidad física del entorno. Se erige como el faro que guía al héroe a través del tejido de la realidad, revelando sus misterios y desafíos con una claridad incomparable.' },
-      { id: 'cha', label: 'Carisma', description: 'Su capacidad se manifiesta como la capacidad natural para cautivar a los demás a través de su presencia, su palabra y su encantadora personalidad. Se convierte en la fuerza que une a las personas, dejando una huella indeleble en cada interacción y dejando una impresión imborrable en quienes se cruzan su camino.' },
-   ];
+   // Listado de stats
+   const [inputsStatsData, setInputsStatsData] = useState<InputStats[]>([
+      { id: 'STR', label: 'Fuerza', description: 'Su capacidad física excepcional lo distingue como un héroe. Este individuo supera los desafíos con determinación, llevando a cabo hazañas que van más allá de los límites convencionales', valueDice: 0, valueClass: 0, valueLevel: 0 },
+      { id: 'INT', label: 'Inteligencia', description: 'Su capacidad para absorber conocimiento, procesar información y forjar juicios fundamentados. Este individuo enfrenta cada desafío con resolución, una destreza mental que va más allá de la normal', valueDice: 0, valueClass: 0, valueLevel: 0 },
+      { id: 'DEX', label: 'Destreza', description: 'Su capacidad se manifiesta con maestría en diversas actividades, como agilidad, equilibrio, elasticidad, fuerza y coordinación. Este individuo enfrentando desafíos demostrando agilidad en cualquier tarea, se erige como un sello distintivo en todas las actividades emprendidas.', valueDice: 0, valueClass: 0, valueLevel: 0 },
+      { id: 'CON', label: 'Constitucion', description: 'La estructura física, o constitución corporal, se define como el conjunto de características que conforman el cuerpo y que establecen las limitaciones y posibilidades individuales. A través de esta constitución, se revelan las distintivas fortalezas y potenciales, dando forma a las habilidades y oportunidades que definen la singularidad de cada individuo.', valueDice: 0, valueClass: 0, valueLevel: 0 },
+      { id: 'PER', label: 'Percepcion', description: 'Su capacidad para interpretar las sensaciones recibidas a través de los sentidos, dando lugar a una impresión, ya sea consciente o inconsciente, de la realidad física del entorno. Se erige como el faro que guía al héroe a través del tejido de la realidad, revelando sus misterios y desafíos con una claridad incomparable.', valueDice: 0, valueClass: 0, valueLevel: 0 },
+      { id: 'CHA', label: 'Carisma', description: 'Su capacidad se manifiesta como la capacidad natural para cautivar a los demás a través de su presencia, su palabra y su encantadora personalidad. Se convierte en la fuerza que une a las personas, dejando una huella indeleble en cada interacción y dejando una impresión imborrable en quienes se cruzan su camino.', valueDice: 0, valueClass: 0, valueLevel: 0 },
+   ]);
 
    // Listado del select skillClass
    const optionsSkillClass = [
@@ -138,6 +111,64 @@ const CharacterSheet: React.FC = () => {
       { value: 'CRE', name: 'Creación' },
       { value: 'SUP', name: 'Soporte' },
    ];
+
+
+   const handleChangeCharacterLevel = (newLevel: number) => {
+      // Actualizar el estado con el nuevo valor ingresado por el usuario
+      setCharacterLevel(newLevel);
+   };
+   const handleSelectSkillChange = (currentSkill: string) => {
+      // Actualizar el estado con el nuevo valor ingresado por el usuario
+      setSelectedSkillValue(currentSkill);
+   };
+
+    // Manejar el cambio en la selección
+   const handleSelectChange = (value: string) => {
+      setSelectedValue(value);
+   };
+
+   // Poner todos los valores de valueClass en cero
+   const setAllValueClassesToZero = () => {
+      setInputsStatsData(prevItems  => prevItems.map(item => ({ ...item, valueClass: 0 })));
+   };
+
+   const sumarTresVariables = (): number => {
+      return 2;
+    };
+   
+   // Manejar el cambio en la selección characterClass
+   const handleCharacterClassChange = (value: string) => {
+      setSelectedValue(value);
+      
+      // selectedCheckValues - Usar el método find para obtener el objeto con el valor específico
+      const selectedOption = optionsCharacterClass.find(option => option.value === value);
+      setSelectedCheckValues((selectedOption)?[selectedOption.work]:[]);
+      
+      // inputsStatsData - Poner todos los valores de valueClass en cero
+      setAllValueClassesToZero();
+      const sumStats:number = sumarTresVariables() ;
+      setInputsStatsData(prevItems => prevItems.map(item => item.id === selectedOption?.mainStat ? { ...item, valueClass: sumStats } : item ));
+      
+      // skillClass - Llenar el valor de la habilidad principal
+      setSelectedSkillValue("S"+selectedOption?.mainStat);
+
+   };
+   
+    // Manejar el cambio en la selección characterJob
+    const handleCharacterJobSelectChange = (value: string) => {
+      setSelectedJobValue(value);
+   };
+
+
+   const handleSelectedCheckValuesChange = (newValues: string[]) => {
+      setSelectedCheckValues(newValues);
+      console.log(newValues);
+    };
+
+   const handleStatsInputChange = (newInputStats: InputStats) => {
+      setInputsStatsData(prevItems => prevItems.map( item => item.id === newInputStats.id ? { ...item, item: newInputStats} : item ))
+   }
+
    
     return (
         <form className="min-h-screen form-sheet grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 sm:gap-x-4 p-3 bg-gray-2">
@@ -161,11 +192,11 @@ const CharacterSheet: React.FC = () => {
                   required
                />
 
-               <FormSelectInfoPlayer id="characterClass" label="Clase" options={optionsCharacterClass} onSelectChange={handleCharacterClassChange} ></FormSelectInfoPlayer>
+               <FormSelectInfoPlayer id="characterClass" label="Clase" options={optionsCharacterClass} selectedValue={selectedValue} onSelectChange={handleCharacterClassChange} ></FormSelectInfoPlayer>
                
-               <FormSelectInfoPlayer id="characterRace" label="Raza" options={optionsCharacterRace} onSelectChange={handleSelectChange} ></FormSelectInfoPlayer>
+               <FormSelectInfoPlayer id="characterRace" label="Raza" options={optionsCharacterRace} selectedValue={selectedValue} onSelectChange={handleSelectChange} ></FormSelectInfoPlayer>
                
-               <FormSelectInfoPlayer id="characterJob" label="Trabajo" options={optionsCharacterJob} onSelectChange={handleSelectChange} ></FormSelectInfoPlayer>
+               <FormSelectInfoPlayer id="characterJob" label="Trabajo" options={optionsCharacterJob} selectedValue={selectedJobValue} onSelectChange={handleCharacterJobSelectChange} ></FormSelectInfoPlayer>
 
                <label htmlFor="characterLevel" className="form-lbl-y col-start-1 md:col-start-3 row-start-2 md:row-start-1 bg-grey-lighter ">Nivel</label>
                <input type="number" 
@@ -175,7 +206,7 @@ const CharacterSheet: React.FC = () => {
                   max="10"
                   className="form-input-y col-start-1 md:col-start-3 row-start-3 md:row-start-2 row-span-4 focus:border-black focus:shadow"
                   value={characterLevel}
-                  onChange={handleChangeCharacterLevel}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeCharacterLevel(parseInt(e.target.value))}
                   required
                />
                <label htmlFor="characterDescription" className="form-lbl-y col-start-2 md:col-start-4 row-start-2 md:row-start-1 bg-grey-lighter ">Descripcion</label>
@@ -195,22 +226,22 @@ const CharacterSheet: React.FC = () => {
                <legend>Estadisticas del personaje</legend>
 
                {/* STRENGTH */}
-               <FormInputStats inputstats={InputsStatsData[0]} />
+               <FormInputStats inputStats={inputsStatsData[0]} onSelectedValuesChange={handleStatsInputChange} />
                
                {/* INTELLIGENCE */}
-               <FormInputStats inputstats={InputsStatsData[1]} />
+               <FormInputStats inputStats={inputsStatsData[1]} onSelectedValuesChange={handleStatsInputChange} />
                
                {/* DEXTERITY */}
-               <FormInputStats inputstats={InputsStatsData[2]} />
+               <FormInputStats inputStats={inputsStatsData[2]} onSelectedValuesChange={handleStatsInputChange} />
 
                {/* CONSTITUTION */}
-               <FormInputStats inputstats={InputsStatsData[3]} />
+               <FormInputStats inputStats={inputsStatsData[3]} onSelectedValuesChange={handleStatsInputChange} />
                
                {/* PERCEPTION */}
-               <FormInputStats inputstats={InputsStatsData[4]} />
+               <FormInputStats inputStats={inputsStatsData[4]} onSelectedValuesChange={handleStatsInputChange} />
 
                {/* CHARISMA */}
-               <FormInputStats inputstats={InputsStatsData[5]} />
+               <FormInputStats inputStats={inputsStatsData[5]} onSelectedValuesChange={handleStatsInputChange} />
                 
             </fieldset>
 
@@ -231,9 +262,9 @@ const CharacterSheet: React.FC = () => {
                   className="form-input mr-2 focus:border-black focus:shadow"
                />
 
-               <FormSelectInfoPlayer id="skillClass" label="Habilidad innata" options={optionsSkillClass} onSelectChange={handleSelectChange} ></FormSelectInfoPlayer>
+               <FormSelectInfoPlayer id="skillClass" label="Habilidad innata" options={optionsSkillClass} selectedValue={selectedSkillValue} onSelectChange={handleSelectSkillChange} ></FormSelectInfoPlayer>
                
-               <FormSelectInfoPlayer id="skillExtra" label="Habilidad extra" options={optionsSkillExtra} onSelectChange={handleSelectChange} ></FormSelectInfoPlayer>
+               <FormSelectInfoPlayer id="skillExtra" label="Habilidad extra" options={optionsSkillExtra} selectedValue={selectedValue} onSelectChange={handleSelectChange} ></FormSelectInfoPlayer>
                 
             </fieldset>
 
@@ -302,19 +333,19 @@ const CharacterSheet: React.FC = () => {
                   id="goldCoins" 
                   placeholder="Oro" 
                   className="form-input ml-2 col-span-1 focus:border-black focus:shadow"
-                  value={goldCoins}
+                  value={coins[0]}
                />
                <input type="number" 
                   id="silverCoins" 
                   placeholder="Plata" 
                   className="form-input col-span-1 focus:border-black focus:shadow"
-                  value={silverCoins}
+                  value={coins[1]}
                />
                <input type="number" 
                   id="bronzeCoins" 
                   placeholder="Bronce" 
                   className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
-                  value={bronzeCoins}
+                  value={coins[2]}
                />
                 
             </fieldset>

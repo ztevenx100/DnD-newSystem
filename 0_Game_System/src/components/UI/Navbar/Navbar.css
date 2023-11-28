@@ -10,6 +10,7 @@
     color: #fff;
     background-color: rgba(51, 51, 51, 0.5); /* Agregamos transparencia al color de fondo */
     backdrop-filter: blur(2px);
+    z-index: 5;
 }
   
 menu li a{

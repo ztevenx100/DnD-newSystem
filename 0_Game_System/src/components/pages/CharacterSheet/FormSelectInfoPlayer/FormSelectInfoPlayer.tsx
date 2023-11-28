@@ -9,10 +9,11 @@ type Option = {
     id: string; // Id del select
     label: string;
     options: Option[];
+    selectedValue: string;
     onSelectChange: (selectedValue: string) => void;
   };
 
-const FormSelectInfoPlayer: React.FC<SelectFieldProps> = ({id, label, options, onSelectChange}) => {
+const FormSelectInfoPlayer: React.FC<SelectFieldProps> = ({id, label, options, selectedValue, onSelectChange}) => {
     // Manejar el cambio en la selección
     const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
         onSelectChange(e.target.value);
@@ -24,6 +25,7 @@ const FormSelectInfoPlayer: React.FC<SelectFieldProps> = ({id, label, options, o
             <select 
                 id={id} 
                 className="form-input col-start-2 col-end-3 mr-2"
+                value={selectedValue}
                 onChange={handleSelectChange}
                 required
                 >

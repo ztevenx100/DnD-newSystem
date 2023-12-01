@@ -1,4 +1,3 @@
-import reactLogo from './assets/react.svg'
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
 
 import Navbar from './components/UI/Navbar/Navbar';

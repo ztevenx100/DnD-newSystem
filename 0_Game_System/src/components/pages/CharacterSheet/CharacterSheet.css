@@ -196,6 +196,7 @@
     margin-top: 0rem;
 }
 .fieldset-form.initial-armament .form-input{
+    min-width: 80px;
     margin-top: 0rem;
 }
 

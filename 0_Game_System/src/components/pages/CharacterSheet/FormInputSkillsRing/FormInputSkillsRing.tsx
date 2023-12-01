@@ -1,30 +1,26 @@
 import React, { useState, ChangeEvent } from 'react';
+import { SkillTypes, Skill, SkillsAcquired} from '../../../interfaces/typesCharacterSheet';
 
-interface Skill {
-  id: number;
-  name: string;
-  level: number;
-}
+
 interface RingTypes {
   value: string;
   name: string;
 }
 
 interface FormInputSkillsRingProps{
+    id: number;
     level: number;
     levelEvaluated: number;
     ringTypes: RingTypes[];
+    skillForType: SkillTypes[];
+    values: SkillsAcquired;
+    onSelectChange: (id: number, ring: string, skill: string) => void;
 }
 
-const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ level, levelEvaluated, ringTypes }) => {
+const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, levelEvaluated, ringTypes, skillForType, values, onSelectChange }) => {
 
   const [skillTypeRing, setSkillTypeRing] = useState<string>('');
-  const [selectedSkill, setSelectedSkill] = useState<string>('');
-  const [skills, setSkills] = useState<Skill[]>([
-    { id: 1, name: 'Skill 1', level: 3 },
-    { id: 2, name: 'Skill 2', level: 5 },
-    // Add more skills as needed
-  ]);
+  const [skillsList, setSkillsList] = useState<Skill[]>([]);
 
   const handleLevelChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newLevel = parseInt(e.target.value, 10) || 0;
@@ -32,24 +28,24 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ level, levelE
     };
 
     const updateSkills = (newLevel: number) => {
-        const filteredSkills = skills.filter(skill => skill.level <= newLevel);
-        setSelectedSkill('');
-        setSkills(filteredSkills);
+        //const filteredSkills = skills.filter(skill => skill.level <= newLevel);
+        //setSelectedSkill('');
+        //setSkillsList(filteredSkills);
     };
 
     const handleSkillTypeRingChange = (e: ChangeEvent<HTMLSelectElement>) => {
         const newTypeRing = e.target.value;
-        setSkillTypeRing(newTypeRing);
-        setSelectedSkill('');
+        onSelectChange(id, newTypeRing, '');
         if (newTypeRing !== '') {
             // Aquí puedes ajustar las opciones del campo "skill" según el tipo de anillo seleccionado.
             // Por ahora, simplemente las reiniciamos al array original de habilidades.
-            setSkills([]);
+            const newSkillList: Skill[] = (skillForType.find(option => option.id === newTypeRing) || {}).skills || [];
+            setSkillsList( newSkillList );
         }
     };
 
-    const handleSkillChange = (e: ChangeEvent<HTMLSelectElement>) => {
-        setSelectedSkill(e.target.value);
+    const handleSkillChange = (id: number, newSkill: string) => {
+        onSelectChange(id, values.ring, newSkill);
     };
 
   return (
@@ -67,24 +63,24 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ level, levelE
             id={"skillTypeRing"+levelEvaluated} 
             className="form-input stats-sub mr-2"
             onChange={handleSkillTypeRingChange}
-            value={skillTypeRing}
+            value={values.ring}
             disabled={level < levelEvaluated} // Deshabilita si el nivel es menor a levelEvaluated
         >
             <option value=""/>
             {ringTypes.map((ringType,index) => (
-                <option key={index} value={ringType.name}>{ringType.name}</option>
+                <option key={index} value={ringType.value}>{ringType.name}</option>
             ))}
         </select>
         <select 
             id={"skill"+levelEvaluated} 
             className="form-input stats-sub mr-2"
-            value={selectedSkill}
-            onChange={handleSkillChange}
-            disabled={!skillTypeRing} // Deshabilita si no se ha seleccionado un tipo de anillo
+            value={values.skill}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) => handleSkillChange(id, e.target.value)}
+            disabled={!values.ring} // Deshabilita si no se ha seleccionado un tipo de anillo
         >
             <option value=""/>
-            {ringTypes.map((ringType,index) => (
-                <option key={index} value={ringType.name}>{ringType.name}</option>
+            {skillsList.map((elem,index) => (
+                <option key={index} value={elem.id}>{elem.name}</option>
             ))}
         </select>
 

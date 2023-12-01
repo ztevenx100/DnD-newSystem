@@ -4,7 +4,9 @@ import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./CharacterSheet.css";
 
-import { InputStats } from '../../interfaces/typesCharacterSheet';
+import  SvgCharacter from '../../../components/UI/Icons/SvgCharacter';
+
+import { InputStats, Skill, SkillTypes, SkillsAcquired } from '../../interfaces/typesCharacterSheet';
 
 import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
 import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
@@ -20,6 +22,8 @@ const CharacterSheet: React.FC = () => {
    const [selectedSkillValue, setSelectedSkillValue] = useState<string>(''); 
    const [selectedJobValue, setSelectedJobValue] = useState<string>(''); 
    const [selectedCheckValues, setSelectedCheckValues] = useState<string[]>([]);
+   
+   const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([{id:0, ring:'', skill:''},{id:1, ring:'', skill:''},{id:2, ring:'', skill:''}]);
 
 
    // Listado del select characterClass
@@ -112,6 +116,82 @@ const CharacterSheet: React.FC = () => {
       { value: 'SUP', name: 'Soporte' },
    ];
 
+   // Listado del select skillTypeRing
+   const skillsTypes: SkillTypes[] = [
+      { id: 'STR', 
+         skills: [
+            {id: 1, name: 'Golpe aplastante', description: '', dice: ''},
+            {id: 2, name: 'Frenesí', description: '', dice: ''},
+            {id: 3, name: 'Fuerza elemental', description: '', dice: ''},
+            {id: 4, name: 'Embate destructor', description: '', dice: ''},
+            {id: 5, name: 'Resistencia sobrehumana', description: '', dice: ''},
+            {id: 6, name: 'Grito de guerra', description: '', dice: '1D4'},
+            {id: 7, name: 'Impulso', description: '', dice: ''},
+            {id: 8, name: 'Resistencia de Hierro', description: '', dice: ''},
+            {id: 9, name: 'Embate Cegador', description: '', dice: ''},
+         ] },
+      { id: 'INT', 
+         skills: [
+            {id: 1, name: 'Rayo de conocimiento', description: '', dice: ''},
+            {id: 2, name: 'Sabiduría ancestral', description: '', dice: ''},
+            {id: 3, name: 'Escudo mental', description: '', dice: ''},
+            {id: 4, name: 'Ilusión perfecta', description: '', dice: ''},
+            {id: 5, name: 'Control de energía', description: '', dice: ''},
+            {id: 6, name: 'Lectura de mentes', description: '', dice: ''},
+            {id: 7, name: 'Rayo Arcano', description: '', dice: ''},
+            {id: 8, name: 'Mente Aguda', description: '', dice: ''},
+            {id: 9, name: 'Conocimiento Arcano', description: '', dice: ''},
+         ] },
+      { id: 'DEX', 
+         skills: [
+            {id: 1, name: 'Ataque sigiloso', description: '', dice: ''},
+            {id: 2, name: 'Agilidad felina', description: '', dice: ''},
+            {id: 3, name: 'Golpe certero', description: '', dice: ''},
+            {id: 4, name: 'Camuflaje', description: '', dice: ''},
+            {id: 5, name: 'Danza de las sombras', description: '', dice: ''},
+            {id: 6, name: 'Vista de águila', description: '', dice: ''},
+            {id: 7, name: 'Golpe Mortal', description: '', dice: ''},
+            {id: 8, name: 'Reflejo Veloz', description: '', dice: ''},
+            {id: 9, name: 'Sigilo Perfecto', description: '', dice: ''},
+         ] },
+      { id: 'HEA', 
+         skills: [
+            {id: 1, name: 'Toque curativo', description: '', dice: ''},
+            {id: 2, name: 'Aura de curación', description: '', dice: ''},
+            {id: 3, name: 'Purificación', description: '', dice: ''},
+            {id: 4, name: 'Toxicología', description: '', dice: ''},
+            {id: 5, name: 'Inyección', description: '', dice: ''},
+            {id: 6, name: 'Corazon de hierro', description: '', dice: ''},
+            {id: 7, name: 'Herramienta elemental', description: '', dice: ''},
+            {id: 8, name: 'Escudo de Vida', description: '', dice: ''},
+            {id: 9, name: 'Destreza del cirujano', description: '', dice: ''},
+         ] },
+      { id: 'CRE', 
+         skills: [
+            {id: 1, name: 'Invocación de creación', description: '', dice: ''},
+            {id: 2, name: 'Maestría artesanal', description: '', dice: ''},
+            {id: 3, name: 'Potenciador mágico', description: '', dice: ''},
+            {id: 4, name: 'Transmutación', description: '', dice: ''},
+            {id: 5, name: 'Trampero experto', description: '', dice: ''},
+            {id: 6, name: 'Cólera del artífice', description: '', dice: ''},
+            {id: 7, name: 'Forja Mágica', description: '', dice: ''},
+            {id: 8, name: 'Invocar Armamento', description: '', dice: ''},
+            {id: 9, name: 'Ojo clínico', description: '', dice: ''},
+         ] },
+      { id: 'SUP', 
+         skills: [
+            {id: 1, name: 'Arte bendito', description: '', dice: ''},
+            {id: 2, name: 'Acción de inspiración', description: '', dice: ''},
+            {id: 3, name: 'Protección divina', description: '', dice: ''},
+            {id: 4, name: 'Distracción', description: '', dice: ''},
+            {id: 5, name: 'Coaching', description: '', dice: ''},
+            {id: 6, name: 'Intimidación', description: '', dice: ''},
+            {id: 7, name: 'Ataque a traición', description: '', dice: ''},
+            {id: 8, name: 'Maldición Mortal', description: '', dice: ''},
+            {id: 9, name: 'Bizarro', description: '', dice: ''},
+         ] },
+   ];
+
 
    const handleChangeCharacterLevel = (newLevel: number) => {
       // Actualizar el estado con el nuevo valor ingresado por el usuario
@@ -169,13 +249,29 @@ const CharacterSheet: React.FC = () => {
       setInputsStatsData(prevItems => prevItems.map( item => item.id === newInputStats.id ? { ...item, item: newInputStats} : item ))
    }
 
+   const handleSelectedRingSkillChange = (id: number, ring: string, skill: string) => {
+      const existingSkillIndex = skillsAcquired.findIndex(elem => elem.id === id);
+
+      if (existingSkillIndex !== -1) {
+         // Si la habilidad ya existe, actualizarla
+         const updatedSkills = [...skillsAcquired];
+         updatedSkills[existingSkillIndex] = { id, ring, skill };
+
+         setSkillsAcquired(updatedSkills);
+      } else {
+         // Si la habilidad no existe, añadirla
+         setSkillsAcquired(prevSkills => [...prevSkills, { id, ring, skill }]);
+      }
+      
+   };
+
    
     return (
         <form className="min-h-screen form-sheet grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 sm:gap-x-4 p-3 bg-gray-2">
             
             {/* Informacion del jugador */}
             <fieldset className="fieldset-form info-player col-span-2 md:col-span-2 lg:col-span-3 bg-white shadow-md rounded">
-               <legend>Informacion del jugador</legend>
+               <legend><SvgCharacter width={20} height={20} className={"inline"} /> Informacion del jugador </legend>
 
                <label htmlFor="player" className="form-lbl col-start-1 col-end-2 bg-grey-lighter ">Jugador</label>
                <input type="text" 
@@ -284,11 +380,11 @@ const CharacterSheet: React.FC = () => {
                <label className="form-lbl-skills ml-2 mb-1 ">Nivel</label>
                <label className="form-lbl-skills mr-2 mb-1 ">Anillo de poder</label>
 
-               <FormInputSkillsRing level={characterLevel} levelEvaluated={3} ringTypes={optionsRingTypes}/>
+               <FormInputSkillsRing id={0} level={characterLevel} levelEvaluated={3} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[0]} onSelectChange={handleSelectedRingSkillChange} />
 
-               <FormInputSkillsRing level={characterLevel} levelEvaluated={6} ringTypes={optionsRingTypes}/>
+               <FormInputSkillsRing id={1} level={characterLevel} levelEvaluated={6} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[1]} onSelectChange={handleSelectedRingSkillChange} />
 
-               <FormInputSkillsRing level={characterLevel} levelEvaluated={9} ringTypes={optionsRingTypes}/>
+               <FormInputSkillsRing id={2} level={characterLevel} levelEvaluated={9} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[2]} onSelectChange={handleSelectedRingSkillChange} />
                 
             </fieldset>
 

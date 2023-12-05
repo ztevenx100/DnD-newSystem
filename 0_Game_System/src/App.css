@@ -1,7 +1,13 @@
 :root {
-
+  --bg-transparent: #0000;
 }
 
-main.container{
-  background: var(--bg-light);
+
+.bg-base{
+  background-size: cover;
+  object-fit: contain;
+}
+
+main.bg-main{
+  background: var(--bg-transparent);
 }

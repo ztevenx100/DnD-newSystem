@@ -1,4 +1,5 @@
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
+import React, { createContext, useContext, useState } from 'react';
 
 import Navbar from './components/UI/Navbar/Navbar';
 import Footer from './components/UI/Footer/Footer';
@@ -9,6 +10,21 @@ import CharacterSheet from './components/pages/CharacterSheet/CharacterSheet'
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import './App.css'
+
+interface BackgroundContextType {
+  backgroundImage: string;
+  setBackgroundImage: React.Dispatch<React.SetStateAction<string>>;
+}
+
+export const useBackground = () => {
+  const context = useContext(BackgroundContext);
+  if (!context) {
+    throw new Error('useBackground debe ser utilizado dentro de un BackgroundProvider');
+  }
+  return context;
+};
+
+export const BackgroundContext = createContext<BackgroundContextType | undefined>(undefined);
 
 const router = createBrowserRouter([
   {
@@ -26,12 +42,17 @@ const router = createBrowserRouter([
 
 function App() {
   // const [count, setCount] = useState(0)
+  const [backgroundImage, setBackgroundImage] = useState('path-to-default-image.jpg');
 
   return (
-    <main className='container mx-auto' >
-        <RouterProvider router={router} />
-        <Footer />
-    </main>
+    <BackgroundContext.Provider value={{backgroundImage, setBackgroundImage }}>
+      <aside className="bg-base" style={{ backgroundImage: `url(${backgroundImage})`}} >
+        <main className='container mx-auto bg-main' >
+            <RouterProvider router={router} />
+            <Footer />
+        </main>
+      </aside>
+    </BackgroundContext.Provider>
   )
 }
 

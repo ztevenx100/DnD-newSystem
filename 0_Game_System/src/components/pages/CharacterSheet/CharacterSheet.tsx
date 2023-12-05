@@ -1,8 +1,10 @@
 import React, { useState, ChangeEvent } from 'react';
+import { useBackground } from '../../../App';
 
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./CharacterSheet.css";
+import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
 
 import  SvgCharacter from '../../../components/UI/Icons/SvgCharacter';
 
@@ -24,6 +26,11 @@ const CharacterSheet: React.FC = () => {
    const [selectedCheckValues, setSelectedCheckValues] = useState<string[]>([]);
    
    const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([{id:0, ring:'', skill:''},{id:1, ring:'', skill:''},{id:2, ring:'', skill:''}]);
+
+   const { setBackgroundImage } = useBackground();
+
+   // Cambia la imagen de fondo cuando el componente se monta
+   setBackgroundImage(homeBackground);
 
 
    // Listado del select characterClass

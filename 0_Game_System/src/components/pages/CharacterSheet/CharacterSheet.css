@@ -3,6 +3,10 @@
     Author     : Steven
 */
 
+/*.bg-base{
+    background-image: url('../../../assets/img/jpg/bg-home-01.jpg') !important;
+}*/
+
 .fieldset-form {
     display: grid;
     min-width: 100%;

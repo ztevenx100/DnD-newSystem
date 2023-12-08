@@ -1,6 +1,8 @@
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import React, { createContext, useContext, useState } from 'react';
 
+import homeBackground from './assets/img/jpg/bg-home-01.jpg';
+
 import Navbar from './components/UI/Navbar/Navbar';
 import Footer from './components/UI/Footer/Footer';
 import Home from './components/pages/Home'
@@ -42,7 +44,7 @@ const router = createBrowserRouter([
 
 function App() {
   // const [count, setCount] = useState(0)
-  const [backgroundImage, setBackgroundImage] = useState('path-to-default-image.jpg');
+  const [backgroundImage, setBackgroundImage] = useState(homeBackground);
 
   return (
     <BackgroundContext.Provider value={{backgroundImage, setBackgroundImage }}>

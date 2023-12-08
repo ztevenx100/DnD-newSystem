@@ -22,6 +22,15 @@ export interface SkillTypes {
 
 export interface SkillsAcquired {
     id: number;
+    name: string;
+    description: string;
     ring: string;
-    skill: string;
+}
+
+export interface InventoryObject {
+    id: number;
+    name: string;
+    description: string;
+    count: number;
+    readOnly: boolean;
 }

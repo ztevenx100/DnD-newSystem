@@ -11,6 +11,7 @@ interface InputNumberProps {
 
 const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValuesChange})  => {
   //const [inputValues, setInputValues] = useState<number[]>([0, 0, 0]);
+  let sum = inputStats.valueDice + inputStats.valueClass + inputStats.valueLevel;
 
   const handleInputChange = (index: number, value: number) => {
     switch (index) {
@@ -28,10 +29,8 @@ const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValu
             break;
     }
     onSelectedValuesChange(inputStats);
-
+    sum = inputStats.valueDice + inputStats.valueClass + inputStats.valueLevel;
   };
-
-  const sum = inputStats.valueDice + inputStats.valueClass + inputStats.valueLevel;
 
   return (
     <>
@@ -40,12 +39,11 @@ const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValu
             className="bg-dark text-light px-2 py-1" placement="right"
             content={
                 <div className="w-80">
-                <Typography color="blue-gray" className="font-medium">
+                <Typography className="font-medium">
                     {inputStats.label}
                 </Typography>
                 <Typography
                     variant="small"
-                    color="blue-gray"
                     className="font-normal opacity-80"
                     >
                     {inputStats.description}

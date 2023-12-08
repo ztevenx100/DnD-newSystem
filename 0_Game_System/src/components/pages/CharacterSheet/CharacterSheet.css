@@ -3,6 +3,16 @@
     Author     : Steven
 */
 
+:root{
+    --bg-color-1: #E5E7EB;
+    --bg-color-2: #191716;
+    --bg-color-3: #E4572E;
+    --bg-color-4: #F2AF29;
+    --bg-color-5: #E63462;
+    --un-border-opacity: 1;
+}
+
+
 /*.bg-base{
     background-image: url('../../../assets/img/jpg/bg-home-01.jpg') !important;
 }*/
@@ -66,7 +76,6 @@
     border-top-width: 1px;
     border-bottom-width: 1px;
     border-left-width: 1px;
-    --un-border-opacity: 1;
     border-color: rgb(0 0 0 / var(--un-border-opacity));
     border-top-left-radius: 0.5rem;
     border-bottom-left-radius: 0.5rem; 
@@ -83,7 +92,6 @@
     margin-left: 0.5rem;
     background: #e5e7eb;
     border-width: 1px;
-    --un-border-opacity: 1;
     border-color: rgb(0 0 0 / var(--un-border-opacity));
     border-top-left-radius: 0.5rem;
     border-top-right-radius: 0.5rem; 
@@ -103,7 +111,6 @@
     border-bottom-left-radius: 0; 
     line-height: 1.5rem;
     border-width: 1px;
-    --un-border-opacity: 1;
     border-color: rgb(0 0 0 / var(--un-border-opacity));
 }
 .fieldset-form .form-input-y{
@@ -111,7 +118,6 @@
     margin-right: 0.5rem;
     margin-left: 0.5rem;
     border-width: 1px;
-    --un-border-opacity: 1;
     border-color: rgb(0 0 0 / var(--un-border-opacity));
     border-bottom-left-radius: 0.5rem;
     border-bottom-right-radius: 0.5rem;
@@ -172,7 +178,6 @@
     margin-top: 0.5rem;
     background: #e5e7eb;
     border-width: 1px;
-    --un-border-opacity: 1;
     border-color: rgb(0 0 0 / var(--un-border-opacity));
     line-height: 1.5rem;
     font-size: 1rem;
@@ -207,7 +212,7 @@
 /* inventory-player */
 .fieldset-form.inventory-player {
     grid-template-columns: 1fr 1fr 100px;
-    grid-template-rows:repeat(8, 2.5rem);
+    grid-template-rows:repeat(20, 2.5rem);
     grid-row-gap: 0px;
 }
 .fieldset-form.inventory-player .form-lbl{
@@ -223,7 +228,6 @@
     padding: 0.5rem 0.25rem;
     background: #e5e7eb;
     border-width: 1px;
-    --un-border-opacity: 1;
     border-color: rgb(0 0 0 / var(--un-border-opacity));
     line-height: 1.5rem;
     font-size: 1rem;
@@ -254,8 +258,60 @@
 
 .fieldset-form.inventory-player .btn-add-object{
     border-width: 1px;
-    --un-border-opacity: 1;
     border-color: rgb(0 0 0 / var(--un-border-opacity));
 }
 
+.panel-save{
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    padding: 10px 10px;
+    border-radius: 5px;
+    color: #fff;
+    background-color: rgba(51, 51, 51, 0.5); /* Agregamos transparencia al color de fondo */
+    backdrop-filter: blur(2px);
+    z-index: 5;
+}
 
+.panel-save .btn-save-character{
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color-1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition-property: background-color;
+    transition-duration: .5s;
+    transition-timing-function: ease;
+}
+.panel-save .btn-save-character:hover{
+    background-color: var(--bg-color-4);
+}
+
+.panel-save .btn-save-character .icon{
+    transform: scale(1);
+    transition-property: transform;
+    transition-duration: .5s;
+    transition-timing-function: ease;
+}
+.panel-save .btn-save-character:hover .icon{
+    transform: scale(1.4);
+    transition-property: transform;
+    transition-duration: .3s;
+    transition-timing-function: ease;
+}
+.panel-save .btn-save-character:active .icon{
+    transform: scale(1.4);
+}
+
+.dialog{
+    background-color: var(--bg-color-1);
+    /* margin: 50px auto; */
+    padding: 10px;
+
+}

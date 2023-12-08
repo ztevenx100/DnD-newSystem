@@ -1,36 +1,72 @@
 import React, { useState, ChangeEvent } from 'react';
-import { useBackground } from '../../../App';
+import { Button, Dialog, DialogHeader, DialogBody, DialogFooter } from "@material-tailwind/react";
+import { v4 as uuidv4 } from 'uuid';
 
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./CharacterSheet.css";
 import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
+import SvgCharacter from '../../../components/UI/Icons/SvgCharacter';
+import SvgSaveCharacter from '../../../components/UI/Icons/SvgSaveCharacter';
 
-import  SvgCharacter from '../../../components/UI/Icons/SvgCharacter';
+import { InputStats, Skill, SkillTypes, SkillsAcquired, InventoryObject } from '../../interfaces/typesCharacterSheet';
 
-import { InputStats, Skill, SkillTypes, SkillsAcquired } from '../../interfaces/typesCharacterSheet';
-
+import { useBackground } from '../../../App';
 import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
 import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
 import FormInputStats from './FormInputStats/FormInputStats';
 import FormInputSkillsRing from './FormInputSkillsRing/FormInputSkillsRing';
 
 const CharacterSheet: React.FC = () => {
+   // Cambia la imagen de fondo cuando el componente se monta
+   const { setBackgroundImage } = useBackground();
+   setBackgroundImage(homeBackground);
+   
+   const [playerName, setPlayerName] = useState<string>('');
+   const [characterName, setCharacterName] = useState<string>('');
    const [characterLevel,setCharacterLevel] = useState(1);
-   const [coins,setCoins] = useState<number[]>([0,3,0]);
-
-   // Definir el estado para la selección
-   const [selectedValue, setSelectedValue] = useState<string>('');
-   const [selectedSkillValue, setSelectedSkillValue] = useState<string>(''); 
+   const [characterDescription, setCharacterDescription] = useState<string>('');
+   const [selectedClassValue, setSelectedClassValue] = useState<string>('');
+   const [selectedRaceValue, setSelectedRaceValue] = useState<string>('');
    const [selectedJobValue, setSelectedJobValue] = useState<string>(''); 
    const [selectedCheckValues, setSelectedCheckValues] = useState<string[]>([]);
+
+   // Definir el estado para las habilidades
+   const [alignmentValue, setAlignmentValue] = useState<string>(''); 
+   const [selectedSkillValue, setSelectedSkillValue] = useState<string>(''); 
+   const [selectedExtraSkillValue, setSelectedExtraSkillValue] = useState<string>(''); 
+   const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([{id:0, name:'', description: '', ring:''},{id:1, name:'', description: '', ring:''},{id:2, name:'', description: '', ring:''}]);
    
-   const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([{id:0, ring:'', skill:''},{id:1, ring:'', skill:''},{id:2, ring:'', skill:''}]);
+   const [coins,setCoins] = useState<number[]>([0,3,0]);
+   const [invObjects, setInvObjects] = useState<InventoryObject[]>([{id:0, name:'Gema', description:'Articulo del elegido', count: 1, readOnly: true}]);
+   const [newObjectName, setNewObjectName] = useState<string>('');
+   const [newObjectCount, setNewObjectCount] = useState<number>(1);
 
-   const { setBackgroundImage } = useBackground();
+   const [open, setOpen] = React.useState(false);
+   const handleOpen = () => setOpen(!open);
 
-   // Cambia la imagen de fondo cuando el componente se monta
-   setBackgroundImage(homeBackground);
+   interface DataCharacter{
+      id: string;
+      player: string;
+      name: string;
+      class: string;
+      race: string;
+      job:string;
+      level: number;
+      description: string;
+      knowledge: string[];
+      str: [{ dice: number, class:number, level: number }];
+      int: [{ dice: number, class:number, level: number }];
+      dex: [{ dice: number, class:number, level: number }];
+      con: [{ dice: number, class:number, level: number }];
+      per: [{ dice: number, class:number, level: number }];
+      cha: [{ dice: number, class:number, level: number }];
+      alignment: string;
+      skills: SkillsAcquired[];
+      inv: InventoryObject[];
+   }
+
+   const [dataCharacter, setDataCharacter] = useState<DataCharacter>();
 
 
    // Listado del select characterClass
@@ -204,14 +240,18 @@ const CharacterSheet: React.FC = () => {
       // Actualizar el estado con el nuevo valor ingresado por el usuario
       setCharacterLevel(newLevel);
    };
+   // Manejar el cambio en la selección
+   const handleSelectRaceChange = (value: string) => {
+      setSelectedRaceValue(value);
+   };
+   
    const handleSelectSkillChange = (currentSkill: string) => {
       // Actualizar el estado con el nuevo valor ingresado por el usuario
       setSelectedSkillValue(currentSkill);
    };
-
-    // Manejar el cambio en la selección
-   const handleSelectChange = (value: string) => {
-      setSelectedValue(value);
+   const handleSelectExtraSkillChange = (currentSkill: string) => {
+      // Actualizar el estado con el nuevo valor ingresado por el usuario
+      setSelectedExtraSkillValue(currentSkill);
    };
 
    // Poner todos los valores de valueClass en cero
@@ -225,7 +265,7 @@ const CharacterSheet: React.FC = () => {
    
    // Manejar el cambio en la selección characterClass
    const handleCharacterClassChange = (value: string) => {
-      setSelectedValue(value);
+      setSelectedClassValue(value);
       
       // selectedCheckValues - Usar el método find para obtener el objeto con el valor específico
       const selectedOption = optionsCharacterClass.find(option => option.value === value);
@@ -256,25 +296,93 @@ const CharacterSheet: React.FC = () => {
       setInputsStatsData(prevItems => prevItems.map( item => item.id === newInputStats.id ? { ...item, item: newInputStats} : item ))
    }
 
-   const handleSelectedRingSkillChange = (id: number, ring: string, skill: string) => {
+   const handleSelectedRingSkillChange = (id: number, ring: string, name: string) => {
+      const description = '';
       const existingSkillIndex = skillsAcquired.findIndex(elem => elem.id === id);
 
       if (existingSkillIndex !== -1) {
          // Si la habilidad ya existe, actualizarla
          const updatedSkills = [...skillsAcquired];
-         updatedSkills[existingSkillIndex] = { id, ring, skill };
+         updatedSkills[existingSkillIndex] = { id, name, description, ring };
 
          setSkillsAcquired(updatedSkills);
       } else {
          // Si la habilidad no existe, añadirla
-         setSkillsAcquired(prevSkills => [...prevSkills, { id, ring, skill }]);
+         setSkillsAcquired(prevSkills => [...prevSkills, { id, name, description, ring }]);
       }
       
    };
 
+   // Funcion para editar la cantidad de monedas
+   const handleCoinsChange = (index: number, value: number) => {
+      const updatedCoins = [...coins];
+      updatedCoins[index] = value || 0; // Parse input value as integer or default to 0
+      setCoins(updatedCoins);
+    };
+
+   // Funciones para adicionar, editar o eliminar objetos de la lista de inventario
+    const handleAddObject = () => {
+      const newObject: InventoryObject = {
+         id: invObjects.length,
+         name: newObjectName || 'Nuevo Objeto',
+         description: 'Descripción del nuevo objeto',
+         count: newObjectCount,
+         readOnly: false,
+      };
+  
+      setInvObjects((prev) => [...prev, newObject]);
+      setNewObjectName('');
+      setNewObjectCount(1);
+    };
+  
+    const handleDeleteObject = (id: number) => {
+      setInvObjects((prevObjects) => prevObjects.filter((obj) => obj.id !== id));
+    };
+  
+    const handleEditCount = (id: number, newCount: number) => {
+      setInvObjects((prevObjects) =>
+        prevObjects.map((obj) =>
+          obj.id === id ? { ...obj, count: newCount } : obj
+        )
+      );
+    };
+
+    const handleOpenModal = () => {
+      console.log('open modal');
+      
+
+      const newCharacter: DataCharacter = {
+         id: uuidv4(),
+         player: playerName,
+         name: characterName,
+         class: selectedClassValue,
+         race: selectedRaceValue,
+         job: selectedJobValue,
+         level: characterLevel,
+         description: characterDescription,
+         knowledge: selectedCheckValues,
+         str: [{ dice: inputsStatsData[0].valueDice, class: inputsStatsData[0].valueClass, level: inputsStatsData[0].valueLevel }],
+         int: [{ dice: inputsStatsData[1].valueDice, class: inputsStatsData[1].valueClass, level: inputsStatsData[1].valueLevel }],
+         dex: [{ dice: inputsStatsData[2].valueDice, class: inputsStatsData[2].valueClass, level: inputsStatsData[2].valueLevel }],
+         con: [{ dice: inputsStatsData[3].valueDice, class: inputsStatsData[3].valueClass, level: inputsStatsData[3].valueLevel }],
+         per: [{ dice: inputsStatsData[4].valueDice, class: inputsStatsData[4].valueClass, level: inputsStatsData[4].valueLevel }],
+         cha: [{ dice: inputsStatsData[5].valueDice, class: inputsStatsData[5].valueClass, level: inputsStatsData[5].valueLevel }],
+         alignment: alignmentValue,
+         skills: skillsAcquired,
+         inv: invObjects,
+      };
+
+      setDataCharacter(newCharacter);
+
+      console.log(newCharacter);
+      
+
+      handleOpen();
+    }
+
    
     return (
-        <form className="min-h-screen form-sheet grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 sm:gap-x-4 p-3 bg-gray-2">
+        <form className="min-h-screen form-sheet grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4 bg-gray-2">
             
             {/* Informacion del jugador */}
             <fieldset className="fieldset-form info-player col-span-2 md:col-span-2 lg:col-span-3 bg-white shadow-md rounded">
@@ -285,6 +393,7 @@ const CharacterSheet: React.FC = () => {
                   id="player" 
                   placeholder="Nombre del jugador" 
                   className="form-input col-start-2 col-end-3 mr-2 focus:border-black focus:shadow"
+                  onChange={(e) => setPlayerName(e.target.value)}
                   required
                />
                <label htmlFor="character" className="form-lbl col-start-1 col-end-2 bg-grey-lighter ">Personaje</label>
@@ -292,12 +401,13 @@ const CharacterSheet: React.FC = () => {
                   id="character" 
                   placeholder="Nombre del personaje" 
                   className="form-input col-start-2 col-end-3 mr-2 focus:border-black focus:shadow"
+                  onChange={(e) => setCharacterName(e.target.value)}
                   required
                />
 
-               <FormSelectInfoPlayer id="characterClass" label="Clase" options={optionsCharacterClass} selectedValue={selectedValue} onSelectChange={handleCharacterClassChange} ></FormSelectInfoPlayer>
+               <FormSelectInfoPlayer id="characterClass" label="Clase" options={optionsCharacterClass} selectedValue={selectedClassValue} onSelectChange={handleCharacterClassChange} ></FormSelectInfoPlayer>
                
-               <FormSelectInfoPlayer id="characterRace" label="Raza" options={optionsCharacterRace} selectedValue={selectedValue} onSelectChange={handleSelectChange} ></FormSelectInfoPlayer>
+               <FormSelectInfoPlayer id="characterRace" label="Raza" options={optionsCharacterRace} selectedValue={selectedRaceValue} onSelectChange={handleSelectRaceChange} ></FormSelectInfoPlayer>
                
                <FormSelectInfoPlayer id="characterJob" label="Trabajo" options={optionsCharacterJob} selectedValue={selectedJobValue} onSelectChange={handleCharacterJobSelectChange} ></FormSelectInfoPlayer>
 
@@ -315,8 +425,10 @@ const CharacterSheet: React.FC = () => {
                <label htmlFor="characterDescription" className="form-lbl-y col-start-2 md:col-start-4 row-start-2 md:row-start-1 bg-grey-lighter ">Descripcion</label>
                <textarea
                   id="characterDescription" 
+                  name='characterDescription'
                   placeholder="Descripcion del personaje" 
                   className="form-input-y col-start-2 md:col-start-4 row-start-3 md:row-start-2 row-span-4 focus:border-black focus:shadow"
+                  onChange={(e) => setCharacterDescription(e.target.value)}
                   required
                />
                
@@ -367,7 +479,7 @@ const CharacterSheet: React.FC = () => {
 
                <FormSelectInfoPlayer id="skillClass" label="Habilidad innata" options={optionsSkillClass} selectedValue={selectedSkillValue} onSelectChange={handleSelectSkillChange} ></FormSelectInfoPlayer>
                
-               <FormSelectInfoPlayer id="skillExtra" label="Habilidad extra" options={optionsSkillExtra} selectedValue={selectedValue} onSelectChange={handleSelectChange} ></FormSelectInfoPlayer>
+               <FormSelectInfoPlayer id="skillExtra" label="Habilidad extra" options={optionsSkillExtra} selectedValue={selectedExtraSkillValue} onSelectChange={handleSelectExtraSkillChange} ></FormSelectInfoPlayer>
                 
             </fieldset>
 
@@ -375,10 +487,11 @@ const CharacterSheet: React.FC = () => {
             <fieldset className="fieldset-form skills-player col-span-1 row-span-2 col-start-1 md:col-start-2 bg-white shadow-md rounded">
                <legend>Habilidades</legend>
 
-               <label htmlFor="alineacion" className="form-lbl mt-2 ">Alineación</label>
+               <label htmlFor="alignment" className="form-lbl mt-2 ">Alineación</label>
                <select 
-                  id="alineacion"  
+                  id="alignment"  
                   className="form-input mr-2"
+                  onChange={(e) => setAlignmentValue(e.target.value)}
                >
                   <option value=""/>
                   <option value="orden">Orden</option>
@@ -399,35 +512,6 @@ const CharacterSheet: React.FC = () => {
             <fieldset className="fieldset-form inventory-player row-span-3 col-span-1 col-start-1 lg:col-start-3 lg:row-start-2 bg-white shadow-md rounded">
                <legend>Inventario</legend>
 
-               <label htmlFor="objectInput" className="form-lbl mb-2 col-span-3 bg-grey-lighter ">Bolsa</label>
-               <label htmlFor="object" className="form-lbl object-item col-span-3 bg-grey-lighter "> Gema 
-                  <input type="number" 
-                     id="object" 
-                     placeholder="Cantidad" 
-                     className="form-input-count focus:border-black focus:shadow"
-                  />
-                  <button type="button" className="btn-delete-object">X</button>
-               </label>
-               <label htmlFor="object" className="form-lbl object-item col-span-3 bg-grey-lighter "> Gema 
-                  <input type="number" 
-                     id="object" 
-                     placeholder="Cantidad" 
-                     className="form-input-count focus:border-black focus:shadow"
-                  />
-                  <button type="button" className="btn-delete-object">X</button>
-               </label>
-               <input type="text" 
-                  id="objectInput" 
-                  placeholder="Objeto" 
-                  className="form-input ml-2 col-span-2 row-span-2 focus:border-black focus:shadow"
-               />
-               <input type="number" 
-                  id="countObject" 
-                  placeholder="Cantidad" 
-                  className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
-               />
-               <button type="button" className="btn-add-object mr-2" >Añadir</button>
-
                <label htmlFor="goldCoins" className="form-lbl col-span-3 bg-grey-lighter ">Monedero</label>
                <label htmlFor="goldCoins" className="form-lbl-coins ml-2 col-span-1 bg-grey-lighter ">Oro</label>
                <label htmlFor="silverCoins" className="form-lbl-coins col-span-1 bg-grey-lighter ">Plata</label>
@@ -437,21 +521,119 @@ const CharacterSheet: React.FC = () => {
                   placeholder="Oro" 
                   className="form-input ml-2 col-span-1 focus:border-black focus:shadow"
                   value={coins[0]}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(0, parseInt(e.target.value))}
                />
                <input type="number" 
                   id="silverCoins" 
                   placeholder="Plata" 
                   className="form-input col-span-1 focus:border-black focus:shadow"
                   value={coins[1]}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(1, parseInt(e.target.value))}
                />
                <input type="number" 
                   id="bronzeCoins" 
                   placeholder="Bronce" 
                   className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
                   value={coins[2]}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(2, parseInt(e.target.value))}
                />
+
+               <label htmlFor="objectInput" className="form-lbl mb-2 col-span-3 bg-grey-lighter ">Bolsa</label>
+               {invObjects.map((elem) => (
+                  <label htmlFor={"object"+elem.id} className="form-lbl object-item col-span-3 bg-grey-lighter "> {elem.name} 
+                     <input type="hidden" value={elem.id} />
+                     <input type="number" 
+                        id={"object"+elem.id} 
+                        placeholder="Cantidad" 
+                        className="form-input-count focus:border-black focus:shadow"
+                        value={elem.count}
+                        onChange={(e) => handleEditCount(elem.id, parseInt(e.target.value, 10))}
+                        readOnly={elem.readOnly}
+                     />
+                     <button type="button" className="btn-delete-object" onClick={() => handleDeleteObject(elem.id)} >X</button>
+                  </label>
+               ))}
+               <input type="text" 
+                  id="objectInput" 
+                  placeholder="Objeto" 
+                  className="form-input ml-2 col-span-2 row-span-2 focus:border-black focus:shadow"
+                  value={newObjectName}
+                  onChange={(e) => setNewObjectName(e.target.value)}
+               />
+               <input type="number" 
+                  id="countObject" 
+                  placeholder="Cantidad" 
+                  className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
+                  value={newObjectCount}
+                  onChange={(e) => setNewObjectCount(parseInt(e.target.value, 10))}
+               />
+               <button type="button" className="btn-add-object mr-2" onClick={() => handleAddObject()} >Añadir</button>
                 
             </fieldset>
+
+            <aside className='panel-save'>
+                  <button className='btn-save-character' onClick={() => handleOpenModal()} >
+                     <SvgSaveCharacter className='icon' width={50} height={50} />
+                  </button>
+            </aside>
+
+            <Dialog
+               open={ open }
+               size={"lg"}
+               handler={handleOpenModal}
+               className="dialog "
+               >
+               <DialogHeader>Resumen de hoja de personaje</DialogHeader>
+               <DialogBody>
+                  <ul className='my-3 grid grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-x-0 gap-y-4 md:gap-x-4 '>
+                     <li><strong>Jugador: </strong>{dataCharacter?.player}</li>
+                     <li><strong>Personaje: </strong>{dataCharacter?.name}</li>
+                     <li><strong>Nivel: </strong>{dataCharacter?.level}</li>
+                     <li><strong>Descripcion: </strong>{dataCharacter?.description}</li>
+                     <li><strong>Clase: </strong>{dataCharacter?.class}</li>
+                     <li><strong>Raza: </strong>{dataCharacter?.race}</li>
+                     <li><strong>Trabajo: </strong>{dataCharacter?.job}</li>
+                     <li><strong>Conocimientos: </strong>{dataCharacter?.knowledge}</li>
+                  </ul>
+                  <ul className='my-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-0 gap-y-4 md:gap-x-4 '>
+                     <li><strong>Fuerza: </strong>{(dataCharacter?.str[0].dice||0) + (dataCharacter?.str[0].class||0) + (dataCharacter?.str[0].level||0) }</li>
+                     <li><strong>Inteligencia: </strong>{(dataCharacter?.int[0].dice||0) + (dataCharacter?.int[0].class||0) + (dataCharacter?.int[0].level||0) }</li>
+                     <li><strong>Destreza: </strong>{(dataCharacter?.dex[0].dice||0) + (dataCharacter?.dex[0].class||0) + (dataCharacter?.dex[0].level||0) }</li>
+                     <li><strong>Constitucion: </strong>{(dataCharacter?.con[0].dice||0) + (dataCharacter?.con[0].class||0) + (dataCharacter?.con[0].level||0) }</li>
+                     <li><strong>Percepcion: </strong>{(dataCharacter?.per[0].dice||0) + (dataCharacter?.per[0].class||0) + (dataCharacter?.per[0].level||0) }</li>
+                     <li><strong>Carisma: </strong>{(dataCharacter?.cha[0].dice||0) + (dataCharacter?.cha[0].class||0) + (dataCharacter?.cha[0].level||0) }</li>
+                  </ul>
+                  <ul className='my-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 '>
+                     <li className='md:col-span-2 lg:col-span-3'><strong>Alineacion: </strong>{dataCharacter?.alignment}</li>
+                     {dataCharacter?.skills.map((elem) => (
+                        <li><strong>Habilidad: </strong>{elem.name}</li>
+                        ))}
+                  </ul>
+                  <ul className='my-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 '>
+                     <li className='md:col-span-2 lg:col-span-3'>Inventario: </li>
+                     {dataCharacter?.inv.map((elem) => (
+                        <li><strong>{elem.name}: </strong>{elem.count}</li>
+                     ))}
+                  </ul>
+               </DialogBody>
+               <DialogFooter>
+                  <Button
+                     variant="text"
+                     color="red"
+                     onClick={() => handleOpen()}
+                     className="mr-1"
+                  >
+                     <span>Cancelar</span>
+                  </Button>
+                  <Button
+                     variant="gradient"
+                     color="green"
+                     onClick={() => handleOpen()}
+                  >
+                     <span>Guardar información</span>
+                  </Button>
+               </DialogFooter>
+            </Dialog>
             
         </form>
     )

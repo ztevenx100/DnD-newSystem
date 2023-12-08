@@ -29,7 +29,7 @@ const FormCardCheckbox: React.FC<CardWithCheckboxesProps> = ({ id, label, checkb
   return (
     <>
         <label id={id} className="form-lbl-y col-start-1 md:row-start-6 col-span-2 md:col-span-4 bg-grey-lighter ">{label}</label>
-        <Card className="flex flex-row flex-wrap flex justify-around col-start-1 col-span-2 md:col-span-4 row-span-2 ml-2 mr-2 border-1 border-black">
+        <Card className="flex flex-row flex-wrap justify-around col-start-1 col-span-2 md:col-span-4 row-span-2 ml-2 mr-2 border-1 border-black">
 
             {checkboxes.map((checkbox) => (
             <List className="flex-row" key={checkbox.id}>

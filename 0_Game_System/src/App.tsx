@@ -7,7 +7,6 @@ import Navbar from './components/UI/Navbar/Navbar';
 import Footer from './components/UI/Footer/Footer';
 import Home from './components/pages/Home'
 import CharacterSheet from './components/pages/CharacterSheet/CharacterSheet'
-// import { useState } from 'react'
 
 import "@unocss/reset/tailwind.css";
 import "uno.css";

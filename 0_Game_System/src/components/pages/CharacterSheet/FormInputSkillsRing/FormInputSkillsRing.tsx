@@ -8,29 +8,22 @@ interface RingTypes {
 }
 
 interface FormInputSkillsRingProps{
-    id: number;
+    id: string;
     level: number;
     levelEvaluated: number;
     ringTypes: RingTypes[];
     skillForType: SkillTypes[];
     values: SkillsAcquired;
-    onSelectChange: (id: number, ring: string, skill: string) => void;
+    onSelectChange: (id: string, ring: string, skill: string) => void;
 }
 
 const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, levelEvaluated, ringTypes, skillForType, values, onSelectChange }) => {
 
-  const [skillTypeRing, setSkillTypeRing] = useState<string>('');
   const [skillsList, setSkillsList] = useState<Skill[]>([]);
 
   const handleLevelChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newLevel = parseInt(e.target.value, 10) || 0;
-        updateSkills(newLevel);
-    };
-
-    const updateSkills = (newLevel: number) => {
-        //const filteredSkills = skills.filter(skill => skill.level <= newLevel);
-        //setSelectedSkill('');
-        //setSkillsList(filteredSkills);
+        //updateSkills(newLevel);
     };
 
     const handleSkillTypeRingChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -44,7 +37,7 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
         }
     };
 
-    const handleSkillChange = (id: number, newSkill: string) => {
+    const handleSkillChange = (id: string, newSkill: string) => {
         onSelectChange(id, values.ring, newSkill);
     };
 

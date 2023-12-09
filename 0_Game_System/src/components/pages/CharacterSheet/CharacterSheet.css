@@ -315,3 +315,7 @@
     padding: 10px;
 
 }
+
+.btn-dialog-accept{
+    background: var(--bg-color-4);
+}

@@ -9,7 +9,7 @@ import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
 import SvgCharacter from '../../../components/UI/Icons/SvgCharacter';
 import SvgSaveCharacter from '../../../components/UI/Icons/SvgSaveCharacter';
 
-import { InputStats, Skill, SkillTypes, SkillsAcquired, InventoryObject } from '../../interfaces/typesCharacterSheet';
+import { InputStats, SkillTypes, SkillsAcquired, InventoryObject } from '../../interfaces/typesCharacterSheet';
 
 import { useBackground } from '../../../App';
 import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
@@ -30,12 +30,14 @@ const CharacterSheet: React.FC = () => {
    const [selectedRaceValue, setSelectedRaceValue] = useState<string>('');
    const [selectedJobValue, setSelectedJobValue] = useState<string>(''); 
    const [selectedCheckValues, setSelectedCheckValues] = useState<string[]>([]);
-
+   
    // Definir el estado para las habilidades
+   const [mainWeapon, setMainWeapon] = useState<string>(''); 
+   const [secondaryWeapon, setSecondaryWeapon] = useState<string>(''); 
    const [alignmentValue, setAlignmentValue] = useState<string>(''); 
    const [selectedSkillValue, setSelectedSkillValue] = useState<string>(''); 
    const [selectedExtraSkillValue, setSelectedExtraSkillValue] = useState<string>(''); 
-   const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([{id:0, name:'', description: '', ring:''},{id:1, name:'', description: '', ring:''},{id:2, name:'', description: '', ring:''}]);
+   const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([{id:'0', name:'', description: '', ring:''},{id:'1', name:'', description: '', ring:''},{id:'2', name:'', description: '', ring:''}]);
    
    const [coins,setCoins] = useState<number[]>([0,3,0]);
    const [invObjects, setInvObjects] = useState<InventoryObject[]>([{id:0, name:'Gema', description:'Articulo del elegido', count: 1, readOnly: true}]);
@@ -61,16 +63,20 @@ const CharacterSheet: React.FC = () => {
       con: [{ dice: number, class:number, level: number }];
       per: [{ dice: number, class:number, level: number }];
       cha: [{ dice: number, class:number, level: number }];
+      mainWeapon: string;
+      secondaryWeapon: string;
       alignment: string;
+      mainSkill: string;
+      extraSkill: string,
       skills: SkillsAcquired[];
+      coinsInv: number[];
       inv: InventoryObject[];
    }
-
    const [dataCharacter, setDataCharacter] = useState<DataCharacter>();
 
 
    // Listado del select characterClass
-    const optionsCharacterClass = [
+   const optionsCharacterClass = [
       { value: 'WAR', name: 'Guerrero', work: 'FOR', mainStat: 'STR' },
       { value: 'MAG', name: 'Mago', work: 'ARC', mainStat: 'INT' },
       { value: 'SCO', name: 'Explorador', work: 'NSC', mainStat: 'DEX' },
@@ -80,7 +86,7 @@ const CharacterSheet: React.FC = () => {
     ];
 
    // Listado del select characterRace
-    const optionsCharacterRace = [
+   const optionsCharacterRace = [
       { value: 'HUM', name: 'Humano' },
       { value: 'ELF', name: 'Elfo' },
       { value: 'DWA', name: 'Enano' },
@@ -89,7 +95,7 @@ const CharacterSheet: React.FC = () => {
     ];
 
    // Listado del select characterJob
-    const optionsCharacterJob = [
+   const optionsCharacterJob = [
       { value: 'HUN', name: 'Cazador' },
       { value: 'BLA', name: 'Herrero' },
       { value: 'ART', name: 'Artista' },
@@ -261,7 +267,7 @@ const CharacterSheet: React.FC = () => {
 
    const sumarTresVariables = (): number => {
       return 2;
-    };
+   };
    
    // Manejar el cambio en la selección characterClass
    const handleCharacterClassChange = (value: string) => {
@@ -281,22 +287,21 @@ const CharacterSheet: React.FC = () => {
 
    };
    
-    // Manejar el cambio en la selección characterJob
-    const handleCharacterJobSelectChange = (value: string) => {
+   // Manejar el cambio en la selección characterJob
+   const handleCharacterJobSelectChange = (value: string) => {
       setSelectedJobValue(value);
    };
 
 
    const handleSelectedCheckValuesChange = (newValues: string[]) => {
       setSelectedCheckValues(newValues);
-      console.log(newValues);
     };
 
    const handleStatsInputChange = (newInputStats: InputStats) => {
       setInputsStatsData(prevItems => prevItems.map( item => item.id === newInputStats.id ? { ...item, item: newInputStats} : item ))
    }
 
-   const handleSelectedRingSkillChange = (id: number, ring: string, name: string) => {
+   const handleSelectedRingSkillChange = (id: string, ring: string, name: string) => {
       const description = '';
       const existingSkillIndex = skillsAcquired.findIndex(elem => elem.id === id);
 
@@ -318,10 +323,10 @@ const CharacterSheet: React.FC = () => {
       const updatedCoins = [...coins];
       updatedCoins[index] = value || 0; // Parse input value as integer or default to 0
       setCoins(updatedCoins);
-    };
+   };
 
    // Funciones para adicionar, editar o eliminar objetos de la lista de inventario
-    const handleAddObject = () => {
+   const handleAddObject = () => {
       const newObject: InventoryObject = {
          id: invObjects.length,
          name: newObjectName || 'Nuevo Objeto',
@@ -329,27 +334,25 @@ const CharacterSheet: React.FC = () => {
          count: newObjectCount,
          readOnly: false,
       };
-  
+
       setInvObjects((prev) => [...prev, newObject]);
       setNewObjectName('');
       setNewObjectCount(1);
-    };
+   };
   
-    const handleDeleteObject = (id: number) => {
+   const handleDeleteObject = (id: number) => {
       setInvObjects((prevObjects) => prevObjects.filter((obj) => obj.id !== id));
-    };
+   };
   
     const handleEditCount = (id: number, newCount: number) => {
       setInvObjects((prevObjects) =>
-        prevObjects.map((obj) =>
-          obj.id === id ? { ...obj, count: newCount } : obj
-        )
+         prevObjects.map((obj) =>
+            obj.id === id ? { ...obj, count: newCount } : obj
+         )
       );
     };
 
     const handleOpenModal = () => {
-      console.log('open modal');
-      
 
       const newCharacter: DataCharacter = {
          id: uuidv4(),
@@ -367,18 +370,57 @@ const CharacterSheet: React.FC = () => {
          con: [{ dice: inputsStatsData[3].valueDice, class: inputsStatsData[3].valueClass, level: inputsStatsData[3].valueLevel }],
          per: [{ dice: inputsStatsData[4].valueDice, class: inputsStatsData[4].valueClass, level: inputsStatsData[4].valueLevel }],
          cha: [{ dice: inputsStatsData[5].valueDice, class: inputsStatsData[5].valueClass, level: inputsStatsData[5].valueLevel }],
+         mainWeapon: mainWeapon,
+         secondaryWeapon: secondaryWeapon,
          alignment: alignmentValue,
+         mainSkill: selectedSkillValue,
+         extraSkill: selectedExtraSkillValue,
          skills: skillsAcquired,
+         coinsInv: coins,
          inv: invObjects,
       };
 
       setDataCharacter(newCharacter);
 
-      console.log(newCharacter);
+      console.log(skillsAcquired);
       
 
       handleOpen();
     }
+
+   const getClassName = (id: string|undefined): string | undefined  => {
+      return optionsCharacterClass.find(elem => elem.value === id)?.name;
+   }
+
+   const getRaceName = (id: string|undefined): string | undefined  => {
+      return optionsCharacterRace.find(elem => elem.value === id)?.name;
+   }
+
+   const getJobName = (id: string|undefined): string | undefined  => {
+      return optionsCharacterJob.find(elem => elem.value === id)?.name;
+   }
+   
+   const getKnowledgeName = (ids: string[]|undefined): string | undefined  => {
+      var names = '';
+      
+      ids?.forEach((know) => {
+         names += checkboxesData.find(elem => elem.value === know)?.name + ', ';
+      });
+      names= (names.length > 2)?names.substring(0,names.length-2):names;
+      
+      return names;
+   }
+   
+   const getMainSkillName = (id: string|undefined): string | undefined  => {
+      return optionsSkillClass.find(elem => elem.value === id)?.name;
+   }
+   const getExtraSkillName = (id: string|undefined): string | undefined  => {
+      return optionsSkillExtra.find(elem => elem.value === id)?.name;
+   }
+   
+   const getSkillName = (ring: string, id: number): string | undefined  => {
+      return skillsTypes.find(skill => skill.id === ring)?.skills.find(ele => ele.id === id)?.name;
+   }
 
    
     return (
@@ -422,7 +464,7 @@ const CharacterSheet: React.FC = () => {
                   onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeCharacterLevel(parseInt(e.target.value))}
                   required
                />
-               <label htmlFor="characterDescription" className="form-lbl-y col-start-2 md:col-start-4 row-start-2 md:row-start-1 bg-grey-lighter ">Descripcion</label>
+               <label htmlFor="characterDescription" className="form-lbl-y col-start-2 md:col-start-4 row-start-2 md:row-start-1 bg-grey-lighter ">Descripción</label>
                <textarea
                   id="characterDescription" 
                   name='characterDescription'
@@ -469,12 +511,14 @@ const CharacterSheet: React.FC = () => {
                   id="mainWeapon" 
                   placeholder="Arma principal" 
                   className="form-input mr-2 focus:border-black focus:shadow"
+                  onChange={(e) => setMainWeapon(e.target.value)}
                />
                <label htmlFor="secondaryWeapon" className="form-lbl bg-grey-lighter ">Arma secundaria</label>
                <input type="text" 
                   id="secondaryWeapon" 
                   placeholder="Arma secondaria" 
                   className="form-input mr-2 focus:border-black focus:shadow"
+                  onChange={(e) => setSecondaryWeapon(e.target.value)}
                />
 
                <FormSelectInfoPlayer id="skillClass" label="Habilidad innata" options={optionsSkillClass} selectedValue={selectedSkillValue} onSelectChange={handleSelectSkillChange} ></FormSelectInfoPlayer>
@@ -500,11 +544,11 @@ const CharacterSheet: React.FC = () => {
                <label className="form-lbl-skills ml-2 mb-1 ">Nivel</label>
                <label className="form-lbl-skills mr-2 mb-1 ">Anillo de poder</label>
 
-               <FormInputSkillsRing id={0} level={characterLevel} levelEvaluated={3} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[0]} onSelectChange={handleSelectedRingSkillChange} />
+               <FormInputSkillsRing id={'0'} level={characterLevel} levelEvaluated={3} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[0]} onSelectChange={handleSelectedRingSkillChange} />
 
-               <FormInputSkillsRing id={1} level={characterLevel} levelEvaluated={6} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[1]} onSelectChange={handleSelectedRingSkillChange} />
+               <FormInputSkillsRing id={'1'} level={characterLevel} levelEvaluated={6} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[1]} onSelectChange={handleSelectedRingSkillChange} />
 
-               <FormInputSkillsRing id={2} level={characterLevel} levelEvaluated={9} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[2]} onSelectChange={handleSelectedRingSkillChange} />
+               <FormInputSkillsRing id={'2'} level={characterLevel} levelEvaluated={9} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[2]} onSelectChange={handleSelectedRingSkillChange} />
                 
             </fieldset>
 
@@ -540,7 +584,7 @@ const CharacterSheet: React.FC = () => {
 
                <label htmlFor="objectInput" className="form-lbl mb-2 col-span-3 bg-grey-lighter ">Bolsa</label>
                {invObjects.map((elem) => (
-                  <label htmlFor={"object"+elem.id} className="form-lbl object-item col-span-3 bg-grey-lighter "> {elem.name} 
+                  <label htmlFor={"object"+elem.id} key={"object"+elem.id} className="form-lbl object-item col-span-3 bg-grey-lighter "> {elem.name} 
                      <input type="hidden" value={elem.id} />
                      <input type="number" 
                         id={"object"+elem.id} 
@@ -572,11 +616,15 @@ const CharacterSheet: React.FC = () => {
             </fieldset>
 
             <aside className='panel-save'>
-                  <button className='btn-save-character' onClick={() => handleOpenModal()} >
-                     <SvgSaveCharacter className='icon' width={50} height={50} />
-                  </button>
+               <button className='btn-save-character' onClick={() => handleOpenModal()} >
+                  <SvgSaveCharacter className='icon' width={50} height={50} />
+               </button>
             </aside>
-
+            {/* <div className='grid place-items-center fixed w-screen h-screen bg-black bg-opacity-60 backdrop-blur-sm ' style={{display:'none'}}/>
+            <div className='relative bg-white m-4 rounded-lg shadow-2xl text-blue-gray-500 antialiased font-sans text-base font-light leading-relaxed w-full md:w-5/6 lg:w-3/4 2xl:w-3/5 min-w-[90%] md:min-w-[83.333333%] lg:min-w-[75%] 2xl:min-w-[60%] max-w-[90%] md:max-w-[83.333333%] lg:max-w-[75%] 2xl:max-w-[60%] dialog' style={{display:'none'}}/>
+            <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg text-red-500 hover:bg-red-500/10 active:bg-red-500/30 mr-1 ' style={{display:'none'}}/>
+            <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-md shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85] ' style={{display:'none'}}/> */}
+            {/* Modal/Dialog */}
             <Dialog
                open={ open }
                size={"lg"}
@@ -585,17 +633,17 @@ const CharacterSheet: React.FC = () => {
                >
                <DialogHeader>Resumen de hoja de personaje</DialogHeader>
                <DialogBody>
-                  <ul className='my-3 grid grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-x-0 gap-y-4 md:gap-x-4 '>
-                     <li><strong>Jugador: </strong>{dataCharacter?.player}</li>
-                     <li><strong>Personaje: </strong>{dataCharacter?.name}</li>
+                  <ul className='my-4 grid grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-y-4 gap-x-4 '>
+                     <li className='col-span-2'><strong>Jugador: </strong>{dataCharacter?.player}</li>
+                     <li className='col-span-2'><strong>Personaje: </strong>{dataCharacter?.name}</li>
                      <li><strong>Nivel: </strong>{dataCharacter?.level}</li>
-                     <li><strong>Descripcion: </strong>{dataCharacter?.description}</li>
-                     <li><strong>Clase: </strong>{dataCharacter?.class}</li>
-                     <li><strong>Raza: </strong>{dataCharacter?.race}</li>
-                     <li><strong>Trabajo: </strong>{dataCharacter?.job}</li>
-                     <li><strong>Conocimientos: </strong>{dataCharacter?.knowledge}</li>
+                     <li><strong>Clase: </strong>{getClassName(dataCharacter?.class)}</li>
+                     <li><strong>Raza: </strong>{getRaceName(dataCharacter?.race)}</li>
+                     <li><strong>Trabajo: </strong>{getJobName(dataCharacter?.job)}</li>
+                     <li className='col-span-2'><strong>Descripcion: </strong>{dataCharacter?.description}</li>
+                     <li className='col-span-2'><strong>Conocimientos: </strong>{getKnowledgeName(dataCharacter?.knowledge)}</li>
                   </ul>
-                  <ul className='my-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-0 gap-y-4 md:gap-x-4 '>
+                  <ul className='my-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-4 gap-x-4 '>
                      <li><strong>Fuerza: </strong>{(dataCharacter?.str[0].dice||0) + (dataCharacter?.str[0].class||0) + (dataCharacter?.str[0].level||0) }</li>
                      <li><strong>Inteligencia: </strong>{(dataCharacter?.int[0].dice||0) + (dataCharacter?.int[0].class||0) + (dataCharacter?.int[0].level||0) }</li>
                      <li><strong>Destreza: </strong>{(dataCharacter?.dex[0].dice||0) + (dataCharacter?.dex[0].class||0) + (dataCharacter?.dex[0].level||0) }</li>
@@ -603,16 +651,24 @@ const CharacterSheet: React.FC = () => {
                      <li><strong>Percepcion: </strong>{(dataCharacter?.per[0].dice||0) + (dataCharacter?.per[0].class||0) + (dataCharacter?.per[0].level||0) }</li>
                      <li><strong>Carisma: </strong>{(dataCharacter?.cha[0].dice||0) + (dataCharacter?.cha[0].class||0) + (dataCharacter?.cha[0].level||0) }</li>
                   </ul>
-                  <ul className='my-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 '>
+                  <ul className='my-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-4 '>
+                     <li><strong>Habilidad principal: </strong>{getMainSkillName(dataCharacter?.mainSkill)}</li>
+                     <li><strong>Habilidad extra: </strong>{getExtraSkillName(dataCharacter?.extraSkill)}</li>
                      <li className='md:col-span-2 lg:col-span-3'><strong>Alineacion: </strong>{dataCharacter?.alignment}</li>
                      {dataCharacter?.skills.map((elem) => (
-                        <li><strong>Habilidad: </strong>{elem.name}</li>
+                        <li key={elem.id}><strong>Habilidad: </strong>{getSkillName(elem.ring,parseInt(elem.name))}</li>
                         ))}
                   </ul>
-                  <ul className='my-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 '>
+                  <ul className='my-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-4 '>
+                     <li><strong>Arma principal: </strong>{dataCharacter?.mainWeapon}</li>
+                     <li><strong>Arma secundaria: </strong>{dataCharacter?.secondaryWeapon}</li>
+                     <li className='md:col-span-2 lg:col-span-3'><strong>Dinero: </strong> </li>
+                     <li>Oro: {dataCharacter?.coinsInv[0]}</li>
+                     <li>Plata: {dataCharacter?.coinsInv[1]}</li>
+                     <li>Cobre: {dataCharacter?.coinsInv[2]}</li>
                      <li className='md:col-span-2 lg:col-span-3'>Inventario: </li>
                      {dataCharacter?.inv.map((elem) => (
-                        <li><strong>{elem.name}: </strong>{elem.count}</li>
+                        <li key={elem.id}><strong>{elem.name}: </strong>{elem.count}</li>
                      ))}
                   </ul>
                </DialogBody>
@@ -627,7 +683,7 @@ const CharacterSheet: React.FC = () => {
                   </Button>
                   <Button
                      variant="gradient"
-                     color="green"
+                     className='btn-dialog-accept'
                      onClick={() => handleOpen()}
                   >
                      <span>Guardar información</span>
@@ -639,5 +695,4 @@ const CharacterSheet: React.FC = () => {
     )
 }
 
-
-export default CharacterSheet
+export default CharacterSheet;

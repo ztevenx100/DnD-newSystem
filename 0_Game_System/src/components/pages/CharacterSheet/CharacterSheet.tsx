@@ -353,6 +353,35 @@ const CharacterSheet: React.FC = () => {
     };
 
     const handleOpenModal = () => {
+      //e.preventDefault();
+
+      // Obtener todos los elementos con el atributo required
+		let requiredElements = Array.from(document.querySelectorAll('[required]')) as HTMLInputElement[];
+
+		// Variable para rastrear si hay algún campo vacío
+		let hayCamposVacios = false;
+      let fieldsRequired: string[] = [];
+
+		// Iterar sobre los elementos y verificar si están vacíos
+		for (var i = 0; i < requiredElements.length; i++) {
+			if (requiredElements[i].value.trim() === '') {
+				hayCamposVacios = true;
+				// Puedes realizar acciones adicionales, como resaltar el campo vacío
+				requiredElements[i].classList.add('required-input');
+            fieldsRequired.push(requiredElements[i].id);
+			} else {
+				// Restablecer el estilo si el campo no está vacío
+				requiredElements[i].classList.remove('required-input');
+			}
+		}
+      console.log(fieldsRequired);
+      
+
+		// Si hay campos vacíos, no enviar el formulario
+		if (hayCamposVacios) {
+			alert('Por favor, complete todos los campos obligatorios.');
+			return;
+		}
 
       const newCharacter: DataCharacter = {
          id: uuidv4(),
@@ -623,7 +652,8 @@ const CharacterSheet: React.FC = () => {
             {/* <div className='grid place-items-center fixed w-screen h-screen bg-black bg-opacity-60 backdrop-blur-sm ' style={{display:'none'}}/>
             <div className='relative bg-white m-4 rounded-lg shadow-2xl text-blue-gray-500 antialiased font-sans text-base font-light leading-relaxed w-full md:w-5/6 lg:w-3/4 2xl:w-3/5 min-w-[90%] md:min-w-[83.333333%] lg:min-w-[75%] 2xl:min-w-[60%] max-w-[90%] md:max-w-[83.333333%] lg:max-w-[75%] 2xl:max-w-[60%] dialog' style={{display:'none'}}/>
             <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg text-red-500 hover:bg-red-500/10 active:bg-red-500/30 mr-1 ' style={{display:'none'}}/>
-            <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-md shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85] ' style={{display:'none'}}/> */}
+            <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-md shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85] ' style={{display:'none'}}/> 
+            <div className='className="h-[28rem] overflow-scroll"' style={{display:'none'}}/> */}
             {/* Modal/Dialog */}
             <Dialog
                open={ open }
@@ -632,8 +662,8 @@ const CharacterSheet: React.FC = () => {
                className="dialog "
                >
                <DialogHeader>Resumen de hoja de personaje</DialogHeader>
-               <DialogBody>
-                  <ul className='my-4 grid grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-y-4 gap-x-4 '>
+               <DialogBody className="h-[28rem] overflow-scroll grid grid-cols-3 gap-3">
+                  <ul className='dialog-card col-span-2 grid grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-3'>
                      <li className='col-span-2'><strong>Jugador: </strong>{dataCharacter?.player}</li>
                      <li className='col-span-2'><strong>Personaje: </strong>{dataCharacter?.name}</li>
                      <li><strong>Nivel: </strong>{dataCharacter?.level}</li>
@@ -643,25 +673,50 @@ const CharacterSheet: React.FC = () => {
                      <li className='col-span-2'><strong>Descripcion: </strong>{dataCharacter?.description}</li>
                      <li className='col-span-2'><strong>Conocimientos: </strong>{getKnowledgeName(dataCharacter?.knowledge)}</li>
                   </ul>
-                  <ul className='my-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-4 gap-x-4 '>
-                     <li><strong>Fuerza: </strong>{(dataCharacter?.str[0].dice||0) + (dataCharacter?.str[0].class||0) + (dataCharacter?.str[0].level||0) }</li>
-                     <li><strong>Inteligencia: </strong>{(dataCharacter?.int[0].dice||0) + (dataCharacter?.int[0].class||0) + (dataCharacter?.int[0].level||0) }</li>
-                     <li><strong>Destreza: </strong>{(dataCharacter?.dex[0].dice||0) + (dataCharacter?.dex[0].class||0) + (dataCharacter?.dex[0].level||0) }</li>
-                     <li><strong>Constitucion: </strong>{(dataCharacter?.con[0].dice||0) + (dataCharacter?.con[0].class||0) + (dataCharacter?.con[0].level||0) }</li>
-                     <li><strong>Percepcion: </strong>{(dataCharacter?.per[0].dice||0) + (dataCharacter?.per[0].class||0) + (dataCharacter?.per[0].level||0) }</li>
-                     <li><strong>Carisma: </strong>{(dataCharacter?.cha[0].dice||0) + (dataCharacter?.cha[0].class||0) + (dataCharacter?.cha[0].level||0) }</li>
-                  </ul>
-                  <ul className='my-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-4 '>
+                  <table className='dialog-card '>
+                     <thead>
+                        <tr><th colSpan={2}>Estadisticas</th></tr>
+                     </thead>
+                     <tbody>
+                        <tr>
+                           <td>Fuerza</td>
+                           <td>{(dataCharacter?.str[0].dice||0) + (dataCharacter?.str[0].class||0) + (dataCharacter?.str[0].level||0) }</td>
+                        </tr>
+                        <tr>
+                           <td>Inteligencia</td>
+                           <td>{(dataCharacter?.int[0].dice||0) + (dataCharacter?.int[0].class||0) + (dataCharacter?.int[0].level||0) }</td>
+                        </tr>
+                        <tr>
+                           <td>Destreza</td>
+                           <td>{(dataCharacter?.dex[0].dice||0) + (dataCharacter?.dex[0].class||0) + (dataCharacter?.dex[0].level||0) }</td>
+                        </tr>
+                        <tr>
+                           <td>Constitucion</td>
+                           <td>{(dataCharacter?.con[0].dice||0) + (dataCharacter?.con[0].class||0) + (dataCharacter?.con[0].level||0) }</td>
+                        </tr>
+                        <tr>
+                           <td>Percepcion</td>
+                           <td>{(dataCharacter?.per[0].dice||0) + (dataCharacter?.per[0].class||0) + (dataCharacter?.per[0].level||0) }</td>
+                        </tr>
+                        <tr>
+                           <td>Carisma</td>
+                           <td>{(dataCharacter?.cha[0].dice||0) + (dataCharacter?.cha[0].class||0) + (dataCharacter?.cha[0].level||0) }</td>
+                        </tr>
+                     </tbody>
+                  </table>
+                  <ul className='dialog-card grid grid-cols-1 gap-3 '>
                      <li><strong>Habilidad principal: </strong>{getMainSkillName(dataCharacter?.mainSkill)}</li>
                      <li><strong>Habilidad extra: </strong>{getExtraSkillName(dataCharacter?.extraSkill)}</li>
-                     <li className='md:col-span-2 lg:col-span-3'><strong>Alineacion: </strong>{dataCharacter?.alignment}</li>
+                     <li className=''><strong>Alineacion: </strong>{dataCharacter?.alignment}</li>
                      {dataCharacter?.skills.map((elem) => (
                         <li key={elem.id}><strong>Habilidad: </strong>{getSkillName(elem.ring,parseInt(elem.name))}</li>
-                        ))}
+                     ))}
                   </ul>
-                  <ul className='my-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-4 '>
+                  <ul className='dialog-card grid grid-cols-1 gap-3 '>
                      <li><strong>Arma principal: </strong>{dataCharacter?.mainWeapon}</li>
                      <li><strong>Arma secundaria: </strong>{dataCharacter?.secondaryWeapon}</li>
+                  </ul>
+                  <ul className='dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 '>
                      <li className='md:col-span-2 lg:col-span-3'><strong>Dinero: </strong> </li>
                      <li>Oro: {dataCharacter?.coinsInv[0]}</li>
                      <li>Plata: {dataCharacter?.coinsInv[1]}</li>

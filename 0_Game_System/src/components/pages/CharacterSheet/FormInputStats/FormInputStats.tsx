@@ -69,6 +69,7 @@ const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValu
                 className="form-input stats-sub ml-2 col-start-1 col-end-2 focus:border-black focus:shadow"
                 onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(0, parseInt(e.target.value))}
                 value={inputStats.valueDice}
+                required
             />
         </Tooltip>
         <Tooltip className="bg-dark text-light px-2 py-1" placement="bottom" content={ "Clase" } >

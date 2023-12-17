@@ -319,3 +319,17 @@
 .btn-dialog-accept{
     background: var(--bg-color-4);
 }
+
+.fieldset-form .form-input.required-input,
+.fieldset-form .form-input-y.required-input{
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--bg-color-3);
+}
+
+.dialog-card{
+    padding: 5px;
+    background: var(--bg-color-2);
+    border-radius: 0.5rem;
+    color: #fff;
+}

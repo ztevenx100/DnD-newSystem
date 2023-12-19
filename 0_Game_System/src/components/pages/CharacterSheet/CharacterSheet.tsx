@@ -241,7 +241,7 @@ const CharacterSheet: React.FC = () => {
          ] },
    ];
 
-   // Listado del armas
+   // Listado de armas
    const listWearpons = [
       'Daga' ,
       'Cuchillo de combate',
@@ -322,7 +322,6 @@ const CharacterSheet: React.FC = () => {
    // Manejar el cambio en la selección characterJob
    const handleCharacterJobSelectChange = (value: string) => {
       setSelectedJobValue(value);
-      
       updStatsPoints(selectedClassValue, value);
    };
 
@@ -334,6 +333,23 @@ const CharacterSheet: React.FC = () => {
    const handleStatsInputChange = (newInputStats: InputStats) => {
       setInputsStatsData(prevItems => prevItems.map( item => item.id === newInputStats.id ? { ...item, item: newInputStats} : item ))
    }
+   // Manejar el cambio en la selección
+   const handleAlingmentChange = (value: string) => {
+      setAlignmentValue(value);
+
+      // Color fondo
+      const formElement = document.getElementById('form-sheet');
+      if (value === 'orden') {
+         formElement?.classList.add(value);
+         formElement?.classList.remove('caos');
+      } else if (value === 'caos') {
+         formElement?.classList.add(value);
+         formElement?.classList.remove('orden');
+      } else {
+         formElement?.classList.remove('caos');
+         formElement?.classList.remove('orden');
+      }
+   };
 
    const handleSelectedRingSkillChange = (id: string, ring: string, name: string) => {
       const description = '';
@@ -349,7 +365,6 @@ const CharacterSheet: React.FC = () => {
          // Si la habilidad no existe, añadirla
          setSkillsAcquired(prevSkills => [...prevSkills, { id, name, description, ring }]);
       }
-      
    };
 
    // Funcion para editar la cantidad de monedas
@@ -387,10 +402,8 @@ const CharacterSheet: React.FC = () => {
     };
 
     const handleOpenModal = () => {
-      //e.preventDefault();
-
       // Obtener todos los elementos con el atributo required
-		let requiredElements = Array.from(document.querySelectorAll('[required]')) as HTMLInputElement[];
+      let requiredElements = Array.from(document.querySelectorAll('[required]')) as HTMLInputElement[];
 
 		// Variable para rastrear si hay algún campo vacío
 		let hayCamposVacios = false;
@@ -403,9 +416,9 @@ const CharacterSheet: React.FC = () => {
 				// Puedes realizar acciones adicionales, como resaltar el campo vacío
 				requiredElements[i].classList.add('required-input');
             fieldsRequired.push(requiredElements[i].id);
-			} else {
-				// Restablecer el estilo si el campo no está vacío
-				requiredElements[i].classList.remove('required-input');
+         } else {
+            // Restablecer el estilo si el campo no está vacío
+            requiredElements[i].classList.remove('required-input');
 			}
 		}
       //console.log(fieldsRequired);
@@ -484,7 +497,7 @@ const CharacterSheet: React.FC = () => {
 
    
     return (
-        <form className="min-h-screen form-sheet grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4 bg-gray-2">
+        <form id='form-sheet' className="min-h-screen form-sheet grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4">
             
             {/* Informacion del jugador */}
             <fieldset className="fieldset-form info-player col-span-2 md:col-span-2 lg:col-span-3 bg-white shadow-md rounded">
@@ -602,14 +615,15 @@ const CharacterSheet: React.FC = () => {
                <select 
                   id="alignment"  
                   className="form-input mr-2"
-                  onChange={(e) => setAlignmentValue(e.target.value)}
+                  onChange={(e) => handleAlingmentChange(e.target.value)}
                >
                   <option value=""/>
                   <option value="orden">Orden</option>
                   <option value="caos">Caos</option>
                </select>
-               <label className="form-lbl-skills ml-2 mb-1 ">Nivel</label>
-               <label className="form-lbl-skills mr-2 mb-1 ">Anillo de poder</label>
+
+               <label className="form-lbl-skills ml-2 mb-0 ">Nivel</label>
+               <label className="form-lbl-skills mr-2 mb-0 ">Anillo de poder</label>
 
                <FormInputSkillsRing id={'0'} level={characterLevel} levelEvaluated={3} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[0]} onSelectChange={handleSelectedRingSkillChange} />
 
@@ -700,7 +714,7 @@ const CharacterSheet: React.FC = () => {
                className="dialog "
                >
                <DialogHeader>Resumen de hoja de personaje</DialogHeader>
-               <DialogBody className="h-[28rem] overflow-scroll grid grid-cols-3 gap-3">
+               <DialogBody className="dialog-body grid grid-cols-3 gap-3">
                   <ul className='dialog-card col-span-2 grid grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-3'>
                      <li className='col-span-2'><strong>Jugador: </strong>{dataCharacter?.player}</li>
                      <li className='col-span-2'><strong>Personaje: </strong>{dataCharacter?.name}</li>
@@ -711,7 +725,7 @@ const CharacterSheet: React.FC = () => {
                      <li className='col-span-2'><strong>Descripcion: </strong>{dataCharacter?.description}</li>
                      <li className='col-span-2'><strong>Conocimientos: </strong>{getKnowledgeName(dataCharacter?.knowledge)}</li>
                   </ul>
-                  <table className='dialog-card '>
+                  <table className='dialog-table '>
                      <thead>
                         <tr><th colSpan={2}>Estadisticas</th></tr>
                      </thead>

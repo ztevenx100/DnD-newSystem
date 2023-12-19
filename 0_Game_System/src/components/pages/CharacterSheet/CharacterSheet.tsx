@@ -96,12 +96,12 @@ const CharacterSheet: React.FC = () => {
 
    // Listado del select characterJob
    const optionsCharacterJob = [
-      { value: 'HUN', name: 'Cazador' },
-      { value: 'BLA', name: 'Herrero' },
-      { value: 'ART', name: 'Artista' },
-      { value: 'SAG', name: 'Sabio' },
-      { value: 'PRI', name: 'Sacerdote' },
-      { value: 'STR', name: 'Estratega' },
+      { value: 'HUN', name: 'Cazador', extraPoint:'DEX,PER' },
+      { value: 'BLA', name: 'Herrero', extraPoint:'STR,DEX' },
+      { value: 'ART', name: 'Artista', extraPoint:'INT,CHA'},
+      { value: 'SAG', name: 'Sabio', extraPoint:'INT,PER' },
+      { value: 'PRI', name: 'Sacerdote', extraPoint:'CON,CHA' },
+      { value: 'STR', name: 'Estratega', extraPoint:'INT,CON' },
     ];
 
     // Listado de characterKnowledge
@@ -241,6 +241,29 @@ const CharacterSheet: React.FC = () => {
          ] },
    ];
 
+   // Listado del armas
+   const listWearpons = [
+      'Daga' ,
+      'Cuchillo de combate',
+      'Espada corta',
+      'Espada larga',
+      'Hacha de mano',
+      'Hacha grande',
+      'Martillo de guerra',
+      'Bastón',
+      'Lanza',
+      'Arco corto',
+      'Arco largo',
+      'Ballesta',
+      'Pico de curvo',
+      'Sai',
+      'Glaive',
+      'Pike',
+      'Baculo',
+      'Tomfas',
+      'Mancuernas',
+   ];
+
 
    const handleChangeCharacterLevel = (newLevel: number) => {
       // Actualizar el estado con el nuevo valor ingresado por el usuario
@@ -264,14 +287,24 @@ const CharacterSheet: React.FC = () => {
    const setAllValueClassesToZero = () => {
       setInputsStatsData(prevItems  => prevItems.map(item => ({ ...item, valueClass: 0 })));
    };
+   
+   const updStatsPoints = (selectedClass : string, selectedJob : string): void =>{
+      const updatedInputsStatsData = [...inputsStatsData];
+      const extraPoints = optionsCharacterJob.find(option => option.value === selectedJob)?.extraPoint || '';
 
-   const sumarTresVariables = (): number => {
-      return 2;
+      updatedInputsStatsData[0].valueClass = ( selectedClass === 'WAR' ? 2 : 0 ) + ( extraPoints.includes('STR') ? 1 : 0 );
+      updatedInputsStatsData[1].valueClass = ( selectedClass === 'MAG' ? 2 : 0 ) + ( extraPoints.includes('INT') ? 1 : 0 );
+      updatedInputsStatsData[2].valueClass = ( selectedClass === 'SCO' ? 2 : 0 ) + ( extraPoints.includes('DEX') ? 1 : 0 );
+      updatedInputsStatsData[3].valueClass = ( selectedClass === 'MED' ? 2 : 0 ) + ( extraPoints.includes('CON') ? 1 : 0 );
+      updatedInputsStatsData[4].valueClass = ( selectedClass === 'RES' ? 2 : 0 ) + ( extraPoints.includes('PER') ? 1 : 0 );
+      updatedInputsStatsData[5].valueClass = ( selectedClass === 'ACT' ? 2 : 0 ) + ( extraPoints.includes('CHA') ? 1 : 0 );
+      
+      setInputsStatsData(updatedInputsStatsData);
    };
    
    // Manejar el cambio en la selección characterClass
    const handleCharacterClassChange = (value: string) => {
-      setSelectedClassValue(value);
+      setSelectedClassValue((c) => c = value);
       
       // selectedCheckValues - Usar el método find para obtener el objeto con el valor específico
       const selectedOption = optionsCharacterClass.find(option => option.value === value);
@@ -279,8 +312,7 @@ const CharacterSheet: React.FC = () => {
       
       // inputsStatsData - Poner todos los valores de valueClass en cero
       setAllValueClassesToZero();
-      const sumStats:number = sumarTresVariables() ;
-      setInputsStatsData(prevItems => prevItems.map(item => item.id === selectedOption?.mainStat ? { ...item, valueClass: sumStats } : item ));
+      updStatsPoints(value, selectedJobValue);
       
       // skillClass - Llenar el valor de la habilidad principal
       setSelectedSkillValue("S"+selectedOption?.mainStat);
@@ -290,6 +322,8 @@ const CharacterSheet: React.FC = () => {
    // Manejar el cambio en la selección characterJob
    const handleCharacterJobSelectChange = (value: string) => {
       setSelectedJobValue(value);
+      
+      updStatsPoints(selectedClassValue, value);
    };
 
 
@@ -374,9 +408,8 @@ const CharacterSheet: React.FC = () => {
 				requiredElements[i].classList.remove('required-input');
 			}
 		}
-      console.log(fieldsRequired);
+      //console.log(fieldsRequired);
       
-
 		// Si hay campos vacíos, no enviar el formulario
 		if (hayCamposVacios) {
 			alert('Por favor, complete todos los campos obligatorios.');
@@ -410,10 +443,8 @@ const CharacterSheet: React.FC = () => {
       };
 
       setDataCharacter(newCharacter);
-
-      console.log(skillsAcquired);
+      //console.log(skillsAcquired);
       
-
       handleOpen();
     }
 
@@ -540,8 +571,15 @@ const CharacterSheet: React.FC = () => {
                   id="mainWeapon" 
                   placeholder="Arma principal" 
                   className="form-input mr-2 focus:border-black focus:shadow"
+                  list='wearpons'
                   onChange={(e) => setMainWeapon(e.target.value)}
+                  required
                />
+               <datalist id="wearpons">
+                  {listWearpons?.map((elem, index) => (
+                     <option key={index} value={elem}>{elem}</option>
+                  ))}
+               </datalist>
                <label htmlFor="secondaryWeapon" className="form-lbl bg-grey-lighter ">Arma secundaria</label>
                <input type="text" 
                   id="secondaryWeapon" 

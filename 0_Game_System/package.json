@@ -10,29 +10,29 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@material-tailwind/react": "^2.1.5",
-    "@unocss/config": "^0.57.1",
+    "@material-tailwind/react": "^2.1.8",
+    "@unocss/config": "^0.58.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router": "^6.19.0",
-    "react-router-dom": "^6.20.1",
+    "react-router": "^6.21.1",
+    "react-router-dom": "^6.21.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@types/react": "^18.2.42",
-    "@types/react-dom": "^18.2.17",
+    "@types/react": "^18.2.46",
+    "@types/react-dom": "^18.2.18",
     "@types/uuid": "^9.0.7",
-    "@typescript-eslint/eslint-plugin": "^6.13.2",
-    "@typescript-eslint/parser": "^6.13.2",
-    "@unocss/core": "^0.58.0",
-    "@unocss/preset-attributify": "^0.57.1",
-    "@unocss/preset-uno": "^0.57.1",
+    "@typescript-eslint/eslint-plugin": "^6.17.0",
+    "@typescript-eslint/parser": "^6.17.0",
+    "@unocss/core": "^0.58.3",
+    "@unocss/preset-attributify": "^0.58.3",
+    "@unocss/preset-uno": "^0.58.3",
     "@vitejs/plugin-react-swc": "^3.5.0",
-    "eslint": "^8.55.0",
+    "eslint": "^8.56.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
-    "typescript": "^5.3.2",
-    "unocss": "^0.57.7",
-    "vite": "^4.5.1"
+    "typescript": "^5.3.3",
+    "unocss": "^0.58.3",
+    "vite": "^5.0.10"
   }
 }

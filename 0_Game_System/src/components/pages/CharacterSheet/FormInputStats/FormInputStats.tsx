@@ -39,12 +39,13 @@ const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValu
             className="bg-dark text-light px-2 py-1" placement="right"
             content={
                 <div className="w-80">
-                <Typography className="font-medium">
+                <Typography className="font-medium" placeholder = ''>
                     {inputStats.label}
                 </Typography>
                 <Typography
                     variant="small"
                     className="font-normal opacity-80"
+                    placeholder = ''
                     >
                     {inputStats.description}
                 </Typography>

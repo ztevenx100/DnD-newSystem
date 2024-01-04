@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent } from 'react';
-import { Button, Dialog, DialogHeader, DialogBody, DialogFooter } from "@material-tailwind/react";
+import { Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip } from "@material-tailwind/react";
 import { v4 as uuidv4 } from 'uuid';
 
 import "@unocss/reset/tailwind.css";
@@ -8,6 +8,7 @@ import "./CharacterSheet.css";
 import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
 import SvgCharacter from '../../../components/UI/Icons/SvgCharacter';
 import SvgSaveCharacter from '../../../components/UI/Icons/SvgSaveCharacter';
+import SvgD4Roll from '../../../components/UI/Icons/SvgD4Roll';
 
 import { InputStats, SkillTypes, SkillsAcquired, InventoryObject } from '../../interfaces/typesCharacterSheet';
 
@@ -315,7 +316,7 @@ const CharacterSheet: React.FC = () => {
       updStatsPoints(value, selectedJobValue);
       
       // skillClass - Llenar el valor de la habilidad principal
-      setSelectedSkillValue("S"+selectedOption?.mainStat);
+      setSelectedSkillValue("S" + selectedOption?.mainStat);
 
    };
    
@@ -459,7 +460,30 @@ const CharacterSheet: React.FC = () => {
       //console.log(skillsAcquired);
       
       handleOpen();
-    }
+   }
+
+   const randomRoll = () => {
+      if (characterLevel > 1) return;
+
+      let randomNumber = Math.floor(Math.random() * 4) + 1;
+
+      const updatedInputsStatsData = [...inputsStatsData];
+
+      updatedInputsStatsData[0].valueDice = randomNumber;
+      randomNumber = Math.floor(Math.random() * 4) + 1;
+      updatedInputsStatsData[1].valueDice = randomNumber;
+      randomNumber = Math.floor(Math.random() * 4) + 1;
+      updatedInputsStatsData[2].valueDice = randomNumber;
+      randomNumber = Math.floor(Math.random() * 4) + 1;
+      updatedInputsStatsData[3].valueDice = randomNumber;
+      randomNumber = Math.floor(Math.random() * 4) + 1;
+      updatedInputsStatsData[4].valueDice = randomNumber;
+      randomNumber = Math.floor(Math.random() * 4) + 1;
+      updatedInputsStatsData[5].valueDice = randomNumber;
+      
+      setInputsStatsData(updatedInputsStatsData);
+      
+   }
 
    const getClassName = (id: string|undefined): string | undefined  => {
       return optionsCharacterClass.find(elem => elem.value === id)?.name;
@@ -500,7 +524,10 @@ const CharacterSheet: React.FC = () => {
         <form id='form-sheet' className="min-h-screen form-sheet grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4">
             
             {/* Informacion del jugador */}
-            <fieldset className="fieldset-form info-player col-span-2 md:col-span-2 lg:col-span-3 bg-white shadow-md rounded">
+            <fieldset className="fieldset-form form-title col-span-2 md:col-span-2 lg:col-span-3 shadow-lg rounded">
+               <h1 className='col-span-2 text-center font-bold'>Azar de las dos manos</h1>
+            </fieldset>
+            <fieldset className="fieldset-form info-player col-span-2 md:col-span-2 lg:col-span-3 bg-white shadow-lg rounded">
                <legend><SvgCharacter width={20} height={20} className={"inline"} /> Informacion del jugador </legend>
 
                <label htmlFor="player" className="form-lbl col-start-1 col-end-2 bg-grey-lighter ">Jugador</label>
@@ -552,8 +579,15 @@ const CharacterSheet: React.FC = () => {
             </fieldset>
 
             {/* Estadisticas del personaje */}
-            <fieldset className="fieldset-form stats-player row-span-3 col-span-1 col-start-1 bg-white shadow-md rounded">
+            <fieldset className="fieldset-form stats-player row-span-3 col-span-1 col-start-1 bg-white shadow-lg rounded">
                <legend>Estadisticas del personaje</legend>
+               <header className='stats-player-header col-span-3 col-start-3'>
+                  <Tooltip className="bg-dark text-light px-2 py-1" placement="top" content={ "Estadisticas al azar" } >
+                     <button className='btn-save-character' onClick={() => randomRoll()} >
+                        <SvgD4Roll className='btn-roll' width={30} height={30} />
+                     </button>
+                  </Tooltip>
+               </header>
 
                {/* STRENGTH */}
                <FormInputStats inputStats={inputsStatsData[0]} onSelectedValuesChange={handleStatsInputChange} />
@@ -576,7 +610,7 @@ const CharacterSheet: React.FC = () => {
             </fieldset>
 
             {/* Armamento inicial */}
-            <fieldset className="fieldset-form initial-armament col-span-1 row-span-1 col-start-1 md:col-start-2 bg-white shadow-md rounded">
+            <fieldset className="fieldset-form initial-armament col-span-1 row-span-1 col-start-1 md:col-start-2 bg-white shadow-lg rounded">
                <legend>Armamento inicial</legend>
 
                <label htmlFor="mainWeapon" className="form-lbl bg-grey-lighter ">Arma principal</label>
@@ -608,7 +642,7 @@ const CharacterSheet: React.FC = () => {
             </fieldset>
 
             {/* Habilidades */}
-            <fieldset className="fieldset-form skills-player col-span-1 row-span-2 col-start-1 md:col-start-2 bg-white shadow-md rounded">
+            <fieldset className="fieldset-form skills-player col-span-1 row-span-2 col-start-1 md:col-start-2 bg-white shadow-lg rounded">
                <legend>Habilidades</legend>
 
                <label htmlFor="alignment" className="form-lbl mt-2 ">Alineación</label>
@@ -634,7 +668,7 @@ const CharacterSheet: React.FC = () => {
             </fieldset>
 
             {/* Inventario */}
-            <fieldset className="fieldset-form inventory-player row-span-3 col-span-1 col-start-1 lg:col-start-3 lg:row-start-2 bg-white shadow-md rounded">
+            <fieldset className="fieldset-form inventory-player row-span-3 col-span-1 col-start-1 lg:col-start-3 lg:row-start-3 bg-white shadow-lg rounded">
                <legend>Inventario</legend>
 
                <label htmlFor="goldCoins" className="form-lbl col-span-3 bg-grey-lighter ">Monedero</label>
@@ -704,7 +738,7 @@ const CharacterSheet: React.FC = () => {
             {/* <div className='grid place-items-center fixed w-screen h-screen bg-black bg-opacity-60 backdrop-blur-sm ' style={{display:'none'}}/>
             <div className='relative bg-white m-4 rounded-lg shadow-2xl text-blue-gray-500 antialiased font-sans text-base font-light leading-relaxed w-full md:w-5/6 lg:w-3/4 2xl:w-3/5 min-w-[90%] md:min-w-[83.333333%] lg:min-w-[75%] 2xl:min-w-[60%] max-w-[90%] md:max-w-[83.333333%] lg:max-w-[75%] 2xl:max-w-[60%] dialog' style={{display:'none'}}/>
             <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg text-red-500 hover:bg-red-500/10 active:bg-red-500/30 mr-1 ' style={{display:'none'}}/>
-            <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-md shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85] ' style={{display:'none'}}/> 
+            <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-lg shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85] ' style={{display:'none'}}/> 
             <div className='className="h-[28rem] overflow-scroll"' style={{display:'none'}}/> */}
             {/* Modal/Dialog */}
             <Dialog
@@ -712,9 +746,10 @@ const CharacterSheet: React.FC = () => {
                size={"lg"}
                handler={handleOpenModal}
                className="dialog "
+               placeholder = ''
                >
-               <DialogHeader>Resumen de hoja de personaje</DialogHeader>
-               <DialogBody className="dialog-body grid grid-cols-3 gap-3">
+               <DialogHeader  placeholder = '' >Resumen de hoja de personaje</DialogHeader>
+               <DialogBody className="dialog-body grid grid-cols-3 gap-3"  placeholder = ''>
                   <ul className='dialog-card col-span-2 grid grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-3'>
                      <li className='col-span-2'><strong>Jugador: </strong>{dataCharacter?.player}</li>
                      <li className='col-span-2'><strong>Personaje: </strong>{dataCharacter?.name}</li>
@@ -779,12 +814,13 @@ const CharacterSheet: React.FC = () => {
                      ))}
                   </ul>
                </DialogBody>
-               <DialogFooter>
+               <DialogFooter placeholder = '' >
                   <Button
                      variant="text"
                      color="red"
                      onClick={() => handleOpen()}
                      className="mr-1"
+                     placeholder = ''
                   >
                      <span>Cancelar</span>
                   </Button>
@@ -792,6 +828,7 @@ const CharacterSheet: React.FC = () => {
                      variant="gradient"
                      className='btn-dialog-accept'
                      onClick={() => handleOpen()}
+                     placeholder = ''
                   >
                      <span>Guardar información</span>
                   </Button>

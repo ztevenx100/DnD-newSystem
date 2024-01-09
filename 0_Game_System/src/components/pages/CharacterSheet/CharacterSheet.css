@@ -396,14 +396,11 @@
 
 .stats-player-header{
     min-width: 80px;
-    height: 40px;
     display: flex;
     align-items: center;
     justify-content: end;
-    padding: 0.5rem 0.25rem;
     margin-right: 0.5rem;
     & .btn-roll{
         fill: var(--bg-color-btn-dice);
-        
     }
 }

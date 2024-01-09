@@ -5,12 +5,15 @@ import homeBackground from './assets/img/jpg/bg-home-01.jpg';
 
 import Navbar from './components/UI/Navbar/Navbar';
 import Footer from './components/UI/Footer/Footer';
-import Home from './components/pages/Home'
-import CharacterSheet from './components/pages/CharacterSheet/CharacterSheet'
+import Home from './components/pages/Home';
+import CharacterSheet from './components/pages/CharacterSheet/CharacterSheet';
+import UserCharacters from './components/pages/UserCharacters/UserCharacters';
 
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import './App.css'
+
+// Cargar imagen de fondo
 
 interface BackgroundContextType {
   backgroundImage: string;
@@ -36,6 +39,10 @@ const router = createBrowserRouter([
       {
         path: "/CharacterSheet",
         element: <CharacterSheet />,
+      },
+      {
+        path: "/UserCharacters",
+        element: <UserCharacters />,
       }
     ]
   },

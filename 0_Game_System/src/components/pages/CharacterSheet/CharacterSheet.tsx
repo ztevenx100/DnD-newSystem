@@ -1,18 +1,19 @@
 import React, { useState, ChangeEvent } from 'react';
-import { Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip } from "@material-tailwind/react";
 import { v4 as uuidv4 } from 'uuid';
 
+import { Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./CharacterSheet.css";
+import { useBackground } from '../../../App';
+
+import { InputStats, SkillTypes, SkillsAcquired, InventoryObject } from '../../interfaces/typesCharacterSheet';
+
 import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
 import SvgCharacter from '../../../components/UI/Icons/SvgCharacter';
 import SvgSaveCharacter from '../../../components/UI/Icons/SvgSaveCharacter';
 import SvgD4Roll from '../../../components/UI/Icons/SvgD4Roll';
 
-import { InputStats, SkillTypes, SkillsAcquired, InventoryObject } from '../../interfaces/typesCharacterSheet';
-
-import { useBackground } from '../../../App';
 import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
 import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
 import FormInputStats from './FormInputStats/FormInputStats';

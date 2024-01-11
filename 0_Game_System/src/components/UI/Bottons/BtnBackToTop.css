@@ -1,0 +1,27 @@
+
+:root{
+    --btn-main-background: #fff;
+    --btn-main-color: #000;
+}
+
+html{
+    scroll-behavior: smooth;
+}
+
+#back-top{
+    margin-top: 105vh;
+    position: sticky;
+    display: inline;
+    bottom: 0.75rem;
+    left: 0.75rem;
+}
+
+#back-top.btn-back-top{
+    padding: 18px;
+    background: var(--btn-main-background);
+    color: var(--btn-main-color);
+    border-radius: 10px;
+	box-shadow: 0 0 10px #00000035;
+    text-decoration: none;
+    z-index: 10;
+}

@@ -18,7 +18,7 @@ const UserCharacters: React.FC = () => {
 
     async function getList() {
         const { data } = await supabase.from("psu_personajes_usuario").select('psu_id, psu_usuario, psu_nombre, psu_nivel, usu_usuario(usu_nombre)');
-        console.log(data);
+        //console.log(data);
         if (data !== null) {
             setList(data as DBPersonajesUsuario[]);
         }

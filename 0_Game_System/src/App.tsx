@@ -5,7 +5,7 @@ import homeBackground from './assets/img/jpg/bg-home-01.jpg';
 
 import Navbar from './components/UI/Navbar/Navbar';
 import Footer from './components/UI/Footer/Footer';
-import BtnBackToTop from './components/UI/Bottons/btnBackToTop';
+import BtnBackToTop from './components/UI/Buttons/BtnBackToTop';
 import Home from './components/pages/Home';
 import CharacterSheet from './components/pages/CharacterSheet/CharacterSheet';
 import UserCharacters from './components/pages/UserCharacters/UserCharacters';
@@ -44,6 +44,10 @@ const router = createBrowserRouter([
       {
         path: "/UserCharacters",
         element: <UserCharacters />,
+      },
+      {
+        path: "/CharacterSheet/:user/:id",
+        element: <CharacterSheet />,
       }
     ]
   },

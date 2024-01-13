@@ -10,5 +10,8 @@ export interface DBPersonajesUsuario{
     psu_usuario: string;
     psu_nombre: string;
     psu_nivel: number;
-    usu_usuario: DBUsuario[];
+    psu_clase: string;
+    psu_raza: string;
+    psu_trabajo: string;
+    usu_usuario: DBUsuario;
 }

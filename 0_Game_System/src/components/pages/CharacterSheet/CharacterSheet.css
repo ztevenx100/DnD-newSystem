@@ -167,7 +167,7 @@
 /* stats-player */
 .fieldset-form.stats-player {
     grid-template-columns:repeat(3, 1fr);
-    grid-template-rows:repeat(4, 2.5rem);
+    grid-template-rows: 4rem repeat(20, 2.5rem);
     grid-row-gap: 0px;
 }
 .fieldset-form.stats-player .form-lbl{

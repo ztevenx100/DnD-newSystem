@@ -5,6 +5,7 @@ import {Link} from 'react-router-dom';
 import { DBPersonajesUsuario } from '../../interfaces/dbTypes';
 
 import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix } from "@material-tailwind/react";
+import SvgAddCharacter from '../../../components/UI/Icons/SvgAddCharacter';
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./UserCharacters.css";
@@ -13,14 +14,19 @@ import "./UserCharacters.css";
 const UserCharacters: React.FC = () => {
     
     const [list, setList] = useState<DBPersonajesUsuario[]>([]);
+    const [user,setUser] = useState('');
 
     useEffect(() => {
         getList();
+        getUser();
     }, []);
 
+    async function getUser() {
+        setUser('43c29fa1-d02c-4da5-90ea-51f451ed8952');
+    }
     async function getList() {
         const { data } = await supabase.from("psu_personajes_usuario").select('psu_id, psu_usuario, psu_nombre, psu_clase, psu_raza, psu_trabajo, psu_nivel, usu_usuario(usu_id, usu_nombre)');
-        console.log("datita: " , data);
+        console.log("data: " , data);
         if (data !== null) {
             setList(data as unknown as DBPersonajesUsuario[]);
         }
@@ -77,6 +83,11 @@ const UserCharacters: React.FC = () => {
                     </List>
                 </Card>
             </article>
+            <aside className='panel-save'>
+                <Link className='btn-save-character' to={`/CharacterSheet/${user}`} >
+                    <SvgAddCharacter className='icon' width={50} height={50} />
+                </Link>
+            </aside>
         </>
     );
 }

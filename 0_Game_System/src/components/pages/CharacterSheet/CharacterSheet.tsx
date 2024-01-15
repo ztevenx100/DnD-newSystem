@@ -83,7 +83,7 @@ const CharacterSheet: React.FC = () => {
 
    // Cargue de informacion de base de datos
    const params = useParams();
-   console.log("id:" + params.id);
+   //console.log("id:" + params.id);
 
    useEffect(() => {
       getUser();
@@ -95,25 +95,27 @@ const CharacterSheet: React.FC = () => {
       //console.log(data);
 
       if (data !== null) {
-         console.log("user: " + data + " id: " + data[0].usu_id + " nombre: " + data[0].usu_nombre);
+         //console.log("user: " + data + " id: " + data[0].usu_id + " nombre: " + data[0].usu_nombre);
          const nombre = data[0].usu_nombre;
          setPlayerName(nombre);
       }
    }
 
    async function getCharacter() {
+      if(params.id === null || params.id ===  undefined) return;
+      
       const { data } = await supabase.from("psu_personajes_usuario").select('psu_id, psu_usuario, psu_nombre, psu_clase, psu_raza, psu_trabajo, psu_nivel, psu_descripcion, psu_conocimientos').eq("psu_id",params.id);
       //console.log(data);
 
       if (data !== null) {
-         console.log("user: " + data + " id: " + data[0].psu_id + " nombre: " + data[0].psu_nombre);
+         //console.log("user: " + data + " id: " + data[0].psu_id + " nombre: " + data[0].psu_nombre);
          setCharacterName(data[0].psu_nombre);
-         setSelectedClassValue(data[0].psu_clase);
-         setSelectedRaceValue(data[0].psu_raza);
-         setSelectedJobValue(data[0].psu_trabajo);
+         setSelectedClassValue(data[0].psu_clase ?? '');
+         setSelectedRaceValue(data[0].psu_raza ?? '');
+         setSelectedJobValue(data[0].psu_trabajo ?? '');
          setCharacterLevel(data[0].psu_nivel);
          setCharacterDescription(data[0].psu_descripcion);
-         setSelectedCheckValues(data[0].psu_conocimientos);
+         setSelectedCheckValues(data[0]?.psu_conocimientos ?? '');
       }
    }
 
@@ -367,7 +369,6 @@ const CharacterSheet: React.FC = () => {
       updStatsPoints(selectedClassValue, value);
    };
 
-
    const handleSelectedCheckValuesChange = (newValues: string[]) => {
       setSelectedCheckValues(newValues);
     };
@@ -443,7 +444,7 @@ const CharacterSheet: React.FC = () => {
       );
     };
 
-    const handleOpenModal = () => {
+   const handleOpenModal = () => {
       // Obtener todos los elementos con el atributo required
       let requiredElements = Array.from(document.querySelectorAll('[required]')) as HTMLInputElement[];
 
@@ -463,7 +464,6 @@ const CharacterSheet: React.FC = () => {
             requiredElements[i].classList.remove('required-input');
 			}
 		}
-      //console.log(fieldsRequired);
       
 		// Si hay campos vacíos, no enviar el formulario
 		if (hayCamposVacios) {

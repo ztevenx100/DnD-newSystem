@@ -30,13 +30,13 @@ const FormCardCheckbox: React.FC<CardWithCheckboxesProps> = ({ id, label, checkb
   return (
     <>
         <label id={id} className="form-lbl-y col-start-1 md:row-start-6 col-span-2 md:col-span-4 bg-grey-lighter ">{label}</label>
-        <Card className="flex flex-row flex-wrap justify-around col-start-1 col-span-2 md:col-span-4 row-span-2 ml-2 mr-2 border-1 border-black">
+        <Card className="flex flex-row flex-wrap justify-around col-start-1 col-span-2 md:col-span-4 row-span-2 ml-2 mr-2 border-1 border-black" placeholder = ''>
 
             {checkboxes.map((checkbox) => (
-            <List className="flex-row" key={checkbox.id}>
-            <ListItem className="p-0">
+            <List className="flex-row" key={checkbox.id} placeholder = ''>
+            <ListItem className="p-0" placeholder = '' >
                 <label htmlFor={checkbox.id} className="flex w-full cursor-pointer items-center " >
-                    <ListItemPrefix className="mr-2">
+                    <ListItemPrefix className="mr-2" placeholder = ''>
                         <Checkbox 
                             id={checkbox.id}
                             ripple={false}
@@ -47,7 +47,7 @@ const FormCardCheckbox: React.FC<CardWithCheckboxesProps> = ({ id, label, checkb
                             value={checkbox.value}
                         />
                     </ListItemPrefix>
-                    <Typography color="black" className="font-medium mr-2">{checkbox.name}</Typography>
+                    <Typography color="black" className="font-medium mr-2" placeholder = ''>{checkbox.name}</Typography>
                 </label>
             </ListItem>
             </List>

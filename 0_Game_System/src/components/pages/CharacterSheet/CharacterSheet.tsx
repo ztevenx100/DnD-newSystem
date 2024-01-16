@@ -104,7 +104,9 @@ const CharacterSheet: React.FC = () => {
    async function getCharacter() {
       if(params.id === null || params.id ===  undefined) return;
       
-      const { data } = await supabase.from("psu_personajes_usuario").select('psu_id, psu_usuario, psu_nombre, psu_clase, psu_raza, psu_trabajo, psu_nivel, psu_descripcion, psu_conocimientos').eq("psu_id",params.id);
+      const { data } = await supabase.from("psu_personajes_usuario").select(
+         'psu_id, psu_usuario, psu_nombre, psu_clase, psu_raza, psu_trabajo, psu_nivel, psu_descripcion, psu_conocimientos, psu_fue_dado, psu_fue_clase, psu_fue_nivel, psu_int_dado, psu_int_clase, psu_int_nivel, psu_des_dado, psu_des_clase, psu_des_nivel, psu_con_dado, psu_con_clase, psu_con_nivel, psu_per_dado, psu_per_clase, psu_per_nivel, psu_car_dado, psu_car_clase, psu_car_nivel, psu_arma_principal, psu_arma_secundaria'
+      ).eq("psu_id",params.id);
       //console.log(data);
 
       if (data !== null) {
@@ -116,6 +118,30 @@ const CharacterSheet: React.FC = () => {
          setCharacterLevel(data[0].psu_nivel);
          setCharacterDescription(data[0].psu_descripcion);
          setSelectedCheckValues(data[0]?.psu_conocimientos ?? '');
+
+         const updatedInputsStatsData = [...inputsStatsData];
+         updatedInputsStatsData[0].valueDice = data[0].psu_fue_dado;
+         updatedInputsStatsData[0].valueClass = data[0].psu_fue_clase;
+         updatedInputsStatsData[0].valueLevel = data[0].psu_fue_nivel;
+         updatedInputsStatsData[1].valueDice = data[0].psu_int_dado;
+         updatedInputsStatsData[1].valueClass = data[0].psu_int_clase;
+         updatedInputsStatsData[1].valueLevel = data[0].psu_int_nivel;
+         updatedInputsStatsData[2].valueDice = data[0].psu_des_dado;
+         updatedInputsStatsData[2].valueClass = data[0].psu_des_clase;
+         updatedInputsStatsData[2].valueLevel = data[0].psu_des_nivel;
+         updatedInputsStatsData[3].valueDice = data[0].psu_con_dado;
+         updatedInputsStatsData[3].valueClass = data[0].psu_con_clase;
+         updatedInputsStatsData[3].valueLevel = data[0].psu_con_nivel;
+         updatedInputsStatsData[4].valueDice = data[0].psu_per_dado;
+         updatedInputsStatsData[4].valueClass = data[0].psu_per_clase;
+         updatedInputsStatsData[4].valueLevel = data[0].psu_per_nivel;
+         updatedInputsStatsData[5].valueDice = data[0].psu_car_dado;
+         updatedInputsStatsData[5].valueClass = data[0].psu_car_clase;
+         updatedInputsStatsData[5].valueLevel = data[0].psu_car_nivel;
+         setInputsStatsData(updatedInputsStatsData);
+
+         setMainWeapon(data[0].psu_arma_principal);
+         setSecondaryWeapon(data[0].psu_arma_secundaria);
       }
    }
 
@@ -506,9 +532,9 @@ const CharacterSheet: React.FC = () => {
    const randomRoll = () => {
       if (characterLevel > 1) return;
 
-      let randomNumber = Math.floor(Math.random() * 4) + 1;
-
       const updatedInputsStatsData = [...inputsStatsData];
+      
+      let randomNumber = Math.floor(Math.random() * 4) + 1;
 
       updatedInputsStatsData[0].valueDice = randomNumber;
       randomNumber = Math.floor(Math.random() * 4) + 1;
@@ -666,6 +692,7 @@ const CharacterSheet: React.FC = () => {
                className="form-input mr-2 focus:border-black focus:shadow"
                list='wearpons'
                onChange={(e) => setMainWeapon(e.target.value)}
+               value={mainWeapon}
                required
             />
             <datalist id="wearpons">
@@ -679,6 +706,7 @@ const CharacterSheet: React.FC = () => {
                placeholder="Arma secondaria" 
                className="form-input mr-2 focus:border-black focus:shadow"
                onChange={(e) => setSecondaryWeapon(e.target.value)}
+               value={secondaryWeapon}
             />
 
             <FormSelectInfoPlayer id="skillClass" label="Habilidad innata" options={optionsSkillClass} selectedValue={selectedSkillValue} onSelectChange={handleSelectSkillChange} ></FormSelectInfoPlayer>

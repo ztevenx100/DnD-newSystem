@@ -25,7 +25,7 @@ const UserCharacters: React.FC = () => {
         setUser('43c29fa1-d02c-4da5-90ea-51f451ed8952');
     }
     async function getList() {
-        const { data } = await supabase.from("psu_personajes_usuario").select('psu_id, psu_usuario, psu_nombre, psu_clase, psu_raza, psu_trabajo, psu_nivel, usu_usuario(usu_id, usu_nombre)');
+        const { data } = await supabase.from("pus_personajes_usuario").select('pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, usu_usuario(usu_id, usu_nombre)');
         console.log("data: " , data);
         if (data !== null) {
             setList(data as unknown as DBPersonajesUsuario[]);
@@ -53,14 +53,14 @@ const UserCharacters: React.FC = () => {
                 <Card className="w-full p-5 row-span-4" placeholder = ''>
                     <List  placeholder = ''>
                         {list.map((elem) => (
-                            <Link key={elem.psu_id} to={`/CharacterSheet/${elem.usu_usuario.usu_id}/${elem.psu_id}`}>
+                            <Link key={elem.pus_id} to={`/CharacterSheet/${elem.usu_usuario.usu_id}/${elem.pus_id}`}>
                                 <ListItem placeholder = ''>
                                     <ListItemPrefix placeholder = ''>
                                         <Avatar variant="circular" alt="candice" src="https://docs.material-tailwind.com/img/face-1.jpg"  placeholder = ''/>
                                     </ListItemPrefix>
                                     <div className=''>
                                         <Typography variant="h5" color="blue-gray" placeholder = ''>
-                                            {elem.psu_nombre}
+                                            {elem.pus_nombre}
                                         </Typography>
                                         <Typography variant="small" color="gray" className="font-normal" placeholder = ''>
                                             Azar de las dos manos
@@ -71,7 +71,7 @@ const UserCharacters: React.FC = () => {
                                     </div>
                                     <ListItemSuffix placeholder = ''>
                                         <Chip
-                                        value={elem.psu_nivel}
+                                        value={elem.pus_nivel}
                                         variant="ghost"
                                         size="sm"
                                         className="rounded-full"

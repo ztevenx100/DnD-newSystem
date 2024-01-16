@@ -88,6 +88,7 @@ const CharacterSheet: React.FC = () => {
    useEffect(() => {
       getUser();
       getCharacter();
+      getStats();
    }, []);
 
    async function getUser() {
@@ -104,45 +105,42 @@ const CharacterSheet: React.FC = () => {
    async function getCharacter() {
       if(params.id === null || params.id ===  undefined) return;
       
-      const { data } = await supabase.from("psu_personajes_usuario").select(
-         'psu_id, psu_usuario, psu_nombre, psu_clase, psu_raza, psu_trabajo, psu_nivel, psu_descripcion, psu_conocimientos, psu_fue_dado, psu_fue_clase, psu_fue_nivel, psu_int_dado, psu_int_clase, psu_int_nivel, psu_des_dado, psu_des_clase, psu_des_nivel, psu_con_dado, psu_con_clase, psu_con_nivel, psu_per_dado, psu_per_clase, psu_per_nivel, psu_car_dado, psu_car_clase, psu_car_nivel, psu_arma_principal, psu_arma_secundaria'
-      ).eq("psu_id",params.id);
+      const { data } = await supabase.from("pus_personajes_usuario").select(
+         'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria'
+      ).eq("pus_id",params.id);
       //console.log(data);
 
       if (data !== null) {
          //console.log("user: " + data + " id: " + data[0].psu_id + " nombre: " + data[0].psu_nombre);
-         setCharacterName(data[0].psu_nombre);
-         setSelectedClassValue(data[0].psu_clase ?? '');
-         setSelectedRaceValue(data[0].psu_raza ?? '');
-         setSelectedJobValue(data[0].psu_trabajo ?? '');
-         setCharacterLevel(data[0].psu_nivel);
-         setCharacterDescription(data[0].psu_descripcion);
-         setSelectedCheckValues(data[0]?.psu_conocimientos ?? '');
+         setCharacterName(data[0].pus_nombre);
+         setSelectedClassValue(data[0].pus_clase ?? '');
+         setSelectedRaceValue(data[0].pus_raza ?? '');
+         setSelectedJobValue(data[0].pus_trabajo ?? '');
+         setCharacterLevel(data[0].pus_nivel);
+         setCharacterDescription(data[0].pus_descripcion);
+         setSelectedCheckValues(data[0]?.pus_conocimientos ?? '');
 
-         const updatedInputsStatsData = [...inputsStatsData];
-         updatedInputsStatsData[0].valueDice = data[0].psu_fue_dado;
-         updatedInputsStatsData[0].valueClass = data[0].psu_fue_clase;
-         updatedInputsStatsData[0].valueLevel = data[0].psu_fue_nivel;
-         updatedInputsStatsData[1].valueDice = data[0].psu_int_dado;
-         updatedInputsStatsData[1].valueClass = data[0].psu_int_clase;
-         updatedInputsStatsData[1].valueLevel = data[0].psu_int_nivel;
-         updatedInputsStatsData[2].valueDice = data[0].psu_des_dado;
-         updatedInputsStatsData[2].valueClass = data[0].psu_des_clase;
-         updatedInputsStatsData[2].valueLevel = data[0].psu_des_nivel;
-         updatedInputsStatsData[3].valueDice = data[0].psu_con_dado;
-         updatedInputsStatsData[3].valueClass = data[0].psu_con_clase;
-         updatedInputsStatsData[3].valueLevel = data[0].psu_con_nivel;
-         updatedInputsStatsData[4].valueDice = data[0].psu_per_dado;
-         updatedInputsStatsData[4].valueClass = data[0].psu_per_clase;
-         updatedInputsStatsData[4].valueLevel = data[0].psu_per_nivel;
-         updatedInputsStatsData[5].valueDice = data[0].psu_car_dado;
-         updatedInputsStatsData[5].valueClass = data[0].psu_car_clase;
-         updatedInputsStatsData[5].valueLevel = data[0].psu_car_nivel;
-         setInputsStatsData(updatedInputsStatsData);
-
-         setMainWeapon(data[0].psu_arma_principal);
-         setSecondaryWeapon(data[0].psu_arma_secundaria);
+         setMainWeapon(data[0].pus_arma_principal);
+         setSecondaryWeapon(data[0].pus_arma_secundaria);
       }
+   }
+
+   async function getStats() {
+      if(params.id === null || params.id ===  undefined) return;
+
+      const { data } = await supabase.from("epe_estadistica_personaje").select( 'epe_sigla, epe_nombre, epe_num_dado, epe_num_clase, epe_num_nivel' ).eq("epe_personaje",params.id);
+      console.log('getStats ',data);
+
+      if (data !== null) {
+         const updatedInputsStatsData = [...inputsStatsData];
+         for (let i = 0; i < data.length; i++) {
+            updatedInputsStatsData[i].valueDice = data[i].epe_num_dado;
+            updatedInputsStatsData[i].valueClass = data[i].epe_num_clase;
+            updatedInputsStatsData[i].valueLevel = data[i].epe_num_nivel;
+        }
+        setInputsStatsData(updatedInputsStatsData);
+      }
+
    }
 
    // Listado del select characterClass

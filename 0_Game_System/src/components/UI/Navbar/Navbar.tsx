@@ -16,10 +16,7 @@ const Navbar: React.FC = () => {
           <Tooltip className="bg-dark text-light px-2 py-1" placement="right" content={"Inicio"} >
             <li><NavLink className={({ isActive }) => isActive ? 'active' : ''} to="/" ><SvgHome width="40" height="50" fill='none' stroke='#fff' /></NavLink></li>
           </Tooltip>
-          {/* CharacterSheet */}
-          <Tooltip className="bg-dark text-light px-2 py-1" placement="right" content={"Hoja de personaje"} >
-            <li><NavLink className={({ isActive }) => isActive ? 'active' : ''} to="/CharacterSheet" ><SvgPerson width="40" height="50" fill='#fff' /></NavLink></li>
-          </Tooltip>
+          {/* UserCharacters */}
           <Tooltip className="bg-dark text-light px-2 py-1" placement="right" content={"Lista de personajes"} >
             <li><NavLink className={({ isActive }) => isActive ? 'active' : ''} to="/UserCharacters" ><SvgPerson width="40" height="50" fill='#fff' /></NavLink></li>
           </Tooltip>

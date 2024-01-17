@@ -45,7 +45,7 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
     <>
 
         <input type="number" 
-            id={"levelSkill"+levelEvaluated} 
+            id={"levelSkill"+id} 
             placeholder="Nivel"
             className="form-input skill-level ml-2 row-span-2 focus:border-black focus:shadow"
             onChange={handleLevelChange}
@@ -53,7 +53,7 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
             readOnly
         />
         <select 
-            id={"skillTypeRing"+levelEvaluated} 
+            id={"skillTypeRing"+id} 
             className="form-input stats-sub mr-2"
             onChange={handleSkillTypeRingChange}
             value={values.ring}
@@ -65,7 +65,7 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
             ))}
         </select>
         <select 
-            id={"skill"+levelEvaluated} 
+            id={"skill"+id} 
             className="form-input stats-sub mr-2"
             value={values.name}
             onChange={(e: ChangeEvent<HTMLSelectElement>) => handleSkillChange(id, e.target.value)}

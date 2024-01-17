@@ -1,4 +1,6 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useEffect } from 'react';
+import { useParams} from 'react-router-dom';
+import supabase from '../../database/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip } from "@material-tailwind/react";
@@ -7,7 +9,9 @@ import "uno.css";
 import "./CharacterSheet.css";
 import { useBackground } from '../../../App';
 
+// Interfaces
 import { InputStats, SkillTypes, SkillsAcquired, InventoryObject } from '../../interfaces/typesCharacterSheet';
+//import { DBUsuario, DBPersonajesUsuario } from '../../interfaces/dbTypes';
 
 import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
 import SvgCharacter from '../../../components/UI/Icons/SvgCharacter';
@@ -23,7 +27,8 @@ const CharacterSheet: React.FC = () => {
    // Cambia la imagen de fondo cuando el componente se monta
    const { setBackgroundImage } = useBackground();
    setBackgroundImage(homeBackground);
-   
+
+   // Varibles - estados
    const [playerName, setPlayerName] = useState<string>('');
    const [characterName, setCharacterName] = useState<string>('');
    const [characterLevel,setCharacterLevel] = useState(1);
@@ -76,6 +81,75 @@ const CharacterSheet: React.FC = () => {
    }
    const [dataCharacter, setDataCharacter] = useState<DataCharacter>();
 
+   // Cargue de informacion de base de datos
+   const params = useParams();
+   //console.log("id:" + params.id);
+
+   useEffect(() => {
+      getUser();
+      getCharacter();
+      getStats();
+      getSkills();
+   }, []);
+
+   async function getUser() {
+      const { data } = await supabase.from("usu_usuario").select('usu_id, usu_nombre').eq("usu_id",params.user);
+      //console.log(data);
+
+      if (data !== null) {
+         //console.log("user: " + data + " id: " + data[0].usu_id + " nombre: " + data[0].usu_nombre);
+         const nombre = data[0].usu_nombre;
+         setPlayerName(nombre);
+      }
+   }
+
+   async function getCharacter() {
+      if(params.id === null || params.id ===  undefined) return;
+      
+      const { data } = await supabase.from("pus_personajes_usuario").select(
+         'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria'
+      ).eq("pus_id",params.id);
+      //console.log(data);
+
+      if (data !== null) {
+         //console.log("user: " + data + " id: " + data[0].psu_id + " nombre: " + data[0].psu_nombre);
+         setCharacterName(data[0].pus_nombre);
+         setSelectedClassValue(data[0].pus_clase ?? '');
+         setSelectedRaceValue(data[0].pus_raza ?? '');
+         setSelectedJobValue(data[0].pus_trabajo ?? '');
+         setCharacterLevel(data[0].pus_nivel);
+         setCharacterDescription(data[0].pus_descripcion);
+         setSelectedCheckValues(data[0]?.pus_conocimientos ?? '');
+
+         setMainWeapon(data[0].pus_arma_principal);
+         setSecondaryWeapon(data[0].pus_arma_secundaria);
+      }
+   }
+
+   async function getStats() {
+      if(params.id === null || params.id ===  undefined) return;
+
+      const { data } = await supabase.from("epe_estadistica_personaje").select( 'epe_sigla, epe_nombre, epe_num_dado, epe_num_clase, epe_num_nivel' ).eq("epe_personaje",params.id);
+      console.log('getStats ',data);
+
+      if (data !== null) {
+         const updatedInputsStatsData = [...inputsStatsData];
+         for (let i = 0; i < data.length; i++) {
+            updatedInputsStatsData[i].valueDice = data[i].epe_num_dado;
+            updatedInputsStatsData[i].valueClass = data[i].epe_num_clase;
+            updatedInputsStatsData[i].valueLevel = data[i].epe_num_nivel;
+        }
+        setInputsStatsData(updatedInputsStatsData);
+      }
+
+   }
+
+   async function getSkills() {
+      if(params.id === null || params.id ===  undefined) return;
+      
+      const { data } = await supabase.from("hpe_habilidad_personaje").select( 'hpe_habilidad, hpe_campo, hpe_alineacion' ).eq("hpe_personaje",params.id);
+      console.log('getSkills ',data);
+   }
 
    // Listado del select characterClass
    const optionsCharacterClass = [
@@ -327,7 +401,6 @@ const CharacterSheet: React.FC = () => {
       updStatsPoints(selectedClassValue, value);
    };
 
-
    const handleSelectedCheckValuesChange = (newValues: string[]) => {
       setSelectedCheckValues(newValues);
     };
@@ -403,7 +476,7 @@ const CharacterSheet: React.FC = () => {
       );
     };
 
-    const handleOpenModal = () => {
+   const handleOpenModal = () => {
       // Obtener todos los elementos con el atributo required
       let requiredElements = Array.from(document.querySelectorAll('[required]')) as HTMLInputElement[];
 
@@ -423,7 +496,6 @@ const CharacterSheet: React.FC = () => {
             requiredElements[i].classList.remove('required-input');
 			}
 		}
-      //console.log(fieldsRequired);
       
 		// Si hay campos vacíos, no enviar el formulario
 		if (hayCamposVacios) {
@@ -466,9 +538,9 @@ const CharacterSheet: React.FC = () => {
    const randomRoll = () => {
       if (characterLevel > 1) return;
 
-      let randomNumber = Math.floor(Math.random() * 4) + 1;
-
       const updatedInputsStatsData = [...inputsStatsData];
+      
+      let randomNumber = Math.floor(Math.random() * 4) + 1;
 
       updatedInputsStatsData[0].valueDice = randomNumber;
       randomNumber = Math.floor(Math.random() * 4) + 1;
@@ -515,328 +587,334 @@ const CharacterSheet: React.FC = () => {
    const getExtraSkillName = (id: string|undefined): string | undefined  => {
       return optionsSkillExtra.find(elem => elem.value === id)?.name;
    }
-   
    const getSkillName = (ring: string, id: number): string | undefined  => {
       return skillsTypes.find(skill => skill.id === ring)?.skills.find(ele => ele.id === id)?.name;
    }
 
-   
-    return (
-        <form id='form-sheet' className="min-h-screen form-sheet grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4">
+
+
+   return (
+      <form id='form-sheet' className="min-h-screen form-sheet grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4">
             
-            {/* Informacion del jugador */}
-            <fieldset className="fieldset-form form-title col-span-2 md:col-span-2 lg:col-span-3 shadow-lg rounded">
-               <h1 className='col-span-2 text-center font-bold'>Azar de las dos manos</h1>
-            </fieldset>
-            <fieldset className="fieldset-form info-player col-span-2 md:col-span-2 lg:col-span-3 bg-white shadow-lg rounded">
-               <legend><SvgCharacter width={20} height={20} className={"inline"} /> Informacion del jugador </legend>
+         {/* Informacion del jugador */}
+         <fieldset className="fieldset-form form-title col-span-2 md:col-span-2 lg:col-span-3 shadow-lg rounded">
+            <h1 className='col-span-2 text-center font-bold'>Azar de las dos manos</h1>
+         </fieldset>
+         <fieldset className="fieldset-form info-player col-span-2 md:col-span-2 lg:col-span-3 bg-white shadow-lg rounded">
+            <legend><SvgCharacter width={20} height={20} className={"inline"} /> Informacion del jugador </legend>
 
-               <label htmlFor="player" className="form-lbl col-start-1 col-end-2 bg-grey-lighter ">Jugador</label>
-               <input type="text" 
-                  id="player" 
-                  placeholder="Nombre del jugador" 
-                  className="form-input col-start-2 col-end-3 mr-2 focus:border-black focus:shadow"
-                  onChange={(e) => setPlayerName(e.target.value)}
-                  required
-               />
-               <label htmlFor="character" className="form-lbl col-start-1 col-end-2 bg-grey-lighter ">Personaje</label>
-               <input type="text" 
-                  id="character" 
-                  placeholder="Nombre del personaje" 
-                  className="form-input col-start-2 col-end-3 mr-2 focus:border-black focus:shadow"
-                  onChange={(e) => setCharacterName(e.target.value)}
-                  required
-               />
+            <label htmlFor="player" className="form-lbl col-start-1 col-end-2 bg-grey-lighter ">Jugador</label>
+            <input type="text" 
+               id="player" 
+               placeholder="Nombre del jugador" 
+               className="form-input col-start-2 col-end-3 mr-2 focus:border-black focus:shadow"
+               onChange={(e) => setPlayerName(e.target.value)}
+               value={playerName}
+               required
+               readOnly
+            />
+            <label htmlFor="character" className="form-lbl col-start-1 col-end-2 bg-grey-lighter ">Personaje</label>
+            <input type="text" 
+               id="character" 
+               placeholder="Nombre del personaje" 
+               className="form-input col-start-2 col-end-3 mr-2 focus:border-black focus:shadow"
+               onChange={(e) => setCharacterName(e.target.value)}
+               value={characterName}
+               required
+            />
 
-               <FormSelectInfoPlayer id="characterClass" label="Clase" options={optionsCharacterClass} selectedValue={selectedClassValue} onSelectChange={handleCharacterClassChange} ></FormSelectInfoPlayer>
+            <FormSelectInfoPlayer id="characterClass" label="Clase" options={optionsCharacterClass} selectedValue={selectedClassValue} onSelectChange={handleCharacterClassChange} ></FormSelectInfoPlayer>
+            
+            <FormSelectInfoPlayer id="characterRace" label="Raza" options={optionsCharacterRace} selectedValue={selectedRaceValue} onSelectChange={handleSelectRaceChange} ></FormSelectInfoPlayer>
+            
+            <FormSelectInfoPlayer id="characterJob" label="Trabajo" options={optionsCharacterJob} selectedValue={selectedJobValue} onSelectChange={handleCharacterJobSelectChange} ></FormSelectInfoPlayer>
+
+            <label htmlFor="characterLevel" className="form-lbl-y col-start-1 md:col-start-3 row-start-2 md:row-start-1 bg-grey-lighter ">Nivel</label>
+            <input type="number" 
+               id="characterLevel" 
+               placeholder="Nivel"
+               min="1" 
+               max="10"
+               className="form-input-y col-start-1 md:col-start-3 row-start-3 md:row-start-2 row-span-4 focus:border-black focus:shadow"
+               value={characterLevel}
+               onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeCharacterLevel(parseInt(e.target.value))}
+               required
+            />
+            <label htmlFor="characterDescription" className="form-lbl-y col-start-2 md:col-start-4 row-start-2 md:row-start-1 bg-grey-lighter ">Descripción</label>
+            <textarea
+               id="characterDescription" 
+               name='characterDescription'
+               placeholder="Descripcion del personaje" 
+               className="form-input-y col-start-2 md:col-start-4 row-start-3 md:row-start-2 row-span-4 focus:border-black focus:shadow"
+               onChange={(e) => setCharacterDescription(e.target.value)}
+               value={characterDescription}
+               required
+            />
+            
+            <FormCardCheckbox id="characterKnowledge" label="Conocimientos" checkboxes={checkboxesData} selectedValues={selectedCheckValues} onSelectedValuesChange={handleSelectedCheckValuesChange} />
+            
+         </fieldset>
+
+         {/* Estadisticas del personaje */}
+         <fieldset className="fieldset-form stats-player row-span-3 col-span-1 col-start-1 bg-white shadow-lg rounded">
+            <legend>Estadisticas del personaje</legend>
+            <header className='stats-player-header col-span-3 col-start-3'>
+               <Tooltip className="bg-dark text-light px-2 py-1" placement="top" content={ "Estadisticas al azar" } >
+                  <button className='btn-save-character' onClick={() => randomRoll()} >
+                     <SvgD4Roll className='btn-roll' width={30} height={30} />
+                  </button>
+               </Tooltip>
+            </header>
+
+            {/* STRENGTH */}
+            <FormInputStats inputStats={inputsStatsData[0]} onSelectedValuesChange={handleStatsInputChange} />
+            
+            {/* INTELLIGENCE */}
+            <FormInputStats inputStats={inputsStatsData[1]} onSelectedValuesChange={handleStatsInputChange} />
+            
+            {/* DEXTERITY */}
+            <FormInputStats inputStats={inputsStatsData[2]} onSelectedValuesChange={handleStatsInputChange} />
+
+            {/* CONSTITUTION */}
+            <FormInputStats inputStats={inputsStatsData[3]} onSelectedValuesChange={handleStatsInputChange} />
+            
+            {/* PERCEPTION */}
+            <FormInputStats inputStats={inputsStatsData[4]} onSelectedValuesChange={handleStatsInputChange} />
+
+            {/* CHARISMA */}
+            <FormInputStats inputStats={inputsStatsData[5]} onSelectedValuesChange={handleStatsInputChange} />
                
-               <FormSelectInfoPlayer id="characterRace" label="Raza" options={optionsCharacterRace} selectedValue={selectedRaceValue} onSelectChange={handleSelectRaceChange} ></FormSelectInfoPlayer>
-               
-               <FormSelectInfoPlayer id="characterJob" label="Trabajo" options={optionsCharacterJob} selectedValue={selectedJobValue} onSelectChange={handleCharacterJobSelectChange} ></FormSelectInfoPlayer>
+         </fieldset>
 
-               <label htmlFor="characterLevel" className="form-lbl-y col-start-1 md:col-start-3 row-start-2 md:row-start-1 bg-grey-lighter ">Nivel</label>
-               <input type="number" 
-                  id="characterLevel" 
-                  placeholder="Nivel"
-                  min="1" 
-                  max="10"
-                  className="form-input-y col-start-1 md:col-start-3 row-start-3 md:row-start-2 row-span-4 focus:border-black focus:shadow"
-                  value={characterLevel}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeCharacterLevel(parseInt(e.target.value))}
-                  required
-               />
-               <label htmlFor="characterDescription" className="form-lbl-y col-start-2 md:col-start-4 row-start-2 md:row-start-1 bg-grey-lighter ">Descripción</label>
-               <textarea
-                  id="characterDescription" 
-                  name='characterDescription'
-                  placeholder="Descripcion del personaje" 
-                  className="form-input-y col-start-2 md:col-start-4 row-start-3 md:row-start-2 row-span-4 focus:border-black focus:shadow"
-                  onChange={(e) => setCharacterDescription(e.target.value)}
-                  required
-               />
-               
-               <FormCardCheckbox id="characterKnowledge" label="Conocimientos" checkboxes={checkboxesData} selectedValues={selectedCheckValues} onSelectedValuesChange={handleSelectedCheckValuesChange} />
-                
-            </fieldset>
+         {/* Armamento inicial */}
+         <fieldset className="fieldset-form initial-armament col-span-1 row-span-1 col-start-1 md:col-start-2 bg-white shadow-lg rounded">
+            <legend>Armamento inicial</legend>
 
-            {/* Estadisticas del personaje */}
-            <fieldset className="fieldset-form stats-player row-span-3 col-span-1 col-start-1 bg-white shadow-lg rounded">
-               <legend>Estadisticas del personaje</legend>
-               <header className='stats-player-header col-span-3 col-start-3'>
-                  <Tooltip className="bg-dark text-light px-2 py-1" placement="top" content={ "Estadisticas al azar" } >
-                     <button className='btn-save-character' onClick={() => randomRoll()} >
-                        <SvgD4Roll className='btn-roll' width={30} height={30} />
-                     </button>
-                  </Tooltip>
-               </header>
-
-               {/* STRENGTH */}
-               <FormInputStats inputStats={inputsStatsData[0]} onSelectedValuesChange={handleStatsInputChange} />
-               
-               {/* INTELLIGENCE */}
-               <FormInputStats inputStats={inputsStatsData[1]} onSelectedValuesChange={handleStatsInputChange} />
-               
-               {/* DEXTERITY */}
-               <FormInputStats inputStats={inputsStatsData[2]} onSelectedValuesChange={handleStatsInputChange} />
-
-               {/* CONSTITUTION */}
-               <FormInputStats inputStats={inputsStatsData[3]} onSelectedValuesChange={handleStatsInputChange} />
-               
-               {/* PERCEPTION */}
-               <FormInputStats inputStats={inputsStatsData[4]} onSelectedValuesChange={handleStatsInputChange} />
-
-               {/* CHARISMA */}
-               <FormInputStats inputStats={inputsStatsData[5]} onSelectedValuesChange={handleStatsInputChange} />
-                
-            </fieldset>
-
-            {/* Armamento inicial */}
-            <fieldset className="fieldset-form initial-armament col-span-1 row-span-1 col-start-1 md:col-start-2 bg-white shadow-lg rounded">
-               <legend>Armamento inicial</legend>
-
-               <label htmlFor="mainWeapon" className="form-lbl bg-grey-lighter ">Arma principal</label>
-               <input type="text" 
-                  id="mainWeapon" 
-                  placeholder="Arma principal" 
-                  className="form-input mr-2 focus:border-black focus:shadow"
-                  list='wearpons'
-                  onChange={(e) => setMainWeapon(e.target.value)}
-                  required
-               />
-               <datalist id="wearpons">
-                  {listWearpons?.map((elem, index) => (
-                     <option key={index} value={elem}>{elem}</option>
-                  ))}
-               </datalist>
-               <label htmlFor="secondaryWeapon" className="form-lbl bg-grey-lighter ">Arma secundaria</label>
-               <input type="text" 
-                  id="secondaryWeapon" 
-                  placeholder="Arma secondaria" 
-                  className="form-input mr-2 focus:border-black focus:shadow"
-                  onChange={(e) => setSecondaryWeapon(e.target.value)}
-               />
-
-               <FormSelectInfoPlayer id="skillClass" label="Habilidad innata" options={optionsSkillClass} selectedValue={selectedSkillValue} onSelectChange={handleSelectSkillChange} ></FormSelectInfoPlayer>
-               
-               <FormSelectInfoPlayer id="skillExtra" label="Habilidad extra" options={optionsSkillExtra} selectedValue={selectedExtraSkillValue} onSelectChange={handleSelectExtraSkillChange} ></FormSelectInfoPlayer>
-                
-            </fieldset>
-
-            {/* Habilidades */}
-            <fieldset className="fieldset-form skills-player col-span-1 row-span-2 col-start-1 md:col-start-2 bg-white shadow-lg rounded">
-               <legend>Habilidades</legend>
-
-               <label htmlFor="alignment" className="form-lbl mt-2 ">Alineación</label>
-               <select 
-                  id="alignment"  
-                  className="form-input mr-2"
-                  onChange={(e) => handleAlingmentChange(e.target.value)}
-               >
-                  <option value=""/>
-                  <option value="orden">Orden</option>
-                  <option value="caos">Caos</option>
-               </select>
-
-               <label className="form-lbl-skills ml-2 mb-0 ">Nivel</label>
-               <label className="form-lbl-skills mr-2 mb-0 ">Anillo de poder</label>
-
-               <FormInputSkillsRing id={'0'} level={characterLevel} levelEvaluated={3} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[0]} onSelectChange={handleSelectedRingSkillChange} />
-
-               <FormInputSkillsRing id={'1'} level={characterLevel} levelEvaluated={6} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[1]} onSelectChange={handleSelectedRingSkillChange} />
-
-               <FormInputSkillsRing id={'2'} level={characterLevel} levelEvaluated={9} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[2]} onSelectChange={handleSelectedRingSkillChange} />
-                
-            </fieldset>
-
-            {/* Inventario */}
-            <fieldset className="fieldset-form inventory-player row-span-3 col-span-1 col-start-1 lg:col-start-3 lg:row-start-3 bg-white shadow-lg rounded">
-               <legend>Inventario</legend>
-
-               <label htmlFor="goldCoins" className="form-lbl col-span-3 bg-grey-lighter ">Monedero</label>
-               <label htmlFor="goldCoins" className="form-lbl-coins ml-2 col-span-1 bg-grey-lighter ">Oro</label>
-               <label htmlFor="silverCoins" className="form-lbl-coins col-span-1 bg-grey-lighter ">Plata</label>
-               <label htmlFor="bronzeCoins" className="form-lbl-coins mr-2 col-span-1 bg-grey-lighter ">Bronce</label>
-               <input type="number" 
-                  id="goldCoins" 
-                  placeholder="Oro" 
-                  className="form-input ml-2 col-span-1 focus:border-black focus:shadow"
-                  value={coins[0]}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(0, parseInt(e.target.value))}
-               />
-               <input type="number" 
-                  id="silverCoins" 
-                  placeholder="Plata" 
-                  className="form-input col-span-1 focus:border-black focus:shadow"
-                  value={coins[1]}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(1, parseInt(e.target.value))}
-               />
-               <input type="number" 
-                  id="bronzeCoins" 
-                  placeholder="Bronce" 
-                  className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
-                  value={coins[2]}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(2, parseInt(e.target.value))}
-               />
-
-               <label htmlFor="objectInput" className="form-lbl mb-2 col-span-3 bg-grey-lighter ">Bolsa</label>
-               {invObjects.map((elem) => (
-                  <label htmlFor={"object"+elem.id} key={"object"+elem.id} className="form-lbl object-item col-span-3 bg-grey-lighter "> {elem.name} 
-                     <input type="hidden" value={elem.id} />
-                     <input type="number" 
-                        id={"object"+elem.id} 
-                        placeholder="Cantidad" 
-                        className="form-input-count focus:border-black focus:shadow"
-                        value={elem.count}
-                        onChange={(e) => handleEditCount(elem.id, parseInt(e.target.value, 10))}
-                        readOnly={elem.readOnly}
-                     />
-                     <button type="button" className="btn-delete-object" onClick={() => handleDeleteObject(elem.id)} >X</button>
-                  </label>
+            <label htmlFor="mainWeapon" className="form-lbl bg-grey-lighter ">Arma principal</label>
+            <input type="text" 
+               id="mainWeapon" 
+               placeholder="Arma principal" 
+               className="form-input mr-2 focus:border-black focus:shadow"
+               list='wearpons'
+               onChange={(e) => setMainWeapon(e.target.value)}
+               value={mainWeapon}
+               required
+            />
+            <datalist id="wearpons">
+               {listWearpons?.map((elem, index) => (
+                  <option key={index} value={elem}>{elem}</option>
                ))}
-               <input type="text" 
-                  id="objectInput" 
-                  placeholder="Objeto" 
-                  className="form-input ml-2 col-span-2 row-span-2 focus:border-black focus:shadow"
-                  value={newObjectName}
-                  onChange={(e) => setNewObjectName(e.target.value)}
-               />
-               <input type="number" 
-                  id="countObject" 
-                  placeholder="Cantidad" 
-                  className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
-                  value={newObjectCount}
-                  onChange={(e) => setNewObjectCount(parseInt(e.target.value, 10))}
-               />
-               <button type="button" className="btn-add-object mr-2" onClick={() => handleAddObject()} >Añadir</button>
-                
-            </fieldset>
+            </datalist>
+            <label htmlFor="secondaryWeapon" className="form-lbl bg-grey-lighter ">Arma secundaria</label>
+            <input type="text" 
+               id="secondaryWeapon" 
+               placeholder="Arma secondaria" 
+               className="form-input mr-2 focus:border-black focus:shadow"
+               onChange={(e) => setSecondaryWeapon(e.target.value)}
+               value={secondaryWeapon}
+            />
 
-            <aside className='panel-save'>
-               <button className='btn-save-character' onClick={() => handleOpenModal()} >
-                  <SvgSaveCharacter className='icon' width={50} height={50} />
-               </button>
-            </aside>
-            {/* <div className='grid place-items-center fixed w-screen h-screen bg-black bg-opacity-60 backdrop-blur-sm ' style={{display:'none'}}/>
-            <div className='relative bg-white m-4 rounded-lg shadow-2xl text-blue-gray-500 antialiased font-sans text-base font-light leading-relaxed w-full md:w-5/6 lg:w-3/4 2xl:w-3/5 min-w-[90%] md:min-w-[83.333333%] lg:min-w-[75%] 2xl:min-w-[60%] max-w-[90%] md:max-w-[83.333333%] lg:max-w-[75%] 2xl:max-w-[60%] dialog' style={{display:'none'}}/>
-            <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg text-red-500 hover:bg-red-500/10 active:bg-red-500/30 mr-1 ' style={{display:'none'}}/>
-            <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-lg shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85] ' style={{display:'none'}}/> 
-            <div className='className="h-[28rem] overflow-scroll"' style={{display:'none'}}/> */}
-            {/* Modal/Dialog */}
-            <Dialog
-               open={ open }
-               size={"lg"}
-               handler={handleOpenModal}
-               className="dialog "
-               placeholder = ''
-               >
-               <DialogHeader  placeholder = '' >Resumen de hoja de personaje</DialogHeader>
-               <DialogBody className="dialog-body grid grid-cols-3 gap-3"  placeholder = ''>
-                  <ul className='dialog-card col-span-2 grid grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-3'>
-                     <li className='col-span-2'><strong>Jugador: </strong>{dataCharacter?.player}</li>
-                     <li className='col-span-2'><strong>Personaje: </strong>{dataCharacter?.name}</li>
-                     <li><strong>Nivel: </strong>{dataCharacter?.level}</li>
-                     <li><strong>Clase: </strong>{getClassName(dataCharacter?.class)}</li>
-                     <li><strong>Raza: </strong>{getRaceName(dataCharacter?.race)}</li>
-                     <li><strong>Trabajo: </strong>{getJobName(dataCharacter?.job)}</li>
-                     <li className='col-span-2'><strong>Descripcion: </strong>{dataCharacter?.description}</li>
-                     <li className='col-span-2'><strong>Conocimientos: </strong>{getKnowledgeName(dataCharacter?.knowledge)}</li>
-                  </ul>
-                  <table className='dialog-table '>
-                     <thead>
-                        <tr><th colSpan={2}>Estadisticas</th></tr>
-                     </thead>
-                     <tbody>
-                        <tr>
-                           <td>Fuerza</td>
-                           <td>{(dataCharacter?.str[0].dice||0) + (dataCharacter?.str[0].class||0) + (dataCharacter?.str[0].level||0) }</td>
-                        </tr>
-                        <tr>
-                           <td>Inteligencia</td>
-                           <td>{(dataCharacter?.int[0].dice||0) + (dataCharacter?.int[0].class||0) + (dataCharacter?.int[0].level||0) }</td>
-                        </tr>
-                        <tr>
-                           <td>Destreza</td>
-                           <td>{(dataCharacter?.dex[0].dice||0) + (dataCharacter?.dex[0].class||0) + (dataCharacter?.dex[0].level||0) }</td>
-                        </tr>
-                        <tr>
-                           <td>Constitucion</td>
-                           <td>{(dataCharacter?.con[0].dice||0) + (dataCharacter?.con[0].class||0) + (dataCharacter?.con[0].level||0) }</td>
-                        </tr>
-                        <tr>
-                           <td>Percepcion</td>
-                           <td>{(dataCharacter?.per[0].dice||0) + (dataCharacter?.per[0].class||0) + (dataCharacter?.per[0].level||0) }</td>
-                        </tr>
-                        <tr>
-                           <td>Carisma</td>
-                           <td>{(dataCharacter?.cha[0].dice||0) + (dataCharacter?.cha[0].class||0) + (dataCharacter?.cha[0].level||0) }</td>
-                        </tr>
-                     </tbody>
-                  </table>
-                  <ul className='dialog-card grid grid-cols-1 gap-3 '>
-                     <li><strong>Habilidad principal: </strong>{getMainSkillName(dataCharacter?.mainSkill)}</li>
-                     <li><strong>Habilidad extra: </strong>{getExtraSkillName(dataCharacter?.extraSkill)}</li>
-                     <li className=''><strong>Alineacion: </strong>{dataCharacter?.alignment}</li>
-                     {dataCharacter?.skills.map((elem) => (
-                        <li key={elem.id}><strong>Habilidad: </strong>{getSkillName(elem.ring,parseInt(elem.name))}</li>
-                     ))}
-                  </ul>
-                  <ul className='dialog-card grid grid-cols-1 gap-3 '>
-                     <li><strong>Arma principal: </strong>{dataCharacter?.mainWeapon}</li>
-                     <li><strong>Arma secundaria: </strong>{dataCharacter?.secondaryWeapon}</li>
-                  </ul>
-                  <ul className='dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 '>
-                     <li className='md:col-span-2 lg:col-span-3'><strong>Dinero: </strong> </li>
-                     <li>Oro: {dataCharacter?.coinsInv[0]}</li>
-                     <li>Plata: {dataCharacter?.coinsInv[1]}</li>
-                     <li>Cobre: {dataCharacter?.coinsInv[2]}</li>
-                     <li className='md:col-span-2 lg:col-span-3'>Inventario: </li>
-                     {dataCharacter?.inv.map((elem) => (
-                        <li key={elem.id}><strong>{elem.name}: </strong>{elem.count}</li>
-                     ))}
-                  </ul>
-               </DialogBody>
-               <DialogFooter placeholder = '' >
-                  <Button
-                     variant="text"
-                     color="red"
-                     onClick={() => handleOpen()}
-                     className="mr-1"
-                     placeholder = ''
-                  >
-                     <span>Cancelar</span>
-                  </Button>
-                  <Button
-                     variant="gradient"
-                     className='btn-dialog-accept'
-                     onClick={() => handleOpen()}
-                     placeholder = ''
-                  >
-                     <span>Guardar información</span>
-                  </Button>
-               </DialogFooter>
-            </Dialog>
+            <FormSelectInfoPlayer id="skillClass" label="Habilidad innata" options={optionsSkillClass} selectedValue={selectedSkillValue} onSelectChange={handleSelectSkillChange} ></FormSelectInfoPlayer>
             
-        </form>
+            <FormSelectInfoPlayer id="skillExtra" label="Habilidad extra" options={optionsSkillExtra} selectedValue={selectedExtraSkillValue} onSelectChange={handleSelectExtraSkillChange} ></FormSelectInfoPlayer>
+               
+         </fieldset>
+
+         {/* Habilidades */}
+         <fieldset className="fieldset-form skills-player col-span-1 row-span-2 col-start-1 md:col-start-2 bg-white shadow-lg rounded">
+            <legend>Habilidades</legend>
+
+            <label htmlFor="alignment" className="form-lbl mt-2 ">Alineación</label>
+            <select 
+               id="alignment"  
+               className="form-input mr-2"
+               onChange={(e) => handleAlingmentChange(e.target.value)}
+            >
+               <option value=""/>
+               <option value="orden">Orden</option>
+               <option value="caos">Caos</option>
+            </select>
+
+            <label className="form-lbl-skills ml-2 mb-0 ">Nivel</label>
+            <label className="form-lbl-skills mr-2 mb-0 ">Anillo de poder</label>
+
+            <FormInputSkillsRing id={'0'} level={characterLevel} levelEvaluated={3} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[0]} onSelectChange={handleSelectedRingSkillChange} />
+
+            <FormInputSkillsRing id={'1'} level={characterLevel} levelEvaluated={6} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[1]} onSelectChange={handleSelectedRingSkillChange} />
+
+            <FormInputSkillsRing id={'2'} level={characterLevel} levelEvaluated={9} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[2]} onSelectChange={handleSelectedRingSkillChange} />
+               
+         </fieldset>
+
+         {/* Inventario */}
+         <fieldset className="fieldset-form inventory-player row-span-3 col-span-1 col-start-1 lg:col-start-3 lg:row-start-3 bg-white shadow-lg rounded">
+            <legend>Inventario</legend>
+
+            <label htmlFor="goldCoins" className="form-lbl col-span-3 bg-grey-lighter ">Monedero</label>
+            <label htmlFor="goldCoins" className="form-lbl-coins ml-2 col-span-1 bg-grey-lighter ">Oro</label>
+            <label htmlFor="silverCoins" className="form-lbl-coins col-span-1 bg-grey-lighter ">Plata</label>
+            <label htmlFor="bronzeCoins" className="form-lbl-coins mr-2 col-span-1 bg-grey-lighter ">Bronce</label>
+            <input type="number" 
+               id="goldCoins" 
+               placeholder="Oro" 
+               className="form-input ml-2 col-span-1 focus:border-black focus:shadow"
+               value={coins[0]}
+               onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(0, parseInt(e.target.value))}
+            />
+            <input type="number" 
+               id="silverCoins" 
+               placeholder="Plata" 
+               className="form-input col-span-1 focus:border-black focus:shadow"
+               value={coins[1]}
+               onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(1, parseInt(e.target.value))}
+            />
+            <input type="number" 
+               id="bronzeCoins" 
+               placeholder="Bronce" 
+               className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
+               value={coins[2]}
+               onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(2, parseInt(e.target.value))}
+            />
+
+            <label htmlFor="objectInput" className="form-lbl mb-2 col-span-3 bg-grey-lighter ">Bolsa</label>
+            {invObjects.map((elem) => (
+               <label htmlFor={"object"+elem.id} key={"object"+elem.id} className="form-lbl object-item col-span-3 bg-grey-lighter "> {elem.name} 
+                  <input type="hidden" value={elem.id} />
+                  <input type="number" 
+                     id={"object"+elem.id} 
+                     placeholder="Cantidad" 
+                     className="form-input-count focus:border-black focus:shadow"
+                     value={elem.count}
+                     onChange={(e) => handleEditCount(elem.id, parseInt(e.target.value, 10))}
+                     readOnly={elem.readOnly}
+                  />
+                  <button type="button" className="btn-delete-object" onClick={() => handleDeleteObject(elem.id)} >X</button>
+               </label>
+            ))}
+            <input type="text" 
+               id="objectInput" 
+               placeholder="Objeto" 
+               className="form-input ml-2 col-span-2 row-span-2 focus:border-black focus:shadow"
+               value={newObjectName}
+               onChange={(e) => setNewObjectName(e.target.value)}
+            />
+            <input type="number" 
+               id="countObject" 
+               placeholder="Cantidad" 
+               className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
+               value={newObjectCount}
+               onChange={(e) => setNewObjectCount(parseInt(e.target.value, 10))}
+            />
+            <button type="button" className="btn-add-object mr-2" onClick={() => handleAddObject()} >Añadir</button>
+               
+         </fieldset>
+
+         <aside className='panel-save'>
+            <button className='btn-save-character' onClick={() => handleOpenModal()} >
+               <SvgSaveCharacter className='icon' width={50} height={50} />
+            </button>
+         </aside>
+         {/* <div className='grid place-items-center fixed w-screen h-screen bg-black bg-opacity-60 backdrop-blur-sm ' style={{display:'none'}}/>
+         <div className='relative bg-white m-4 rounded-lg shadow-2xl text-blue-gray-500 antialiased font-sans text-base font-light leading-relaxed w-full md:w-5/6 lg:w-3/4 2xl:w-3/5 min-w-[90%] md:min-w-[83.333333%] lg:min-w-[75%] 2xl:min-w-[60%] max-w-[90%] md:max-w-[83.333333%] lg:max-w-[75%] 2xl:max-w-[60%] dialog' style={{display:'none'}}/>
+         <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg text-red-500 hover:bg-red-500/10 active:bg-red-500/30 mr-1 ' style={{display:'none'}}/>
+         <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-lg shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85] ' style={{display:'none'}}/> 
+         <div className='className="h-[28rem] overflow-scroll"' style={{display:'none'}}/> */}
+         {/* Modal/Dialog */}
+         <Dialog
+            open={ open }
+            size={"lg"}
+            handler={handleOpenModal}
+            className="dialog "
+            placeholder = ''
+            >
+            <DialogHeader  placeholder = '' >Resumen de hoja de personaje</DialogHeader>
+            <DialogBody className="dialog-body grid grid-cols-3 gap-3"  placeholder = ''>
+               <ul className='dialog-card col-span-2 grid grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-3'>
+                  <li className='col-span-2'><strong>Jugador: </strong>{dataCharacter?.player}</li>
+                  <li className='col-span-2'><strong>Personaje: </strong>{dataCharacter?.name}</li>
+                  <li><strong>Nivel: </strong>{dataCharacter?.level}</li>
+                  <li><strong>Clase: </strong>{getClassName(dataCharacter?.class)}</li>
+                  <li><strong>Raza: </strong>{getRaceName(dataCharacter?.race)}</li>
+                  <li><strong>Trabajo: </strong>{getJobName(dataCharacter?.job)}</li>
+                  <li className='col-span-2'><strong>Descripcion: </strong>{dataCharacter?.description}</li>
+                  <li className='col-span-2'><strong>Conocimientos: </strong>{getKnowledgeName(dataCharacter?.knowledge)}</li>
+               </ul>
+               <table className='dialog-table '>
+                  <thead>
+                     <tr><th colSpan={2}>Estadisticas</th></tr>
+                  </thead>
+                  <tbody>
+                     <tr>
+                        <td>Fuerza</td>
+                        <td>{(dataCharacter?.str[0].dice||0) + (dataCharacter?.str[0].class||0) + (dataCharacter?.str[0].level||0) }</td>
+                     </tr>
+                     <tr>
+                        <td>Inteligencia</td>
+                        <td>{(dataCharacter?.int[0].dice||0) + (dataCharacter?.int[0].class||0) + (dataCharacter?.int[0].level||0) }</td>
+                     </tr>
+                     <tr>
+                        <td>Destreza</td>
+                        <td>{(dataCharacter?.dex[0].dice||0) + (dataCharacter?.dex[0].class||0) + (dataCharacter?.dex[0].level||0) }</td>
+                     </tr>
+                     <tr>
+                        <td>Constitucion</td>
+                        <td>{(dataCharacter?.con[0].dice||0) + (dataCharacter?.con[0].class||0) + (dataCharacter?.con[0].level||0) }</td>
+                     </tr>
+                     <tr>
+                        <td>Percepcion</td>
+                        <td>{(dataCharacter?.per[0].dice||0) + (dataCharacter?.per[0].class||0) + (dataCharacter?.per[0].level||0) }</td>
+                     </tr>
+                     <tr>
+                        <td>Carisma</td>
+                        <td>{(dataCharacter?.cha[0].dice||0) + (dataCharacter?.cha[0].class||0) + (dataCharacter?.cha[0].level||0) }</td>
+                     </tr>
+                  </tbody>
+               </table>
+               <ul className='dialog-card grid grid-cols-1 gap-3 '>
+                  <li><strong>Habilidad principal: </strong>{getMainSkillName(dataCharacter?.mainSkill)}</li>
+                  <li><strong>Habilidad extra: </strong>{getExtraSkillName(dataCharacter?.extraSkill)}</li>
+                  <li className=''><strong>Alineacion: </strong>{dataCharacter?.alignment}</li>
+                  {dataCharacter?.skills.map((elem) => (
+                     <li key={elem.id}><strong>Habilidad: </strong>{getSkillName(elem.ring,parseInt(elem.name))}</li>
+                  ))}
+               </ul>
+               <ul className='dialog-card grid grid-cols-1 gap-3 '>
+                  <li><strong>Arma principal: </strong>{dataCharacter?.mainWeapon}</li>
+                  <li><strong>Arma secundaria: </strong>{dataCharacter?.secondaryWeapon}</li>
+               </ul>
+               <ul className='dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 '>
+                  <li className='md:col-span-2 lg:col-span-3'><strong>Dinero: </strong> </li>
+                  <li>Oro: {dataCharacter?.coinsInv[0]}</li>
+                  <li>Plata: {dataCharacter?.coinsInv[1]}</li>
+                  <li>Cobre: {dataCharacter?.coinsInv[2]}</li>
+                  <li className='md:col-span-2 lg:col-span-3'>Inventario: </li>
+                  {dataCharacter?.inv.map((elem) => (
+                     <li key={elem.id}><strong>{elem.name}: </strong>{elem.count}</li>
+                  ))}
+               </ul>
+            </DialogBody>
+            <DialogFooter placeholder = '' >
+               <Button
+                  variant="text"
+                  color="red"
+                  onClick={() => handleOpen()}
+                  className="mr-1"
+                  placeholder = ''
+               >
+                  <span>Cancelar</span>
+               </Button>
+               <Button
+                  variant="gradient"
+                  className='btn-dialog-accept'
+                  onClick={() => handleOpen()}
+                  placeholder = ''
+               >
+                  <span>Guardar información</span>
+               </Button>
+            </DialogFooter>
+         </Dialog>
+            
+      </form>
     )
 }
 

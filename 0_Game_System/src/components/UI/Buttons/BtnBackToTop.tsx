@@ -2,7 +2,7 @@ import React from 'react';
 
 import './BtnBackToTop.css';
 
-import SvgArrowUp from '../../../components/UI/Icons/SvgArrowUp';
+import SvgArrowUp from '../Icons/SvgArrowUp';
 
 const BtnBackToTop: React.FC = () => {
     return (

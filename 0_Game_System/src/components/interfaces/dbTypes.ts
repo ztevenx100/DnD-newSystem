@@ -6,9 +6,22 @@ export interface DBUsuario{
 }
 
 export interface DBPersonajesUsuario{
-    psu_id: string;
-    psu_usuario: string;
-    psu_nombre: string;
-    psu_nivel: number;
-    usu_usuario: DBUsuario[];
+    pus_id: string;
+    pus_usuario: string;
+    pus_nombre: string;
+    pus_nivel: number;
+    pus_clase: string;
+    pus_raza: string;
+    pus_trabajo: string;
+    usu_usuario: DBUsuario;
+    pus_arma_principal: string;
+    pus_arma_secundaria: string;
+}
+
+export interface DBHabilidadPersonaje{
+  hpe_usuario: string;
+  hpe_personaje: string;
+  hpe_habilidad: string;
+  hpe_alineacion: string;
+  hpe_campo: string;
 }

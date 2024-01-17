@@ -17,3 +17,11 @@ export interface DBPersonajesUsuario{
     pus_arma_principal: string;
     pus_arma_secundaria: string;
 }
+
+export interface DBHabilidadPersonaje{
+  hpe_usuario: string;
+  hpe_personaje: string;
+  hpe_habilidad: string;
+  hpe_alineacion: string;
+  hpe_campo: string;
+}

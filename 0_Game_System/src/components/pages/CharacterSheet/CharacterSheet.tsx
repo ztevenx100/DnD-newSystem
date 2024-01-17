@@ -89,6 +89,7 @@ const CharacterSheet: React.FC = () => {
       getUser();
       getCharacter();
       getStats();
+      getSkills();
    }, []);
 
    async function getUser() {
@@ -141,6 +142,13 @@ const CharacterSheet: React.FC = () => {
         setInputsStatsData(updatedInputsStatsData);
       }
 
+   }
+
+   async function getSkills() {
+      if(params.id === null || params.id ===  undefined) return;
+      
+      const { data } = await supabase.from("hpe_habilidad_personaje").select( 'hpe_habilidad, hpe_campo, hpe_alineacion' ).eq("hpe_personaje",params.id);
+      console.log('getSkills ',data);
    }
 
    // Listado del select characterClass
@@ -579,7 +587,6 @@ const CharacterSheet: React.FC = () => {
    const getExtraSkillName = (id: string|undefined): string | undefined  => {
       return optionsSkillExtra.find(elem => elem.value === id)?.name;
    }
-   
    const getSkillName = (ring: string, id: number): string | undefined  => {
       return skillsTypes.find(skill => skill.id === ring)?.skills.find(ele => ele.id === id)?.name;
    }

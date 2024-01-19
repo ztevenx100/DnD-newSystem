@@ -1,6 +1,7 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
 import { useParams} from 'react-router-dom';
 import supabase from '../../database/supabase';
+//import { QueryResult, QueryData, QueryError } from '@supabase/supabase-js'
 import { v4 as uuidv4 } from 'uuid';
 
 import { Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip } from "@material-tailwind/react";
@@ -11,7 +12,7 @@ import { useBackground } from '../../../App';
 
 // Interfaces
 import { InputStats, SkillTypes, SkillsAcquired, InventoryObject } from '../../interfaces/typesCharacterSheet';
-//import { DBUsuario, DBPersonajesUsuario } from '../../interfaces/dbTypes';
+import { DBHabilidadPersonaje } from '../../interfaces/dbTypes';
 
 import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
 import SvgCharacter from '../../../components/UI/Icons/SvgCharacter';
@@ -119,7 +120,8 @@ const CharacterSheet: React.FC = () => {
          setSelectedJobValue(data[0].pus_trabajo ?? '');
          setCharacterLevel(data[0].pus_nivel);
          setCharacterDescription(data[0].pus_descripcion);
-         setSelectedCheckValues(data[0]?.pus_conocimientos ?? '');
+         let knowledge:string[] =data[0]?.pus_conocimientos.split(',') ?? [];
+         setSelectedCheckValues(knowledge);
 
          setMainWeapon(data[0].pus_arma_principal);
          setSecondaryWeapon(data[0].pus_arma_secundaria);
@@ -130,7 +132,7 @@ const CharacterSheet: React.FC = () => {
       if(params.id === null || params.id ===  undefined) return;
 
       const { data } = await supabase.from("epe_estadistica_personaje").select( 'epe_sigla, epe_nombre, epe_num_dado, epe_num_clase, epe_num_nivel' ).eq("epe_personaje",params.id);
-      console.log('getStats ',data);
+      //console.log('getStats ',data);
 
       if (data !== null) {
          const updatedInputsStatsData = [...inputsStatsData];
@@ -147,8 +149,20 @@ const CharacterSheet: React.FC = () => {
    async function getSkills() {
       if(params.id === null || params.id ===  undefined) return;
       
-      const { data } = await supabase.from("hpe_habilidad_personaje").select( 'hpe_habilidad, hpe_campo, hpe_alineacion' ).eq("hpe_personaje",params.id);
+      const { data } = await supabase.from("hpe_habilidad_personaje").select( 'hpe_habilidad, hpe_campo, hpe_alineacion, hab_habilidad(hab_id, hab_siglas)' ).eq("hpe_personaje",params.id).returns<DBHabilidadPersonaje[]>()
       console.log('getSkills ',data);
+
+      if (data !== null) {
+         let skillMain:string = '';
+         data.forEach(elem => {
+            skillMain = (Array.isArray(elem.hab_habilidad) ? elem.hab_habilidad[0]?.hab_siglas : elem.hab_habilidad?.hab_siglas) ?? '';
+            if (elem.hpe_campo === 'skillClass') {
+               setSelectedSkillValue(skillMain);
+            }else if (elem.hpe_campo === 'skillExtra') {
+               setSelectedExtraSkillValue(skillMain);
+            }
+         });
+      }
    }
 
    // Listado del select characterClass
@@ -531,6 +545,7 @@ const CharacterSheet: React.FC = () => {
 
       setDataCharacter(newCharacter);
       //console.log(skillsAcquired);
+      //console.log(newCharacter);
       
       handleOpen();
    }
@@ -572,8 +587,11 @@ const CharacterSheet: React.FC = () => {
    
    const getKnowledgeName = (ids: string[]|undefined): string | undefined  => {
       var names = '';
+      //console.log('ids', ids);
       
-      ids?.forEach((know) => {
+      if (ids === undefined) return names;
+
+      ids.forEach((know) => {
          names += checkboxesData.find(elem => elem.value === know)?.name + ', ';
       });
       names= (names.length > 2)?names.substring(0,names.length-2):names;

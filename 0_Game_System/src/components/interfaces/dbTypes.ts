@@ -24,4 +24,11 @@ export interface DBHabilidadPersonaje{
   hpe_habilidad: string;
   hpe_alineacion: string;
   hpe_campo: string;
+  hab_habilidad: {
+      hab_id: string;
+      hab_siglas: string;
+  } | {
+    hab_id: string;
+    hab_siglas: string;
+  } [] | null;
 }

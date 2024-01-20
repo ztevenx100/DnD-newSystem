@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent,useEffect } from 'react';
 import { SkillTypes, Skill, SkillsAcquired} from '../../../interfaces/typesCharacterSheet';
 
 
@@ -22,12 +22,20 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
   const [skillsList, setSkillsList] = useState<Skill[]>([]);
 
   const handleLevelChange = (e: ChangeEvent<HTMLInputElement>) => {
+
+    useEffect(() => {
+        setTimeout(() => {
+            handleSkillTypeRingChange(values.ring);
+            console.log('handleSkillTypeRingChange');
+            
+          }, 2000);
+      }, [values]);
+
     const newLevel = parseInt(e.target.value, 10) || 0;
         //updateSkills(newLevel);
     };
 
-    const handleSkillTypeRingChange = (e: ChangeEvent<HTMLSelectElement>) => {
-        const newTypeRing = e.target.value;
+    const handleSkillTypeRingChange = (newTypeRing: string) => {
         onSelectChange(id, newTypeRing, '');
         if (newTypeRing !== '') {
             // Aquí puedes ajustar las opciones del campo "skill" según el tipo de anillo seleccionado.
@@ -55,7 +63,7 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
         <select 
             id={"skillTypeRing"+id} 
             className="form-input stats-sub mr-2"
-            onChange={handleSkillTypeRingChange}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) => handleSkillTypeRingChange(e.target.value)}
             value={values.ring}
             disabled={level < levelEvaluated} // Deshabilita si el nivel es menor a levelEvaluated
         >
@@ -65,7 +73,7 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
             ))}
         </select>
         <select 
-            id={"skill"+id} 
+            id={"skillRing"+id} 
             className="form-input stats-sub mr-2"
             value={values.name}
             onChange={(e: ChangeEvent<HTMLSelectElement>) => handleSkillChange(id, e.target.value)}

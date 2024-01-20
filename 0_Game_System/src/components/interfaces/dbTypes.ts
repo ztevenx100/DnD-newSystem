@@ -26,9 +26,13 @@ export interface DBHabilidadPersonaje{
   hpe_campo: string;
   hab_habilidad: {
       hab_id: string;
+      hab_nombre: string;
+      had_estadistica_base: string;
       hab_siglas: string;
   } | {
     hab_id: string;
+    hab_nombre: string;
+    had_estadistica_base: string;
     hab_siglas: string;
   } [] | null;
 }

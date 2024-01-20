@@ -149,17 +149,40 @@ const CharacterSheet: React.FC = () => {
    async function getSkills() {
       if(params.id === null || params.id ===  undefined) return;
       
-      const { data } = await supabase.from("hpe_habilidad_personaje").select( 'hpe_habilidad, hpe_campo, hpe_alineacion, hab_habilidad(hab_id, hab_siglas)' ).eq("hpe_personaje",params.id).returns<DBHabilidadPersonaje[]>()
+      const { data } = await supabase.from("hpe_habilidad_personaje").select( 'hpe_habilidad, hpe_campo, hpe_alineacion, hab_habilidad(hab_id, hab_nombre, had_estadistica_base, hab_siglas)' ).eq("hpe_personaje",params.id).returns<DBHabilidadPersonaje[]>()
       console.log('getSkills ',data);
 
       if (data !== null) {
-         let skillMain:string = '';
+         let siglas:string = '';
          data.forEach(elem => {
-            skillMain = (Array.isArray(elem.hab_habilidad) ? elem.hab_habilidad[0]?.hab_siglas : elem.hab_habilidad?.hab_siglas) ?? '';
+            siglas = (Array.isArray(elem.hab_habilidad) ? elem.hab_habilidad[0]?.hab_siglas : elem.hab_habilidad?.hab_siglas) ?? '';
             if (elem.hpe_campo === 'skillClass') {
-               setSelectedSkillValue(skillMain);
+               setSelectedSkillValue(siglas);
             }else if (elem.hpe_campo === 'skillExtra') {
-               setSelectedExtraSkillValue(skillMain);
+               setSelectedExtraSkillValue(siglas);
+            }else if (elem.hpe_campo.includes('skillRing')) {
+               const numCampo: string = elem.hpe_campo.replace('skillRing', '');
+               let nombre = (Array.isArray(elem.hab_habilidad) ? elem.hab_habilidad[0]?.hab_nombre : elem.hab_habilidad?.hab_nombre) ?? '';
+               let estadisticaBase = (Array.isArray(elem.hab_habilidad) ? elem.hab_habilidad[0]?.had_estadistica_base : elem.hab_habilidad?.had_estadistica_base) ?? '';
+               
+               const selectTypeRing = document.getElementById('skillTypeRing' + numCampo) as HTMLSelectElement;
+               selectTypeRing.value = estadisticaBase;
+               console.log(selectTypeRing);
+               
+               const selectRing = document.getElementById('skillRing' + numCampo) as HTMLSelectElement;
+               const opcionExistente = Array.from(selectRing.options).find((opcion) => opcion.value === siglas);
+               if (!opcionExistente) {
+                  const nuevaOpcion = document.createElement('option');
+                  nuevaOpcion.value = siglas;
+                  nuevaOpcion.text = nombre;
+                  selectRing.add(nuevaOpcion);
+                  nuevaOpcion.selected = true;
+                  console.log(selectRing.value);
+               }
+               selectRing.value = siglas;
+               console.log(selectRing);
+
+               handleSelectedRingSkillChange(numCampo, estadisticaBase, nombre);
             }
          });
       }
@@ -234,11 +257,11 @@ const CharacterSheet: React.FC = () => {
       { value: 'SE01', name: 'Defensa con múltiples armas' },
       { value: 'SE02', name: 'Ataque de oportunidad' },
       { value: 'SE03', name: 'Ataque mágico' },
-      { value: 'SE04', name: 'Primeros auxilios' },
-      { value: 'SE05', name: 'Transmutación básica' },
+      { value: 'SE04', name: 'Potenciador de magia' },
+      { value: 'SE05', name: 'Ataque con arma arrojadiza' },
       { value: 'SE06', name: 'Supervivencia' },
       { value: 'SE07', name: 'Reanimación' },
-      { value: 'SE08', name: 'Primeros auxilios' },
+      { value: 'SE08', name: 'Auxilio urgente' },
       { value: 'SE09', name: 'Manitas' },
       { value: 'SE10', name: 'Desarme de trampas' },
       { value: 'SE11', name: 'Agudeza social' },
@@ -450,6 +473,8 @@ const CharacterSheet: React.FC = () => {
          updatedSkills[existingSkillIndex] = { id, name, description, ring };
 
          setSkillsAcquired(updatedSkills);
+         //console.log(updatedSkills);
+         
       } else {
          // Si la habilidad no existe, añadirla
          setSkillsAcquired(prevSkills => [...prevSkills, { id, name, description, ring }]);

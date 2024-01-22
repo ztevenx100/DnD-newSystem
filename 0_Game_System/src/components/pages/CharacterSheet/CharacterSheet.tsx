@@ -11,7 +11,7 @@ import "./CharacterSheet.css";
 import { useBackground } from '../../../App';
 
 // Interfaces
-import { InputStats, SkillTypes, SkillsAcquired, InventoryObject } from '../../interfaces/typesCharacterSheet';
+import { InputStats, SkillTypes, Skill, SkillsAcquired, InventoryObject } from '../../interfaces/typesCharacterSheet';
 import { DBHabilidadPersonaje } from '../../interfaces/dbTypes';
 
 import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
@@ -54,6 +54,7 @@ const CharacterSheet: React.FC = () => {
 
    const [open, setOpen] = React.useState(false);
    const handleOpen = () => setOpen(!open);
+   const [skillsRingList, setSkillsRingList]= useState<SkillTypes[]> ([{id:'0', skills: []},{id:'1', skills: []},{id:'2', skills: []}]);
 
    interface DataCharacter{
       id: string;
@@ -167,20 +168,15 @@ const CharacterSheet: React.FC = () => {
                
                const selectTypeRing = document.getElementById('skillTypeRing' + numCampo) as HTMLSelectElement;
                selectTypeRing.value = estadisticaBase;
-               console.log(selectTypeRing);
+               //console.log(selectTypeRing);
+
+               // Actualizar listado
+               handleSelectedTypeRingSkillChange(numCampo,estadisticaBase);
                
                const selectRing = document.getElementById('skillRing' + numCampo) as HTMLSelectElement;
-               const opcionExistente = Array.from(selectRing.options).find((opcion) => opcion.value === siglas);
-               if (!opcionExistente) {
-                  const nuevaOpcion = document.createElement('option');
-                  nuevaOpcion.value = siglas;
-                  nuevaOpcion.text = nombre;
-                  selectRing.add(nuevaOpcion);
-                  nuevaOpcion.selected = true;
-                  console.log(selectRing.value);
-               }
                selectRing.value = siglas;
                console.log(selectRing);
+               console.log(selectRing.value);
 
                handleSelectedRingSkillChange(numCampo, estadisticaBase, nombre);
             }
@@ -461,6 +457,12 @@ const CharacterSheet: React.FC = () => {
          formElement?.classList.remove('caos');
          formElement?.classList.remove('orden');
       }
+   };
+
+   const handleSelectedTypeRingSkillChange = (id: string, type: string) => {
+      const updatedSetSkillsRingList = [...skillsRingList];
+      updatedSetSkillsRingList[+id].skills = (skillsTypes.find(option => option.id === type) || {}).skills || [];
+      setSkillsRingList( updatedSetSkillsRingList );
    };
 
    const handleSelectedRingSkillChange = (id: string, ring: string, name: string) => {
@@ -781,11 +783,11 @@ const CharacterSheet: React.FC = () => {
             <label className="form-lbl-skills ml-2 mb-0 ">Nivel</label>
             <label className="form-lbl-skills mr-2 mb-0 ">Anillo de poder</label>
 
-            <FormInputSkillsRing id={'0'} level={characterLevel} levelEvaluated={3} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[0]} onSelectChange={handleSelectedRingSkillChange} />
+            <FormInputSkillsRing id={'0'} level={characterLevel} levelEvaluated={3} ringTypes={optionsRingTypes} skillList={skillsRingList[0]} values={skillsAcquired[0]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
 
-            <FormInputSkillsRing id={'1'} level={characterLevel} levelEvaluated={6} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[1]} onSelectChange={handleSelectedRingSkillChange} />
+            <FormInputSkillsRing id={'1'} level={characterLevel} levelEvaluated={6} ringTypes={optionsRingTypes} skillList={skillsRingList[1]} values={skillsAcquired[1]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
 
-            <FormInputSkillsRing id={'2'} level={characterLevel} levelEvaluated={9} ringTypes={optionsRingTypes} skillForType={skillsTypes} values={skillsAcquired[2]} onSelectChange={handleSelectedRingSkillChange} />
+            <FormInputSkillsRing id={'2'} level={characterLevel} levelEvaluated={9} ringTypes={optionsRingTypes} skillList={skillsRingList[2]} values={skillsAcquired[2]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
                
          </fieldset>
 

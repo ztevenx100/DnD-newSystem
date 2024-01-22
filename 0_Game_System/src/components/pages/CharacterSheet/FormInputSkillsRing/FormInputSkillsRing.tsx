@@ -12,14 +12,13 @@ interface FormInputSkillsRingProps{
     level: number;
     levelEvaluated: number;
     ringTypes: RingTypes[];
-    skillForType: SkillTypes[];
+    skillList: SkillTypes;
     values: SkillsAcquired;
     onSelectChange: (id: string, ring: string, skill: string) => void;
+    onSelectTypeChange: (id: string, type: string) => void;
 }
 
-const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, levelEvaluated, ringTypes, skillForType, values, onSelectChange }) => {
-
-  const [skillsList, setSkillsList] = useState<Skill[]>([]);
+const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, levelEvaluated, ringTypes, skillList, values, onSelectChange, onSelectTypeChange }) => {
 
   const handleLevelChange = (e: ChangeEvent<HTMLInputElement>) => {
 
@@ -36,12 +35,11 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
     };
 
     const handleSkillTypeRingChange = (newTypeRing: string) => {
+        console.log('skillRing' + id);
+        
         onSelectChange(id, newTypeRing, '');
         if (newTypeRing !== '') {
-            // Aquí puedes ajustar las opciones del campo "skill" según el tipo de anillo seleccionado.
-            // Por ahora, simplemente las reiniciamos al array original de habilidades.
-            const newSkillList: Skill[] = (skillForType.find(option => option.id === newTypeRing) || {}).skills || [];
-            setSkillsList( newSkillList );
+            onSelectTypeChange(id,newTypeRing)
         }
     };
 
@@ -80,7 +78,7 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
             disabled={!values.ring} // Deshabilita si no se ha seleccionado un tipo de anillo
         >
             <option value=""/>
-            {skillsList.map((elem,index) => (
+            {skillList.skills.map((elem,index) => (
                 <option key={index} value={elem.id}>{elem.name}</option>
             ))}
         </select>

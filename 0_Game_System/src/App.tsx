@@ -58,10 +58,10 @@ function App() {
       <aside className="bg-base" style={{ backgroundImage: `url(${backgroundImage})`}} >
         <main className='container mx-auto bg-main' >
             <RouterProvider router={router} />
-            <Footer />
         </main>
+        <BtnBackToTop/>
+        <Footer />
       </aside>
-      <BtnBackToTop/>
     </BackgroundContext.Provider>
   )
 }

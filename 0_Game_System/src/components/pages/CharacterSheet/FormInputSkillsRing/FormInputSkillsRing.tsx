@@ -29,9 +29,6 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
             
           }, 2000);
       }, [values]);
-
-    const newLevel = parseInt(e.target.value, 10) || 0;
-        //updateSkills(newLevel);
     };
 
     const handleSkillTypeRingChange = (newTypeRing: string) => {

@@ -11,7 +11,7 @@ import "./CharacterSheet.css";
 import { useBackground } from '../../../App';
 
 // Interfaces
-import { InputStats, SkillTypes, Skill, SkillsAcquired, InventoryObject } from '../../interfaces/typesCharacterSheet';
+import { InputStats, SkillTypes, SkillsAcquired, InventoryObject } from '../../interfaces/typesCharacterSheet';
 import { DBHabilidadPersonaje } from '../../interfaces/dbTypes';
 
 import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
@@ -348,7 +348,7 @@ const CharacterSheet: React.FC = () => {
 
    // Listado de armas
    const listWearpons = [
-      'Daga' ,
+      'Daga',
       'Cuchillo de combate',
       'Espada corta',
       'Espada larga',
@@ -477,7 +477,6 @@ const CharacterSheet: React.FC = () => {
          // Si la habilidad no existe, añadirla
          setSkillsAcquired(prevSkills => [...prevSkills, { id, name, description, ring }]);
       }
-      //console.log('handleSelectedRingSkillChange', skillsAcquired);
    };
 
    // Funcion para editar la cantidad de monedas
@@ -506,20 +505,20 @@ const CharacterSheet: React.FC = () => {
       setInvObjects((prevObjects) => prevObjects.filter((obj) => obj.id !== id));
    };
   
-    const handleEditCount = (id: number, newCount: number) => {
+   const handleEditCount = (id: number, newCount: number) => {
       setInvObjects((prevObjects) =>
          prevObjects.map((obj) =>
             obj.id === id ? { ...obj, count: newCount } : obj
          )
       );
-    };
+   };
 
    const handleOpenModal = () => {
       // Obtener todos los elementos con el atributo required
       let requiredElements = Array.from(document.querySelectorAll('[required]')) as HTMLInputElement[];
 
-		// Variable para rastrear si hay algún campo vacío
-		let hayCamposVacios = false;
+      // Variable para rastrear si hay algún campo vacío
+      let hayCamposVacios = false;
       let fieldsRequired: string[] = [];
 
 		// Iterar sobre los elementos y verificar si están vacíos
@@ -535,7 +534,7 @@ const CharacterSheet: React.FC = () => {
 			}
 		}
       
-		// Si hay campos vacíos, no enviar el formulario
+      // Si hay campos vacíos, no enviar el formulario
 		if (hayCamposVacios) {
 			alert('Por favor, complete todos los campos obligatorios.');
 			return;
@@ -612,7 +611,6 @@ const CharacterSheet: React.FC = () => {
    const getKnowledgeName = (ids: string[]|undefined): string | undefined  => {
       var names = '';
       //console.log('ids', ids);
-      
       if (ids === undefined) return names;
 
       ids.forEach((know) => {

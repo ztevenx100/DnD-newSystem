@@ -37,10 +37,10 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
     const handleSkillTypeRingChange = (newTypeRing: string) => {
         console.log('skillRing' + id);
         
-        onSelectChange(id, newTypeRing, '');
         if (newTypeRing !== '') {
             onSelectTypeChange(id,newTypeRing)
         }
+        onSelectChange(id, newTypeRing, '');
     };
 
     const handleSkillChange = (id: string, newSkill: string) => {
@@ -73,8 +73,8 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
         <select 
             id={"skillRing"+id} 
             className="form-input stats-sub mr-2"
-            value={values.name}
             onChange={(e: ChangeEvent<HTMLSelectElement>) => handleSkillChange(id, e.target.value)}
+            value={values.name}
             disabled={!values.ring} // Deshabilita si no se ha seleccionado un tipo de anillo
         >
             <option value=""/>

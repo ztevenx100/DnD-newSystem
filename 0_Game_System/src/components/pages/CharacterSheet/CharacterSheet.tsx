@@ -121,7 +121,7 @@ const CharacterSheet: React.FC = () => {
          setSelectedJobValue(data[0].pus_trabajo ?? '');
          setCharacterLevel(data[0].pus_nivel);
          setCharacterDescription(data[0].pus_descripcion);
-         let knowledge:string[] =data[0]?.pus_conocimientos.split(',') ?? [];
+         let knowledge:string[] = data[0]?.pus_conocimientos.split(',') ?? [];
          setSelectedCheckValues(knowledge);
 
          setMainWeapon(data[0].pus_arma_principal);
@@ -141,8 +141,8 @@ const CharacterSheet: React.FC = () => {
             updatedInputsStatsData[i].valueDice = data[i].epe_num_dado;
             updatedInputsStatsData[i].valueClass = data[i].epe_num_clase;
             updatedInputsStatsData[i].valueLevel = data[i].epe_num_nivel;
-        }
-        setInputsStatsData(updatedInputsStatsData);
+         }
+         setInputsStatsData(updatedInputsStatsData);
       }
 
    }
@@ -154,33 +154,29 @@ const CharacterSheet: React.FC = () => {
       console.log('getSkills ',data);
 
       if (data !== null) {
-         let siglas:string = '';
+         let siglas: string = '';
+         const updatedSkills = [...skillsAcquired];
          data.forEach(elem => {
             siglas = (Array.isArray(elem.hab_habilidad) ? elem.hab_habilidad[0]?.hab_siglas : elem.hab_habilidad?.hab_siglas) ?? '';
             if (elem.hpe_campo === 'skillClass') {
                setSelectedSkillValue(siglas);
-            }else if (elem.hpe_campo === 'skillExtra') {
+            } else if (elem.hpe_campo === 'skillExtra') {
                setSelectedExtraSkillValue(siglas);
-            }else if (elem.hpe_campo.includes('skillRing')) {
+            } else if (elem.hpe_campo.includes('skillRing')) {
                const numCampo: string = elem.hpe_campo.replace('skillRing', '');
-               let nombre = (Array.isArray(elem.hab_habilidad) ? elem.hab_habilidad[0]?.hab_nombre : elem.hab_habilidad?.hab_nombre) ?? '';
-               let estadisticaBase = (Array.isArray(elem.hab_habilidad) ? elem.hab_habilidad[0]?.had_estadistica_base : elem.hab_habilidad?.had_estadistica_base) ?? '';
+               let estadisticaBase: string = (Array.isArray(elem.hab_habilidad) ? elem.hab_habilidad[0]?.had_estadistica_base : elem.hab_habilidad?.had_estadistica_base) ?? '';
                
                const selectTypeRing = document.getElementById('skillTypeRing' + numCampo) as HTMLSelectElement;
                selectTypeRing.value = estadisticaBase;
                //console.log(selectTypeRing);
-
+               
                // Actualizar listado
                handleSelectedTypeRingSkillChange(numCampo,estadisticaBase);
-               
-               const selectRing = document.getElementById('skillRing' + numCampo) as HTMLSelectElement;
-               selectRing.value = siglas;
-               console.log(selectRing);
-               console.log(selectRing.value);
-
-               handleSelectedRingSkillChange(numCampo, estadisticaBase, nombre);
+               updatedSkills[+numCampo] = { id: numCampo, name: siglas, description: '', ring: estadisticaBase };
             }
          });
+         //console.log('getSkills - updatedSkills', updatedSkills);
+         setSkillsAcquired(updatedSkills);
       }
    }
 
@@ -375,7 +371,7 @@ const CharacterSheet: React.FC = () => {
 
 
    const handleChangeCharacterLevel = (newLevel: number) => {
-      // Actualizar el estado con el nuevo valor ingresado por el usuario
+      // Actualizar el nivel del personaje
       setCharacterLevel(newLevel);
    };
    // Manejar el cambio en la selección
@@ -384,11 +380,11 @@ const CharacterSheet: React.FC = () => {
    };
    
    const handleSelectSkillChange = (currentSkill: string) => {
-      // Actualizar el estado con el nuevo valor ingresado por el usuario
+      // Actualizar la habilidad principal del personaje
       setSelectedSkillValue(currentSkill);
    };
    const handleSelectExtraSkillChange = (currentSkill: string) => {
-      // Actualizar el estado con el nuevo valor ingresado por el usuario
+      // Actualizar la habilidad extra del personaje
       setSelectedExtraSkillValue(currentSkill);
    };
 
@@ -459,28 +455,29 @@ const CharacterSheet: React.FC = () => {
       }
    };
 
-   const handleSelectedTypeRingSkillChange = (id: string, type: string) => {
+   const handleSelectedTypeRingSkillChange = async (id: string, type: string) => {
       const updatedSetSkillsRingList = [...skillsRingList];
       updatedSetSkillsRingList[+id].skills = (skillsTypes.find(option => option.id === type) || {}).skills || [];
       setSkillsRingList( updatedSetSkillsRingList );
    };
 
-   const handleSelectedRingSkillChange = (id: string, ring: string, name: string) => {
+   const handleSelectedRingSkillChange = async (id: string, ring: string, name: string) => {
       const description = '';
       const existingSkillIndex = skillsAcquired.findIndex(elem => elem.id === id);
+      //console.log(' handleSelectedRingSkillChange: ', existingSkillIndex);
 
       if (existingSkillIndex !== -1) {
          // Si la habilidad ya existe, actualizarla
          const updatedSkills = [...skillsAcquired];
          updatedSkills[existingSkillIndex] = { id, name, description, ring };
-
-         setSkillsAcquired(updatedSkills);
-         //console.log(updatedSkills);
          
+         setSkillsAcquired(updatedSkills);
+         //console.log('handleSelectedRingSkillChange - updatedSkills', updatedSkills);
       } else {
          // Si la habilidad no existe, añadirla
          setSkillsAcquired(prevSkills => [...prevSkills, { id, name, description, ring }]);
       }
+      //console.log('handleSelectedRingSkillChange', skillsAcquired);
    };
 
    // Funcion para editar la cantidad de monedas

@@ -18,6 +18,7 @@ import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
 import SvgCharacter from '../../../components/UI/Icons/SvgCharacter';
 import SvgSaveCharacter from '../../../components/UI/Icons/SvgSaveCharacter';
 import SvgD4Roll from '../../../components/UI/Icons/SvgD4Roll';
+import SvgDeleteItem from '../../../components/UI/Icons/SvgDeleteItem';
 
 import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
 import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
@@ -48,8 +49,9 @@ const CharacterSheet: React.FC = () => {
    const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([{id:'0', name:'', description: '', ring:''},{id:'1', name:'', description: '', ring:''},{id:'2', name:'', description: '', ring:''}]);
    
    const [coins,setCoins] = useState<number[]>([0,3,0]);
-   const [invObjects, setInvObjects] = useState<InventoryObject[]>([{id:0, name:'Gema', description:'Articulo del elegido', count: 1, readOnly: true}]);
+   const [invObjects, setInvObjects] = useState<InventoryObject[]>([]);
    const [newObjectName, setNewObjectName] = useState<string>('');
+   const [newObjectDescription, setNewObjectDescription] = useState<string>('');
    const [newObjectCount, setNewObjectCount] = useState<number>(1);
 
    const [open, setOpen] = React.useState(false);
@@ -62,21 +64,21 @@ const CharacterSheet: React.FC = () => {
       name: string;
       class: string;
       race: string;
-      job:string;
+      job: string;
       level: number;
       description: string;
       knowledge: string[];
-      str: [{ dice: number, class:number, level: number }];
-      int: [{ dice: number, class:number, level: number }];
-      dex: [{ dice: number, class:number, level: number }];
-      con: [{ dice: number, class:number, level: number }];
-      per: [{ dice: number, class:number, level: number }];
-      cha: [{ dice: number, class:number, level: number }];
+      str: [{ dice: number, class: number, level: number }];
+      int: [{ dice: number, class: number, level: number }];
+      dex: [{ dice: number, class: number, level: number }];
+      con: [{ dice: number, class: number, level: number }];
+      per: [{ dice: number, class: number, level: number }];
+      cha: [{ dice: number, class: number, level: number }];
       mainWeapon: string;
       secondaryWeapon: string;
       alignment: string;
       mainSkill: string;
-      extraSkill: string,
+      extraSkill: string;
       skills: SkillsAcquired[];
       coinsInv: number[];
       inv: InventoryObject[];
@@ -92,11 +94,12 @@ const CharacterSheet: React.FC = () => {
       getCharacter();
       getStats();
       getSkills();
+      getInventory();
    }, []);
 
    async function getUser() {
       const { data } = await supabase.from("usu_usuario").select('usu_id, usu_nombre').eq("usu_id",params.user);
-      //console.log(data);
+      //console.log('getUser ',data);
 
       if (data !== null) {
          //console.log("user: " + data + " id: " + data[0].usu_id + " nombre: " + data[0].usu_nombre);
@@ -111,7 +114,7 @@ const CharacterSheet: React.FC = () => {
       const { data } = await supabase.from("pus_personajes_usuario").select(
          'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria'
       ).eq("pus_id",params.id);
-      //console.log(data);
+      //console.log('getCharacter ',data);
 
       if (data !== null) {
          //console.log("user: " + data + " id: " + data[0].psu_id + " nombre: " + data[0].psu_nombre);
@@ -152,7 +155,7 @@ const CharacterSheet: React.FC = () => {
       
       const { data } = await supabase.from("hpe_habilidad_personaje").select( 'hpe_habilidad, hpe_campo, hpe_alineacion, hab_habilidad(hab_id, hab_nombre, had_estadistica_base, hab_siglas)' ).eq("hpe_personaje",params.id).returns<DBHabilidadPersonaje[]>()
       console.log('getSkills ',data);
-
+      
       if (data !== null) {
          let siglas: string = '';
          const updatedSkills = [...skillsAcquired];
@@ -179,7 +182,26 @@ const CharacterSheet: React.FC = () => {
          setSkillsAcquired(updatedSkills);
       }
    }
+   
+   async function getInventory() {
+      if(params.id === null || params.id ===  undefined) return;
+      
+      const updatedInvObjects = [...invObjects];
+      const { data } = await supabase.from("inp_inventario_personaje").select( 'inp_id, inp_nombre, inp_descripcion, inp_cantidad ' ).eq( "inp_personaje", params.id );
+      console.log('getInventory ',data);
+      if (data !== null) {
+         data.forEach(elem => {
+            updatedInvObjects.push({ id: elem.inp_id, name: elem.inp_nombre, description: elem.inp_descripcion, count: elem.inp_cantidad, readOnly: false })
+         });
+         //console.log('getInventory - updatedInvObjects', updatedInvObjects);
+         setInvObjects(updatedInvObjects);
+      } else {
+         updatedInvObjects.push({id:'0', name:'Gema', description:'Articulo del elegido', count: 1, readOnly: true})
+         setInvObjects(updatedInvObjects);
+      }
 
+   }
+   
    // Listado del select characterClass
    const optionsCharacterClass = [
       { value: 'WAR', name: 'Guerrero', work: 'FOR', mainStat: 'STR' },
@@ -315,7 +337,7 @@ const CharacterSheet: React.FC = () => {
             {id: 3, name: 'Purificación', description: '', dice: ''},
             {id: 4, name: 'Toxicología', description: '', dice: ''},
             {id: 5, name: 'Inyección', description: '', dice: ''},
-            {id: 6, name: 'Corazon de hierro', description: '', dice: ''},
+            {id: 6, name: 'Corazón de hierro', description: '', dice: ''},
             {id: 7, name: 'Herramienta elemental', description: '', dice: ''},
             {id: 8, name: 'Escudo de Vida', description: '', dice: ''},
             {id: 9, name: 'Destreza del cirujano', description: '', dice: ''},
@@ -409,7 +431,7 @@ const CharacterSheet: React.FC = () => {
    
    // Manejar el cambio en la selección characterClass
    const handleCharacterClassChange = (value: string) => {
-      setSelectedClassValue((c) => c = value);
+      setSelectedClassValue(value);
       
       // selectedCheckValues - Usar el método find para obtener el objeto con el valor específico
       const selectedOption = optionsCharacterClass.find(option => option.value === value);
@@ -488,24 +510,31 @@ const CharacterSheet: React.FC = () => {
 
    // Funciones para adicionar, editar o eliminar objetos de la lista de inventario
    const handleAddObject = () => {
+      if(!newObjectName || newObjectName === '' ){
+         alert('Por favor digitar este campo');
+         document.getElementById('objectName')?.focus();
+         return;
+      }
+
       const newObject: InventoryObject = {
-         id: invObjects.length,
-         name: newObjectName || 'Nuevo Objeto',
-         description: 'Descripción del nuevo objeto',
+         id: uuidv4(),
+         name: newObjectName,
+         description: newObjectDescription || 'Descripción del nuevo objeto',
          count: newObjectCount,
          readOnly: false,
       };
 
       setInvObjects((prev) => [...prev, newObject]);
       setNewObjectName('');
+      setNewObjectDescription('');
       setNewObjectCount(1);
    };
   
-   const handleDeleteObject = (id: number) => {
+   const handleDeleteObject = (id: string) => {
       setInvObjects((prevObjects) => prevObjects.filter((obj) => obj.id !== id));
    };
   
-   const handleEditCount = (id: number, newCount: number) => {
+   const handleEditCount = (id: string, newCount: number) => {
       setInvObjects((prevObjects) =>
          prevObjects.map((obj) =>
             obj.id === id ? { ...obj, count: newCount } : obj
@@ -521,24 +550,24 @@ const CharacterSheet: React.FC = () => {
       let hayCamposVacios = false;
       let fieldsRequired: string[] = [];
 
-		// Iterar sobre los elementos y verificar si están vacíos
-		for (var i = 0; i < requiredElements.length; i++) {
-			if (requiredElements[i].value.trim() === '') {
-				hayCamposVacios = true;
-				// Puedes realizar acciones adicionales, como resaltar el campo vacío
-				requiredElements[i].classList.add('required-input');
+      // Iterar sobre los elementos y verificar si están vacíos
+      for (var i = 0; i < requiredElements.length; i++) {
+         if (requiredElements[i].value.trim() === '') {
+            hayCamposVacios = true;
+            // Puedes realizar acciones adicionales, como resaltar el campo vacío
+            requiredElements[i].classList.add('required-input');
             fieldsRequired.push(requiredElements[i].id);
          } else {
             // Restablecer el estilo si el campo no está vacío
             requiredElements[i].classList.remove('required-input');
-			}
-		}
+         }
+      }
       
       // Si hay campos vacíos, no enviar el formulario
-		if (hayCamposVacios) {
-			alert('Por favor, complete todos los campos obligatorios.');
-			return;
-		}
+      if (hayCamposVacios) {
+         alert('Por favor, digite todos los campos obligatorios.');
+         return;
+      }
 
       const newCharacter: DataCharacter = {
          id: uuidv4(),
@@ -593,7 +622,6 @@ const CharacterSheet: React.FC = () => {
       updatedInputsStatsData[5].valueDice = randomNumber;
       
       setInputsStatsData(updatedInputsStatsData);
-      
    }
 
    const getClassName = (id: string|undefined): string | undefined  => {
@@ -635,7 +663,7 @@ const CharacterSheet: React.FC = () => {
 
    return (
       <form id='form-sheet' className="min-h-screen form-sheet grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4">
-            
+         
          {/* Informacion del jugador */}
          <fieldset className="fieldset-form form-title col-span-2 md:col-span-2 lg:col-span-3 shadow-lg rounded">
             <h1 className='col-span-2 text-center font-bold'>Azar de las dos manos</h1>
@@ -723,7 +751,7 @@ const CharacterSheet: React.FC = () => {
 
             {/* CHARISMA */}
             <FormInputStats inputStats={inputsStatsData[5]} onSelectedValuesChange={handleStatsInputChange} />
-               
+            
          </fieldset>
 
          {/* Armamento inicial */}
@@ -757,7 +785,7 @@ const CharacterSheet: React.FC = () => {
             <FormSelectInfoPlayer id="skillClass" label="Habilidad innata" options={optionsSkillClass} selectedValue={selectedSkillValue} onSelectChange={handleSelectSkillChange} ></FormSelectInfoPlayer>
             
             <FormSelectInfoPlayer id="skillExtra" label="Habilidad extra" options={optionsSkillExtra} selectedValue={selectedExtraSkillValue} onSelectChange={handleSelectExtraSkillChange} ></FormSelectInfoPlayer>
-               
+            
          </fieldset>
 
          {/* Habilidades */}
@@ -783,14 +811,14 @@ const CharacterSheet: React.FC = () => {
             <FormInputSkillsRing id={'1'} level={characterLevel} levelEvaluated={6} ringTypes={optionsRingTypes} skillList={skillsRingList[1]} values={skillsAcquired[1]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
 
             <FormInputSkillsRing id={'2'} level={characterLevel} levelEvaluated={9} ringTypes={optionsRingTypes} skillList={skillsRingList[2]} values={skillsAcquired[2]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
-               
+            
          </fieldset>
 
          {/* Inventario */}
          <fieldset className="fieldset-form inventory-player row-span-3 col-span-1 col-start-1 lg:col-start-3 lg:row-start-3 bg-white shadow-lg rounded">
             <legend>Inventario</legend>
 
-            <label htmlFor="goldCoins" className="form-lbl col-span-3 bg-grey-lighter ">Monedero</label>
+            <label htmlFor="goldCoins" className="form-lbl col-span-3 mb-1 bg-grey-lighter ">Monedero</label>
             <label htmlFor="goldCoins" className="form-lbl-coins ml-2 col-span-1 bg-grey-lighter ">Oro</label>
             <label htmlFor="silverCoins" className="form-lbl-coins col-span-1 bg-grey-lighter ">Plata</label>
             <label htmlFor="bronzeCoins" className="form-lbl-coins mr-2 col-span-1 bg-grey-lighter ">Bronce</label>
@@ -816,37 +844,50 @@ const CharacterSheet: React.FC = () => {
                onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(2, parseInt(e.target.value))}
             />
 
-            <label htmlFor="objectInput" className="form-lbl mb-2 col-span-3 bg-grey-lighter ">Bolsa</label>
+            <label htmlFor="objectInput" className="form-lbl mb-1 col-span-3 bg-grey-lighter ">Bolsa</label>
+            {/* Listado de objetos */}
             {invObjects.map((elem) => (
-               <label htmlFor={"object"+elem.id} key={"object"+elem.id} className="form-lbl object-item col-span-3 bg-grey-lighter "> {elem.name} 
-                  <input type="hidden" value={elem.id} />
-                  <input type="number" 
-                     id={"object"+elem.id} 
-                     placeholder="Cantidad" 
-                     className="form-input-count focus:border-black focus:shadow"
-                     value={elem.count}
-                     onChange={(e) => handleEditCount(elem.id, parseInt(e.target.value, 10))}
-                     readOnly={elem.readOnly}
-                  />
-                  <button type="button" className="btn-delete-object" onClick={() => handleDeleteObject(elem.id)} >X</button>
-               </label>
+               <Tooltip className="bg-dark text-light px-2 py-1" key={"object"+elem.id} placement="left" content={ elem.description } >
+                  <label htmlFor={"object"+elem.id} className="form-lbl object-item col-span-3 bg-grey-lighter "> {elem.name} 
+                     <input type="hidden" value={elem.id} />
+                     <input type="number" 
+                        id={"object"+elem.id} 
+                        placeholder="Cantidad" 
+                        className="form-input-count focus:border-black focus:shadow"
+                        value={elem.count}
+                        onChange={(e) => handleEditCount(elem.id, parseInt(e.target.value, 10))}
+                        readOnly={elem.readOnly}
+                     />
+                     <button type="button" className="btn-delete-object" onClick={() => handleDeleteObject(elem.id)} >
+                        <SvgDeleteItem fill='var(--required-color)'/>
+                     </button>
+                  </label>
+               </Tooltip>
             ))}
+
             <input type="text" 
-               id="objectInput" 
+               id="objectName" 
                placeholder="Objeto" 
-               className="form-input ml-2 col-span-2 row-span-2 focus:border-black focus:shadow"
+               className="form-input ml-2 col-span-2 row-span-1 focus:border-black focus:shadow"
                value={newObjectName}
                onChange={(e) => setNewObjectName(e.target.value)}
             />
             <input type="number" 
-               id="countObject" 
+               id="objectCount" 
                placeholder="Cantidad" 
                className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
                value={newObjectCount}
                onChange={(e) => setNewObjectCount(parseInt(e.target.value, 10))}
             />
-            <button type="button" className="btn-add-object mr-2" onClick={() => handleAddObject()} >Añadir</button>
-               
+            <input type="text" 
+               id="objectDescription" 
+               placeholder="Descripción" 
+               className="form-input mx-2 col-span-3 row-span-2 focus:border-black focus:shadow"
+               value={newObjectDescription}
+               onChange={(e) => setNewObjectDescription(e.target.value)}
+            />
+            <button type="button" className="btn-add-object col-span-3 mx-2" onClick={() => handleAddObject()} >Añadir</button>
+            
          </fieldset>
 
          <aside className='panel-save'>
@@ -854,11 +895,13 @@ const CharacterSheet: React.FC = () => {
                <SvgSaveCharacter className='icon' width={50} height={50} />
             </button>
          </aside>
-         {/* <div className='grid place-items-center fixed w-screen h-screen bg-black bg-opacity-60 backdrop-blur-sm ' style={{display:'none'}}/>
+         {/* 
+         <div className='grid place-items-center fixed w-screen h-screen bg-black bg-opacity-60 backdrop-blur-sm ' style={{display:'none'}}/>
          <div className='relative bg-white m-4 rounded-lg shadow-2xl text-blue-gray-500 antialiased font-sans text-base font-light leading-relaxed w-full md:w-5/6 lg:w-3/4 2xl:w-3/5 min-w-[90%] md:min-w-[83.333333%] lg:min-w-[75%] 2xl:min-w-[60%] max-w-[90%] md:max-w-[83.333333%] lg:max-w-[75%] 2xl:max-w-[60%] dialog' style={{display:'none'}}/>
          <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg text-red-500 hover:bg-red-500/10 active:bg-red-500/30 mr-1 ' style={{display:'none'}}/>
          <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-lg shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85] ' style={{display:'none'}}/> 
-         <div className='className="h-[28rem] overflow-scroll"' style={{display:'none'}}/> */}
+         <div className='className="h-[28rem] overflow-scroll"' style={{display:'none'}}/> 
+         */}
          {/* Modal/Dialog */}
          <Dialog
             open={ open }
@@ -868,8 +911,8 @@ const CharacterSheet: React.FC = () => {
             placeholder = ''
             >
             <DialogHeader  placeholder = '' >Resumen de hoja de personaje</DialogHeader>
-            <DialogBody className="dialog-body grid grid-cols-3 gap-3"  placeholder = ''>
-               <ul className='dialog-card col-span-2 grid grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-3'>
+            <DialogBody className="dialog-body grid grid-cols-3 gap-4"  placeholder = ''>
+               <ul className='dialog-card col-span-2 grid grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-4'>
                   <li className='col-span-2'><strong>Jugador: </strong>{dataCharacter?.player}</li>
                   <li className='col-span-2'><strong>Personaje: </strong>{dataCharacter?.name}</li>
                   <li><strong>Nivel: </strong>{dataCharacter?.level}</li>

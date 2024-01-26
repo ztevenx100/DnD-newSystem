@@ -28,7 +28,7 @@ export interface SkillsAcquired {
 }
 
 export interface InventoryObject {
-    id: number;
+    id: string;
     name: string;
     description: string;
     count: number;

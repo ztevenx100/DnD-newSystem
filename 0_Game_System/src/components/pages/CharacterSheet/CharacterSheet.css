@@ -19,6 +19,7 @@
     --required-color: var(--bg-color-4);
     --bg-color-btn-dice: var(--bg-color-3);
     --bg-title: var(--bg-color-3);
+    --bg-loader: var(--bg-color-3);
 
     --un-border-opacity: 1;
     --border-card: 0.5rem;
@@ -35,12 +36,14 @@
         --bg-color-btn-dice: var(--bg-form-orden);
         --required-color: var(--bg-form-orden);
         --bg-title: var(--bg-form-orden);
+        --bg-loader: var(--bg-form-orden);
     }
     &.caos{
         background-color: var(--bg-form-caos);
         --bg-color-btn-dice: var(--bg-form-caos);
         --required-color: var(--bg-form-caos);
         --bg-title: var(--bg-form-caos);
+        --bg-loader: var(--bg-form-caos);
     }
 }
 
@@ -442,6 +445,15 @@
 }
 } */
 
+.container .screen-loader{
+    position: absolute;
+    left: 0;
+    min-width: 100%;
+    height: 100%;
+    background-color: #0004;
+    z-index: 10;
+}
+
 .loader {
     position: absolute;
     width: 100px;
@@ -464,7 +476,7 @@
         position: absolute;
         inset: -20px;
         margin: auto;
-        background: var(--bg-color-3);
+        background: var(--bg-loader);
         animation: diamondLoader 2s linear infinite;
     }
 }

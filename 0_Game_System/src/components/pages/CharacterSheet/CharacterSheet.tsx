@@ -54,8 +54,8 @@ const CharacterSheet: React.FC = () => {
    const [newObjectDescription, setNewObjectDescription] = useState<string>('');
    const [newObjectCount, setNewObjectCount] = useState<number>(1);
 
-   const [open, setOpen] = React.useState(false);
-   const [loading, setLoading] = React.useState(false);
+   const [open, setOpen] = useState(false);
+   const [loading, setLoading] = useState(true);
    const handleOpen = () => setOpen(!open);
    const [skillsRingList, setSkillsRingList]= useState<SkillTypes[]> ([{id:'0', skills: []},{id:'1', skills: []},{id:'2', skills: []}]);
 
@@ -91,19 +91,18 @@ const CharacterSheet: React.FC = () => {
    //console.log("id:" + params.id);
 
    useEffect(() => {
-      try {
-         setLoading(true);
-
-         getUser();
-         getCharacter();
-         getStats();
-         getSkills();
-         getInventory();
+      Promise.all ([
+         getUser(),
+         getCharacter(),
+         getStats(),
+         getSkills(),
+         getInventory(),
+      ]).finally(() => {
          setLoading(false);
-      } catch (error) {
-         setLoading(false);
-      }
+      }) 
    }, []);
+
+
 
    async function getUser() {
       const { data } = await supabase.from("usu_usuario").select('usu_id, usu_nombre').eq("usu_id",params.user);
@@ -676,7 +675,7 @@ const CharacterSheet: React.FC = () => {
    return (
       <>
       {loading && (
-         <aside className=''>
+         <aside className='screen-loader'>
             <span className='loader'></span>
          </aside>
       )}

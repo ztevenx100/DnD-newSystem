@@ -119,11 +119,12 @@ const CharacterSheet: React.FC = () => {
       if(params.id === null || params.id ===  undefined) return;
       
       const { data } = await supabase.from("pus_personajes_usuario").select(
-         'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria'
+         'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria,pus_cantidad_oro,pus_cantidad_plata,pus_cantidad_bronce'
       ).eq("pus_id",params.id);
       //console.log('getCharacter ',data);
 
       if (data !== null) {
+         const updatedCoins = [...coins];
          //console.log("user: " + data + " id: " + data[0].psu_id + " nombre: " + data[0].psu_nombre);
          setCharacterName(data[0].pus_nombre);
          setSelectedClassValue(data[0].pus_clase ?? '');
@@ -136,6 +137,10 @@ const CharacterSheet: React.FC = () => {
 
          setMainWeapon(data[0].pus_arma_principal);
          setSecondaryWeapon(data[0].pus_arma_secundaria);
+         updatedCoins[0] = data[0].pus_cantidad_oro;
+         updatedCoins[1] = data[0].pus_cantidad_plata;
+         updatedCoins[2] = data[0].pus_cantidad_bronce;
+         setCoins(updatedCoins);
       }
    }
 
@@ -876,7 +881,7 @@ const CharacterSheet: React.FC = () => {
                         readOnly={elem.readOnly}
                      />
                      <button type="button" className="btn-delete-object" onClick={() => handleDeleteObject(elem.id)} >
-                        <SvgDeleteItem fill='var(--required-color)'/>
+                        <SvgDeleteItem width={25} fill='var(--required-color)'/>
                      </button>
                   </label>
                </Tooltip>

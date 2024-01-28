@@ -4,7 +4,7 @@
 */
 
 :root{
-    --bg-form-neutral: #E5E7EB;
+    --bg-form-neutral: #C1C3C7;
     --bg-form-orden: #0E79B2;
     --bg-form-caos: #E4572E;
     --bg-color-1: #E5E7EB;
@@ -407,43 +407,6 @@
         fill: var(--bg-color-btn-dice);
     }
 }
-
-/* .loader {
-    position: absolute;
-    display: flex;
-    width: 200px;
-    height: 200px;
-    top: calc(50vh - 100px);
-    left: calc(50% - 100px);
-    z-index: 100;
-}
-.loader::after,
-.loader::before {
-    content: '';  
-    box-sizing: border-box;
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    border: 10px solid var(--bg-color-3);
-    position: absolute;
-    left: 0;
-    top: 0;
-    animation: animloader 2s linear infinite;
-}
-.loader::after {
-    animation-delay: 1s;
-}
-
-@keyframes animloader {
-0% {
-    transform: scale(0);
-    opacity: 1;
-}
-100% {
-    transform: scale(1);
-    opacity: 0;
-}
-} */
 
 .container .screen-loader{
     position: absolute;

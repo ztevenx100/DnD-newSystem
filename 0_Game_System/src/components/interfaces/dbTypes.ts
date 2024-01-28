@@ -16,6 +16,9 @@ export interface DBPersonajesUsuario{
     usu_usuario: DBUsuario;
     pus_arma_principal: string;
     pus_arma_secundaria: string;
+    pus_cantidad_oro: number;
+    pus_cantidad_plata: number;
+    pus_cantidad_bronce: number;
 }
 
 export interface DBHabilidadPersonaje{

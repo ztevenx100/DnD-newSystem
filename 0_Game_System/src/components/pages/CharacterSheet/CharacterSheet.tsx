@@ -55,6 +55,7 @@ const CharacterSheet: React.FC = () => {
    const [newObjectCount, setNewObjectCount] = useState<number>(1);
 
    const [open, setOpen] = React.useState(false);
+   const [loading, setLoading] = React.useState(false);
    const handleOpen = () => setOpen(!open);
    const [skillsRingList, setSkillsRingList]= useState<SkillTypes[]> ([{id:'0', skills: []},{id:'1', skills: []},{id:'2', skills: []}]);
 
@@ -90,11 +91,18 @@ const CharacterSheet: React.FC = () => {
    //console.log("id:" + params.id);
 
    useEffect(() => {
-      getUser();
-      getCharacter();
-      getStats();
-      getSkills();
-      getInventory();
+      try {
+         setLoading(true);
+
+         getUser();
+         getCharacter();
+         getStats();
+         getSkills();
+         getInventory();
+         setLoading(false);
+      } catch (error) {
+         setLoading(false);
+      }
    }, []);
 
    async function getUser() {
@@ -659,9 +667,19 @@ const CharacterSheet: React.FC = () => {
       return skillsTypes.find(skill => skill.id === ring)?.skills.find(ele => ele.id === id)?.name;
    }
 
+   function saveData() {
+      alert('guardar info');
+   }
+
 
 
    return (
+      <>
+      {loading && (
+         <aside className=''>
+            <span className='loader'></span>
+         </aside>
+      )}
       <form id='form-sheet' className="min-h-screen form-sheet grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4">
          
          {/* Informacion del jugador */}
@@ -895,6 +913,7 @@ const CharacterSheet: React.FC = () => {
                <SvgSaveCharacter className='icon' width={50} height={50} />
             </button>
          </aside>
+
          {/* 
          <div className='grid place-items-center fixed w-screen h-screen bg-black bg-opacity-60 backdrop-blur-sm ' style={{display:'none'}}/>
          <div className='relative bg-white m-4 rounded-lg shadow-2xl text-blue-gray-500 antialiased font-sans text-base font-light leading-relaxed w-full md:w-5/6 lg:w-3/4 2xl:w-3/5 min-w-[90%] md:min-w-[83.333333%] lg:min-w-[75%] 2xl:min-w-[60%] max-w-[90%] md:max-w-[83.333333%] lg:max-w-[75%] 2xl:max-w-[60%] dialog' style={{display:'none'}}/>
@@ -989,7 +1008,7 @@ const CharacterSheet: React.FC = () => {
                <Button
                   variant="gradient"
                   className='btn-dialog-accept'
-                  onClick={() => handleOpen()}
+                  onClick={() => saveData()}
                   placeholder = ''
                >
                   <span>Guardar información</span>
@@ -998,6 +1017,7 @@ const CharacterSheet: React.FC = () => {
          </Dialog>
             
       </form>
+      </>
     )
 }
 

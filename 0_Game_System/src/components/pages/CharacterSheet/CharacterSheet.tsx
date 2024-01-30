@@ -54,8 +54,9 @@ const CharacterSheet: React.FC = () => {
    const [newObjectDescription, setNewObjectDescription] = useState<string>('');
    const [newObjectCount, setNewObjectCount] = useState<number>(1);
 
-   const [open, setOpen] = useState(false);
-   const [loading, setLoading] = useState(true);
+   const [open, setOpen] = useState<boolean>(false);
+   const [loading, setLoading] = useState<boolean>(true);
+   const [newRecord, setNewRecord] = useState<boolean>(true);
    const handleOpen = () => setOpen(!open);
    const [skillsRingList, setSkillsRingList]= useState<SkillTypes[]> ([{id:'0', skills: []},{id:'1', skills: []},{id:'2', skills: []}]);
 
@@ -91,6 +92,11 @@ const CharacterSheet: React.FC = () => {
    //console.log("id:" + params.id);
 
    useEffect(() => {
+      if(params.id === null || params.id ===  undefined){
+         setNewRecord(true);
+      } else {
+         setNewRecord(false);
+      }
       Promise.all ([
          getUser(),
          getCharacter(),
@@ -671,8 +677,28 @@ const CharacterSheet: React.FC = () => {
       return skillsTypes.find(skill => skill.id === ring)?.skills.find(ele => ele.id === id)?.name;
    }
 
-   function saveData() {
-      alert('guardar info');
+   async function saveData() {
+      alert('guardar info '+newRecord);
+      if(newRecord){
+         // Añadir
+         // const { error } = await supabase
+         // .from('pus_personajes_usuario')
+         // .insert([
+         //    { some_column: 'someValue', other_column: 'otherValue' },
+         // ])
+         // .select()
+         // if(error) return;
+         alert('Registro añadido');
+      } else {
+         // Actualizar
+         // const { data, error } = await supabase
+         // .from('pus_personajes_usuario')
+         // .update({ other_column: 'otherValue' })
+         // .eq('some_column', 'someValue')
+         // .select()
+         alert('Registro actualizado');
+      }
+      handleOpen();
    }
 
 
@@ -914,7 +940,7 @@ const CharacterSheet: React.FC = () => {
 
          <aside className='panel-save'>
             <button className='btn-save-character' onClick={() => handleOpenModal()} >
-               <SvgSaveCharacter className='icon' width={50} height={50} />
+               <SvgSaveCharacter className='icon' width={40} height={40} />
             </button>
          </aside>
 

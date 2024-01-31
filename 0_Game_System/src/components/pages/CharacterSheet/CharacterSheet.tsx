@@ -58,7 +58,7 @@ const CharacterSheet: React.FC = () => {
    const [loading, setLoading] = useState<boolean>(true);
    const [newRecord, setNewRecord] = useState<boolean>(true);
    const handleOpen = () => setOpen(!open);
-   const [skillsRingList, setSkillsRingList]= useState<SkillTypes[]> ([{id:'0', skills: []},{id:'1', skills: []},{id:'2', skills: []}]);
+   const [skillsRingList, setSkillsRingList] = useState<SkillTypes[]> ([{id:'0', skills: []},{id:'1', skills: []},{id:'2', skills: []}]);
 
    interface DataCharacter{
       id: string;
@@ -97,6 +97,7 @@ const CharacterSheet: React.FC = () => {
       } else {
          setNewRecord(false);
       }
+
       Promise.all ([
          getUser(),
          getCharacter(),
@@ -105,13 +106,14 @@ const CharacterSheet: React.FC = () => {
          getInventory(),
       ]).finally(() => {
          setLoading(false);
-      }) 
+      })
    }, []);
 
 
 
    async function getUser() {
-      const { data } = await supabase.from("usu_usuario").select('usu_id, usu_nombre').eq("usu_id",params.user);
+      const { data } = await supabase.from("usu_usuario").select('usu_id, usu_nombre')
+         .eq("usu_id",params.user);
       //console.log('getUser ',data);
 
       if (data !== null) {
@@ -153,7 +155,8 @@ const CharacterSheet: React.FC = () => {
    async function getStats() {
       if(params.id === null || params.id ===  undefined) return;
 
-      const { data } = await supabase.from("epe_estadistica_personaje").select( 'epe_sigla, epe_nombre, epe_num_dado, epe_num_clase, epe_num_nivel' ).eq("epe_personaje",params.id);
+      const { data } = await supabase.from("epe_estadistica_personaje").select( 'epe_sigla, epe_nombre, epe_num_dado, epe_num_clase, epe_num_nivel' )
+         .eq("epe_personaje",params.id);
       //console.log('getStats ',data);
 
       if (data !== null) {
@@ -171,8 +174,9 @@ const CharacterSheet: React.FC = () => {
    async function getSkills() {
       if(params.id === null || params.id ===  undefined) return;
       
-      const { data } = await supabase.from("hpe_habilidad_personaje").select( 'hpe_habilidad, hpe_campo, hpe_alineacion, hab_habilidad(hab_id, hab_nombre, had_estadistica_base, hab_siglas)' ).eq("hpe_personaje",params.id).returns<DBHabilidadPersonaje[]>()
-      console.log('getSkills ',data);
+      const { data } = await supabase.from("hpe_habilidad_personaje").select( 'hpe_habilidad, hpe_campo, hpe_alineacion, hab_habilidad(hab_id, hab_nombre, had_estadistica_base, hab_siglas)' )
+         .eq("hpe_personaje",params.id).returns<DBHabilidadPersonaje[]>()
+      //console.log('getSkills ',data);
       
       if (data !== null) {
          let siglas: string = '';
@@ -205,8 +209,10 @@ const CharacterSheet: React.FC = () => {
       if(params.id === null || params.id ===  undefined) return;
       
       const updatedInvObjects = [...invObjects];
-      const { data } = await supabase.from("inp_inventario_personaje").select( 'inp_id, inp_nombre, inp_descripcion, inp_cantidad ' ).eq( "inp_personaje", params.id );
-      console.log('getInventory ',data);
+      const { data } = await supabase.from("inp_inventario_personaje").select( 'inp_id, inp_nombre, inp_descripcion, inp_cantidad ' )
+         .eq( "inp_personaje", params.id );
+      //console.log('getInventory ',data);
+
       if (data !== null) {
          data.forEach(elem => {
             updatedInvObjects.push({ id: elem.inp_id, name: elem.inp_nombre, description: elem.inp_descripcion, count: elem.inp_cantidad, readOnly: false })
@@ -678,29 +684,88 @@ const CharacterSheet: React.FC = () => {
    }
 
    async function saveData() {
-      alert('guardar info '+newRecord);
-      if(newRecord){
+      alert('Guardar info ' + newRecord);
+
+      Promise.all ([
+         uploadInfoCharacter(newRecord),
+         uploadStats(newRecord),
+         uploadSkill(newRecord),
+         uploadInventory(newRecord),
+      ]).finally(() => {
+         setNewRecord(false);
+      })
+      
+      handleOpen();
+   }
+
+   async function uploadInfoCharacter(isNewCharacter: boolean) {
+      // Actualizar
+      const { data, error } = await supabase
+      .from('pus_personajes_usuario')
+      .update({
+         pus_nombre: dataCharacter?.name,
+         pus_clase: dataCharacter?.class,
+         pus_raza: dataCharacter?.race,
+         pus_trabajo: dataCharacter?.job,
+         pus_nivel: dataCharacter?.level,
+         pus_descripcion: dataCharacter?.description,
+         pus_conocimientos: dataCharacter?.knowledge.join(),
+         pus_arma_principal: dataCharacter?.mainWeapon,
+         pus_arma_secundaria: dataCharacter?.secondaryWeapon,
+         pus_cantidad_oro: dataCharacter?.coinsInv[0],
+         pus_cantidad_plata: dataCharacter?.coinsInv[1],
+         pus_cantidad_bronce: dataCharacter?.coinsInv[2],
+      })
+      .eq("pus_id",params.id)
+      .select();
+      
+      if (data !== null) {
          // Añadir
          // const { error } = await supabase
          // .from('pus_personajes_usuario')
          // .insert([
          //    { some_column: 'someValue', other_column: 'otherValue' },
          // ])
-         // .select()
+         // .select();
          // if(error) return;
-         alert('Registro añadido');
-      } else {
-         // Actualizar
-         // const { data, error } = await supabase
-         // .from('pus_personajes_usuario')
-         // .update({ other_column: 'otherValue' })
-         // .eq('some_column', 'someValue')
-         // .select()
-         alert('Registro actualizado');
       }
-      handleOpen();
+      
+      if(error)return;
    }
+   async function uploadStats(isNewCharacter: boolean) {
+      for(const element of inputsStatsData) {
+         const { error } = await supabase
+         .from('epe_estadistica_personaje')
+         .update({ 
+            epe_nombre: element?.label,
+            epe_num_dado: element?.valueDice,
+            epe_num_clase: element?.valueClass,
+            epe_num_nivel: element?.valueLevel,
+         })
+         .eq("epe_personaje",params.id)
+         .eq("epe_sigla",element.id)
+         .select();
+      }
+   }
+   async function uploadSkill(isNewCharacter: boolean) {
+      for(const element of skillsAcquired) {
+         /*const { error } = await supabase
+         .from('hpe_personaje')
+         .update({ 
+            epe_nombre: element?.label,
+            epe_num_dado: element?.valueDice,
+            epe_num_clase: element?.valueClass,
+            epe_num_nivel: element?.valueLevel,
+         })
+         .eq("hpe_personaje",params.id)
+         .eq("hpe_habilidad",element.)
+         .select();*/
+      }
+      // hpe_habilidad, hpe_campo, hpe_alineacion, hab_habilidad(hab_id, hab_nombre, had_estadistica_base, hab_siglas)
+   }
+   async function uploadInventory(isNewCharacter: boolean) {
 
+   }
 
 
    return (

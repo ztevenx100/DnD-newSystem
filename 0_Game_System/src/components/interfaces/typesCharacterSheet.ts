@@ -34,3 +34,9 @@ export interface InventoryObject {
     count: number;
     readOnly: boolean;
 }
+
+export interface SkillFields {
+    id: string;
+    skill: string;
+    field: string;
+}

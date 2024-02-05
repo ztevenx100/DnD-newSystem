@@ -2,17 +2,19 @@
 export interface InputStats {
     id: string;
     label: string;
-    description: string;
+    description?: string;
     valueDice: number;
     valueClass: number;
     valueLevel: number;
 }
 
 export interface Skill {
-    id: number;
+    id: string;
+    value?: string;
     name: string;
-    description: string;
+    description?: string;
     dice: string;
+    alignment?: string;
 }
 
 export interface SkillTypes {
@@ -23,7 +25,7 @@ export interface SkillTypes {
 export interface SkillsAcquired {
     id: string;
     name: string;
-    description: string;
+    description?: string;
     ring: string;
 }
 

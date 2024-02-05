@@ -3,7 +3,7 @@ import { SkillTypes, SkillsAcquired} from '../../../interfaces/typesCharacterShe
 
 
 interface RingTypes {
-  value: string;
+  id: string;
   name: string;
 }
 
@@ -64,7 +64,7 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
         >
             <option value=""/>
             {ringTypes.map((ringType,index) => (
-                <option key={index} value={ringType.value}>{ringType.name}</option>
+                <option key={index} value={ringType.id}>{ringType.name}</option>
             ))}
         </select>
         <select 

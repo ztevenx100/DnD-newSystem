@@ -11,7 +11,7 @@ import "./CharacterSheet.css";
 import { useBackground } from '../../../App';
 
 // Interfaces
-import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields } from '../../interfaces/typesCharacterSheet';
+import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields,Skill } from '../../interfaces/typesCharacterSheet';
 import { DBHabilidadPersonaje } from '../../interfaces/dbTypes';
 
 import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
@@ -60,6 +60,9 @@ const CharacterSheet: React.FC = () => {
    const [loading, setLoading] = useState<boolean>(true);
    const [newRecord, setNewRecord] = useState<boolean>(true);
    const handleOpen = () => setOpen(!open);
+   
+   const [optionSkillClass, setOptionsSkillClass] = useState<Skill[]>([]);
+
 
    interface DataCharacter{
       id: string;
@@ -101,6 +104,7 @@ const CharacterSheet: React.FC = () => {
 
       Promise.all ([
          getUser(),
+         getListSkill(),
          getCharacter(),
          getStats(),
          getSkills(),
@@ -109,8 +113,6 @@ const CharacterSheet: React.FC = () => {
          setLoading(false);
       })
    }, []);
-
-
 
    async function getUser() {
       const { data } = await supabase.from("usu_usuario").select('usu_id, usu_nombre')
@@ -123,7 +125,23 @@ const CharacterSheet: React.FC = () => {
          setPlayerName(nombre);
       }
    }
+   async function getListSkill() {
+      const { data } = await supabase.from("hab_habilidad").select( 'hab_id, hab_nombre, hab_siglas, hab_tipo' )
+         .eq("hab_tipo","C")
+         .order('hab_tipo', {ascending: true});
 
+      if (data !== null){
+         const updatedOptionSkillClass = [...optionSkillClass];
+         for (let i = 0; i < data.length; i++) {
+            if (data[i].hab_tipo === 'C'){
+               updatedOptionSkillClass.push({id: data[i].hab_id, value: data[i].hab_siglas, name: data[i].hab_nombre, dice: '' });
+               //optionsSkillClass.push({id: data[i].hab_id, name: data[i].hab_nombre, value: data[i].hab_siglas, dice: '' });
+            }
+         }
+         setOptionsSkillClass(updatedOptionSkillClass);
+         console.log('optionsSkillClass: ', optionsSkillClass);
+      }
+   }
    async function getCharacter() {
       if(params.id === null || params.id ===  undefined) return;
       
@@ -152,7 +170,6 @@ const CharacterSheet: React.FC = () => {
          setCoins(updatedCoins);
       }
    }
-
    async function getStats() {
       if(params.id === null || params.id ===  undefined) return;
 
@@ -171,7 +188,6 @@ const CharacterSheet: React.FC = () => {
       }
 
    }
-
    async function getSkills() {
       if(params.id === null || params.id ===  undefined) return;
       
@@ -205,7 +221,7 @@ const CharacterSheet: React.FC = () => {
                
                // Actualizar listado
                handleSelectedTypeRingSkillChange(numCampo,estadisticaBase);
-               updatedSkills[+numCampo] = { id: numCampo, name: acronym, description: '', ring: estadisticaBase };
+               updatedSkills[Number(numCampo)] = { id: numCampo, name: acronym, description: '', ring: estadisticaBase };
             }
          });
          //console.log('getSkills - updatedSkills', updatedSkills);
@@ -214,7 +230,6 @@ const CharacterSheet: React.FC = () => {
          setFieldSkill(updatedFieldSkill);
       }
    }
-   
    async function getInventory() {
       if(params.id === null || params.id ===  undefined) return;
       
@@ -233,34 +248,33 @@ const CharacterSheet: React.FC = () => {
          updatedInvObjects.push({id:'0', name:'Gema', description:'Articulo del elegido', count: 1, readOnly: true})
          setInvObjects(updatedInvObjects);
       }
-
    }
    
    // Listado del select characterClass
    const optionsCharacterClass = [
-      { value: 'WAR', name: 'Guerrero', work: 'FOR', mainStat: 'STR' },
-      { value: 'MAG', name: 'Mago', work: 'ARC', mainStat: 'INT' },
-      { value: 'SCO', name: 'Explorador', work: 'NSC', mainStat: 'DEX' },
-      { value: 'MED', name: 'Médico', work: 'BOT', mainStat: 'CON' },
-      { value: 'RES', name: 'Investigador', work: 'ALC', mainStat: 'PER' },
-      { value: 'ACT', name: 'Actor', work: 'PSY', mainStat: 'CHA' },
+      { id: 'WAR', name: 'Guerrero', work: 'FOR', mainStat: 'STR' },
+      { id: 'MAG', name: 'Mago', work: 'ARC', mainStat: 'INT' },
+      { id: 'SCO', name: 'Explorador', work: 'NSC', mainStat: 'DEX' },
+      { id: 'MED', name: 'Médico', work: 'BOT', mainStat: 'CON' },
+      { id: 'RES', name: 'Investigador', work: 'ALC', mainStat: 'PER' },
+      { id: 'ACT', name: 'Actor', work: 'PSY', mainStat: 'CHA' },
     ];
    // Listado del select characterRace
    const optionsCharacterRace = [
-      { value: 'HUM', name: 'Humano' },
-      { value: 'ELF', name: 'Elfo' },
-      { value: 'DWA', name: 'Enano' },
-      { value: 'AAS', name: 'Aasimars' },
-      { value: 'TIE', name: 'Tieflings' },
+      { id: 'HUM', name: 'Humano' },
+      { id: 'ELF', name: 'Elfo' },
+      { id: 'DWA', name: 'Enano' },
+      { id: 'AAS', name: 'Aasimars' },
+      { id: 'TIE', name: 'Tieflings' },
     ];
    // Listado del select characterJob
    const optionsCharacterJob = [
-      { value: 'HUN', name: 'Cazador', extraPoint:'DEX,PER' },
-      { value: 'BLA', name: 'Herrero', extraPoint:'STR,DEX' },
-      { value: 'ART', name: 'Artista', extraPoint:'INT,CHA'},
-      { value: 'SAG', name: 'Sabio', extraPoint:'INT,PER' },
-      { value: 'PRI', name: 'Sacerdote', extraPoint:'CON,CHA' },
-      { value: 'STR', name: 'Estratega', extraPoint:'INT,CON' },
+      { id: 'HUN', name: 'Cazador', extraPoint:'DEX,PER' },
+      { id: 'BLA', name: 'Herrero', extraPoint:'STR,DEX' },
+      { id: 'ART', name: 'Artista', extraPoint:'INT,CHA'},
+      { id: 'SAG', name: 'Sabio', extraPoint:'INT,PER' },
+      { id: 'PRI', name: 'Sacerdote', extraPoint:'CON,CHA' },
+      { id: 'STR', name: 'Estratega', extraPoint:'INT,CON' },
     ];
    // Listado de characterKnowledge
    const checkboxesData = [
@@ -288,110 +302,110 @@ const CharacterSheet: React.FC = () => {
    ]);
    // Listado del select skillClass
    const optionsSkillClass = [
-      { value: 'SSTR', name: 'Ataque de aura' },
-      { value: 'SINT', name: 'Procesamiento rápido' },
-      { value: 'SDEX', name: 'Golpe certero' },
-      { value: 'SHEA', name: 'Primeros auxilios' },
-      { value: 'SCRE', name: 'Transmutación básica' },
-      { value: 'SSUP', name: 'Interpretación' },
+      { id: 'SSTR', name: 'Ataque de aura' },
+      { id: 'SINT', name: 'Procesamiento rápido' },
+      { id: 'SDEX', name: 'Golpe certero' },
+      { id: 'SHEA', name: 'Primeros auxilios' },
+      { id: 'SCRE', name: 'Transmutación básica' },
+      { id: 'SSUP', name: 'Interpretación' },
    ];
    // Listado del select skillExtra
    const optionsSkillExtra = [
-      { value: 'SE01', name: 'Defensa con múltiples armas' },
-      { value: 'SE02', name: 'Ataque de oportunidad' },
-      { value: 'SE03', name: 'Ataque mágico' },
-      { value: 'SE04', name: 'Potenciador de magia' },
-      { value: 'SE05', name: 'Ataque con arma arrojadiza' },
-      { value: 'SE06', name: 'Supervivencia' },
-      { value: 'SE07', name: 'Reanimación' },
-      { value: 'SE08', name: 'Auxilio urgente' },
-      { value: 'SE09', name: 'Manitas' },
-      { value: 'SE10', name: 'Desarme de trampas' },
-      { value: 'SE11', name: 'Agudeza social' },
-      { value: 'SE12', name: 'Persuasión' },
+      { id: 'SE01', name: 'Defensa con múltiples armas' },
+      { id: 'SE02', name: 'Ataque de oportunidad' },
+      { id: 'SE03', name: 'Ataque mágico' },
+      { id: 'SE04', name: 'Potenciador de magia' },
+      { id: 'SE05', name: 'Ataque con arma arrojadiza' },
+      { id: 'SE06', name: 'Supervivencia' },
+      { id: 'SE07', name: 'Reanimación' },
+      { id: 'SE08', name: 'Auxilio urgente' },
+      { id: 'SE09', name: 'Manitas' },
+      { id: 'SE10', name: 'Desarme de trampas' },
+      { id: 'SE11', name: 'Agudeza social' },
+      { id: 'SE12', name: 'Persuasión' },
    ];
    // Listado del select skillTypeRing
    const optionsRingTypes = [
-      { value: 'STR', name: 'Fuerza' },
-      { value: 'INT', name: 'Inteligencia' },
-      { value: 'DEX', name: 'Destreza' },
-      { value: 'HEA', name: 'Sanidad' },
-      { value: 'CRE', name: 'Creación' },
-      { value: 'SUP', name: 'Soporte' },
+      { id: 'STR', name: 'Fuerza' },
+      { id: 'INT', name: 'Inteligencia' },
+      { id: 'DEX', name: 'Destreza' },
+      { id: 'HEA', name: 'Sanidad' },
+      { id: 'CRE', name: 'Creación' },
+      { id: 'SUP', name: 'Soporte' },
    ];
    // Listado del select skillTypeRing
    const skillsTypes: SkillTypes[] = [
       { id: 'STR', 
          skills: [
-            {id: 1, name: 'Golpe aplastante', description: '', dice: ''},
-            {id: 2, name: 'Frenesí', description: '', dice: ''},
-            {id: 3, name: 'Fuerza elemental', description: '', dice: ''},
-            {id: 4, name: 'Embate destructor', description: '', dice: ''},
-            {id: 5, name: 'Resistencia sobrehumana', description: '', dice: ''},
-            {id: 6, name: 'Grito de guerra', description: '', dice: '1D4'},
-            {id: 7, name: 'Impulso', description: '', dice: ''},
-            {id: 8, name: 'Resistencia de Hierro', description: '', dice: ''},
-            {id: 9, name: 'Embate Cegador', description: '', dice: ''},
+            {id: '1', name: 'Golpe aplastante', description: '', dice: ''},
+            {id: '2', name: 'Frenesí', description: '', dice: ''},
+            {id: '3', name: 'Fuerza elemental', description: '', dice: ''},
+            {id: '4', name: 'Embate destructor', description: '', dice: ''},
+            {id: '5', name: 'Resistencia sobrehumana', description: '', dice: ''},
+            {id: '6', name: 'Grito de guerra', description: '', dice: '1D4'},
+            {id: '7', name: 'Impulso', description: '', dice: ''},
+            {id: '8', name: 'Resistencia de Hierro', description: '', dice: ''},
+            {id: '9', name: 'Embate Cegador', description: '', dice: ''},
          ] },
       { id: 'INT', 
          skills: [
-            {id: 1, name: 'Rayo de conocimiento', description: '', dice: ''},
-            {id: 2, name: 'Sabiduría ancestral', description: '', dice: ''},
-            {id: 3, name: 'Escudo mental', description: '', dice: ''},
-            {id: 4, name: 'Ilusión perfecta', description: '', dice: ''},
-            {id: 5, name: 'Control de energía', description: '', dice: ''},
-            {id: 6, name: 'Lectura de mentes', description: '', dice: ''},
-            {id: 7, name: 'Rayo Arcano', description: '', dice: ''},
-            {id: 8, name: 'Mente Aguda', description: '', dice: ''},
-            {id: 9, name: 'Conocimiento Arcano', description: '', dice: ''},
+            {id: '1', name: 'Rayo de conocimiento', description: '', dice: ''},
+            {id: '2', name: 'Sabiduría ancestral', description: '', dice: ''},
+            {id: '3', name: 'Escudo mental', description: '', dice: ''},
+            {id: '4', name: 'Ilusión perfecta', description: '', dice: ''},
+            {id: '5', name: 'Control de energía', description: '', dice: ''},
+            {id: '6', name: 'Lectura de mentes', description: '', dice: ''},
+            {id: '7', name: 'Rayo Arcano', description: '', dice: ''},
+            {id: '8', name: 'Mente Aguda', description: '', dice: ''},
+            {id: '9', name: 'Conocimiento Arcano', description: '', dice: ''},
          ] },
       { id: 'DEX', 
          skills: [
-            {id: 1, name: 'Ataque sigiloso', description: '', dice: ''},
-            {id: 2, name: 'Agilidad felina', description: '', dice: ''},
-            {id: 3, name: 'Golpe certero', description: '', dice: ''},
-            {id: 4, name: 'Camuflaje', description: '', dice: ''},
-            {id: 5, name: 'Danza de las sombras', description: '', dice: ''},
-            {id: 6, name: 'Vista de águila', description: '', dice: ''},
-            {id: 7, name: 'Golpe Mortal', description: '', dice: ''},
-            {id: 8, name: 'Reflejo Veloz', description: '', dice: ''},
-            {id: 9, name: 'Sigilo Perfecto', description: '', dice: ''},
+            {id: '1', name: 'Ataque sigiloso', description: '', dice: ''},
+            {id: '2', name: 'Agilidad felina', description: '', dice: ''},
+            {id: '3', name: 'Golpe certero', description: '', dice: ''},
+            {id: '4', name: 'Camuflaje', description: '', dice: ''},
+            {id: '5', name: 'Danza de las sombras', description: '', dice: ''},
+            {id: '6', name: 'Vista de águila', description: '', dice: ''},
+            {id: '7', name: 'Golpe Mortal', description: '', dice: ''},
+            {id: '8', name: 'Reflejo Veloz', description: '', dice: ''},
+            {id: '9', name: 'Sigilo Perfecto', description: '', dice: ''},
          ] },
       { id: 'HEA', 
          skills: [
-            {id: 1, name: 'Toque curativo', description: '', dice: ''},
-            {id: 2, name: 'Aura de curación', description: '', dice: ''},
-            {id: 3, name: 'Purificación', description: '', dice: ''},
-            {id: 4, name: 'Toxicología', description: '', dice: ''},
-            {id: 5, name: 'Inyección', description: '', dice: ''},
-            {id: 6, name: 'Corazón de hierro', description: '', dice: ''},
-            {id: 7, name: 'Herramienta elemental', description: '', dice: ''},
-            {id: 8, name: 'Escudo de Vida', description: '', dice: ''},
-            {id: 9, name: 'Destreza del cirujano', description: '', dice: ''},
+            {id: '1', name: 'Toque curativo', description: '', dice: ''},
+            {id: '2', name: 'Aura de curación', description: '', dice: ''},
+            {id: '3', name: 'Purificación', description: '', dice: ''},
+            {id: '4', name: 'Toxicología', description: '', dice: ''},
+            {id: '5', name: 'Inyección', description: '', dice: ''},
+            {id: '6', name: 'Corazón de hierro', description: '', dice: ''},
+            {id: '7', name: 'Herramienta elemental', description: '', dice: ''},
+            {id: '8', name: 'Escudo de Vida', description: '', dice: ''},
+            {id: '9', name: 'Destreza del cirujano', description: '', dice: ''},
          ] },
       { id: 'CRE', 
          skills: [
-            {id: 1, name: 'Invocación de creación', description: '', dice: ''},
-            {id: 2, name: 'Maestría artesanal', description: '', dice: ''},
-            {id: 3, name: 'Potenciador mágico', description: '', dice: ''},
-            {id: 4, name: 'Transmutación', description: '', dice: ''},
-            {id: 5, name: 'Trampero experto', description: '', dice: ''},
-            {id: 6, name: 'Cólera del artífice', description: '', dice: ''},
-            {id: 7, name: 'Forja Mágica', description: '', dice: ''},
-            {id: 8, name: 'Invocar Armamento', description: '', dice: ''},
-            {id: 9, name: 'Ojo clínico', description: '', dice: ''},
+            {id: '1', name: 'Invocación de creación', description: '', dice: ''},
+            {id: '2', name: 'Maestría artesanal', description: '', dice: ''},
+            {id: '3', name: 'Potenciador mágico', description: '', dice: ''},
+            {id: '4', name: 'Transmutación', description: '', dice: ''},
+            {id: '5', name: 'Trampero experto', description: '', dice: ''},
+            {id: '6', name: 'Cólera del artífice', description: '', dice: ''},
+            {id: '7', name: 'Forja Mágica', description: '', dice: ''},
+            {id: '8', name: 'Invocar Armamento', description: '', dice: ''},
+            {id: '9', name: 'Ojo clínico', description: '', dice: ''},
          ] },
       { id: 'SUP', 
          skills: [
-            {id: 1, name: 'Arte bendito', description: '', dice: ''},
-            {id: 2, name: 'Acción de inspiración', description: '', dice: ''},
-            {id: 3, name: 'Protección divina', description: '', dice: ''},
-            {id: 4, name: 'Distracción', description: '', dice: ''},
-            {id: 5, name: 'Coaching', description: '', dice: ''},
-            {id: 6, name: 'Intimidación', description: '', dice: ''},
-            {id: 7, name: 'Ataque a traición', description: '', dice: ''},
-            {id: 8, name: 'Maldición Mortal', description: '', dice: ''},
-            {id: 9, name: 'Bizarro', description: '', dice: ''},
+            {id: '1', name: 'Arte bendito', description: '', dice: ''},
+            {id: '2', name: 'Acción de inspiración', description: '', dice: ''},
+            {id: '3', name: 'Protección divina', description: '', dice: ''},
+            {id: '4', name: 'Distracción', description: '', dice: ''},
+            {id: '5', name: 'Coaching', description: '', dice: ''},
+            {id: '6', name: 'Intimidación', description: '', dice: ''},
+            {id: '7', name: 'Ataque a traición', description: '', dice: ''},
+            {id: '8', name: 'Maldición Mortal', description: '', dice: ''},
+            {id: '9', name: 'Bizarro', description: '', dice: ''},
          ] },
    ];
    // Listado de armas
@@ -443,7 +457,7 @@ const CharacterSheet: React.FC = () => {
    
    const updStatsPoints = (selectedClass : string, selectedJob : string): void =>{
       const updatedInputsStatsData = [...inputsStatsData];
-      const extraPoints = optionsCharacterJob.find(option => option.value === selectedJob)?.extraPoint || '';
+      const extraPoints = optionsCharacterJob.find(option => option.id === selectedJob)?.extraPoint || '';
 
       updatedInputsStatsData[0].valueClass = ( selectedClass === 'WAR' ? 2 : 0 ) + ( extraPoints.includes('STR') ? 1 : 0 );
       updatedInputsStatsData[1].valueClass = ( selectedClass === 'MAG' ? 2 : 0 ) + ( extraPoints.includes('INT') ? 1 : 0 );
@@ -460,7 +474,7 @@ const CharacterSheet: React.FC = () => {
       setSelectedClassValue(value);
       
       // selectedCheckValues - Usar el método find para obtener el objeto con el valor específico
-      const selectedOption = optionsCharacterClass.find(option => option.value === value);
+      const selectedOption = optionsCharacterClass.find(option => option.id === value);
       setSelectedCheckValues((selectedOption)?[selectedOption.work]:[]);
       
       // inputsStatsData - Poner todos los valores de valueClass en cero
@@ -505,7 +519,7 @@ const CharacterSheet: React.FC = () => {
 
    const handleSelectedTypeRingSkillChange = async (id: string, type: string) => {
       const updatedSetSkillsRingList = [...skillsRingList];
-      updatedSetSkillsRingList[+id].skills = (skillsTypes.find(option => option.id === type) || {}).skills || [];
+      updatedSetSkillsRingList[Number(id)].skills = (skillsTypes.find(option => option.id === type) || {}).skills || [];
       setSkillsRingList( updatedSetSkillsRingList );
    };
 
@@ -651,13 +665,13 @@ const CharacterSheet: React.FC = () => {
    }
 
    const getClassName = (id: string|undefined): string | undefined  => {
-      return optionsCharacterClass.find(elem => elem.value === id)?.name;
+      return optionsCharacterClass.find(elem => elem.id === id)?.name;
    }
    const getRaceName = (id: string|undefined): string | undefined  => {
-      return optionsCharacterRace.find(elem => elem.value === id)?.name;
+      return optionsCharacterRace.find(elem => elem.id === id)?.name;
    }
    const getJobName = (id: string|undefined): string | undefined  => {
-      return optionsCharacterJob.find(elem => elem.value === id)?.name;
+      return optionsCharacterJob.find(elem => elem.id === id)?.name;
    }
    const getKnowledgeName = (ids: string[]|undefined): string | undefined  => {
       var names = '';
@@ -672,12 +686,12 @@ const CharacterSheet: React.FC = () => {
       return names;
    }
    const getMainSkillName = (id: string|undefined): string | undefined  => {
-      return optionsSkillClass.find(elem => elem.value === id)?.name;
+      return optionsSkillClass.find(elem => elem.id === id)?.name;
    }
    const getExtraSkillName = (id: string|undefined): string | undefined  => {
-      return optionsSkillExtra.find(elem => elem.value === id)?.name;
+      return optionsSkillExtra.find(elem => elem.id === id)?.name;
    }
-   const getSkillName = (ring: string, id: number): string | undefined  => {
+   const getSkillName = (ring: string, id: string): string | undefined  => {
       return skillsTypes.find(skill => skill.id === ring)?.skills.find(ele => ele.id === id)?.name;
    }
 
@@ -732,6 +746,7 @@ const CharacterSheet: React.FC = () => {
    }
    async function uploadStats(isNewCharacter: boolean) {
       if (!isNewCharacter) {
+         // Actualizar
          for(const element of inputsStatsData) {
             const { error } = await supabase
             .from('epe_estadistica_personaje')
@@ -746,14 +761,14 @@ const CharacterSheet: React.FC = () => {
             .select();
          }
       } else {
-
+         // Añadir
       }
 
    }
    async function uploadSkill(isNewCharacter: boolean) {
       const { error } = await supabase
       .from('hpe_habilidad_personaje')
-      .update({ 
+      .update({
          hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillClass')[0].skill,
          hpe_alineacion: null,
       })
@@ -761,6 +776,7 @@ const CharacterSheet: React.FC = () => {
       .eq("hpe_campo","skillClass")
       .select();
       //hpe_habilidad, hpe_campo, hpe_alineacion
+
       for(let index = 0; index < skillsAcquired.length; index++) {
          /*const { error } = await supabase
          .from('hpe_personaje')
@@ -1085,7 +1101,7 @@ const CharacterSheet: React.FC = () => {
                   <li><strong>Habilidad extra: </strong>{getExtraSkillName(dataCharacter?.extraSkill)}</li>
                   <li className=''><strong>Alineacion: </strong>{dataCharacter?.alignment}</li>
                   {dataCharacter?.skills.map((elem) => (
-                     <li key={elem.id}><strong>Habilidad: </strong>{getSkillName(elem.ring,parseInt(elem.name))}</li>
+                     <li key={elem.id}><strong>Habilidad: </strong>{getSkillName(elem.ring,elem.name)}</li>
                   ))}
                </ul>
                <ul className='dialog-card grid grid-cols-1 gap-3 '>

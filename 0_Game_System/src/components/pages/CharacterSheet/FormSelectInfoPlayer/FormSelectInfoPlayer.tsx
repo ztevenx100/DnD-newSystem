@@ -1,7 +1,7 @@
 import React, { ChangeEvent } from 'react';
 // Definir el tipo para los elementos del array 'options'
 type Option = {
-    value: string;
+    id: string;
     name: string;
   };
   
@@ -31,7 +31,7 @@ const FormSelectInfoPlayer: React.FC<SelectFieldProps> = ({id, label, options, s
                 >
                 <option value=""/>
                 {options.map((option, index) => (
-                    <option key={index} value={option.value}>
+                    <option key={index} value={option.id}>
                     {option.name}
                     </option>
                 ))}

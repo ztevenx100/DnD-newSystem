@@ -1,17 +1,17 @@
 import React, { ChangeEvent } from 'react';
+
+
+import { Option } from '../../../interfaces/typesCharacterSheet';
+
 // Definir el tipo para los elementos del array 'options'
-type Option = {
-    id: string;
-    name: string;
-  };
-  
-  type SelectFieldProps = {
+
+type SelectFieldProps = {
     id: string; // Id del select
     label: string;
     options: Option[];
     selectedValue: string;
     onSelectChange: (selectedValue: string) => void;
-  };
+};
 
 const FormSelectInfoPlayer: React.FC<SelectFieldProps> = ({id, label, options, selectedValue, onSelectChange}) => {
     // Manejar el cambio en la selección
@@ -31,7 +31,7 @@ const FormSelectInfoPlayer: React.FC<SelectFieldProps> = ({id, label, options, s
                 >
                 <option value=""/>
                 {options.map((option, index) => (
-                    <option key={index} value={option.id}>
+                    <option key={index} value={option.value}>
                     {option.name}
                     </option>
                 ))}

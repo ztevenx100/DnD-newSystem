@@ -1,4 +1,10 @@
 
+export interface Option {
+    id?: string;
+    value: string;
+    name: string;
+}
+
 export interface InputStats {
     id: string;
     label: string;
@@ -13,7 +19,7 @@ export interface Skill {
     value?: string;
     name: string;
     description?: string;
-    dice: string;
+    dice?: string;
     alignment?: string;
 }
 

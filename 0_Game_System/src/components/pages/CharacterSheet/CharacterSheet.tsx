@@ -11,7 +11,7 @@ import "./CharacterSheet.css";
 import { useBackground } from '../../../App';
 
 // Interfaces
-import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields,Skill } from '../../interfaces/typesCharacterSheet';
+import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields,Skill, Option } from '../../interfaces/typesCharacterSheet';
 import { DBHabilidadPersonaje } from '../../interfaces/dbTypes';
 
 import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
@@ -60,9 +60,6 @@ const CharacterSheet: React.FC = () => {
    const [loading, setLoading] = useState<boolean>(true);
    const [newRecord, setNewRecord] = useState<boolean>(true);
    const handleOpen = () => setOpen(!open);
-   
-   const [optionSkillClass, setOptionsSkillClass] = useState<Skill[]>([]);
-
 
    interface DataCharacter{
       id: string;
@@ -126,20 +123,35 @@ const CharacterSheet: React.FC = () => {
       }
    }
    async function getListSkill() {
-      const { data } = await supabase.from("hab_habilidad").select( 'hab_id, hab_nombre, hab_siglas, hab_tipo' )
-         .eq("hab_tipo","C")
-         .order('hab_tipo', {ascending: true});
+      const { data } = await supabase.from("hab_habilidad").select( 'hab_id, hab_nombre, had_estadistica_base, hab_siglas, hab_tipo' )
+         .in("hab_tipo",["C","E","R"])
+         .order('hab_tipo', {ascending: true})
+         .order('had_estadistica_base', {ascending: true});
 
       if (data !== null){
-         const updatedOptionSkillClass = [...optionSkillClass];
+         const updatedOptionsSkillClass = [];
+         const updatedOptionsSkillExtra = [];
+         const otherSkills: SkillTypes[] = [];
+         
          for (let i = 0; i < data.length; i++) {
             if (data[i].hab_tipo === 'C'){
-               updatedOptionSkillClass.push({id: data[i].hab_id, value: data[i].hab_siglas, name: data[i].hab_nombre, dice: '' });
-               //optionsSkillClass.push({id: data[i].hab_id, name: data[i].hab_nombre, value: data[i].hab_siglas, dice: '' });
+               updatedOptionsSkillClass.push({id: data[i].hab_id, value: data[i].hab_siglas, name: data[i].hab_nombre});
+            } else if (data[i].hab_tipo === 'E'){
+               updatedOptionsSkillExtra.push({id: data[i].hab_id, value: data[i].hab_siglas, name: data[i].hab_nombre});
+            } else if (data[i].hab_tipo === 'R'){
+               let countSkill: number = otherSkills.filter(option => option.id === data[i].had_estadistica_base).length;
+               if (countSkill === 0) {
+                  otherSkills.push({id: data[i].had_estadistica_base, skills: [{id: data[i].hab_id, value: data[i].hab_siglas, name: data[i].hab_nombre}]});
+               } else {
+                  otherSkills.find(option => option.id === data[i].had_estadistica_base)?.skills.push({id: data[i].hab_id, value: data[i].hab_siglas, name: data[i].hab_nombre});
+               }
             }
          }
-         setOptionsSkillClass(updatedOptionSkillClass);
+         setOptionsSkillClass(updatedOptionsSkillClass);
+         setOptionsSkillExtra(updatedOptionsSkillExtra);
+         setSkillsTypes(otherSkills);
          console.log('optionsSkillClass: ', optionsSkillClass);
+         console.log('otherSkills: ', otherSkills);
       }
    }
    async function getCharacter() {
@@ -200,7 +212,7 @@ const CharacterSheet: React.FC = () => {
       if (data !== null) {
          let acronym: string = '';
          const updatedSkills = [...skillsAcquired];
-         const updatedFieldSkill = [...fieldSkill]
+         const updatedFieldSkill = [...fieldSkill];
          data.forEach(elem => {
             acronym = (Array.isArray(elem.hab_habilidad) ? elem.hab_habilidad[0]?.hab_siglas : elem.hab_habilidad?.hab_siglas) ?? '';
             if (elem.hpe_campo === 'skillClass') {
@@ -252,29 +264,29 @@ const CharacterSheet: React.FC = () => {
    
    // Listado del select characterClass
    const optionsCharacterClass = [
-      { id: 'WAR', name: 'Guerrero', work: 'FOR', mainStat: 'STR' },
-      { id: 'MAG', name: 'Mago', work: 'ARC', mainStat: 'INT' },
-      { id: 'SCO', name: 'Explorador', work: 'NSC', mainStat: 'DEX' },
-      { id: 'MED', name: 'Médico', work: 'BOT', mainStat: 'CON' },
-      { id: 'RES', name: 'Investigador', work: 'ALC', mainStat: 'PER' },
-      { id: 'ACT', name: 'Actor', work: 'PSY', mainStat: 'CHA' },
+      { value: 'WAR', name: 'Guerrero', work: 'FOR', mainStat: 'STR' },
+      { value: 'MAG', name: 'Mago', work: 'ARC', mainStat: 'INT' },
+      { value: 'SCO', name: 'Explorador', work: 'NSC', mainStat: 'DEX' },
+      { value: 'MED', name: 'Médico', work: 'BOT', mainStat: 'CON' },
+      { value: 'RES', name: 'Investigador', work: 'ALC', mainStat: 'PER' },
+      { value: 'ACT', name: 'Actor', work: 'PSY', mainStat: 'CHA' },
     ];
    // Listado del select characterRace
    const optionsCharacterRace = [
-      { id: 'HUM', name: 'Humano' },
-      { id: 'ELF', name: 'Elfo' },
-      { id: 'DWA', name: 'Enano' },
-      { id: 'AAS', name: 'Aasimars' },
-      { id: 'TIE', name: 'Tieflings' },
+      { value: 'HUM', name: 'Humano' },
+      { value: 'ELF', name: 'Elfo' },
+      { value: 'DWA', name: 'Enano' },
+      { value: 'AAS', name: 'Aasimars' },
+      { value: 'TIE', name: 'Tieflings' },
     ];
    // Listado del select characterJob
    const optionsCharacterJob = [
-      { id: 'HUN', name: 'Cazador', extraPoint:'DEX,PER' },
-      { id: 'BLA', name: 'Herrero', extraPoint:'STR,DEX' },
-      { id: 'ART', name: 'Artista', extraPoint:'INT,CHA'},
-      { id: 'SAG', name: 'Sabio', extraPoint:'INT,PER' },
-      { id: 'PRI', name: 'Sacerdote', extraPoint:'CON,CHA' },
-      { id: 'STR', name: 'Estratega', extraPoint:'INT,CON' },
+      { value: 'HUN', name: 'Cazador', extraPoint:'DEX,PER' },
+      { value: 'BLA', name: 'Herrero', extraPoint:'STR,DEX' },
+      { value: 'ART', name: 'Artista', extraPoint:'INT,CHA'},
+      { value: 'SAG', name: 'Sabio', extraPoint:'INT,PER' },
+      { value: 'PRI', name: 'Sacerdote', extraPoint:'CON,CHA' },
+      { value: 'STR', name: 'Estratega', extraPoint:'INT,CON' },
     ];
    // Listado de characterKnowledge
    const checkboxesData = [
@@ -301,29 +313,9 @@ const CharacterSheet: React.FC = () => {
       { id: 'CHA', label: 'Carisma', description: 'Su capacidad se manifiesta como la capacidad natural para cautivar a los demás a través de su presencia, su palabra y su encantadora personalidad. Se convierte en la fuerza que une a las personas, dejando una huella indeleble en cada interacción y dejando una impresión imborrable en quienes se cruzan su camino.', valueDice: 0, valueClass: 0, valueLevel: 0 },
    ]);
    // Listado del select skillClass
-   const optionsSkillClass = [
-      { id: 'SSTR', name: 'Ataque de aura' },
-      { id: 'SINT', name: 'Procesamiento rápido' },
-      { id: 'SDEX', name: 'Golpe certero' },
-      { id: 'SHEA', name: 'Primeros auxilios' },
-      { id: 'SCRE', name: 'Transmutación básica' },
-      { id: 'SSUP', name: 'Interpretación' },
-   ];
+   const [optionsSkillClass, setOptionsSkillClass] = useState<Option[]>([]);
    // Listado del select skillExtra
-   const optionsSkillExtra = [
-      { id: 'SE01', name: 'Defensa con múltiples armas' },
-      { id: 'SE02', name: 'Ataque de oportunidad' },
-      { id: 'SE03', name: 'Ataque mágico' },
-      { id: 'SE04', name: 'Potenciador de magia' },
-      { id: 'SE05', name: 'Ataque con arma arrojadiza' },
-      { id: 'SE06', name: 'Supervivencia' },
-      { id: 'SE07', name: 'Reanimación' },
-      { id: 'SE08', name: 'Auxilio urgente' },
-      { id: 'SE09', name: 'Manitas' },
-      { id: 'SE10', name: 'Desarme de trampas' },
-      { id: 'SE11', name: 'Agudeza social' },
-      { id: 'SE12', name: 'Persuasión' },
-   ];
+   const [optionsSkillExtra, setOptionsSkillExtra] = useState<Option[]>([]);
    // Listado del select skillTypeRing
    const optionsRingTypes = [
       { id: 'STR', name: 'Fuerza' },
@@ -334,7 +326,7 @@ const CharacterSheet: React.FC = () => {
       { id: 'SUP', name: 'Soporte' },
    ];
    // Listado del select skillTypeRing
-   const skillsTypes: SkillTypes[] = [
+   const [skillsTypes, setSkillsTypes] = useState<SkillTypes[]>([
       { id: 'STR', 
          skills: [
             {id: '1', name: 'Golpe aplastante', description: '', dice: ''},
@@ -407,7 +399,7 @@ const CharacterSheet: React.FC = () => {
             {id: '8', name: 'Maldición Mortal', description: '', dice: ''},
             {id: '9', name: 'Bizarro', description: '', dice: ''},
          ] },
-   ];
+   ]);
    // Listado de armas
    const listWearpons = [
       'Daga',
@@ -457,7 +449,7 @@ const CharacterSheet: React.FC = () => {
    
    const updStatsPoints = (selectedClass : string, selectedJob : string): void =>{
       const updatedInputsStatsData = [...inputsStatsData];
-      const extraPoints = optionsCharacterJob.find(option => option.id === selectedJob)?.extraPoint || '';
+      const extraPoints = optionsCharacterJob.find(option => option.value === selectedJob)?.extraPoint || '';
 
       updatedInputsStatsData[0].valueClass = ( selectedClass === 'WAR' ? 2 : 0 ) + ( extraPoints.includes('STR') ? 1 : 0 );
       updatedInputsStatsData[1].valueClass = ( selectedClass === 'MAG' ? 2 : 0 ) + ( extraPoints.includes('INT') ? 1 : 0 );
@@ -474,7 +466,7 @@ const CharacterSheet: React.FC = () => {
       setSelectedClassValue(value);
       
       // selectedCheckValues - Usar el método find para obtener el objeto con el valor específico
-      const selectedOption = optionsCharacterClass.find(option => option.id === value);
+      const selectedOption = optionsCharacterClass.find(option => option.value === value);
       setSelectedCheckValues((selectedOption)?[selectedOption.work]:[]);
       
       // inputsStatsData - Poner todos los valores de valueClass en cero
@@ -665,13 +657,13 @@ const CharacterSheet: React.FC = () => {
    }
 
    const getClassName = (id: string|undefined): string | undefined  => {
-      return optionsCharacterClass.find(elem => elem.id === id)?.name;
+      return optionsCharacterClass.find(elem => elem.value === id)?.name;
    }
    const getRaceName = (id: string|undefined): string | undefined  => {
-      return optionsCharacterRace.find(elem => elem.id === id)?.name;
+      return optionsCharacterRace.find(elem => elem.value === id)?.name;
    }
    const getJobName = (id: string|undefined): string | undefined  => {
-      return optionsCharacterJob.find(elem => elem.id === id)?.name;
+      return optionsCharacterJob.find(elem => elem.value === id)?.name;
    }
    const getKnowledgeName = (ids: string[]|undefined): string | undefined  => {
       var names = '';
@@ -686,10 +678,10 @@ const CharacterSheet: React.FC = () => {
       return names;
    }
    const getMainSkillName = (id: string|undefined): string | undefined  => {
-      return optionsSkillClass.find(elem => elem.id === id)?.name;
+      return optionsSkillClass.find(elem => elem.value === id)?.name;
    }
    const getExtraSkillName = (id: string|undefined): string | undefined  => {
-      return optionsSkillExtra.find(elem => elem.id === id)?.name;
+      return optionsSkillExtra.find(elem => elem.value === id)?.name;
    }
    const getSkillName = (ring: string, id: string): string | undefined  => {
       return skillsTypes.find(skill => skill.id === ring)?.skills.find(ele => ele.id === id)?.name;

@@ -25,6 +25,10 @@
     --border-card: 0.5rem;
 }
 
+body{
+    scrollbar-color: var(--bg-form-neutral), var(--bg-color-3);
+}
+
 .form-sheet{
     background-color: var(--bg-form-neutral);
     --required-color: #E63462;

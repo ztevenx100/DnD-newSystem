@@ -26,7 +26,8 @@
 }
 
 body{
-    scrollbar-color: var(--bg-form-neutral), var(--bg-color-3);
+    scrollbar-color: var(--bg-color-3) var(--bg-color-1) ;
+    scrollbar-width: thin;
 }
 
 .form-sheet{

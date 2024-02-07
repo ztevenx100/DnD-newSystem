@@ -150,8 +150,10 @@ const CharacterSheet: React.FC = () => {
          setOptionsSkillClass(updatedOptionsSkillClass);
          setOptionsSkillExtra(updatedOptionsSkillExtra);
          setSkillsTypes(otherSkills);
-         console.log('optionsSkillClass: ', optionsSkillClass);
+         console.log('updatedOptionsSkillClass: ', updatedOptionsSkillClass);
+         console.log('updatedOptionsSkillExtra: ', updatedOptionsSkillExtra);
          console.log('otherSkills: ', otherSkills);
+         //console.log('otherSkills: ', otherSkills);
       }
    }
    async function getCharacter() {
@@ -207,7 +209,7 @@ const CharacterSheet: React.FC = () => {
          .eq("hpe_personaje",params.id)
          .order('hpe_campo', {ascending: true})
          .returns<DBHabilidadPersonaje[]>()
-      console.log('getSkills ',data);
+      //console.log('getSkills ',data);
       
       if (data !== null) {
          let acronym: string = '';
@@ -312,10 +314,6 @@ const CharacterSheet: React.FC = () => {
       { id: 'PER', label: 'Percepcion', description: 'Su capacidad para interpretar las sensaciones recibidas a través de los sentidos, dando lugar a una impresión, ya sea consciente o inconsciente, de la realidad física del entorno. Se erige como el faro que guía al héroe a través del tejido de la realidad, revelando sus misterios y desafíos con una claridad incomparable.', valueDice: 0, valueClass: 0, valueLevel: 0 },
       { id: 'CHA', label: 'Carisma', description: 'Su capacidad se manifiesta como la capacidad natural para cautivar a los demás a través de su presencia, su palabra y su encantadora personalidad. Se convierte en la fuerza que une a las personas, dejando una huella indeleble en cada interacción y dejando una impresión imborrable en quienes se cruzan su camino.', valueDice: 0, valueClass: 0, valueLevel: 0 },
    ]);
-   // Listado del select skillClass
-   const [optionsSkillClass, setOptionsSkillClass] = useState<Option[]>([]);
-   // Listado del select skillExtra
-   const [optionsSkillExtra, setOptionsSkillExtra] = useState<Option[]>([]);
    // Listado del select skillTypeRing
    const optionsRingTypes = [
       { id: 'STR', name: 'Fuerza' },
@@ -325,81 +323,12 @@ const CharacterSheet: React.FC = () => {
       { id: 'CRE', name: 'Creación' },
       { id: 'SUP', name: 'Soporte' },
    ];
+   // Listado del select skillClass
+   const [optionsSkillClass, setOptionsSkillClass] = useState<Option[]>([]);
+   // Listado del select skillExtra
+   const [optionsSkillExtra, setOptionsSkillExtra] = useState<Option[]>([]);
    // Listado del select skillTypeRing
-   const [skillsTypes, setSkillsTypes] = useState<SkillTypes[]>([
-      { id: 'STR', 
-         skills: [
-            {id: '1', name: 'Golpe aplastante', description: '', dice: ''},
-            {id: '2', name: 'Frenesí', description: '', dice: ''},
-            {id: '3', name: 'Fuerza elemental', description: '', dice: ''},
-            {id: '4', name: 'Embate destructor', description: '', dice: ''},
-            {id: '5', name: 'Resistencia sobrehumana', description: '', dice: ''},
-            {id: '6', name: 'Grito de guerra', description: '', dice: '1D4'},
-            {id: '7', name: 'Impulso', description: '', dice: ''},
-            {id: '8', name: 'Resistencia de Hierro', description: '', dice: ''},
-            {id: '9', name: 'Embate Cegador', description: '', dice: ''},
-         ] },
-      { id: 'INT', 
-         skills: [
-            {id: '1', name: 'Rayo de conocimiento', description: '', dice: ''},
-            {id: '2', name: 'Sabiduría ancestral', description: '', dice: ''},
-            {id: '3', name: 'Escudo mental', description: '', dice: ''},
-            {id: '4', name: 'Ilusión perfecta', description: '', dice: ''},
-            {id: '5', name: 'Control de energía', description: '', dice: ''},
-            {id: '6', name: 'Lectura de mentes', description: '', dice: ''},
-            {id: '7', name: 'Rayo Arcano', description: '', dice: ''},
-            {id: '8', name: 'Mente Aguda', description: '', dice: ''},
-            {id: '9', name: 'Conocimiento Arcano', description: '', dice: ''},
-         ] },
-      { id: 'DEX', 
-         skills: [
-            {id: '1', name: 'Ataque sigiloso', description: '', dice: ''},
-            {id: '2', name: 'Agilidad felina', description: '', dice: ''},
-            {id: '3', name: 'Golpe certero', description: '', dice: ''},
-            {id: '4', name: 'Camuflaje', description: '', dice: ''},
-            {id: '5', name: 'Danza de las sombras', description: '', dice: ''},
-            {id: '6', name: 'Vista de águila', description: '', dice: ''},
-            {id: '7', name: 'Golpe Mortal', description: '', dice: ''},
-            {id: '8', name: 'Reflejo Veloz', description: '', dice: ''},
-            {id: '9', name: 'Sigilo Perfecto', description: '', dice: ''},
-         ] },
-      { id: 'HEA', 
-         skills: [
-            {id: '1', name: 'Toque curativo', description: '', dice: ''},
-            {id: '2', name: 'Aura de curación', description: '', dice: ''},
-            {id: '3', name: 'Purificación', description: '', dice: ''},
-            {id: '4', name: 'Toxicología', description: '', dice: ''},
-            {id: '5', name: 'Inyección', description: '', dice: ''},
-            {id: '6', name: 'Corazón de hierro', description: '', dice: ''},
-            {id: '7', name: 'Herramienta elemental', description: '', dice: ''},
-            {id: '8', name: 'Escudo de Vida', description: '', dice: ''},
-            {id: '9', name: 'Destreza del cirujano', description: '', dice: ''},
-         ] },
-      { id: 'CRE', 
-         skills: [
-            {id: '1', name: 'Invocación de creación', description: '', dice: ''},
-            {id: '2', name: 'Maestría artesanal', description: '', dice: ''},
-            {id: '3', name: 'Potenciador mágico', description: '', dice: ''},
-            {id: '4', name: 'Transmutación', description: '', dice: ''},
-            {id: '5', name: 'Trampero experto', description: '', dice: ''},
-            {id: '6', name: 'Cólera del artífice', description: '', dice: ''},
-            {id: '7', name: 'Forja Mágica', description: '', dice: ''},
-            {id: '8', name: 'Invocar Armamento', description: '', dice: ''},
-            {id: '9', name: 'Ojo clínico', description: '', dice: ''},
-         ] },
-      { id: 'SUP', 
-         skills: [
-            {id: '1', name: 'Arte bendito', description: '', dice: ''},
-            {id: '2', name: 'Acción de inspiración', description: '', dice: ''},
-            {id: '3', name: 'Protección divina', description: '', dice: ''},
-            {id: '4', name: 'Distracción', description: '', dice: ''},
-            {id: '5', name: 'Coaching', description: '', dice: ''},
-            {id: '6', name: 'Intimidación', description: '', dice: ''},
-            {id: '7', name: 'Ataque a traición', description: '', dice: ''},
-            {id: '8', name: 'Maldición Mortal', description: '', dice: ''},
-            {id: '9', name: 'Bizarro', description: '', dice: ''},
-         ] },
-   ]);
+   const [skillsTypes, setSkillsTypes] = useState<SkillTypes[]>([]);
    // Listado de armas
    const listWearpons = [
       'Daga',
@@ -427,14 +356,17 @@ const CharacterSheet: React.FC = () => {
       // Actualizar el nivel del personaje
       setCharacterLevel(newLevel);
    };
-
    // Manejar el cambio en la selección
    const handleSelectRaceChange = (value: string) => {
       setSelectedRaceValue(value);
    };
-
    const handleSelectSkillChange = (currentSkill: string) => {
       // Actualizar la habilidad principal del personaje
+      let option = optionsSkillClass.filter(skill => skill.value === currentSkill);
+      let skill:SkillFields ={id: option[0].value, skill: option[0].id||'', field: "skillClass" };
+
+      setFieldSkill(prevItems => prevItems.map( item => item.field === 'skillClass' ? { ...item, item:skill } : item ));
+
       setSelectedSkillValue(currentSkill);
    };
    const handleSelectExtraSkillChange = (currentSkill: string) => {
@@ -488,7 +420,7 @@ const CharacterSheet: React.FC = () => {
     };
 
    const handleStatsInputChange = (newInputStats: InputStats) => {
-      setInputsStatsData(prevItems => prevItems.map( item => item.id === newInputStats.id ? { ...item, item: newInputStats} : item ))
+      setInputsStatsData(prevItems => prevItems.map( item => item.id === newInputStats.id ? { ...item, item: newInputStats} : item ));
    }
 
    // Manejar el cambio en la selección
@@ -628,8 +560,10 @@ const CharacterSheet: React.FC = () => {
       };
 
       setDataCharacter(newCharacter);
-      //console.log(skillsAcquired);
-      //console.log(newCharacter);
+      console.log(skillsAcquired);
+      console.log("fieldSkill: ",fieldSkill);
+      fieldSkill.filter(skill => skill.field === 'skillClass')[0].skill
+      console.log(newCharacter);
       
       handleOpen();
    }
@@ -666,8 +600,7 @@ const CharacterSheet: React.FC = () => {
       return optionsCharacterJob.find(elem => elem.value === id)?.name;
    }
    const getKnowledgeName = (ids: string[]|undefined): string | undefined  => {
-      var names = '';
-      //console.log('ids', ids);
+      let names = '';
       if (ids === undefined) return names;
 
       ids.forEach((know) => {
@@ -684,7 +617,7 @@ const CharacterSheet: React.FC = () => {
       return optionsSkillExtra.find(elem => elem.value === id)?.name;
    }
    const getSkillName = (ring: string, id: string): string | undefined  => {
-      return skillsTypes.find(skill => skill.id === ring)?.skills.find(ele => ele.id === id)?.name;
+      return skillsTypes.find(skill => skill.id === ring)?.skills.find(ele => ele.value === id)?.name;
    }
 
    async function saveData() {
@@ -758,16 +691,18 @@ const CharacterSheet: React.FC = () => {
 
    }
    async function uploadSkill(isNewCharacter: boolean) {
+      console.log('fieldSkill: ',fieldSkill);
+      
       const { error } = await supabase
       .from('hpe_habilidad_personaje')
-      .update({
+      .upsert({
          hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillClass')[0].skill,
+         hpe_usuario: params.user, 
+         hpe_personaje: params.id,
+         hpe_campo: 'skillClass',
          hpe_alineacion: null,
       })
-      .eq("hpe_personaje",params.id)
-      .eq("hpe_campo","skillClass")
       .select();
-      //hpe_habilidad, hpe_campo, hpe_alineacion
 
       for(let index = 0; index < skillsAcquired.length; index++) {
          /*const { error } = await supabase
@@ -854,7 +789,6 @@ const CharacterSheet: React.FC = () => {
             />
             
             <FormCardCheckbox id="characterKnowledge" label="Conocimientos" checkboxes={checkboxesData} selectedValues={selectedCheckValues} onSelectedValuesChange={handleSelectedCheckValuesChange} />
-            
          </fieldset>
 
          {/* Estadisticas del personaje */}
@@ -885,7 +819,6 @@ const CharacterSheet: React.FC = () => {
 
             {/* CHARISMA */}
             <FormInputStats inputStats={inputsStatsData[5]} onSelectedValuesChange={handleStatsInputChange} />
-            
          </fieldset>
 
          {/* Armamento inicial */}
@@ -919,7 +852,6 @@ const CharacterSheet: React.FC = () => {
             <FormSelectInfoPlayer id="skillClass" label="Habilidad innata" options={optionsSkillClass} selectedValue={selectedSkillValue} onSelectChange={handleSelectSkillChange} ></FormSelectInfoPlayer>
             
             <FormSelectInfoPlayer id="skillExtra" label="Habilidad extra" options={optionsSkillExtra} selectedValue={selectedExtraSkillValue} onSelectChange={handleSelectExtraSkillChange} ></FormSelectInfoPlayer>
-            
          </fieldset>
 
          {/* Habilidades */}
@@ -945,7 +877,6 @@ const CharacterSheet: React.FC = () => {
             <FormInputSkillsRing id={'1'} level={characterLevel} levelEvaluated={6} ringTypes={optionsRingTypes} skillList={skillsRingList[1]} values={skillsAcquired[1]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
 
             <FormInputSkillsRing id={'2'} level={characterLevel} levelEvaluated={9} ringTypes={optionsRingTypes} skillList={skillsRingList[2]} values={skillsAcquired[2]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
-            
          </fieldset>
 
          {/* Inventario */}
@@ -1043,11 +974,11 @@ const CharacterSheet: React.FC = () => {
             size={"lg"}
             handler={handleOpenModal}
             className="dialog "
-            placeholder = ''
+            placeholder=''
             >
             <DialogHeader  placeholder = '' >Resumen de hoja de personaje</DialogHeader>
-            <DialogBody className="dialog-body grid grid-cols-3 gap-4"  placeholder = ''>
-               <ul className='dialog-card col-span-2 grid grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-4'>
+            <DialogBody className='dialog-body grid grid-cols-3 gap-4' placeholder = ''>
+               <ul className='dialog-card col-span-2 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
                   <li className='col-span-2'><strong>Jugador: </strong>{dataCharacter?.player}</li>
                   <li className='col-span-2'><strong>Personaje: </strong>{dataCharacter?.name}</li>
                   <li><strong>Nivel: </strong>{dataCharacter?.level}</li>
@@ -1088,23 +1019,29 @@ const CharacterSheet: React.FC = () => {
                      </tr>
                   </tbody>
                </table>
-               <ul className='dialog-card grid grid-cols-1 gap-3 '>
+               <ul className='dialog-card grid grid-cols-1 gap-3 col-start-1 row-start-2 items-center '>
+                  <li className=''><strong>Alineacion: </strong>{dataCharacter?.alignment}</li>
+               </ul>
+               <ul className='dialog-card grid grid-cols-1 gap-3 col-start-1'>
                   <li><strong>Habilidad principal: </strong>{getMainSkillName(dataCharacter?.mainSkill)}</li>
                   <li><strong>Habilidad extra: </strong>{getExtraSkillName(dataCharacter?.extraSkill)}</li>
-                  <li className=''><strong>Alineacion: </strong>{dataCharacter?.alignment}</li>
                   {dataCharacter?.skills.map((elem) => (
                      <li key={elem.id}><strong>Habilidad: </strong>{getSkillName(elem.ring,elem.name)}</li>
                   ))}
                </ul>
-               <ul className='dialog-card grid grid-cols-1 gap-3 '>
+               <ul className='dialog-card grid grid-cols-1 gap-3 col-start-2 row-start-2 items-center'>
                   <li><strong>Arma principal: </strong>{dataCharacter?.mainWeapon}</li>
+               </ul>
+               <ul className='dialog-card grid grid-cols-1 gap-3 col-start-2'>
                   <li><strong>Arma secundaria: </strong>{dataCharacter?.secondaryWeapon}</li>
                </ul>
-               <ul className='dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 '>
+               <ul className='dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 col-start-3 row-start-2'>
                   <li className='md:col-span-2 lg:col-span-3'><strong>Dinero: </strong> </li>
                   <li>Oro: {dataCharacter?.coinsInv[0]}</li>
                   <li>Plata: {dataCharacter?.coinsInv[1]}</li>
                   <li>Cobre: {dataCharacter?.coinsInv[2]}</li>
+               </ul>
+               <ul className='dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 col-start-3'>
                   <li className='md:col-span-2 lg:col-span-3'>Inventario: </li>
                   {dataCharacter?.inv.map((elem) => (
                      <li key={elem.id}><strong>{elem.name}: </strong>{elem.count}</li>
@@ -1113,19 +1050,20 @@ const CharacterSheet: React.FC = () => {
             </DialogBody>
             <DialogFooter placeholder = '' >
                <Button
-                  variant="text"
-                  color="red"
+                  variant='text'
+                  color='red'
                   onClick={() => handleOpen()}
-                  className="mr-1"
+                  className='mr-1'
                   placeholder = ''
                >
                   <span>Cancelar</span>
                </Button>
                <Button
-                  variant="gradient"
+                  variant='gradient'
                   className='btn-dialog-accept'
                   onClick={() => saveData()}
-                  placeholder = ''
+                  placeholder=''
+                  id='btnSaveData'
                >
                   <span>Guardar información</span>
                </Button>

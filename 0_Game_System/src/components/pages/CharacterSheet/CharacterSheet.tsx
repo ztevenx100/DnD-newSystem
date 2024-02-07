@@ -56,6 +56,13 @@ const CharacterSheet: React.FC = () => {
    const [skillsRingList, setSkillsRingList] = useState<SkillTypes[]> ([{id:'0', skills: []},{id:'1', skills: []},{id:'2', skills: []}]);
    const [fieldSkill, setFieldSkill] = useState<SkillFields[]> ([{id:'',skill:'',field:'skillClass'},{id:'',skill:'',field:'skillExtra'}]) ;
 
+   // Listado del select skillClass
+   const [optionsSkillClass, setOptionsSkillClass] = useState<Option[]>([]);
+   // Listado del select skillExtra
+   const [optionsSkillExtra, setOptionsSkillExtra] = useState<Option[]>([]);
+   // Listado del select skillTypeRing
+   const [skillsTypes, setSkillsTypes] = useState<SkillTypes[]>([]);
+
    const [open, setOpen] = useState<boolean>(false);
    const [loading, setLoading] = useState<boolean>(true);
    const [newRecord, setNewRecord] = useState<boolean>(true);
@@ -93,22 +100,31 @@ const CharacterSheet: React.FC = () => {
    //console.log("id:" + params.id);
 
    useEffect(() => {
-      if(params.id === null || params.id ===  undefined){
-         setNewRecord(true);
-      } else {
-         setNewRecord(false);
+      // Lógica que se ejecutará después de que skillsTypes se ha actualizado
+      getSkills()
+    }, [skillsTypes]);
+
+   useEffect(() => {
+      const loadInfo = async () => {
+         if(params.id === null || params.id ===  undefined){
+            setNewRecord(true);
+         } else {
+            setNewRecord(false);
+         }
+         
+         await getUser();
+         await getListSkill();
+         await getCharacter();
+         
+         Promise.all ([
+            getStats(),
+            getInventory(),
+         ]).finally(() => {
+            setLoading(false);
+         });
       }
 
-      Promise.all ([
-         getUser(),
-         getListSkill(),
-         getCharacter(),
-         getStats(),
-         getSkills(),
-         getInventory(),
-      ]).finally(() => {
-         setLoading(false);
-      })
+      loadInfo();
    }, []);
 
    async function getUser() {
@@ -117,7 +133,6 @@ const CharacterSheet: React.FC = () => {
       //console.log('getUser ',data);
 
       if (data !== null) {
-         //console.log("user: " + data + " id: " + data[0].usu_id + " nombre: " + data[0].usu_nombre);
          const nombre = data[0].usu_nombre;
          setPlayerName(nombre);
       }
@@ -150,9 +165,9 @@ const CharacterSheet: React.FC = () => {
          setOptionsSkillClass(updatedOptionsSkillClass);
          setOptionsSkillExtra(updatedOptionsSkillExtra);
          setSkillsTypes(otherSkills);
-         console.log('updatedOptionsSkillClass: ', updatedOptionsSkillClass);
-         console.log('updatedOptionsSkillExtra: ', updatedOptionsSkillExtra);
-         console.log('otherSkills: ', otherSkills);
+         //console.log('updatedOptionsSkillClass: ', updatedOptionsSkillClass);
+         //console.log('updatedOptionsSkillExtra: ', updatedOptionsSkillExtra);
+         //console.log('otherSkills: ', otherSkills);
          //console.log('otherSkills: ', otherSkills);
       }
    }
@@ -162,11 +177,10 @@ const CharacterSheet: React.FC = () => {
       const { data } = await supabase.from("pus_personajes_usuario").select(
          'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria,pus_cantidad_oro,pus_cantidad_plata,pus_cantidad_bronce'
       ).eq("pus_id",params.id);
-      console.log('getCharacter ',data);
+      //console.log('getCharacter ',data);
 
       if (data !== null) {
          const updatedCoins = [...coins];
-         //console.log("user: " + data + " id: " + data[0].psu_id + " nombre: " + data[0].psu_nombre);
          setCharacterName(data[0].pus_nombre);
          setSelectedClassValue(data[0].pus_clase ?? '');
          setSelectedRaceValue(data[0].pus_raza ?? '');
@@ -239,7 +253,7 @@ const CharacterSheet: React.FC = () => {
             }
          });
          //console.log('getSkills - updatedSkills', updatedSkills);
-         console.log('getSkills - updatedFieldSkill', updatedFieldSkill);
+         //console.log('getSkills - updatedFieldSkill', updatedFieldSkill);
          setSkillsAcquired(updatedSkills);
          setFieldSkill(updatedFieldSkill);
       }
@@ -323,12 +337,7 @@ const CharacterSheet: React.FC = () => {
       { id: 'CRE', name: 'Creación' },
       { id: 'SUP', name: 'Soporte' },
    ];
-   // Listado del select skillClass
-   const [optionsSkillClass, setOptionsSkillClass] = useState<Option[]>([]);
-   // Listado del select skillExtra
-   const [optionsSkillExtra, setOptionsSkillExtra] = useState<Option[]>([]);
-   // Listado del select skillTypeRing
-   const [skillsTypes, setSkillsTypes] = useState<SkillTypes[]>([]);
+
    // Listado de armas
    const listWearpons = [
       'Daga',
@@ -363,14 +372,13 @@ const CharacterSheet: React.FC = () => {
    const handleSelectSkillChange = (currentSkill: string) => {
       // Actualizar la habilidad principal del personaje
       let option = optionsSkillClass.filter(skill => skill.value === currentSkill);
-      let skill:SkillFields ={id: option[0].value, skill: option[0].id||'', field: "skillClass" };
-
-      setFieldSkill(prevItems => prevItems.map( item => item.field === 'skillClass' ? { ...item, item:skill } : item ));
-
+      setFieldSkill(prevItems => prevItems.map( item => item.field === 'skillClass' ? { ...item, id: option[0].value, skill: option[0].id||'' } : item ));
       setSelectedSkillValue(currentSkill);
    };
    const handleSelectExtraSkillChange = (currentSkill: string) => {
       // Actualizar la habilidad extra del personaje
+      let option = optionsSkillExtra.filter(skill => skill.value === currentSkill);
+      setFieldSkill(prevItems => prevItems.map( item => item.field === 'skillExtra' ? { ...item, id: option[0].value, skill: option[0].id||'' } : item ));
       setSelectedExtraSkillValue(currentSkill);
    };
 
@@ -458,7 +466,7 @@ const CharacterSheet: React.FC = () => {
          updatedSkills[existingSkillIndex] = { id, name, description, ring };
          
          setSkillsAcquired(updatedSkills);
-         //console.log('handleSelectedRingSkillChange - updatedSkills', updatedSkills);
+         console.log('handleSelectedRingSkillChange - updatedSkills', updatedSkills);
       } else {
          // Si la habilidad no existe, añadirla
          setSkillsAcquired(prevSkills => [...prevSkills, { id, name, description, ring }]);
@@ -562,7 +570,6 @@ const CharacterSheet: React.FC = () => {
       setDataCharacter(newCharacter);
       console.log(skillsAcquired);
       console.log("fieldSkill: ",fieldSkill);
-      fieldSkill.filter(skill => skill.field === 'skillClass')[0].skill
       console.log(newCharacter);
       
       handleOpen();
@@ -695,13 +702,22 @@ const CharacterSheet: React.FC = () => {
       
       const { error } = await supabase
       .from('hpe_habilidad_personaje')
-      .upsert({
-         hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillClass')[0].skill,
-         hpe_usuario: params.user, 
-         hpe_personaje: params.id,
-         hpe_campo: 'skillClass',
-         hpe_alineacion: null,
-      })
+      .upsert([
+         {
+            hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillClass')[0].skill,
+            hpe_usuario: params.user, 
+            hpe_personaje: params.id,
+            hpe_campo: 'skillClass',
+            hpe_alineacion: null,
+         },
+         {
+            hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillExtra')[0].skill,
+            hpe_usuario: params.user, 
+            hpe_personaje: params.id,
+            hpe_campo: 'skillExtra',
+            hpe_alineacion: null,
+         },
+      ])
       .select();
 
       for(let index = 0; index < skillsAcquired.length; index++) {

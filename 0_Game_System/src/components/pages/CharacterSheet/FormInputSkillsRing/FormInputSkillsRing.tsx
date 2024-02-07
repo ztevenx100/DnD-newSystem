@@ -20,7 +20,7 @@ interface FormInputSkillsRingProps{
 
 const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, levelEvaluated, ringTypes, skillList, values, onSelectChange, onSelectTypeChange }) => {
 
-  const handleLevelChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleLevelChange = () => {
 
     useEffect(() => {
         setTimeout(() => {
@@ -76,7 +76,7 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
         >
             <option value=""/>
             {skillList.skills.map((elem,index) => (
-                <option key={index} value={elem.id}>{elem.name}</option>
+                <option key={index} value={elem.value}>{elem.name}</option>
             ))}
         </select>
 

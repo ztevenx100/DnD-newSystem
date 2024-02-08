@@ -504,8 +504,15 @@ const CharacterSheet: React.FC = () => {
       setNewObjectCount(1);
    };
   
-   const handleDeleteObject = (id: string) => {
+   async function handleDeleteObject (id: string) {
       setInvObjects((prevObjects) => prevObjects.filter((obj) => obj.id !== id));
+      // Eliminar objeto db
+      const { error } = await supabase
+      .from('inp_inventario_personaje')
+      .delete()
+      .eq('inp_id', id);
+
+      if(error) alert('Error eliminado itemn del inventario');
    };
   
    const handleEditCount = (id: string, newCount: number) => {
@@ -701,6 +708,7 @@ const CharacterSheet: React.FC = () => {
             .eq("epe_personaje",params.id)
             .eq("epe_sigla",element.id)
             .select();
+            if(error) alert('Stat not upload.');
          }
       } else {
          let saveStats = [];
@@ -721,6 +729,8 @@ const CharacterSheet: React.FC = () => {
          .from('epe_estadistica_personaje')
          .insert(saveStats)
          .select();
+         
+         if(error) alert('Stat not upload.');
       }
    }
    async function uploadSkill(character: string) {

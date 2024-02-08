@@ -30,6 +30,7 @@ export interface SkillTypes {
 
 export interface SkillsAcquired {
     id: string;
+    value: string;
     name: string;
     description?: string;
     ring: string;

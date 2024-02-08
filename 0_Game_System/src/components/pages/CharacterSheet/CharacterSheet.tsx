@@ -46,7 +46,7 @@ const CharacterSheet: React.FC = () => {
    const [alignmentValue, setAlignmentValue] = useState<string>(''); 
    const [selectedSkillValue, setSelectedSkillValue] = useState<string>(''); 
    const [selectedExtraSkillValue, setSelectedExtraSkillValue] = useState<string>(''); 
-   const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([{id:'0', name:'', description: '', ring:''},{id:'1', name:'', description: '', ring:''},{id:'2', name:'', description: '', ring:''}]);
+   const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([{id:'', value:'0', name:'', description: '', ring:''},{id:'', value:'1',name:'', description: '', ring:''},{id:'', value:'2', name:'', description: '', ring:''}]);
    
    const [coins,setCoins] = useState<number[]>([0,3,0]);
    const [invObjects, setInvObjects] = useState<InventoryObject[]>([]);
@@ -168,7 +168,6 @@ const CharacterSheet: React.FC = () => {
          //console.log('updatedOptionsSkillClass: ', updatedOptionsSkillClass);
          //console.log('updatedOptionsSkillExtra: ', updatedOptionsSkillExtra);
          //console.log('otherSkills: ', otherSkills);
-         //console.log('otherSkills: ', otherSkills);
       }
    }
    async function getCharacter() {
@@ -249,7 +248,7 @@ const CharacterSheet: React.FC = () => {
                
                // Actualizar listado
                handleSelectedTypeRingSkillChange(numCampo,estadisticaBase);
-               updatedSkills[Number(numCampo)] = { id: numCampo, name: acronym, description: '', ring: estadisticaBase };
+               updatedSkills[Number(numCampo)] = { id: elem.hpe_habilidad, value: numCampo,  name: acronym, description: '', ring: estadisticaBase };
             }
          });
          //console.log('getSkills - updatedSkills', updatedSkills);
@@ -455,22 +454,24 @@ const CharacterSheet: React.FC = () => {
       setSkillsRingList( updatedSetSkillsRingList );
    };
 
-   const handleSelectedRingSkillChange = async (id: string, ring: string, name: string) => {
+   const handleSelectedRingSkillChange = async (value: string, ring: string, name: string) => {
       const description = '';
-      const existingSkillIndex = skillsAcquired.findIndex(elem => elem.id === id);
-      //console.log(' handleSelectedRingSkillChange: ', existingSkillIndex);
+      const existingSkillIndex = skillsAcquired.findIndex(elem => elem.value === value);
+      const id:string = skillsTypes.find(item => item.id === ring)?.skills.find(item => item.value === name)?.id || '';
+      //console.log(' handleSelectedRingSkillChange: ', existingSkillIndex, '- id:', id);
 
       if (existingSkillIndex !== -1) {
          // Si la habilidad ya existe, actualizarla
          const updatedSkills = [...skillsAcquired];
-         updatedSkills[existingSkillIndex] = { id, name, description, ring };
+         updatedSkills[existingSkillIndex] = { id, value, name, description, ring };
          
          setSkillsAcquired(updatedSkills);
-         console.log('handleSelectedRingSkillChange - updatedSkills', updatedSkills);
+         //console.log('handleSelectedRingSkillChange - updatedSkills', updatedSkills);
       } else {
          // Si la habilidad no existe, añadirla
-         setSkillsAcquired(prevSkills => [...prevSkills, { id, name, description, ring }]);
+         setSkillsAcquired(prevSkills => [...prevSkills, { id, value, name, description, ring }]);
       }
+      
    };
 
    // Funcion para editar la cantidad de monedas
@@ -630,10 +631,11 @@ const CharacterSheet: React.FC = () => {
    async function saveData() {
       alert('Guardar info ' + newRecord);
 
+      let character:string = await uploadInfoCharacter(newRecord);
+      //console.log('saveData ', character);
       Promise.all ([
-         uploadInfoCharacter(newRecord),
-         uploadStats(newRecord),
-         uploadSkill(newRecord),
+         uploadStats(newRecord, character),
+         uploadSkill(),
          uploadInventory(newRecord),
       ]).finally(() => {
          setNewRecord(false);
@@ -663,7 +665,7 @@ const CharacterSheet: React.FC = () => {
       .eq("pus_id",params.id)
       .select();
       
-      if (data !== null) {
+      if (data === null) {
          // Añadir
          // const { error } = await supabase
          // .from('pus_personajes_usuario')
@@ -672,11 +674,16 @@ const CharacterSheet: React.FC = () => {
          // ])
          // .select();
          // if(error) return;
+      } else {
+         //console.log('uploadInfoCharacter ', data[0].pus_id)
+         return data[0].pus_id;
       }
       
       if(error)return;
    }
-   async function uploadStats(isNewCharacter: boolean) {
+   async function uploadStats(isNewCharacter: boolean, character: string) {
+      console.log('uploadStats ', inputsStatsData);
+      
       if (!isNewCharacter) {
          // Actualizar
          for(const element of inputsStatsData) {
@@ -693,47 +700,61 @@ const CharacterSheet: React.FC = () => {
             .select();
          }
       } else {
+         let saveStats = [];
          // Añadir
+         for(const element of inputsStatsData) {
+            saveStats.push({
+               epe_usuario: params.user,
+               epe_personaje: character,
+               epe_sigla: element?.id,
+               epe_nombre: element?.label,
+               epe_num_dado: element?.valueDice,
+               epe_num_clase: element?.valueClass,
+               epe_num_nivel: element?.valueLevel,
+            });
+         }
+         // epe_personaje, epe_sigla, epe_nombre, epe_num_dado, epe_num_clase, epe_num_nivel
+         const { error } = await supabase
+         .from('epe_estadistica_personaje')
+         .insert(saveStats)
+         .select();
       }
-
    }
-   async function uploadSkill(isNewCharacter: boolean) {
-      console.log('fieldSkill: ',fieldSkill);
+   async function uploadSkill() {
+      let saveSkill = [];
+      saveSkill.push({
+         hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillClass')[0].skill,
+         hpe_usuario: params.user, 
+         hpe_personaje: params.id,
+         hpe_campo: 'skillClass',
+         hpe_alineacion: null,
+      });
+      saveSkill.push({
+         hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillExtra')[0].skill,
+         hpe_usuario: params.user, 
+         hpe_personaje: params.id,
+         hpe_campo: 'skillExtra',
+         hpe_alineacion: null,
+      });
+      
+      for(let index = 0; index < skillsAcquired.length; index++) {
+         if(skillsAcquired[index].id === '') continue;
+         saveSkill.push({
+            hpe_habilidad: skillsAcquired[index].id,
+            hpe_usuario: params.user, 
+            hpe_personaje: params.id,
+            hpe_campo: 'skillRing'+skillsAcquired[index].value,
+            hpe_alineacion: null,
+         });
+      }
+      //console.log('saveSkill ', saveSkill);
       
       const { error } = await supabase
       .from('hpe_habilidad_personaje')
-      .upsert([
-         {
-            hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillClass')[0].skill,
-            hpe_usuario: params.user, 
-            hpe_personaje: params.id,
-            hpe_campo: 'skillClass',
-            hpe_alineacion: null,
-         },
-         {
-            hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillExtra')[0].skill,
-            hpe_usuario: params.user, 
-            hpe_personaje: params.id,
-            hpe_campo: 'skillExtra',
-            hpe_alineacion: null,
-         },
-      ])
+      .upsert(saveSkill)
       .select();
 
-      for(let index = 0; index < skillsAcquired.length; index++) {
-         /*const { error } = await supabase
-         .from('hpe_personaje')
-         .update({ 
-            epe_nombre: element?.label,
-            epe_num_dado: element?.valueDice,
-            epe_num_clase: element?.valueClass,
-            epe_num_nivel: element?.valueLevel,
-         })
-         .eq("hpe_personaje",params.id)
-         .eq("hpe_habilidad",element.id)
-         .select();*/
-      }
-      // hpe_habilidad, hpe_campo, hpe_alineacion, hab_habilidad(hab_id, hab_nombre, had_estadistica_base, hab_siglas)
+      if(error) alert('Skill not upload.');
    }
    async function uploadInventory(isNewCharacter: boolean) {
 

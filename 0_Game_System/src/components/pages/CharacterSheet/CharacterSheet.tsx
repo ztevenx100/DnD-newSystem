@@ -275,6 +275,7 @@ const CharacterSheet: React.FC = () => {
          updatedInvObjects.push({id:'0', name:'Gema', description:'Articulo del elegido', count: 1, readOnly: true})
          setInvObjects(updatedInvObjects);
       }
+      //console.log('updatedInvObjects: ', updatedInvObjects);
    }
    
    // Listado del select characterClass
@@ -635,8 +636,8 @@ const CharacterSheet: React.FC = () => {
       //console.log('saveData ', character);
       Promise.all ([
          uploadStats(newRecord, character),
-         uploadSkill(),
-         uploadInventory(newRecord),
+         uploadSkill(character),
+         uploadInventory(character),
       ]).finally(() => {
          setNewRecord(false);
       })
@@ -667,13 +668,15 @@ const CharacterSheet: React.FC = () => {
       
       if (data === null) {
          // Añadir
-         // const { error } = await supabase
-         // .from('pus_personajes_usuario')
-         // .insert([
-         //    { some_column: 'someValue', other_column: 'otherValue' },
-         // ])
-         // .select();
-         // if(error) return;
+         const { data, error } = await supabase
+         .from('pus_personajes_usuario')
+         .insert({ 
+            some_column: 'someValue', other_column: 'otherValue' 
+         })
+         .select();
+         if(data !== null) return data[0].pus_id;
+         
+         if(error)return;
       } else {
          //console.log('uploadInfoCharacter ', data[0].pus_id)
          return data[0].pus_id;
@@ -682,7 +685,7 @@ const CharacterSheet: React.FC = () => {
       if(error)return;
    }
    async function uploadStats(isNewCharacter: boolean, character: string) {
-      console.log('uploadStats ', inputsStatsData);
+      //console.log('uploadStats ', inputsStatsData);
       
       if (!isNewCharacter) {
          // Actualizar
@@ -720,7 +723,7 @@ const CharacterSheet: React.FC = () => {
          .select();
       }
    }
-   async function uploadSkill() {
+   async function uploadSkill(character: string) {
       let saveSkill = [];
       saveSkill.push({
          hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillClass')[0].skill,
@@ -742,7 +745,7 @@ const CharacterSheet: React.FC = () => {
          saveSkill.push({
             hpe_habilidad: skillsAcquired[index].id,
             hpe_usuario: params.user, 
-            hpe_personaje: params.id,
+            hpe_personaje: character,
             hpe_campo: 'skillRing'+skillsAcquired[index].value,
             hpe_alineacion: null,
          });
@@ -756,8 +759,26 @@ const CharacterSheet: React.FC = () => {
 
       if(error) alert('Skill not upload.');
    }
-   async function uploadInventory(isNewCharacter: boolean) {
+   async function uploadInventory(character: string) {
+      let saveItems = [];
 
+      for(let index = 0; index < invObjects.length; index++) {
+         saveItems.push({
+            inp_usuario: params.user, 
+            inp_personaje: character,
+            inp_id: invObjects[index].id, 
+            inp_nombre: invObjects[index].name, 
+            inp_descripcion: invObjects[index].description, 
+            inp_cantidad: invObjects[index].count,
+         });
+      }
+
+      const { error } = await supabase
+      .from('inp_inventario_personaje')
+      .upsert(saveItems)
+      .select();
+   
+      if(error) alert('Items not upload.');
    }
 
 

@@ -678,7 +678,19 @@ const CharacterSheet: React.FC = () => {
          const { data, error } = await supabase
          .from('pus_personajes_usuario')
          .insert({ 
-            some_column: 'someValue', other_column: 'otherValue' 
+            pus_usuario: params.user,
+            pus_nombre: dataCharacter?.name,
+            pus_clase: dataCharacter?.class,
+            pus_raza: dataCharacter?.race,
+            pus_trabajo: dataCharacter?.job,
+            pus_nivel: dataCharacter?.level,
+            pus_descripcion: dataCharacter?.description,
+            pus_conocimientos: dataCharacter?.knowledge.join(),
+            pus_arma_principal: dataCharacter?.mainWeapon,
+            pus_arma_secundaria: dataCharacter?.secondaryWeapon,
+            pus_cantidad_oro: dataCharacter?.coinsInv[0],
+            pus_cantidad_plata: dataCharacter?.coinsInv[1],
+            pus_cantidad_bronce: dataCharacter?.coinsInv[2],
          })
          .select();
          if(data !== null) return data[0].pus_id;

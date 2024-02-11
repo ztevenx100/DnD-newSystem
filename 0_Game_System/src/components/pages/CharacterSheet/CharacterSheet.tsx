@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
-import { useParams} from 'react-router-dom';
+import { useParams, redirect } from 'react-router-dom';
 import supabase from '../../database/supabase';
 //import { QueryResult, QueryData, QueryError } from '@supabase/supabase-js'
 import { v4 as uuidv4 } from 'uuid';
@@ -106,6 +106,7 @@ const CharacterSheet: React.FC = () => {
 
    useEffect(() => {
       const loadInfo = async () => {
+         document.documentElement.scrollTop = 0;
          if(params.id === null || params.id ===  undefined){
             setNewRecord(true);
          } else {
@@ -415,6 +416,7 @@ const CharacterSheet: React.FC = () => {
       
       // skillClass - Llenar el valor de la habilidad principal
       setSelectedSkillValue("S" + selectedOption?.mainStat);
+      handleSelectSkillChange("S" + selectedOption?.mainStat);
    };
 
    // Manejar el cambio en la selección characterJob
@@ -576,10 +578,10 @@ const CharacterSheet: React.FC = () => {
          inv: invObjects,
       };
 
-      setDataCharacter(newCharacter);
-      console.log(skillsAcquired);
-      console.log("fieldSkill: ",fieldSkill);
+      //console.log(skillsAcquired);
+      //console.log("fieldSkill: ",fieldSkill);
       console.log(newCharacter);
+      setDataCharacter(newCharacter);
       
       handleOpen();
    }
@@ -637,9 +639,9 @@ const CharacterSheet: React.FC = () => {
    }
 
    async function saveData() {
-      alert('Guardar info ' + newRecord);
+      //alert('Guardar info ' + newRecord);
 
-      let character:string = await uploadInfoCharacter(newRecord);
+      let character:string = await uploadInfoCharacter();
       //console.log('saveData ', character);
       Promise.all ([
          uploadStats(newRecord, character),
@@ -650,9 +652,10 @@ const CharacterSheet: React.FC = () => {
       })
       
       handleOpen();
+      //redirect("/CharacterSheet/${params.user}/${character}");
    }
 
-   async function uploadInfoCharacter(isNewCharacter: boolean) {
+   async function uploadInfoCharacter() {
       // Actualizar
       const { data, error } = await supabase
       .from('pus_personajes_usuario')
@@ -679,6 +682,7 @@ const CharacterSheet: React.FC = () => {
          .from('pus_personajes_usuario')
          .insert({ 
             pus_usuario: params.user,
+            pus_id: dataCharacter?.id,
             pus_nombre: dataCharacter?.name,
             pus_clase: dataCharacter?.class,
             pus_raza: dataCharacter?.race,
@@ -750,14 +754,14 @@ const CharacterSheet: React.FC = () => {
       saveSkill.push({
          hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillClass')[0].skill,
          hpe_usuario: params.user, 
-         hpe_personaje: params.id,
+         hpe_personaje: character,
          hpe_campo: 'skillClass',
          hpe_alineacion: null,
       });
       saveSkill.push({
          hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillExtra')[0].skill,
          hpe_usuario: params.user, 
-         hpe_personaje: params.id,
+         hpe_personaje: character,
          hpe_campo: 'skillExtra',
          hpe_alineacion: null,
       });
@@ -1106,7 +1110,7 @@ const CharacterSheet: React.FC = () => {
                   <li><strong>Habilidad principal: </strong>{getMainSkillName(dataCharacter?.mainSkill)}</li>
                   <li><strong>Habilidad extra: </strong>{getExtraSkillName(dataCharacter?.extraSkill)}</li>
                   {dataCharacter?.skills.map((elem) => (
-                     <li key={elem.id}><strong>Habilidad: </strong>{getSkillName(elem.ring,elem.name)}</li>
+                     <li key={elem.value}><strong>Habilidad: </strong>{getSkillName(elem.ring,elem.name)}</li>
                   ))}
                </ul>
                <ul className='dialog-card grid grid-cols-1 gap-3 col-start-2 row-start-2 items-center'>

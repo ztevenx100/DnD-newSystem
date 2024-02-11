@@ -85,7 +85,7 @@ const UserCharacters: React.FC = () => {
             </article>
             <aside className='panel-save'>
                 <Link className='btn-save-character' to={`/CharacterSheet/${user}`} >
-                    <SvgAddCharacter className='icon' width={50} height={50} />
+                    <SvgAddCharacter className='icon' width={40} height={40} />
                 </Link>
             </aside>
         </>

@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
-import { useParams, redirect } from 'react-router-dom';
+import { useParams, redirect, Navigate, useNavigate } from 'react-router-dom';
 import supabase from '../../database/supabase';
 //import { QueryResult, QueryData, QueryError } from '@supabase/supabase-js'
 import { v4 as uuidv4 } from 'uuid';
@@ -11,7 +11,7 @@ import "./CharacterSheet.css";
 import { useBackground } from '../../../App';
 
 // Interfaces
-import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields,Skill, Option } from '../../interfaces/typesCharacterSheet';
+import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields, Option } from '../../interfaces/typesCharacterSheet';
 import { DBHabilidadPersonaje } from '../../interfaces/dbTypes';
 
 import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
@@ -360,24 +360,26 @@ const CharacterSheet: React.FC = () => {
       'Baculo',
       'Tomfas',
       'Mancuernas',
+      'Kunai',
+      'Shuriken',
    ];
 
+   // Actualizar el nivel del personaje
    const handleChangeCharacterLevel = (newLevel: number) => {
-      // Actualizar el nivel del personaje
       setCharacterLevel(newLevel);
    };
    // Manejar el cambio en la selección
    const handleSelectRaceChange = (value: string) => {
       setSelectedRaceValue(value);
    };
+   // Actualizar la habilidad principal del personaje
    const handleSelectSkillChange = (currentSkill: string) => {
-      // Actualizar la habilidad principal del personaje
       let option = optionsSkillClass.filter(skill => skill.value === currentSkill);
       setFieldSkill(prevItems => prevItems.map( item => item.field === 'skillClass' ? { ...item, id: option[0].value, skill: option[0].id||'' } : item ));
       setSelectedSkillValue(currentSkill);
    };
+   // Actualizar la habilidad extra del personaje
    const handleSelectExtraSkillChange = (currentSkill: string) => {
-      // Actualizar la habilidad extra del personaje
       let option = optionsSkillExtra.filter(skill => skill.value === currentSkill);
       setFieldSkill(prevItems => prevItems.map( item => item.field === 'skillExtra' ? { ...item, id: option[0].value, skill: option[0].id||'' } : item ));
       setSelectedExtraSkillValue(currentSkill);
@@ -641,7 +643,7 @@ const CharacterSheet: React.FC = () => {
    async function saveData() {
       //alert('Guardar info ' + newRecord);
 
-      let character:string = await uploadInfoCharacter();
+      let character:string = await uploadInfoCharacter(newRecord);
       //console.log('saveData ', character);
       Promise.all ([
          uploadStats(newRecord, character),
@@ -651,32 +653,43 @@ const CharacterSheet: React.FC = () => {
          setNewRecord(false);
       })
       
+      console.log('/CharacterSheet/'+params.user+'/'+character);
+      //redirect('/CharacterSheet/'+params.user+'/'+character);
+      const navigate = await useNavigate();
+      navigate('/CharacterSheet/'+params.user+'/'+character);
       handleOpen();
-      //redirect("/CharacterSheet/${params.user}/${character}");
+      //return <Navigate to={"CharacterSheet/${params.user}/${character}"} />;
    }
 
-   async function uploadInfoCharacter() {
-      // Actualizar
-      const { data, error } = await supabase
-      .from('pus_personajes_usuario')
-      .update({
-         pus_nombre: dataCharacter?.name,
-         pus_clase: dataCharacter?.class,
-         pus_raza: dataCharacter?.race,
-         pus_trabajo: dataCharacter?.job,
-         pus_nivel: dataCharacter?.level,
-         pus_descripcion: dataCharacter?.description,
-         pus_conocimientos: dataCharacter?.knowledge.join(),
-         pus_arma_principal: dataCharacter?.mainWeapon,
-         pus_arma_secundaria: dataCharacter?.secondaryWeapon,
-         pus_cantidad_oro: dataCharacter?.coinsInv[0],
-         pus_cantidad_plata: dataCharacter?.coinsInv[1],
-         pus_cantidad_bronce: dataCharacter?.coinsInv[2],
-      })
-      .eq("pus_id",params.id)
-      .select();
-      
-      if (data === null) {
+   async function uploadInfoCharacter(newRecord: boolean) {
+      if (!newRecord) {
+         // Actualizar
+         const { data, error } = await supabase
+         .from('pus_personajes_usuario')
+         .update({
+            pus_nombre: dataCharacter?.name,
+            pus_clase: dataCharacter?.class,
+            pus_raza: dataCharacter?.race,
+            pus_trabajo: dataCharacter?.job,
+            pus_nivel: dataCharacter?.level,
+            pus_descripcion: dataCharacter?.description,
+            pus_conocimientos: dataCharacter?.knowledge.join(),
+            pus_arma_principal: dataCharacter?.mainWeapon,
+            pus_arma_secundaria: dataCharacter?.secondaryWeapon,
+            pus_cantidad_oro: dataCharacter?.coinsInv[0],
+            pus_cantidad_plata: dataCharacter?.coinsInv[1],
+            pus_cantidad_bronce: dataCharacter?.coinsInv[2],
+         })
+         .eq("pus_id",params.id)
+         .select();
+         
+         if(data !== null){
+            return data[0].pus_id;
+            //console.log('uploadInfoCharacter ', data[0].pus_id);
+         } 
+         
+         if(error)return '';
+      } else {
          // Añadir
          const { data, error } = await supabase
          .from('pus_personajes_usuario')
@@ -699,15 +712,11 @@ const CharacterSheet: React.FC = () => {
          .select();
          if(data !== null) return data[0].pus_id;
          
-         if(error)return;
-      } else {
-         //console.log('uploadInfoCharacter ', data[0].pus_id)
-         return data[0].pus_id;
+         if(error)return '';
       }
-      
-      if(error)return;
    }
    async function uploadStats(isNewCharacter: boolean, character: string) {
+      if(character !== '') return;
       //console.log('uploadStats ', inputsStatsData);
       
       if (!isNewCharacter) {
@@ -740,7 +749,6 @@ const CharacterSheet: React.FC = () => {
                epe_num_nivel: element?.valueLevel,
             });
          }
-         // epe_personaje, epe_sigla, epe_nombre, epe_num_dado, epe_num_clase, epe_num_nivel
          const { error } = await supabase
          .from('epe_estadistica_personaje')
          .insert(saveStats)
@@ -750,6 +758,8 @@ const CharacterSheet: React.FC = () => {
       }
    }
    async function uploadSkill(character: string) {
+      if(character !== '') return;
+
       let saveSkill = [];
       saveSkill.push({
          hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillClass')[0].skill,
@@ -786,6 +796,8 @@ const CharacterSheet: React.FC = () => {
       if(error) alert('Skill not upload.');
    }
    async function uploadInventory(character: string) {
+      if(character !== '') return;
+
       let saveItems = [];
 
       for(let index = 0; index < invObjects.length; index++) {
@@ -929,6 +941,7 @@ const CharacterSheet: React.FC = () => {
                id="secondaryWeapon" 
                placeholder="Arma secondaria" 
                className="form-input mr-2 focus:border-black focus:shadow"
+               list='wearpons'
                onChange={(e) => setSecondaryWeapon(e.target.value)}
                value={secondaryWeapon}
             />

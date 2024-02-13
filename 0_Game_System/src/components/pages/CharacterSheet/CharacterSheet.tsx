@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
-import { useParams, redirect, Navigate, useNavigate } from 'react-router-dom';
+import { useParams, redirect, useNavigate } from 'react-router-dom';
 import supabase from '../../database/supabase';
 //import { QueryResult, QueryData, QueryError } from '@supabase/supabase-js'
 import { v4 as uuidv4 } from 'uuid';
@@ -67,6 +67,7 @@ const CharacterSheet: React.FC = () => {
    const [loading, setLoading] = useState<boolean>(true);
    const [newRecord, setNewRecord] = useState<boolean>(true);
    const handleOpen = () => setOpen(!open);
+   const navigate = useNavigate();
 
    interface DataCharacter{
       id: string;
@@ -199,7 +200,7 @@ const CharacterSheet: React.FC = () => {
       }
    }
    async function getStats() {
-      if(params.id === null || params.id ===  undefined) return;
+      if(params.id === null || params.id === undefined) return;
 
       const { data } = await supabase.from("epe_estadistica_personaje").select( 'epe_sigla, epe_nombre, epe_num_dado, epe_num_clase, epe_num_nivel' )
          .eq("epe_personaje",params.id);
@@ -217,7 +218,7 @@ const CharacterSheet: React.FC = () => {
 
    }
    async function getSkills() {
-      if(params.id === null || params.id ===  undefined) return;
+      if(params.id === null || params.id === undefined) return;
       
       const { data } = await supabase.from("hpe_habilidad_personaje").select( 'hpe_habilidad, hpe_campo, hpe_alineacion, hab_habilidad(hab_id, hab_nombre, had_estadistica_base, hab_siglas)' )
          .eq("hpe_personaje",params.id)
@@ -259,9 +260,15 @@ const CharacterSheet: React.FC = () => {
       }
    }
    async function getInventory() {
-      if(params.id === null || params.id ===  undefined) return;
-      
       const updatedInvObjects = [...invObjects];
+      
+      if(params.id === null || params.id ===  undefined){
+         // añadir inventario por defectp
+         updatedInvObjects.push({id:uuidv4(), name:'Gema', description:'Articulo del elegido', count: 1, readOnly: true})
+         setInvObjects(updatedInvObjects);
+         return;
+      }
+      
       const { data } = await supabase.from("inp_inventario_personaje").select( 'inp_id, inp_nombre, inp_descripcion, inp_cantidad ' )
          .eq( "inp_personaje", params.id );
       //console.log('getInventory ',data);
@@ -271,9 +278,6 @@ const CharacterSheet: React.FC = () => {
             updatedInvObjects.push({ id: elem.inp_id, name: elem.inp_nombre, description: elem.inp_descripcion, count: elem.inp_cantidad, readOnly: false })
          });
          //console.log('getInventory - updatedInvObjects', updatedInvObjects);
-         setInvObjects(updatedInvObjects);
-      } else {
-         updatedInvObjects.push({id:'0', name:'Gema', description:'Articulo del elegido', count: 1, readOnly: true})
          setInvObjects(updatedInvObjects);
       }
       //console.log('updatedInvObjects: ', updatedInvObjects);
@@ -642,7 +646,6 @@ const CharacterSheet: React.FC = () => {
 
    async function saveData() {
       //alert('Guardar info ' + newRecord);
-
       let character:string = await uploadInfoCharacter(newRecord);
       //console.log('saveData ', character);
       Promise.all ([
@@ -653,13 +656,15 @@ const CharacterSheet: React.FC = () => {
          setNewRecord(false);
       })
       
-      console.log('/CharacterSheet/'+params.user+'/'+character);
-      //redirect('/CharacterSheet/'+params.user+'/'+character);
-      const navigate = await useNavigate();
-      navigate('/CharacterSheet/'+params.user+'/'+character);
+      document.documentElement.scrollTop = 0;
       handleOpen();
-      //return <Navigate to={"CharacterSheet/${params.user}/${character}"} />;
+      reloadPage(character);
    }
+   
+   const reloadPage = (character: string) => {
+      //console.log('/CharacterSheet/'+params.user+'/'+character);
+      navigate('/CharacterSheet/'+params.user+'/'+character);
+   };
 
    async function uploadInfoCharacter(newRecord: boolean) {
       if (!newRecord) {
@@ -716,7 +721,7 @@ const CharacterSheet: React.FC = () => {
       }
    }
    async function uploadStats(isNewCharacter: boolean, character: string) {
-      if(character !== '') return;
+      if(character === '') return;
       //console.log('uploadStats ', inputsStatsData);
       
       if (!isNewCharacter) {
@@ -758,7 +763,7 @@ const CharacterSheet: React.FC = () => {
       }
    }
    async function uploadSkill(character: string) {
-      if(character !== '') return;
+      if(character === '') return;
 
       let saveSkill = [];
       saveSkill.push({
@@ -796,7 +801,7 @@ const CharacterSheet: React.FC = () => {
       if(error) alert('Skill not upload.');
    }
    async function uploadInventory(character: string) {
-      if(character !== '') return;
+      if(character === '') return;
 
       let saveItems = [];
 

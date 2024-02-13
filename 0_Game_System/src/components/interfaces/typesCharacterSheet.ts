@@ -1,18 +1,26 @@
 
+export interface Option {
+    id?: string;
+    value: string;
+    name: string;
+}
+
 export interface InputStats {
     id: string;
     label: string;
-    description: string;
+    description?: string;
     valueDice: number;
     valueClass: number;
     valueLevel: number;
 }
 
 export interface Skill {
-    id: number;
+    id: string;
+    value?: string;
     name: string;
-    description: string;
-    dice: string;
+    description?: string;
+    dice?: string;
+    alignment?: string;
 }
 
 export interface SkillTypes {
@@ -22,15 +30,22 @@ export interface SkillTypes {
 
 export interface SkillsAcquired {
     id: string;
+    value: string;
     name: string;
-    description: string;
+    description?: string;
     ring: string;
 }
 
 export interface InventoryObject {
-    id: number;
+    id: string;
     name: string;
     description: string;
     count: number;
     readOnly: boolean;
+}
+
+export interface SkillFields {
+    id: string;
+    skill: string;
+    field: string;
 }

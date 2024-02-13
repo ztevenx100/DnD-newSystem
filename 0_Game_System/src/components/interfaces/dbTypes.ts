@@ -16,6 +16,9 @@ export interface DBPersonajesUsuario{
     usu_usuario: DBUsuario;
     pus_arma_principal: string;
     pus_arma_secundaria: string;
+    pus_cantidad_oro: number;
+    pus_cantidad_plata: number;
+    pus_cantidad_bronce: number;
 }
 
 export interface DBHabilidadPersonaje{
@@ -24,4 +27,15 @@ export interface DBHabilidadPersonaje{
   hpe_habilidad: string;
   hpe_alineacion: string;
   hpe_campo: string;
+  hab_habilidad: {
+      hab_id: string;
+      hab_nombre: string;
+      had_estadistica_base: string;
+      hab_siglas: string;
+  } | {
+    hab_id: string;
+    hab_nombre: string;
+    had_estadistica_base: string;
+    hab_siglas: string;
+  } [] | null;
 }

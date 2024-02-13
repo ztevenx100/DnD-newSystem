@@ -4,7 +4,7 @@
 */
 
 :root{
-    --bg-form-neutral: #E5E7EB;
+    --bg-form-neutral: #C1C3C7;
     --bg-form-orden: #0E79B2;
     --bg-form-caos: #E4572E;
     --bg-color-1: #E5E7EB;
@@ -19,9 +19,15 @@
     --required-color: var(--bg-color-4);
     --bg-color-btn-dice: var(--bg-color-3);
     --bg-title: var(--bg-color-3);
+    --bg-loader: var(--bg-color-3);
 
     --un-border-opacity: 1;
     --border-card: 0.5rem;
+}
+
+body{
+    scrollbar-color: var(--bg-color-3) var(--bg-color-1) ;
+    scrollbar-width: thin;
 }
 
 .form-sheet{
@@ -35,12 +41,14 @@
         --bg-color-btn-dice: var(--bg-form-orden);
         --required-color: var(--bg-form-orden);
         --bg-title: var(--bg-form-orden);
+        --bg-loader: var(--bg-form-orden);
     }
     &.caos{
         background-color: var(--bg-form-caos);
         --bg-color-btn-dice: var(--bg-form-caos);
         --required-color: var(--bg-form-caos);
         --bg-title: var(--bg-form-caos);
+        --bg-loader: var(--bg-form-caos);
     }
 }
 
@@ -302,8 +310,8 @@
     position: fixed;
     right: 10px;
     bottom: 10px;
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     display: flex;
     align-items: center;
     justify-items: center;
@@ -404,3 +412,47 @@
         fill: var(--bg-color-btn-dice);
     }
 }
+
+.container .screen-loader{
+    position: absolute;
+    left: 0;
+    min-width: 100%;
+    height: 100%;
+    background-color: #0004;
+    z-index: 10;
+}
+
+.loader {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    top: calc(50vh - 50px);
+    left: calc(50% - 50px);
+    z-index: 100;
+    background-color: rgba(0, 0, 0, 0.5);
+    transform: rotate(45deg);
+    overflow: hidden;
+    &:after{
+        content: '';
+        position: absolute;
+        inset: 12px;
+        margin: auto;
+        background: #222b32;
+    }
+    &:before{
+        content: '';
+        position: absolute;
+        inset: -20px;
+        margin: auto;
+        background: var(--bg-loader);
+        animation: diamondLoader 2s linear infinite;
+    }
+}
+  @keyframes diamondLoader {
+    0%  ,10% {
+      transform: translate(-100px , -100px) rotate(-45deg)
+    }
+    90% , 100% {
+      transform: translate(0px , 0px) rotate(-45deg)
+    }
+  }

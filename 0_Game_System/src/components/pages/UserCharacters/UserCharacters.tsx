@@ -4,59 +4,33 @@ import {Link} from 'react-router-dom';
 
 import { DBPersonajesUsuario } from '../../interfaces/dbTypes';
 
+import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix } from "@material-tailwind/react";
 import SvgAddCharacter from '../../../components/UI/Icons/SvgAddCharacter';
-import SvgDeleteItem from '../../../components/UI/Icons/SvgDeleteItem';
-
-import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, ListItemProps , IconButton } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./UserCharacters.css";
 
+
 const UserCharacters: React.FC = () => {
+    
     const [list, setList] = useState<DBPersonajesUsuario[]>([]);
     const [user,setUser] = useState('');
 
     useEffect(() => {
-        getUser().then((user) => {
-            console.log('user: ', user);
-            getList(user);
-        });
+        getList();
+        getUser();
     }, []);
 
-    async function getUser(): Promise<string> {
-        const user = '43c29fa1-d02c-4da5-90ea-51f451ed8952';
-        setUser(user);
-        //console.log('getUser: ', user);
-        return user;
+    async function getUser() {
+        setUser('43c29fa1-d02c-4da5-90ea-51f451ed8952');
     }
-
-    async function getList(user:string) {
-        if(user === '' || user === null) return;
-
-        const { data } = await supabase.from("pus_personajes_usuario").select('pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, usu_usuario(usu_id, usu_nombre)')
-        .eq('pus_usuario', user);
-        //console.log("data: " , data);
+    async function getList() {
+        const { data } = await supabase.from("pus_personajes_usuario").select('pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, usu_usuario(usu_id, usu_nombre)');
+        console.log("data: " , data);
         if (data !== null) {
             setList(data as unknown as DBPersonajesUsuario[]);
         }
     }
-
-    async function handleDeleteCharacter (id: string) {
-        if(!confirm('¿Seguro de que desea eliminar el personaje?')) return;
-
-        if(id === null || id === '') return;
-        //console.log('handleDeleteCharacter', id);
-        
-        // Eliminar objeto db
-        const { error } = await supabase
-        .from('pus_personajes_usuario')
-        .delete()
-        .eq('pus_id', id);
-
-        if(error) alert('Error eliminado personaje');
-
-        setList((prevObjects) => prevObjects.filter((obj) => obj.pus_id !== id));
-    };
 
     return (
         <>
@@ -74,41 +48,37 @@ const UserCharacters: React.FC = () => {
                     <div className="block antialiased tracking-normal font-sans text-base font-semibold leading-relaxed text-blue-gray-900" /> 
                     <div className="block antialiased font-sans text-sm leading-normal text-gray-700 font-normal" /> 
                     <div className="grid place-items-center ml-auto justify-self-end" /> 
-                    <div className="relative grid items-center font-sans font-bold uppercase whitespace-nowrap select-none bg-gray-900/10 text-gray-900 py-1.5 px-3 text-xs rounded-lg" />
-                    <div className="relative align-middle select-none font-sans font-medium text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none w-10 max-w-[40px] h-10 max-h-[40px] rounded-lg text-xs text-blue-gray-500 hover:bg-blue-gray-500/10 active:bg-blue-gray-500/30 btn-delete-object" />
+                    <div className="relative grid items-center font-sans font-bold uppercase whitespace-nowrap select-none bg-gray-900/10 text-gray-900 py-1 px-2 text-xs rounded-full" /> 
                 */}
-                <Card className="w-full p-5 row-span-6" placeholder=''>
-                    <List placeholder = ''>
+                <Card className="w-full p-5 row-span-4" placeholder = ''>
+                    <List  placeholder = ''>
                         {list.map((elem) => (
-                            <ListItem key={elem.pus_id} placeholder='' ripple={false} className='character-item flex'>
-                                    <Link to={`/CharacterSheet/${elem.usu_usuario.usu_id}/${elem.pus_id}`} className='flex flex-1'>
-                                        <ListItemPrefix placeholder=''>
-                                            <Avatar variant="circular" alt="candice" src="https://docs.material-tailwind.com/img/face-1.jpg"  placeholder = ''/>
-                                        </ListItemPrefix>
-                                        <div className=''>
-                                            <Typography variant="h4" color="blue-gray" placeholder=''>
-                                                {elem.pus_nombre}
-                                            </Typography>
-                                            <Typography variant="small" color="gray" className="font-normal mb-1" placeholder=''>
-                                                {elem.pus_descripcion}
-                                            </Typography>
-                                            <Typography variant="h6" color="gray" className="font-normal" placeholder=''>
-                                                Azar de las dos manos
-                                            </Typography>
-                                        </div>
-                                    </Link>
-                                    <ListItemSuffix className='flex gap-4' placeholder=''>
+                            <Link key={elem.pus_id} to={`/CharacterSheet/${elem.usu_usuario.usu_id}/${elem.pus_id}`}>
+                                <ListItem placeholder = ''>
+                                    <ListItemPrefix placeholder = ''>
+                                        <Avatar variant="circular" alt="candice" src="https://docs.material-tailwind.com/img/face-1.jpg"  placeholder = ''/>
+                                    </ListItemPrefix>
+                                    <div className=''>
+                                        <Typography variant="h5" color="blue-gray" placeholder = ''>
+                                            {elem.pus_nombre}
+                                        </Typography>
+                                        <Typography variant="small" color="gray" className="font-normal" placeholder = ''>
+                                            Azar de las dos manos
+                                        </Typography>
+                                        <Typography variant="h6" color="gray" className="font-normal" placeholder = ''>
+                                            Azar de las dos manos
+                                        </Typography>
+                                    </div>
+                                    <ListItemSuffix placeholder = ''>
                                         <Chip
-                                            value={elem.pus_nivel}
-                                            variant="ghost"
-                                            size="md"
-                                            className="rounded-lg lbl-level"
+                                        value={elem.pus_nivel}
+                                        variant="ghost"
+                                        size="sm"
+                                        className="rounded-full"
                                         />
-                                        <IconButton variant="text" className="btn-delete-object" onClick={() => handleDeleteCharacter(elem.pus_id)} placeholder=''>
-                                            <SvgDeleteItem width={30} fill='var(--required-color)'/>
-                                        </IconButton>
                                     </ListItemSuffix>
                                 </ListItem>
+                            </Link>
                         ))}
                     </List>
                 </Card>

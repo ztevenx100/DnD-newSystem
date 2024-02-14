@@ -13,7 +13,6 @@ export interface DBPersonajesUsuario{
     pus_clase: string;
     pus_raza: string;
     pus_trabajo: string;
-    pus_descripcion: string;
     usu_usuario: DBUsuario;
     pus_arma_principal: string;
     pus_arma_secundaria: string;

@@ -1,29 +1,29 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, redirect, useNavigate } from 'react-router-dom';
 import supabase from '../../database/supabase';
 //import { QueryResult, QueryData, QueryError } from '@supabase/supabase-js'
 import { v4 as uuidv4 } from 'uuid';
 
-import { useBackground } from '../../../App';
 import { Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./CharacterSheet.css";
+import { useBackground } from '../../../App';
 
 // Interfaces
 import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields, Option } from '../../interfaces/typesCharacterSheet';
 import { DBHabilidadPersonaje } from '../../interfaces/dbTypes';
-
-import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
-import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
-import FormInputStats from './FormInputStats/FormInputStats';
-import FormInputSkillsRing from './FormInputSkillsRing/FormInputSkillsRing';
 
 import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
 import SvgCharacter from '../../../components/UI/Icons/SvgCharacter';
 import SvgSaveCharacter from '../../../components/UI/Icons/SvgSaveCharacter';
 import SvgD4Roll from '../../../components/UI/Icons/SvgD4Roll';
 import SvgDeleteItem from '../../../components/UI/Icons/SvgDeleteItem';
+
+import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
+import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
+import FormInputStats from './FormInputStats/FormInputStats';
+import FormInputSkillsRing from './FormInputSkillsRing/FormInputSkillsRing';
 
 const CharacterSheet: React.FC = () => {
    // Cambia la imagen de fondo cuando el componente se monta
@@ -345,29 +345,27 @@ const CharacterSheet: React.FC = () => {
 
    // Listado de armas
    const listWearpons = [
-      'Arco corto',
-      'Arco largo',
-      'Baculo',
-      'Ballesta',
-      'Bastón',
-      'Cuchillo de combate',
       'Daga',
+      'Cuchillo de combate',
       'Espada corta',
       'Espada larga',
-      'Glaive',
       'Hacha de mano',
       'Hacha grande',
-      'Katana',
-      'Kunai',
-      'Lanza',
-      'Mancuernas',
       'Martillo de guerra',
+      'Bastón',
+      'Lanza',
+      'Arco corto',
+      'Arco largo',
+      'Ballesta',
       'Pico de curvo',
-      'Pike',
-      'Sable',
       'Sai',
-      'Shuriken',
+      'Glaive',
+      'Pike',
+      'Baculo',
       'Tomfas',
+      'Mancuernas',
+      'Kunai',
+      'Shuriken',
    ];
 
    // Actualizar el nivel del personaje
@@ -825,6 +823,7 @@ const CharacterSheet: React.FC = () => {
    
       if(error) alert('Items not upload.');
    }
+
 
    return (
       <>

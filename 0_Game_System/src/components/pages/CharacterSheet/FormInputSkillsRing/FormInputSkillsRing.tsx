@@ -82,9 +82,7 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
                 </select>
             </>
         ) : (
-            <>
-                <div className='col-span-2 py-4'></div>
-            </>
+            <><div className='col-span-2 py-4'></div></>
         )}
     </>
   );

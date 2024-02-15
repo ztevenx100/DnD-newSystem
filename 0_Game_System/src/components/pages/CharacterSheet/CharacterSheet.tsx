@@ -536,7 +536,6 @@ const CharacterSheet: React.FC = () => {
    const handleOpenModal = () => {
       // Obtener todos los elementos con el atributo required
       let requiredElements = Array.from(document.querySelectorAll('[required]')) as HTMLInputElement[];
-
       // Variable para rastrear si hay algún campo vacío
       let hayCamposVacios = false;
       let fieldsRequired: string[] = [];
@@ -590,7 +589,6 @@ const CharacterSheet: React.FC = () => {
       //console.log("fieldSkill: ",fieldSkill);
       console.log(newCharacter);
       setDataCharacter(newCharacter);
-      
       handleOpen();
    }
 
@@ -598,9 +596,7 @@ const CharacterSheet: React.FC = () => {
       if (characterLevel > 1) return;
 
       const updatedInputsStatsData = [...inputsStatsData];
-      
       let randomNumber = Math.floor(Math.random() * 4) + 1;
-
       updatedInputsStatsData[0].valueDice = randomNumber;
       randomNumber = Math.floor(Math.random() * 4) + 1;
       updatedInputsStatsData[1].valueDice = randomNumber;
@@ -628,7 +624,6 @@ const CharacterSheet: React.FC = () => {
    const getKnowledgeName = (ids: string[]|undefined): string | undefined  => {
       let names = '';
       if (ids === undefined) return names;
-
       ids.forEach((know) => {
          names += checkboxesData.find(elem => elem.value === know)?.name + ', ';
       });
@@ -647,7 +642,6 @@ const CharacterSheet: React.FC = () => {
    }
 
    async function saveData() {
-      //alert('Guardar info ' + newRecord);
       let character:string = await uploadInfoCharacter(newRecord);
       //console.log('saveData ', character);
       Promise.all ([

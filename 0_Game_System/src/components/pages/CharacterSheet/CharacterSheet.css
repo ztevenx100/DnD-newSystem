@@ -456,11 +456,11 @@ body{
         animation: diamondLoader 2s linear infinite;
     }
 }
-  @keyframes diamondLoader {
+@keyframes diamondLoader {
     0%  ,10% {
       transform: translate(-100px , -100px) rotate(-45deg)
     }
     90% , 100% {
       transform: translate(0px , 0px) rotate(-45deg)
     }
-  }
+}

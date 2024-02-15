@@ -444,14 +444,14 @@ const CharacterSheet: React.FC = () => {
    // Manejar el cambio en la selección
    const handleAlingmentChange = (value: string) => {
       setAlignmentValue(value);
-
+      
       // Color fondo
       const formElement = document.getElementById('form-sheet');
-      if (value === 'orden') {
-         formElement?.classList.add(value);
+      if (value === 'O') {
+         formElement?.classList.add('orden');
          formElement?.classList.remove('caos');
-      } else if (value === 'caos') {
-         formElement?.classList.add(value);
+      } else if (value === 'C') {
+         formElement?.classList.add('caos');
          formElement?.classList.remove('orden');
       } else {
          formElement?.classList.remove('caos');
@@ -835,10 +835,11 @@ const CharacterSheet: React.FC = () => {
       )}
       <form id='form-sheet' className="min-h-screen form-sheet grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4">
          
-         {/* Informacion del jugador */}
+         {/* Titulo */}
          <fieldset className="fieldset-form form-title col-span-2 md:col-span-2 lg:col-span-3 shadow-lg rounded">
             <h1 className='col-span-2 text-center font-bold'>Azar de las dos manos</h1>
          </fieldset>
+         {/* Informacion del jugador */}
          <fieldset className="fieldset-form info-player col-span-2 md:col-span-2 lg:col-span-3 bg-white shadow-lg rounded">
             <legend><SvgCharacter width={20} height={20} className={"inline"} /> Informacion del jugador </legend>
 
@@ -879,12 +880,17 @@ const CharacterSheet: React.FC = () => {
                onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeCharacterLevel(parseInt(e.target.value))}
                required
             />
-            <label htmlFor="characterDescription" className="form-lbl-y col-start-2 md:col-start-4 row-start-2 md:row-start-1 bg-grey-lighter ">Descripción</label>
+            <label htmlFor="characterImage" className="form-lbl-y col-start-2 md:col-start-4 row-start-2 md:row-start-1 bg-grey-lighter ">Imagen</label>
+            <picture className='col-start-2 md:col-start-4 row-start-3 md:row-start-2 row-span-2 mr-2 ml-2'>
+               <img src='' className='characterImage ' alt='Imagen del personaje'/>
+            </picture>
+
+            <label htmlFor="characterDescription" className="form-lbl-y col-start-1 md:col-start-1 col-span-4 row-start-6 md:row-start-6 bg-grey-lighter ">Descripción</label>
             <textarea
                id="characterDescription" 
                name='characterDescription'
                placeholder="Descripcion del personaje" 
-               className="form-input-y col-start-2 md:col-start-4 row-start-3 md:row-start-2 row-span-4 focus:border-black focus:shadow"
+               className="form-input-y col-start-1 md:col-start-1 col-span-4 row-start-7 md:row-start-7 row-span-1 focus:border-black focus:shadow"
                onChange={(e) => setCharacterDescription(e.target.value)}
                value={characterDescription}
                required
@@ -960,26 +966,29 @@ const CharacterSheet: React.FC = () => {
          {/* Habilidades */}
          <fieldset className="fieldset-form skills-player col-span-1 row-span-2 col-start-1 md:col-start-2 bg-white shadow-lg rounded">
             <legend>Habilidades</legend>
+            { characterLevel >= 3 ? (
+               <>
+                  <label htmlFor="alignment" className="form-lbl mt-2 ">Alineación</label>
+                  <select 
+                     id="alignment"
+                     className="form-input mr-2"
+                     onChange={(e) => handleAlingmentChange(e.target.value)}
+                     >
+                     <option value=""/>
+                     <option value="O">Orden</option>
+                     <option value="C">Caos</option>
+                  </select>
 
-            <label htmlFor="alignment" className="form-lbl mt-2 ">Alineación</label>
-            <select 
-               id="alignment"  
-               className="form-input mr-2"
-               onChange={(e) => handleAlingmentChange(e.target.value)}
-            >
-               <option value=""/>
-               <option value="orden">Orden</option>
-               <option value="caos">Caos</option>
-            </select>
+                  <label className="form-lbl-skills ml-2 mb-0 ">Nivel</label>
+                  <label className="form-lbl-skills mr-2 mb-0 ">Anillo de poder</label>
 
-            <label className="form-lbl-skills ml-2 mb-0 ">Nivel</label>
-            <label className="form-lbl-skills mr-2 mb-0 ">Anillo de poder</label>
+                  <FormInputSkillsRing id={'0'} level={characterLevel} levelEvaluated={3} ringTypes={optionsRingTypes} skillList={skillsRingList[0]} values={skillsAcquired[0]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
 
-            <FormInputSkillsRing id={'0'} level={characterLevel} levelEvaluated={3} ringTypes={optionsRingTypes} skillList={skillsRingList[0]} values={skillsAcquired[0]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
+                  <FormInputSkillsRing id={'1'} level={characterLevel} levelEvaluated={6} ringTypes={optionsRingTypes} skillList={skillsRingList[1]} values={skillsAcquired[1]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
 
-            <FormInputSkillsRing id={'1'} level={characterLevel} levelEvaluated={6} ringTypes={optionsRingTypes} skillList={skillsRingList[1]} values={skillsAcquired[1]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
-
-            <FormInputSkillsRing id={'2'} level={characterLevel} levelEvaluated={9} ringTypes={optionsRingTypes} skillList={skillsRingList[2]} values={skillsAcquired[2]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
+                  <FormInputSkillsRing id={'2'} level={characterLevel} levelEvaluated={9} ringTypes={optionsRingTypes} skillList={skillsRingList[2]} values={skillsAcquired[2]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
+               </>
+            ) : (<></>)}
          </fieldset>
 
          {/* Inventario */}

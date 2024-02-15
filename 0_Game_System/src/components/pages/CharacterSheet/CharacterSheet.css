@@ -52,7 +52,7 @@ body{
     }
 }
 
-.fieldset-form {
+.fieldset-form{
     display: grid;
     min-width: 100%;
     grid-template-columns:100px 1fr;
@@ -60,8 +60,9 @@ body{
     padding: 1rem 0;
     & legend{
         position: relative;
-        top: 15px;
-        left: 5px;
+        top: 20px;
+        left: 10px;
+        margin-bottom: 10px;
     }
 }
 
@@ -90,17 +91,17 @@ body{
 }
 
 .fieldset-form textarea.form-input-y{
-    min-height: 7.5rem;
-    max-height: 10.5rem;
+    min-height: 5rem;
+    max-height: 7rem;
 }
 
 /* info-player */
-.fieldset-form.info-player {
+.fieldset-form.info-player{
     grid-template-columns:100px 1fr;
     grid-template-rows:repeat(6, 2.5rem);
     grid-row-gap: 0px;
 }
-@media (min-width: 768px) {
+@media (min-width: 768px){
     .fieldset-form.info-player {
         grid-template-columns:100px 1fr 120px 1fr;
     }
@@ -172,8 +173,15 @@ body{
     }
 }
 
+.characterImage{
+    aspect-ratio: 16 / 5 auto;
+    max-height: 165px;
+    border-width: 1px;
+    border-color: rgb(0 0 0 / var(--un-border-opacity));
+}
+
 /* stats-player */
-.fieldset-form.stats-player {
+.fieldset-form.stats-player{
     grid-template-columns:repeat(3, 1fr);
     grid-template-rows: 4rem repeat(20, 2.5rem);
     grid-row-gap: 0px;
@@ -255,7 +263,7 @@ body{
 }
 
 /* inventory-player */
-.fieldset-form.inventory-player {
+.fieldset-form.inventory-player{
     grid-template-columns: 1fr 1fr 100px;
     grid-template-rows:repeat(20, 2.5rem);
     grid-row-gap: 0px;

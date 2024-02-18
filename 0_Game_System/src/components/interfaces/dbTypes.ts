@@ -20,6 +20,7 @@ export interface DBPersonajesUsuario{
     pus_cantidad_oro: number;
     pus_cantidad_plata: number;
     pus_cantidad_bronce: number;
+    sju_sistema_juego: DBSistemaJuego;
 }
 
 export interface DBHabilidadPersonaje{
@@ -29,14 +30,19 @@ export interface DBHabilidadPersonaje{
   hpe_alineacion: string;
   hpe_campo: string;
   hab_habilidad: {
-      hab_id: string;
-      hab_nombre: string;
-      had_estadistica_base: string;
-      hab_siglas: string;
+    hab_id: string;
+    hab_nombre: string;
+    had_estadistica_base: string;
+    hab_siglas: string;
   } | {
     hab_id: string;
     hab_nombre: string;
     had_estadistica_base: string;
     hab_siglas: string;
   } [] | null;
+}
+
+export interface DBSistemaJuego{
+  sju_id: string;
+  sju_nombre: string;
 }

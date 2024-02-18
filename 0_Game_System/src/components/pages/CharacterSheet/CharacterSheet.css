@@ -174,10 +174,12 @@ body{
 }
 
 .characterImage{
-    aspect-ratio: 16 / 5 auto;
-    max-height: 165px;
+    aspect-ratio: 16 / 5;
+    max-height: 170px;
     border-width: 1px;
     border-color: rgb(0 0 0 / var(--un-border-opacity));
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
 }
 
 /* stats-player */

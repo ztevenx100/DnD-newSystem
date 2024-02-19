@@ -86,34 +86,34 @@ const UserCharacters: React.FC = () => {
                     <List placeholder = ''>
                         {list.map((elem) => (
                             <ListItem key={elem.pus_id} placeholder='' ripple={false} className='character-item flex'>
-                                    <Link to={`/CharacterSheet/${elem.usu_usuario.usu_id}/${elem.pus_id}`} className='flex flex-1'>
-                                        <ListItemPrefix placeholder=''>
-                                            <Avatar variant="circular" alt="candice" src="https://docs.material-tailwind.com/img/face-1.jpg"  placeholder = ''/>
-                                        </ListItemPrefix>
-                                        <div className=''>
-                                            <Typography variant="h4" color="blue-gray" placeholder=''>
-                                                {elem.pus_nombre}
-                                            </Typography>
-                                            <Typography variant="small" color="gray" className="font-normal mb-1" placeholder=''>
-                                                {elem.pus_descripcion}
-                                            </Typography>
-                                            <Typography variant="h6" color="gray" className="font-normal" placeholder=''>
-                                                {elem.sju_sistema_juego.sju_nombre}
-                                            </Typography>
-                                        </div>
-                                    </Link>
-                                    <ListItemSuffix className='flex gap-4' placeholder=''>
-                                        <Chip
-                                            value={elem.pus_nivel}
-                                            variant="ghost"
-                                            size="md"
-                                            className="rounded-lg lbl-level"
-                                        />
-                                        <IconButton variant="text" className="btn-delete-object" onClick={() => handleDeleteCharacter(elem.pus_id)} placeholder=''>
-                                            <SvgDeleteItem width={30} fill='var(--required-color)'/>
-                                        </IconButton>
-                                    </ListItemSuffix>
-                                </ListItem>
+                                <Link to={`/CharacterSheet/${elem.usu_usuario.usu_id}/${elem.pus_id}`} className='flex flex-1'>
+                                    <ListItemPrefix placeholder=''>
+                                        <Avatar variant="circular" alt="candice" src="https://docs.material-tailwind.com/img/face-1.jpg"  placeholder = ''/>
+                                    </ListItemPrefix>
+                                    <div className=''>
+                                        <Typography variant="h4" color="blue-gray" placeholder=''>
+                                            {elem.pus_nombre}
+                                        </Typography>
+                                        <Typography variant="small" color="gray" className="font-normal mb-1" placeholder=''>
+                                            {elem.pus_descripcion}
+                                        </Typography>
+                                        <Typography variant="h6" color="gray" className="font-normal" placeholder=''>
+                                            {elem.sju_sistema_juego.sju_nombre}
+                                        </Typography>
+                                    </div>
+                                </Link>
+                                <ListItemSuffix className='flex gap-4' placeholder=''>
+                                    <Chip
+                                        value={elem.pus_nivel}
+                                        variant="ghost"
+                                        size="md"
+                                        className="rounded-lg lbl-level"
+                                    />
+                                    <IconButton variant="text" className="btn-delete-object" onClick={() => handleDeleteCharacter(elem.pus_id)} placeholder=''>
+                                        <SvgDeleteItem width={30} fill='var(--required-color)'/>
+                                    </IconButton>
+                                </ListItemSuffix>
+                            </ListItem>
                         ))}
                     </List>
                 </Card>
@@ -123,15 +123,6 @@ const UserCharacters: React.FC = () => {
                     <SvgAddCharacter className='icon' width={40} height={40} />
                 </button>
             </aside>
-
-            {/* Modal/Dialog */}
-            {/* 
-                <div className='grid place-items-center fixed w-screen h-screen bg-black bg-opacity-60 backdrop-blur-sm'/>
-                <div className='relative bg-white m-4 rounded-lg shadow-2xl text-blue-gray-500 antialiased font-sans text-base font-light leading-relaxed w-full md:w-2/3 lg:w-2/4 2xl:w-1/3 min-w-[80%] md:min-w-[66.666667%] lg:min-w-[50%] 2xl:min-w-[33.333333%] max-w-[80%] md:max-w-[66.666667%] lg:max-w-[50%] 2xl:max-w-[33.333333%] dialog'/>
-                <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg text-red-500 hover:bg-red-500/10 active:bg-red-500/30 mr-1 '/>
-                <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-lg shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85] '> 
-                <div className='h-[28rem] overflow-scroll'/> 
-            */}
         </>
     );
 }

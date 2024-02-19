@@ -56,6 +56,7 @@ const CharacterSheet: React.FC = () => {
    const [newObjectName, setNewObjectName] = useState<string>('');
    const [newObjectDescription, setNewObjectDescription] = useState<string>('');
    const [newObjectCount, setNewObjectCount] = useState<number>(1);
+   const [SystemGameList, setSystemGameList] = useState<Option[]>([]);
 
    // Listado del select skillClass
    const [optionsSkillClass, setOptionsSkillClass] = useState<Option[]>([]);
@@ -117,6 +118,7 @@ const CharacterSheet: React.FC = () => {
          
          await getUser();
          await getListSkill();
+         await getGameSystemList();
          await getCharacter();
          
          Promise.all ([
@@ -173,6 +175,19 @@ const CharacterSheet: React.FC = () => {
          //console.log('otherSkills: ', otherSkills);
       }
    }
+   async function getGameSystemList() {
+      const { data } = await supabase.from("sju_sistema_juego").select('sju_id, sju_nombre')
+      .eq('sju_estado', 'A')
+      .returns<DBSistemaJuego[]>();
+      console.log("getGameSystemList - data: ", data);
+      if (data !== null) {
+         const updatedSystemGameList = [];
+         for (let i = 0; i < data.length; i++) {
+            updatedSystemGameList.push({value:data[0].sju_id,name:data[0].sju_nombre});
+         }
+         setSystemGameList(updatedSystemGameList);
+      }
+  }
    async function getCharacter() {
       if(params.id === null || params.id ===  undefined) return;
       
@@ -385,6 +400,11 @@ const CharacterSheet: React.FC = () => {
    // Manejar el cambio en la selección
    const handleSelectRaceChange = (value: string) => {
       setSelectedRaceValue(value);
+   };
+   // Actualizar el systema de juego
+   const handleSystemGameChange = (currentSystem: string) => {
+      let option = SystemGameList.filter(elem => elem.value === currentSystem);
+      setSystemGame({sju_id: option[0].value, sju_nombre: option[0].name});
    };
    // Actualizar la habilidad principal del personaje
    const handleSelectSkillChange = (currentSkill: string) => {
@@ -843,7 +863,7 @@ const CharacterSheet: React.FC = () => {
             {(!newRecord) ? (
                <h1 className='col-span-2 text-center font-bold'>{systemGame.sju_nombre}</h1>
             ):(
-               <></>
+               <><FormSelectInfoPlayer id="systemGame" label="Sistema de juego" options={SystemGameList} selectedValue={systemGame.sju_id} onSelectChange={handleSystemGameChange} ></FormSelectInfoPlayer></>
             )}
          </fieldset>
          {/* Informacion del jugador */}

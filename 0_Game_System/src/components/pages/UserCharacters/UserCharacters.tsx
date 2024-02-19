@@ -1,25 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../../database/supabase';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
-import { DBPersonajesUsuario, DBSistemaJuego } from '../../interfaces/dbTypes';
+import { DBPersonajesUsuario } from '../../interfaces/dbTypes';
 
 import SvgAddCharacter from '../../../components/UI/Icons/SvgAddCharacter';
 import SvgDeleteItem from '../../../components/UI/Icons/SvgDeleteItem';
 
-import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, IconButton, Dialog, DialogHeader, DialogBody, DialogFooter, Button } from "@material-tailwind/react";
+import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, IconButton} from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./UserCharacters.css";
 
 const UserCharacters: React.FC = () => {
     const [list, setList] = useState<DBPersonajesUsuario[]>([]);
-    const [systemGameList, setSystemGameList] = useState<DBSistemaJuego[]>([]);
     const [user, setUser] = useState('');
-    const [open, setOpen] = useState<boolean>(false);
-    const [systemGameValue, setSystemGameValue] = useState<string>('');
-
-    const handleOpen = () => setOpen(!open);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -27,7 +22,6 @@ const UserCharacters: React.FC = () => {
             //console.log('user: ', user);
             getList(user);
         });
-        getGameSystemList();
     }, []);
 
     async function getUser(): Promise<string> {
@@ -40,21 +34,11 @@ const UserCharacters: React.FC = () => {
     async function getList(user:string) {
         if(user === '' || user === null) return;
 
-        const { data } = await supabase.from("pus_personajes_usuario").select('pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, usu_usuario(usu_id, usu_nombre), sju_sistema_juego(sju_id,sju_nombre)')
+        const { data } = await supabase.from("pus_personajes_usuario").select('pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, usu_usuario(usu_id, usu_nombre), sju_sistema_juego(sju_id, sju_nombre)')
         .eq('pus_usuario', user);
         console.log("data: " , data);
         if (data !== null) {
             setList(data as unknown as DBPersonajesUsuario[]);
-        }
-    }
-
-    async function getGameSystemList() {
-        const { data } = await supabase.from("sju_sistema_juego").select('sju_id, sju_nombre')
-        .eq('sju_estado', 'A')
-        .returns<DBSistemaJuego[]>();
-        console.log("getGameSystemList - data: ", data);
-        if (data !== null) {
-            setSystemGameList(data);
         }
     }
 
@@ -75,9 +59,6 @@ const UserCharacters: React.FC = () => {
         setList((prevObjects) => prevObjects.filter((obj) => obj.pus_id !== id));
     };
 
-    const handleOpenModal = () => {
-        handleOpen();
-    }
     const handleOpenCharacter = () => {
         navigate('/CharacterSheet/'+user);
     }
@@ -138,7 +119,7 @@ const UserCharacters: React.FC = () => {
                 </Card>
             </article>
             <aside className='panel-save'>
-                <button className='btn-save-character' onClick={() => handleOpenModal()} >
+                <button className='btn-save-character' onClick={() => handleOpenCharacter()} >
                     <SvgAddCharacter className='icon' width={40} height={40} />
                 </button>
             </aside>
@@ -151,53 +132,6 @@ const UserCharacters: React.FC = () => {
                 <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-lg shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85] '> 
                 <div className='h-[28rem] overflow-scroll'/> 
             */}
-            <Dialog
-                open={ open }
-                size={"sm"}
-                handler={handleOpenModal}
-                className="dialog"
-                placeholder=''
-                >
-                <DialogHeader  placeholder = '' >Crear hoja de personaje</DialogHeader>
-                <DialogBody className='dialog-body grid grid-cols-3 gap-4' placeholder = ''>
-                    <label htmlFor="form-lbl systemGame" className=''>Sistema de juego</label>
-                    <select 
-                        id='systemGame' 
-                        className="form-input col-span-2"
-                        value={systemGameValue}
-                        onChange={(e) => setSystemGameValue(e.target.value)}
-                        required
-                    >
-                    <option value=""/>
-                    {systemGameList.map((option, index) => (
-                        <option key={index} value={option.sju_id}>
-                            {option.sju_nombre}
-                        </option>
-                    ))}
-            </select>
-                </DialogBody>
-                <DialogFooter placeholder = '' >
-                    <Button
-                        variant='text'
-                        color='red'
-                        onClick={() => handleOpen()}
-                        className='mr-1'
-                        placeholder = ''
-                    >
-                        <span>Cancelar</span>
-                    </Button>
-                    <Button
-                        variant='gradient'
-                        className='btn-dialog-accept'
-                        onClick={() => handleOpenCharacter()}
-                        placeholder=''
-                        id='btnSaveData'
-                    >
-                        <span>Crear personaje</span>
-                    </Button>
-                </DialogFooter>
-            </Dialog>
-
         </>
     );
 }

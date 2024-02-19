@@ -14,13 +14,17 @@ export interface DBPersonajesUsuario{
     pus_raza: string;
     pus_trabajo: string;
     pus_descripcion: string;
+    pus_conocimientos: string;
     usu_usuario: DBUsuario;
     pus_arma_principal: string;
     pus_arma_secundaria: string;
     pus_cantidad_oro: number;
     pus_cantidad_plata: number;
     pus_cantidad_bronce: number;
-    sju_sistema_juego: DBSistemaJuego;
+    sju_sistema_juego: DBSistemaJuego | {
+      sju_id: string;
+      sju_nombre: string;
+    } ;
 }
 
 export interface DBHabilidadPersonaje{

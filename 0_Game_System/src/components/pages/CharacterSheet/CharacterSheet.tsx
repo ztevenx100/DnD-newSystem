@@ -12,7 +12,7 @@ import "./CharacterSheet.css";
 
 // Interfaces
 import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields, Option } from '../../interfaces/typesCharacterSheet';
-import { DBHabilidadPersonaje } from '../../interfaces/dbTypes';
+import { DBHabilidadPersonaje, DBPersonajesUsuario, DBSistemaJuego } from '../../interfaces/dbTypes';
 
 import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
 import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
@@ -50,11 +50,12 @@ const CharacterSheet: React.FC = () => {
    
    const [coins,setCoins] = useState<number[]>([0,3,0]);
    const [invObjects, setInvObjects] = useState<InventoryObject[]>([]);
+   const [systemGame, setSystemGame] = useState<DBSistemaJuego>({sju_id: '', sju_nombre: ''});
+   const [skillsRingList, setSkillsRingList] = useState<SkillTypes[]> ([{id:'0', skills: []},{id:'1', skills: []},{id:'2', skills: []}]);
+   const [fieldSkill, setFieldSkill] = useState<SkillFields[]> ([{id:'',skill:'',field:'skillClass'},{id:'',skill:'',field:'skillExtra'}]) ;
    const [newObjectName, setNewObjectName] = useState<string>('');
    const [newObjectDescription, setNewObjectDescription] = useState<string>('');
    const [newObjectCount, setNewObjectCount] = useState<number>(1);
-   const [skillsRingList, setSkillsRingList] = useState<SkillTypes[]> ([{id:'0', skills: []},{id:'1', skills: []},{id:'2', skills: []}]);
-   const [fieldSkill, setFieldSkill] = useState<SkillFields[]> ([{id:'',skill:'',field:'skillClass'},{id:'',skill:'',field:'skillExtra'}]) ;
 
    // Listado del select skillClass
    const [optionsSkillClass, setOptionsSkillClass] = useState<Option[]>([]);
@@ -176,8 +177,9 @@ const CharacterSheet: React.FC = () => {
       if(params.id === null || params.id ===  undefined) return;
       
       const { data } = await supabase.from("pus_personajes_usuario").select(
-         'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria,pus_cantidad_oro,pus_cantidad_plata,pus_cantidad_bronce'
-      ).eq("pus_id",params.id);
+         'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria,pus_cantidad_oro,pus_cantidad_plata,pus_cantidad_bronce, sju_sistema_juego(sju_id,sju_nombre)'
+      ).eq("pus_id",params.id)
+      .returns<DBPersonajesUsuario[]>();
       //console.log('getCharacter ',data);
 
       if (data !== null) {
@@ -197,6 +199,12 @@ const CharacterSheet: React.FC = () => {
          updatedCoins[1] = data[0].pus_cantidad_plata;
          updatedCoins[2] = data[0].pus_cantidad_bronce;
          setCoins(updatedCoins);
+         let updateSystemGame = systemGame;
+         console.log(data[0].sju_sistema_juego);
+         
+         updateSystemGame.sju_id = data[0].sju_sistema_juego.sju_id;
+         updateSystemGame.sju_nombre = data[0].sju_sistema_juego.sju_nombre;
+         setSystemGame(updateSystemGame);
       }
    }
    async function getStats() {
@@ -709,6 +717,7 @@ const CharacterSheet: React.FC = () => {
             pus_cantidad_oro: dataCharacter?.coinsInv[0],
             pus_cantidad_plata: dataCharacter?.coinsInv[1],
             pus_cantidad_bronce: dataCharacter?.coinsInv[2],
+            pus_sistema_juego: systemGame.sju_id,
          })
          .select();
          if(data !== null) return data[0].pus_id;
@@ -831,7 +840,11 @@ const CharacterSheet: React.FC = () => {
          
          {/* Titulo */}
          <fieldset className="fieldset-form form-title col-span-2 md:col-span-2 lg:col-span-3 shadow-lg rounded">
-            <h1 className='col-span-2 text-center font-bold'>Azar de las dos manos</h1>
+            {(!newRecord) ? (
+               <h1 className='col-span-2 text-center font-bold'>{systemGame.sju_nombre}</h1>
+            ):(
+               <></>
+            )}
          </fieldset>
          {/* Informacion del jugador */}
          <fieldset className="fieldset-form info-player col-span-2 md:col-span-2 lg:col-span-3 bg-white shadow-lg rounded">

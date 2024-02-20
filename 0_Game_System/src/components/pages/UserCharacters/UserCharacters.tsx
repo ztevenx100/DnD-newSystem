@@ -1,24 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../../database/supabase';
-import {Link} from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { DBPersonajesUsuario } from '../../interfaces/dbTypes';
 
 import SvgAddCharacter from '../../../components/UI/Icons/SvgAddCharacter';
 import SvgDeleteItem from '../../../components/UI/Icons/SvgDeleteItem';
 
-import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, ListItemProps , IconButton } from "@material-tailwind/react";
+import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, IconButton} from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./UserCharacters.css";
 
 const UserCharacters: React.FC = () => {
     const [list, setList] = useState<DBPersonajesUsuario[]>([]);
-    const [user,setUser] = useState('');
+    const [user, setUser] = useState('');
+    const navigate = useNavigate();
 
     useEffect(() => {
         getUser().then((user) => {
-            console.log('user: ', user);
+            //console.log('user: ', user);
             getList(user);
         });
     }, []);
@@ -33,7 +34,7 @@ const UserCharacters: React.FC = () => {
     async function getList(user:string) {
         if(user === '' || user === null) return;
 
-        const { data } = await supabase.from("pus_personajes_usuario").select('pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, usu_usuario(usu_id, usu_nombre)')
+        const { data } = await supabase.from("pus_personajes_usuario").select('pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, usu_usuario(usu_id, usu_nombre), sju_sistema_juego(sju_id, sju_nombre)')
         .eq('pus_usuario', user);
         //console.log("data: " , data);
         if (data !== null) {
@@ -58,6 +59,10 @@ const UserCharacters: React.FC = () => {
         setList((prevObjects) => prevObjects.filter((obj) => obj.pus_id !== id));
     };
 
+    const handleOpenCharacter = () => {
+        navigate('/CharacterSheet/'+user);
+    }
+
     return (
         <>
             
@@ -81,42 +86,42 @@ const UserCharacters: React.FC = () => {
                     <List placeholder = ''>
                         {list.map((elem) => (
                             <ListItem key={elem.pus_id} placeholder='' ripple={false} className='character-item flex'>
-                                    <Link to={`/CharacterSheet/${elem.usu_usuario.usu_id}/${elem.pus_id}`} className='flex flex-1'>
-                                        <ListItemPrefix placeholder=''>
-                                            <Avatar variant="circular" alt="candice" src="https://docs.material-tailwind.com/img/face-1.jpg"  placeholder = ''/>
-                                        </ListItemPrefix>
-                                        <div className=''>
-                                            <Typography variant="h4" color="blue-gray" placeholder=''>
-                                                {elem.pus_nombre}
-                                            </Typography>
-                                            <Typography variant="small" color="gray" className="font-normal mb-1" placeholder=''>
-                                                {elem.pus_descripcion}
-                                            </Typography>
-                                            <Typography variant="h6" color="gray" className="font-normal" placeholder=''>
-                                                Azar de las dos manos
-                                            </Typography>
-                                        </div>
-                                    </Link>
-                                    <ListItemSuffix className='flex gap-4' placeholder=''>
-                                        <Chip
-                                            value={elem.pus_nivel}
-                                            variant="ghost"
-                                            size="md"
-                                            className="rounded-lg lbl-level"
-                                        />
-                                        <IconButton variant="text" className="btn-delete-object" onClick={() => handleDeleteCharacter(elem.pus_id)} placeholder=''>
-                                            <SvgDeleteItem width={30} fill='var(--required-color)'/>
-                                        </IconButton>
-                                    </ListItemSuffix>
-                                </ListItem>
+                                <Link to={`/CharacterSheet/${elem.usu_usuario.usu_id}/${elem.pus_id}`} className='flex flex-1'>
+                                    <ListItemPrefix placeholder=''>
+                                        <Avatar variant="circular" alt="candice" src="https://docs.material-tailwind.com/img/face-1.jpg"  placeholder = ''/>
+                                    </ListItemPrefix>
+                                    <div className=''>
+                                        <Typography variant="h4" color="blue-gray" placeholder=''>
+                                            {elem.pus_nombre}
+                                        </Typography>
+                                        <Typography variant="small" color="gray" className="font-normal mb-1" placeholder=''>
+                                            {elem.pus_descripcion}
+                                        </Typography>
+                                        <Typography variant="h6" color="gray" className="font-normal" placeholder=''>
+                                            {elem.sju_sistema_juego.sju_nombre}
+                                        </Typography>
+                                    </div>
+                                </Link>
+                                <ListItemSuffix className='flex gap-4' placeholder=''>
+                                    <Chip
+                                        value={elem.pus_nivel}
+                                        variant="ghost"
+                                        size="md"
+                                        className="rounded-lg lbl-level"
+                                    />
+                                    <IconButton variant="text" className="btn-delete-object" onClick={() => handleDeleteCharacter(elem.pus_id)} placeholder=''>
+                                        <SvgDeleteItem width={30} fill='var(--required-color)'/>
+                                    </IconButton>
+                                </ListItemSuffix>
+                            </ListItem>
                         ))}
                     </List>
                 </Card>
             </article>
             <aside className='panel-save'>
-                <Link className='btn-save-character' to={`/CharacterSheet/${user}`} >
+                <button className='btn-save-character' onClick={() => handleOpenCharacter()} >
                     <SvgAddCharacter className='icon' width={40} height={40} />
-                </Link>
+                </button>
             </aside>
         </>
     );

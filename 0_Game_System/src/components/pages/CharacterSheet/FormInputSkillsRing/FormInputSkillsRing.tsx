@@ -44,7 +44,7 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
         onSelectChange(id, values.ring, newSkill);
     };
 
-  return (
+    return (
     <>
         { level >= levelEvaluated ? (
             <>
@@ -85,7 +85,7 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
             <><div className='col-span-2 py-4'></div></>
         )}
     </>
-  );
+    );
 };
 
 export default FormInputSkillsRing;

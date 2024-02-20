@@ -64,11 +64,10 @@ body{
         left: 10px;
         margin-bottom: 10px;
     }
-}
-
-.fieldset-form.form-title{
-    background: var(--bg-title);
-    filter: brightness(1.2);
+    &.form-title{
+        background: var(--bg-title);
+        filter: brightness(1.2);
+    }
 }
 
 .fieldset-form input[type=number]::-webkit-inner-spin-button,
@@ -78,10 +77,10 @@ body{
 }
 .fieldset-form input[type=number]{
     appearance: textfield;
-}
-.fieldset-form input[type=number].form-input-y{
-    font-size: 2rem;
-    font-weight: 700;
+    &.form-input-y{
+        font-size: 2rem;
+        font-weight: 700;
+    }
 }
 
 .fieldset-form select.form-input{
@@ -166,6 +165,10 @@ body{
     text-align: center;
 }
 
+.fieldset-form.form-title .form-input{
+    margin-top: 0rem;
+}
+
 .fieldset-form .form-checkbox{
     &:checked{
         background-color: var(--required-color) !important;
@@ -174,10 +177,12 @@ body{
 }
 
 .characterImage{
-    aspect-ratio: 16 / 5 auto;
-    max-height: 165px;
+    aspect-ratio: 16 / 5;
+    max-height: 170px;
     border-width: 1px;
     border-color: rgb(0 0 0 / var(--un-border-opacity));
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
 }
 
 /* stats-player */
@@ -185,22 +190,21 @@ body{
     grid-template-columns:repeat(3, 1fr);
     grid-template-rows: 4rem repeat(20, 2.5rem);
     grid-row-gap: 0px;
-}
-.fieldset-form.stats-player .form-lbl{
-    margin-right: 0.5rem;
-    border-width: 1px;
-    border-top-right-radius: 0rem;
-    border-top-left-radius: 0rem;
-    border-bottom-left-radius: 0rem; 
-}
-
-.fieldset-form.stats-player .stats-main{
-    min-width: 80px;
-    text-align: center;
-    margin-top: 0rem;
-    margin-right: 0.5rem;
-    margin-left: 0.5rem;
-    border-radius: 0;
+    & .form-lbl{
+        margin-right: 0.5rem;
+        border-width: 1px;
+        border-top-right-radius: 0rem;
+        border-top-left-radius: 0rem;
+        border-bottom-left-radius: 0rem; 
+    }
+    & .stats-main{
+        min-width: 80px;
+        text-align: center;
+        margin-top: 0rem;
+        margin-right: 0.5rem;
+        margin-left: 0.5rem;
+        border-radius: 0;
+    }
 }
 
 .fieldset-form.stats-player .stats-sub{
@@ -222,29 +226,28 @@ body{
 /* skills-player */
 .fieldset-form.skills-player{
     grid-row-gap: 0px;
+    & .form-lbl-skills{
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0.25rem;
+        margin-top: 0.5rem;
+        background: #e5e7eb;
+        border-width: 1px;
+        border-color: rgb(0 0 0 / var(--un-border-opacity));
+        line-height: 1.5rem;
+        font-size: 1rem;
+    }
+    & .skill-level{
+        min-width: 80px;
+        margin-top: 0rem;
+        border-top-right-radius: 0rem;
+        border-bottom-right-radius: 0rem;
+        text-align: center;
+        font-weight: 700;
+        font-size: 2rem;
+    }
 }
 
-.fieldset-form.skills-player .form-lbl-skills{
-    display: flex;
-    align-items: center;
-    padding: 0.5rem 0.25rem;
-    margin-top: 0.5rem;
-    background: #e5e7eb;
-    border-width: 1px;
-    border-color: rgb(0 0 0 / var(--un-border-opacity));
-    line-height: 1.5rem;
-    font-size: 1rem;
-}
-
-.fieldset-form.skills-player .skill-level{
-    min-width: 80px;
-    margin-top: 0rem;
-    border-top-right-radius: 0rem;
-    border-bottom-right-radius: 0rem;
-    text-align: center;
-    font-weight: 700;
-    font-size: 2rem;
-}
 .fieldset-form.skills-player .stats-sub,
 .fieldset-form.inventory-player .form-input{
     min-width: 80px;

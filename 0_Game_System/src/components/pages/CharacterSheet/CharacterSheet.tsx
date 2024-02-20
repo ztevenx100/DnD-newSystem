@@ -12,7 +12,7 @@ import "./CharacterSheet.css";
 
 // Interfaces
 import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields, Option } from '../../interfaces/typesCharacterSheet';
-import { DBHabilidadPersonaje } from '../../interfaces/dbTypes';
+import { DBHabilidadPersonaje, DBPersonajesUsuario, DBSistemaJuego } from '../../interfaces/dbTypes';
 
 import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
 import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
@@ -50,11 +50,13 @@ const CharacterSheet: React.FC = () => {
    
    const [coins,setCoins] = useState<number[]>([0,3,0]);
    const [invObjects, setInvObjects] = useState<InventoryObject[]>([]);
+   const [systemGame, setSystemGame] = useState<DBSistemaJuego>({sju_id: '', sju_nombre: ''});
+   const [skillsRingList, setSkillsRingList] = useState<SkillTypes[]> ([{id:'0', skills: []},{id:'1', skills: []},{id:'2', skills: []}]);
+   const [fieldSkill, setFieldSkill] = useState<SkillFields[]> ([{id:'',skill:'',field:'skillClass'},{id:'',skill:'',field:'skillExtra'}]) ;
    const [newObjectName, setNewObjectName] = useState<string>('');
    const [newObjectDescription, setNewObjectDescription] = useState<string>('');
    const [newObjectCount, setNewObjectCount] = useState<number>(1);
-   const [skillsRingList, setSkillsRingList] = useState<SkillTypes[]> ([{id:'0', skills: []},{id:'1', skills: []},{id:'2', skills: []}]);
-   const [fieldSkill, setFieldSkill] = useState<SkillFields[]> ([{id:'',skill:'',field:'skillClass'},{id:'',skill:'',field:'skillExtra'}]) ;
+   const [SystemGameList, setSystemGameList] = useState<Option[]>([]);
 
    // Listado del select skillClass
    const [optionsSkillClass, setOptionsSkillClass] = useState<Option[]>([]);
@@ -116,6 +118,7 @@ const CharacterSheet: React.FC = () => {
          
          await getUser();
          await getListSkill();
+         await getGameSystemList();
          await getCharacter();
          
          Promise.all ([
@@ -172,12 +175,26 @@ const CharacterSheet: React.FC = () => {
          //console.log('otherSkills: ', otherSkills);
       }
    }
+   async function getGameSystemList() {
+      const { data } = await supabase.from("sju_sistema_juego").select('sju_id, sju_nombre')
+      .eq('sju_estado', 'A')
+      .returns<DBSistemaJuego[]>();
+      //console.log("getGameSystemList - data: ", data);
+      if (data !== null) {
+         const updatedSystemGameList = [];
+         for (let i = 0; i < data.length; i++) {
+            updatedSystemGameList.push({value:data[0].sju_id,name:data[0].sju_nombre});
+         }
+         setSystemGameList(updatedSystemGameList);
+      }
+  }
    async function getCharacter() {
       if(params.id === null || params.id ===  undefined) return;
       
       const { data } = await supabase.from("pus_personajes_usuario").select(
-         'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria,pus_cantidad_oro,pus_cantidad_plata,pus_cantidad_bronce'
-      ).eq("pus_id",params.id);
+         'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria,pus_cantidad_oro,pus_cantidad_plata,pus_cantidad_bronce, sju_sistema_juego(sju_id,sju_nombre)'
+      ).eq("pus_id",params.id)
+      .returns<DBPersonajesUsuario[]>();
       //console.log('getCharacter ',data);
 
       if (data !== null) {
@@ -197,6 +214,10 @@ const CharacterSheet: React.FC = () => {
          updatedCoins[1] = data[0].pus_cantidad_plata;
          updatedCoins[2] = data[0].pus_cantidad_bronce;
          setCoins(updatedCoins);
+         let updateSystemGame = systemGame;
+         updateSystemGame.sju_id = data[0].sju_sistema_juego.sju_id;
+         updateSystemGame.sju_nombre = data[0].sju_sistema_juego.sju_nombre;
+         setSystemGame(updateSystemGame);
       }
    }
    async function getStats() {
@@ -377,6 +398,11 @@ const CharacterSheet: React.FC = () => {
    // Manejar el cambio en la selección
    const handleSelectRaceChange = (value: string) => {
       setSelectedRaceValue(value);
+   };
+   // Actualizar el systema de juego
+   const handleSystemGameChange = (currentSystem: string) => {
+      let option = SystemGameList.filter(elem => elem.value === currentSystem);
+      setSystemGame({sju_id: option[0].value, sju_nombre: option[0].name});
    };
    // Actualizar la habilidad principal del personaje
    const handleSelectSkillChange = (currentSkill: string) => {
@@ -709,6 +735,7 @@ const CharacterSheet: React.FC = () => {
             pus_cantidad_oro: dataCharacter?.coinsInv[0],
             pus_cantidad_plata: dataCharacter?.coinsInv[1],
             pus_cantidad_bronce: dataCharacter?.coinsInv[2],
+            pus_sistema_juego: systemGame.sju_id,
          })
          .select();
          if(data !== null) return data[0].pus_id;
@@ -831,7 +858,11 @@ const CharacterSheet: React.FC = () => {
          
          {/* Titulo */}
          <fieldset className="fieldset-form form-title col-span-2 md:col-span-2 lg:col-span-3 shadow-lg rounded">
-            <h1 className='col-span-2 text-center font-bold'>Azar de las dos manos</h1>
+            {(!newRecord) ? (
+               <h1 className='col-span-2 text-center font-bold'>{systemGame.sju_nombre}</h1>
+            ):(
+               <><FormSelectInfoPlayer id="systemGame" label="Sistema de juego" options={SystemGameList} selectedValue={systemGame.sju_id} onSelectChange={handleSystemGameChange} ></FormSelectInfoPlayer></>
+            )}
          </fieldset>
          {/* Informacion del jugador */}
          <fieldset className="fieldset-form info-player col-span-2 md:col-span-2 lg:col-span-3 bg-white shadow-lg rounded">
@@ -1068,11 +1099,11 @@ const CharacterSheet: React.FC = () => {
          </aside>
 
          {/* 
-         <div className='grid place-items-center fixed w-screen h-screen bg-black bg-opacity-60 backdrop-blur-sm ' style={{display:'none'}}/>
-         <div className='relative bg-white m-4 rounded-lg shadow-2xl text-blue-gray-500 antialiased font-sans text-base font-light leading-relaxed w-full md:w-5/6 lg:w-3/4 2xl:w-3/5 min-w-[90%] md:min-w-[83.333333%] lg:min-w-[75%] 2xl:min-w-[60%] max-w-[90%] md:max-w-[83.333333%] lg:max-w-[75%] 2xl:max-w-[60%] dialog' style={{display:'none'}}/>
-         <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg text-red-500 hover:bg-red-500/10 active:bg-red-500/30 mr-1 ' style={{display:'none'}}/>
-         <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-lg shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85] ' style={{display:'none'}}/> 
-         <div className='className="h-[28rem] overflow-scroll"' style={{display:'none'}}/> 
+         <div className='grid place-items-center fixed w-screen h-screen bg-black bg-opacity-60 backdrop-blur-sm'/>
+         <div className='relative bg-white m-4 rounded-lg shadow-2xl text-blue-gray-500 antialiased font-sans text-base font-light leading-relaxed w-full md:w-5/6 lg:w-3/4 2xl:w-3/5 min-w-[90%] md:min-w-[83.333333%] lg:min-w-[75%] 2xl:min-w-[60%] max-w-[90%] md:max-w-[83.333333%] lg:max-w-[75%] 2xl:max-w-[60%] dialog'/>
+         <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg text-red-500 hover:bg-red-500/10 active:bg-red-500/30 mr-1'/>
+         <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-lg shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85]'/> 
+         <div className='h-[28rem] overflow-scroll'/> 
          */}
          {/* Modal/Dialog */}
          <Dialog

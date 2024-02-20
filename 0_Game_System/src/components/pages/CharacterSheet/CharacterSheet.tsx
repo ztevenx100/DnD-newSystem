@@ -179,7 +179,7 @@ const CharacterSheet: React.FC = () => {
       const { data } = await supabase.from("sju_sistema_juego").select('sju_id, sju_nombre')
       .eq('sju_estado', 'A')
       .returns<DBSistemaJuego[]>();
-      console.log("getGameSystemList - data: ", data);
+      //console.log("getGameSystemList - data: ", data);
       if (data !== null) {
          const updatedSystemGameList = [];
          for (let i = 0; i < data.length; i++) {
@@ -215,8 +215,6 @@ const CharacterSheet: React.FC = () => {
          updatedCoins[2] = data[0].pus_cantidad_bronce;
          setCoins(updatedCoins);
          let updateSystemGame = systemGame;
-         console.log(data[0].sju_sistema_juego);
-         
          updateSystemGame.sju_id = data[0].sju_sistema_juego.sju_id;
          updateSystemGame.sju_nombre = data[0].sju_sistema_juego.sju_nombre;
          setSystemGame(updateSystemGame);

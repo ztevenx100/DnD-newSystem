@@ -36,7 +36,7 @@ const UserCharacters: React.FC = () => {
 
         const { data } = await supabase.from("pus_personajes_usuario").select('pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, usu_usuario(usu_id, usu_nombre), sju_sistema_juego(sju_id, sju_nombre)')
         .eq('pus_usuario', user);
-        console.log("data: " , data);
+        //console.log("data: " , data);
         if (data !== null) {
             setList(data as unknown as DBPersonajesUsuario[]);
         }

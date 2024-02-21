@@ -36,6 +36,7 @@ const CharacterSheet: React.FC = () => {
    const [characterName, setCharacterName] = useState<string>('');
    const [characterLevel,setCharacterLevel] = useState(1);
    const [characterDescription, setCharacterDescription] = useState<string>('');
+   const [characterImage, setCharacterImage] = useState<string | undefined>(undefined);
    const [selectedClassValue, setSelectedClassValue] = useState<string>('');
    const [selectedRaceValue, setSelectedRaceValue] = useState<string>('');
    const [selectedJobValue, setSelectedJobValue] = useState<string>(''); 
@@ -121,6 +122,7 @@ const CharacterSheet: React.FC = () => {
          await getListSkill();
          await getGameSystemList();
          await getCharacter();
+         await getCharacterImage();
          
          Promise.all ([
             getStats(),
@@ -136,6 +138,7 @@ const CharacterSheet: React.FC = () => {
    async function getUser() {
       const { data } = await supabase.from("usu_usuario").select('usu_id, usu_nombre')
          .eq("usu_id",params.user);
+      console.log('User: ',params.user);
       //console.log('getUser ',data);
 
       if (data !== null) {
@@ -178,8 +181,8 @@ const CharacterSheet: React.FC = () => {
    }
    async function getGameSystemList() {
       const { data } = await supabase.from("sju_sistema_juego").select('sju_id, sju_nombre')
-      .eq('sju_estado', 'A')
-      .returns<DBSistemaJuego[]>();
+         .eq('sju_estado', 'A')
+         .returns<DBSistemaJuego[]>();
       //console.log("getGameSystemList - data: ", data);
       if (data !== null) {
          const updatedSystemGameList = [];
@@ -220,6 +223,16 @@ const CharacterSheet: React.FC = () => {
          updateSystemGame.sju_nombre = data[0].sju_sistema_juego.sju_nombre;
          setSystemGame(updateSystemGame);
       }
+   }
+   async function getCharacterImage() {
+      if(params.id === null || params.id ===  undefined) return;
+      const { data } = await supabase
+      .storage
+      .from('dnd-system')
+      .getPublicUrl(params.user + '/deo-1.png');
+
+      console.log('getCharacterImage: ', data);
+      setCharacterImage(data.publicUrl);
    }
    async function getStats() {
       if(params.id === null || params.id === undefined) return;
@@ -458,6 +471,11 @@ const CharacterSheet: React.FC = () => {
    const handleCharacterJobSelectChange = (value: string) => {
       setSelectedJobValue(value);
       updStatsPoints(selectedClassValue, value);
+   };
+
+   // Manejar el cambio de la URL de la imagen en characterImage
+   const handleCharacterImageFileChange = (value: string) => {
+      setCharacterImage(value);
    };
 
    const handleSelectedCheckValuesChange = (newValues: string[]) => {
@@ -907,7 +925,7 @@ const CharacterSheet: React.FC = () => {
                required
             />
             <label htmlFor="characterImage" className="form-lbl-y col-start-1 md:col-start-4 col-span-2 md:col-span-1 row-start-4 md:row-start-1 bg-grey-lighter ">Imagen</label>
-            <FormImageFile externalStyles={'col-start-1 md:col-start-4 col-span-2 md:col-span-1 row-start-5 md:row-start-2 row-span-3 md:row-span-4 mr-2 ml-2'}/>
+            <FormImageFile externalStyles={'col-start-1 md:col-start-4 col-span-2 md:col-span-1 row-start-5 md:row-start-2 row-span-3 md:row-span-4 mr-2 ml-2'} locationImage={characterImage} onFormImageFileChange={handleCharacterImageFileChange}/>
 
             <label htmlFor="characterDescription" className="form-lbl-y col-start-1 md:col-start-1 col-span-4 row-start-8 md:row-start-6 bg-grey-lighter ">Descripción</label>
             <textarea

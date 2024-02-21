@@ -2,9 +2,11 @@ import React, { useState, ChangeEvent } from 'react';
 
 interface FormImageFileProps{
   externalStyles:string;
+  locationImage:string | undefined;
+  onFormImageFileChange: (value: string, file?: FileReader) => void;
 }
 
-const FormImageFile: React.FC<FormImageFileProps> = ({externalStyles}) => {
+const FormImageFile: React.FC<FormImageFileProps> = ({externalStyles, locationImage, onFormImageFileChange}) => {
   const [imagenSeleccionada, setImagenSeleccionada] = useState<string | undefined>(undefined);
 
   const manejarCambioImagen = (e: ChangeEvent<HTMLInputElement>) => {
@@ -15,6 +17,8 @@ const FormImageFile: React.FC<FormImageFileProps> = ({externalStyles}) => {
 
       lector.onloadend = () => {
         setImagenSeleccionada(lector.result as string);
+        onFormImageFileChange(lector.result as string);
+        console.log('manejarCambioImagen - url:', lector.result ,' - file:',archivo);
       };
 
       lector.readAsDataURL(archivo);
@@ -25,16 +29,16 @@ const FormImageFile: React.FC<FormImageFileProps> = ({externalStyles}) => {
 
   return (
     <picture className={'characterImageInput ' + externalStyles}>
-        <input id='characterImage' className='inputImageFile' type="file" onChange={manejarCambioImagen} />
-        {imagenSeleccionada ? (
-            <>
-              <img src={imagenSeleccionada} className='characterImagePreview ' alt='Imagen del personaje' />
-            </>
-        ):(
-          <>
-            <div className='CharacterImageEmpty'></div>
-          </>
-        )}
+      <input id='characterImage' className='inputImageFile' type="file" onChange={manejarCambioImagen} />
+      {locationImage ? (
+        <>
+          <img src={(imagenSeleccionada)?imagenSeleccionada:locationImage} className='characterImagePreview ' alt='Imagen del personaje' />
+        </>
+      ):(
+        <>
+          <div className='CharacterImageEmpty'></div>
+        </>
+      )}
     </picture>
   );
 };

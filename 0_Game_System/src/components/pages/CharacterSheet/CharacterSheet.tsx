@@ -18,6 +18,7 @@ import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
 import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
 import FormInputStats from './FormInputStats/FormInputStats';
 import FormInputSkillsRing from './FormInputSkillsRing/FormInputSkillsRing';
+import FormImageFile from './FormImageFile/FormImageFile';
 
 import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
 import SvgCharacter from '../../../components/UI/Icons/SvgCharacter';
@@ -894,28 +895,26 @@ const CharacterSheet: React.FC = () => {
             
             <FormSelectInfoPlayer id="characterJob" label="Trabajo" options={optionsCharacterJob} selectedValue={selectedJobValue} onSelectChange={handleCharacterJobSelectChange} ></FormSelectInfoPlayer>
 
-            <label htmlFor="characterLevel" className="form-lbl-y col-start-1 md:col-start-3 row-start-2 md:row-start-1 bg-grey-lighter ">Nivel</label>
+            <label htmlFor="characterLevel" className="form-lbl-y col-start-1 md:col-start-3 col-span-2 md:col-span-1 row-start-2 md:row-start-1 bg-grey-lighter ">Nivel</label>
             <input type="number" 
                id="characterLevel" 
                placeholder="Nivel"
                min="1" 
                max="10"
-               className="form-input-y col-start-1 md:col-start-3 row-start-3 md:row-start-2 row-span-4 focus:border-black focus:shadow"
+               className="form-input-y col-start-1 md:col-start-3 col-span-2 md:col-span-1 row-start-3 md:row-start-2 row-span-1 md:row-span-4 focus:border-black focus:shadow"
                value={characterLevel}
                onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeCharacterLevel(parseInt(e.target.value))}
                required
             />
-            <label htmlFor="characterImage" className="form-lbl-y col-start-2 md:col-start-4 row-start-2 md:row-start-1 bg-grey-lighter ">Imagen</label>
-            <picture className='col-start-2 md:col-start-4 row-start-3 md:row-start-2 row-span-2 mr-2 ml-2'>
-               <img src='' className='characterImage ' alt='Imagen del personaje'/>
-            </picture>
+            <label htmlFor="characterImage" className="form-lbl-y col-start-1 md:col-start-4 col-span-2 md:col-span-1 row-start-4 md:row-start-1 bg-grey-lighter ">Imagen</label>
+            <FormImageFile externalStyles={'col-start-1 md:col-start-4 col-span-2 md:col-span-1 row-start-5 md:row-start-2 row-span-3 md:row-span-4 mr-2 ml-2'}/>
 
-            <label htmlFor="characterDescription" className="form-lbl-y col-start-1 md:col-start-1 col-span-4 row-start-6 md:row-start-6 bg-grey-lighter ">Descripción</label>
+            <label htmlFor="characterDescription" className="form-lbl-y col-start-1 md:col-start-1 col-span-4 row-start-8 md:row-start-6 bg-grey-lighter ">Descripción</label>
             <textarea
                id="characterDescription" 
                name='characterDescription'
                placeholder="Descripcion del personaje" 
-               className="form-input-y col-start-1 md:col-start-1 col-span-4 row-start-7 md:row-start-7 row-span-1 focus:border-black focus:shadow"
+               className="form-input-y col-start-1 md:col-start-1 col-span-4 row-start-9 md:row-start-7 row-span-1 focus:border-black focus:shadow"
                onChange={(e) => setCharacterDescription(e.target.value)}
                value={characterDescription}
                required

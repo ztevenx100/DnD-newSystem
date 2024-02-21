@@ -176,13 +176,44 @@ body{
     }
 }
 
-.characterImage{
-    aspect-ratio: 16 / 5;
-    max-height: 170px;
-    border-width: 1px;
-    border-color: rgb(0 0 0 / var(--un-border-opacity));
-    border-bottom-left-radius: 0.5rem;
-    border-bottom-right-radius: 0.5rem;
+.characterImageInput{
+    display: grid;
+    grid-template-columns:1fr;
+    grid-template-rows: 2.5rem 1fr;
+    grid-row-gap: 0px;
+    & .inputImageFile{
+        grid-column-start: 1;
+        width: 100%;
+        border: 1px solid var(--bg-color-2);
+        &::file-selector-button{
+            width: 150px;
+            height:100%;
+            background-color: var(--bg-color-3);
+            border: 0px solid var(--bg-color-2);
+            border-right: 1px solid var(--bg-color-2);
+        }
+    }
+    & .characterImagePreview{
+        width: 100%;
+        height: 7.5rem;
+        grid-column-start: 1;
+        grid-row-start: 2;
+        /*aspect-ratio: 16/8;*/
+        object-fit: cover;
+        object-position: center top;
+        border: 1px solid rgb(0 0 0 / var(--un-border-opacity));
+        border-bottom-left-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+    }
+    & .CharacterImageEmpty{
+        width: 100%;
+        height: 7.5rem;
+        grid-column-start: 1;
+        grid-row-start: 2;
+        border: 1px solid rgb(0 0 0 / var(--un-border-opacity));
+        border-bottom-left-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+    }
 }
 
 /* stats-player */
@@ -431,6 +462,7 @@ body{
     height: 100%;
     background-color: #0004;
     z-index: 10;
+    cursor: wait;
 }
 
 .loader {

@@ -3,7 +3,7 @@ import React, { useState, ChangeEvent } from 'react';
 interface FormImageFileProps{
   externalStyles:string;
   locationImage:string | undefined;
-  onFormImageFileChange: (value: string, file?: FileReader) => void;
+  onFormImageFileChange: (value: string, file: File) => void;
 }
 
 const FormImageFile: React.FC<FormImageFileProps> = ({externalStyles, locationImage, onFormImageFileChange}) => {
@@ -17,7 +17,7 @@ const FormImageFile: React.FC<FormImageFileProps> = ({externalStyles, locationIm
 
       lector.onloadend = () => {
         setImagenSeleccionada(lector.result as string);
-        onFormImageFileChange(lector.result as string);
+        onFormImageFileChange(lector.result as string, archivo);
         console.log('manejarCambioImagen - url:', lector.result ,' - file:',archivo);
       };
 

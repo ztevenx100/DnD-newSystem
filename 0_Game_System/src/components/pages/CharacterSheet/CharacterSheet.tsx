@@ -229,7 +229,7 @@ const CharacterSheet: React.FC = () => {
       const { data } = await supabase
       .storage
       .from('dnd-system')
-      .getPublicUrl(params.user + '/deo-1.png');
+      .getPublicUrl(params.user + '/' + params.id +'.webp');
 
       console.log('getCharacterImage: ', data);
       setCharacterImage(data.publicUrl);
@@ -474,8 +474,20 @@ const CharacterSheet: React.FC = () => {
    };
 
    // Manejar el cambio de la URL de la imagen en characterImage
-   const handleCharacterImageFileChange = (value: string) => {
-      setCharacterImage(value);
+   const handleCharacterImageFileChange = async (value: string, file: File) => {
+      //const avatarFile = event.target.files[0]
+      const { data, error } = await supabase
+      .storage
+      .from('dnd-system')
+      .upload(params.user + '/' + params.id +'.webp', file, {
+         cacheControl: '3600',
+         upsert: true
+      });
+      //'/deo-1.png'
+      
+      if(error) alert(alert);
+      
+      if(data) setCharacterImage(value);
    };
 
    const handleSelectedCheckValuesChange = (newValues: string[]) => {

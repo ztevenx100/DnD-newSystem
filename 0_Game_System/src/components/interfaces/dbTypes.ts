@@ -24,7 +24,8 @@ export interface DBPersonajesUsuario{
     sju_sistema_juego: DBSistemaJuego | {
       sju_id: string;
       sju_nombre: string;
-    } ;
+    };
+    url_character_image?: string;
 }
 
 export interface DBHabilidadPersonaje{

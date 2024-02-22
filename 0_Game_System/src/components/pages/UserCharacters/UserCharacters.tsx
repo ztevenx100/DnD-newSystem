@@ -16,6 +16,7 @@ const UserCharacters: React.FC = () => {
     const [list, setList] = useState<DBPersonajesUsuario[]>([]);
     const [user, setUser] = useState('');
     const navigate = useNavigate();
+    const randomValueRefreshImage = Math.random().toString(36).substring(7);
 
     useEffect(() => {
         getUser().then((user) => {
@@ -35,11 +36,28 @@ const UserCharacters: React.FC = () => {
         if(user === '' || user === null) return;
 
         const { data } = await supabase.from("pus_personajes_usuario").select('pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, usu_usuario(usu_id, usu_nombre), sju_sistema_juego(sju_id, sju_nombre)')
-        .eq('pus_usuario', user);
-        //console.log("data: " , data);
+        .eq('pus_usuario', user)
+        .returns<DBPersonajesUsuario[]>();
+        //console.log("getList - data: " , data);
         if (data !== null) {
-            setList(data as unknown as DBPersonajesUsuario[]);
+            //setList(data as unknown as DBPersonajesUsuario[]);
+            setList(data);
+            console.log("getList - data: " , data);
         }
+    }
+
+    function getUrlImage(character:DBPersonajesUsuario) {
+        const path:string = character.pus_usuario + '/' + character.pus_id + '.webp';
+        const { data } = supabase
+        .storage
+        .from('dnd-system')
+        .getPublicUrl(path);
+        //console.log('getUrlImage', data);
+
+        if (data !== null) {
+            return data.publicUrl;
+        }
+        return '';
     }
 
     async function handleDeleteCharacter (id: string) {
@@ -88,7 +106,7 @@ const UserCharacters: React.FC = () => {
                             <ListItem key={elem.pus_id} placeholder='' ripple={false} className='character-item flex'>
                                 <Link to={`/CharacterSheet/${elem.usu_usuario.usu_id}/${elem.pus_id}`} className='flex flex-1'>
                                     <ListItemPrefix placeholder=''>
-                                        <Avatar variant="circular" alt="candice" src="https://docs.material-tailwind.com/img/face-1.jpg"  placeholder = ''/>
+                                        <Avatar variant="circular" alt={"character Image"} src={getUrlImage(elem) + '?' + randomValueRefreshImage} placeholder = ''/>
                                     </ListItemPrefix>
                                     <div className=''>
                                         <Typography variant="h4" color="blue-gray" placeholder=''>

@@ -70,6 +70,7 @@ const CharacterSheet: React.FC = () => {
    const [open, setOpen] = useState<boolean>(false);
    const [loading, setLoading] = useState<boolean>(true);
    const [newRecord, setNewRecord] = useState<boolean>(true);
+   const randomValueRefreshImage = Math.random().toString(36).substring(7);
    const handleOpen = () => setOpen(!open);
    const navigate = useNavigate();
 
@@ -229,10 +230,10 @@ const CharacterSheet: React.FC = () => {
       const { data } = await supabase
       .storage
       .from('dnd-system')
-      .getPublicUrl(params.user + '/' + params.id +'.webp');
+      .getPublicUrl(params.user + '/' + params.id + '.webp');
+      //console.log('getCharacterImage: ', data);
 
-      console.log('getCharacterImage: ', data);
-      setCharacterImage(data.publicUrl);
+      setCharacterImage(data.publicUrl+ '?' + randomValueRefreshImage);
    }
    async function getStats() {
       if(params.id === null || params.id === undefined) return;
@@ -479,11 +480,11 @@ const CharacterSheet: React.FC = () => {
       const { data, error } = await supabase
       .storage
       .from('dnd-system')
-      .upload(params.user + '/' + params.id +'.webp', file, {
+      .upload(params.user + '/' + params.id + '.webp', file, {
          cacheControl: '3600',
          upsert: true
       });
-      //'/deo-1.png'
+      console.log('handleCharacterImageFileChange: ', data);
       
       if(error) alert(alert);
       

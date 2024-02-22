@@ -100,22 +100,22 @@ const UserCharacters: React.FC = () => {
                     <div className="relative grid items-center font-sans font-bold uppercase whitespace-nowrap select-none bg-gray-900/10 text-gray-900 py-1.5 px-3 text-xs rounded-lg" />
                     <div className="relative align-middle select-none font-sans font-medium text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none w-10 max-w-[40px] h-10 max-h-[40px] rounded-lg text-xs text-blue-gray-500 hover:bg-blue-gray-500/10 active:bg-blue-gray-500/30 btn-delete-object" />
                 */}
-                <Card className="w-full p-5 row-span-6" placeholder=''>
+                <Card className="w-full px-10 py-5 row-span-6" placeholder=''>
                     <List placeholder = ''>
                         {list.map((elem) => (
                             <ListItem key={elem.pus_id} placeholder='' ripple={false} className='character-item flex'>
                                 <Link to={`/CharacterSheet/${elem.usu_usuario.usu_id}/${elem.pus_id}`} className='flex flex-1'>
-                                    <ListItemPrefix placeholder=''>
+                                    <ListItemPrefix className='image-space' placeholder=''>
                                         <Avatar variant="circular" alt={"character Image"} src={getUrlImage(elem) + '?' + randomValueRefreshImage} placeholder = ''/>
                                     </ListItemPrefix>
-                                    <div className=''>
-                                        <Typography variant="h4" color="blue-gray" placeholder=''>
+                                    <div className='px-2'>
+                                        <Typography variant="h4" color="blue-gray" className='font-black mb-1' placeholder=''>
                                             {elem.pus_nombre}
                                         </Typography>
-                                        <Typography variant="small" color="gray" className="font-normal mb-1" placeholder=''>
+                                        <Typography variant="small" color="gray" className="font-normal mb-1 " placeholder=''>
                                             {elem.pus_descripcion}
                                         </Typography>
-                                        <Typography variant="h6" color="gray" className="font-normal" placeholder=''>
+                                        <Typography variant="h6" color="gray" className="font-semibold " placeholder=''>
                                             {elem.sju_sistema_juego.sju_nombre}
                                         </Typography>
                                     </div>

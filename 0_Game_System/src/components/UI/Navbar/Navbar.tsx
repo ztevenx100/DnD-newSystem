@@ -10,15 +10,15 @@ import './Navbar.css';
 const Navbar: React.FC = () => {
   return (
     <>
-      <nav className="navbar ml-3">
+      <nav className="navbar ml-2">
         <menu>
           {/* Home */}
           <Tooltip className="bg-dark text-light px-2 py-1" placement="right" content={"Inicio"} >
-            <li><NavLink className={({ isActive }) => isActive ? 'active' : ''} to="/" ><SvgHome width="40" height="50" fill='none' stroke='#fff' /></NavLink></li>
+            <li><NavLink className={({ isActive }) => isActive ? 'active' : ''} to="/" ><SvgHome width="30" height="30" fill='none' stroke='#fff' /></NavLink></li>
           </Tooltip>
           {/* UserCharacters */}
           <Tooltip className="bg-dark text-light px-2 py-1" placement="right" content={"Lista de personajes"} >
-            <li><NavLink className={({ isActive }) => isActive ? 'active' : ''} to="/UserCharacters" ><SvgPerson width="40" height="50" fill='#fff' /></NavLink></li>
+            <li><NavLink className={({ isActive }) => isActive ? 'active' : ''} to="/UserCharacters" ><SvgPerson width="30" height="30" fill='#fff' /></NavLink></li>
           </Tooltip>
         </menu>
       </nav>

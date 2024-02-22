@@ -25,6 +25,10 @@
     }
 }
 
+.image-space{
+    min-width: 50px;
+}
+
 .btn-delete-object{
     padding: 0 0.25rem;
     max-width: 40px;

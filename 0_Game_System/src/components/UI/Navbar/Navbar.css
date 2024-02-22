@@ -1,15 +1,15 @@
 .navbar {
     position: fixed;
+    display: flex;
+    flex-direction: column;
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
     padding: 20px 10px;
     border-radius: 5px;
     color: #fff;
     background-color: rgba(51, 51, 51, 0.5); /* Agregamos transparencia al color de fondo */
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(3px);
     z-index: 5;
 }
   
@@ -31,6 +31,6 @@ menu li a{
     }
     &.active{
         background: #000a;
-        backdrop-filter: blur(5px);
+        backdrop-filter: blur(10px);
     }
 }

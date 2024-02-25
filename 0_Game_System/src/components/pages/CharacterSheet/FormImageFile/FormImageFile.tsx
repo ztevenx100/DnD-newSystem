@@ -27,12 +27,18 @@ const FormImageFile: React.FC<FormImageFileProps> = ({externalStyles, locationIm
     }
   };
 
+  function openNewWindowImage(){
+    let myWindow = window.open("", "MsgWindow", "width=800,height=800");
+    let imageHtml = "<img src='" + ((imagenSeleccionada)?imagenSeleccionada:locationImage) + "' style='position: absolute; top:0; left:0; width:100%; height: 100%; object-fit: cover; object-position: center top; overflow:hidden; margin: 0;' alt='Imagen del personaje' />";
+    myWindow?.document.write(imageHtml);
+  }
+
   return (
     <picture className={'characterImageInput ' + externalStyles}>
       <input id='characterImage' className='inputImageFile' type="file" onChange={manageImageChange} />
       {locationImage ? (
         <>
-          <img src={(imagenSeleccionada)?imagenSeleccionada:locationImage} className='characterImagePreview ' alt='Imagen del personaje' />
+          <img src={(imagenSeleccionada)?imagenSeleccionada:locationImage} className='characterImagePreview ' alt='Imagen del personaje' onClick={openNewWindowImage} />
         </>
       ):(
         <>

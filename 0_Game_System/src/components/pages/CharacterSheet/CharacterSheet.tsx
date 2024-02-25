@@ -938,7 +938,7 @@ const CharacterSheet: React.FC = () => {
                required
             />
             <label htmlFor="characterImage" className="form-lbl-y col-start-1 md:col-start-4 col-span-2 md:col-span-1 row-start-4 md:row-start-1 bg-grey-lighter ">Imagen</label>
-            <FormImageFile externalStyles={'col-start-1 md:col-start-4 col-span-2 md:col-span-1 row-start-5 md:row-start-2 row-span-3 md:row-span-4 mr-2 ml-2'} locationImage={characterImage} onFormImageFileChange={handleCharacterImageFileChange}/>
+            <FormImageFile externalStyles={'col-start-1 md:col-start-4 col-span-2 md:col-span-1 row-start-5 md:row-start-2 row-span-3 md:row-span-4 mr-2 ml-2'} locationImage={characterImage} onFormImageFileChange={handleCharacterImageFileChange} />
 
             <label htmlFor="characterDescription" className="form-lbl-y col-start-1 md:col-start-1 col-span-4 row-start-8 md:row-start-6 bg-grey-lighter ">Descripción</label>
             <textarea

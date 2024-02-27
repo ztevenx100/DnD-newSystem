@@ -103,7 +103,7 @@ const UserCharacters: React.FC = () => {
                 <Card className="w-full px-10 py-5 row-span-6" placeholder=''>
                     <List placeholder = ''>
                         {list.map((elem) => (
-                            <ListItem key={elem.pus_id} placeholder='' ripple={false} className='character-item flex'>
+                            <ListItem key={elem.pus_id} ripple={false} className='character-item flex' placeholder=''>
                                 <Link to={`/CharacterSheet/${elem.usu_usuario.usu_id}/${elem.pus_id}`} className='flex flex-1'>
                                     <ListItemPrefix className='image-space' placeholder=''>
                                         <Avatar variant="circular" alt={"character Image"} src={getUrlImage(elem) + '?' + randomValueRefreshImage} placeholder = ''/>

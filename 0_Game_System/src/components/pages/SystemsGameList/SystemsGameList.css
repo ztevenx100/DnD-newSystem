@@ -1,0 +1,68 @@
+/*
+    Created on : 04/11/2023
+    Author     : Steven
+*/
+:root{
+    --bg-btn-hover: #AAA8;
+}
+
+.title-list{
+    font-weight: 700;
+    text-align: center;
+    font-size: 20px;
+}
+
+.lbl-level{
+    background-color: var(--bg-color-3);
+}
+
+.character-item{
+    transition-property: background-color;
+    transition-duration: .5s;
+    transition-timing-function: ease;
+    &:hover{
+        background-color: var(--bg-btn-hover);
+    }
+}
+
+.image-space{
+    min-width: 50px;
+}
+
+.btn-delete-object{
+    padding: 0 0.25rem;
+    max-width: 40px;
+    transition-property: background-color;
+    transition-duration: .5s;
+    transition-timing-function: ease;
+    z-index: 10;
+    &:hover{
+        background-color: #FFFA;
+    }
+}
+
+.form-lbl{
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.25rem;
+    margin-left: 0.5rem;
+    background: #e5e7eb;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-color: rgb(0 0 0 / var(--un-border-opacity));
+    border-top-left-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem; 
+    line-height: 1.5rem;
+    font-size: 1rem;
+}
+.form-input{
+    padding: 0.5rem 0.75rem;
+    margin-top: 0.5rem;
+    border-radius: 0.5rem;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0; 
+    line-height: 1.5rem;
+    border-width: 1px;
+    border-color: rgb(0 0 0 / var(--un-border-opacity));
+}

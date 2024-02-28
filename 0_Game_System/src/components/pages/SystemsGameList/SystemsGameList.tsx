@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../../database/supabase';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import { DBSistemaJuego } from '../../interfaces/dbTypes';
 
-import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, IconButton} from "@material-tailwind/react";
+import { List, ListItem, Card, ListItemPrefix, Typography} from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./SystemsGameList.css";
@@ -23,7 +23,7 @@ const SystemsGameList: React.FC = () => {
         if (data !== null) {
             //setList(data as unknown as DBPersonajesUsuario[]);
             setList(data);
-            console.log("getList - data: " , data);
+            //console.log("getList - data: " , data);
         }
     }
 
@@ -35,9 +35,12 @@ const SystemsGameList: React.FC = () => {
                 </header>
                 <Card className="w-full px-10 py-5 row-span-6" placeholder=''>
                     <List placeholder = ''>
-                        {list.map((elem) => (
+                        {list.map((elem, index) => (
                             <ListItem placeholder='' ripple={false} className='character-item flex'>
-                                <Link to={``} className='flex flex-1'>
+                                <Link to={`/SystemGameElement/${elem.sju_id}`} className='flex flex-1'>
+                                    <ListItemPrefix className='image-space item-prefix rounded-lg' placeholder=''>
+                                        {index}
+                                    </ListItemPrefix>
                                     <div className='px-2'>
                                         <Typography variant="h4" color="blue-gray" className='font-black mb-1' placeholder=''>
                                             {elem.sju_nombre}

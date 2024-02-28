@@ -10,6 +10,7 @@ import Home from './components/pages/Home';
 import CharacterSheet from './components/pages/CharacterSheet/CharacterSheet';
 import UserCharacters from './components/pages/UserCharacters/UserCharacters';
 import SystemsGameList from './components/pages/SystemsGameList/SystemsGameList';
+import SystemGameElement from './components/pages/SystemsGameList/SystemGameElement/SystemGameElement';
 
 import "@unocss/reset/tailwind.css";
 import "uno.css";
@@ -49,6 +50,10 @@ const router = createBrowserRouter([
       {
         path: "/SystemsGameList",
         element: <SystemsGameList />,
+      },
+      {
+        path: "/SystemGameElement/:id",
+        element: <SystemGameElement />,
       }
     ]
   },

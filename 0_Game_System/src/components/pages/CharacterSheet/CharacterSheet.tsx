@@ -1150,7 +1150,7 @@ const CharacterSheet: React.FC = () => {
          </fieldset>
 
          <aside className='panel-save'>
-            <button className='btn-save-character' onClick={() => handleOpenModal()} >
+            <button type='button' className='btn-save-character' onClick={() => handleOpenModal()} >
                <SvgSaveCharacter className='icon' width={40} height={40} />
             </button>
          </aside>

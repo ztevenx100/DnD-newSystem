@@ -34,6 +34,7 @@ export interface SkillsAcquired {
     name: string;
     description?: string;
     ring: string;
+    stat?: string;
 }
 
 export interface InventoryObject {

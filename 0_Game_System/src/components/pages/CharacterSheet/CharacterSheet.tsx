@@ -139,7 +139,6 @@ const CharacterSheet: React.FC = () => {
    async function getUser() {
       const { data } = await supabase.from("usu_usuario").select('usu_id, usu_nombre')
          .eq("usu_id",params.user);
-      console.log('User: ',params.user);
       //console.log('getUser ',data);
 
       if (data !== null) {
@@ -371,12 +370,12 @@ const CharacterSheet: React.FC = () => {
    ]);
    // Listado del select skillTypeRing
    const optionsRingTypes = [
-      { id: 'STR', name: 'Fuerza' },
-      { id: 'INT', name: 'Inteligencia' },
-      { id: 'DEX', name: 'Destreza' },
-      { id: 'HEA', name: 'Sanidad' },
-      { id: 'CRE', name: 'Creación' },
-      { id: 'SUP', name: 'Soporte' },
+      { id: 'STR', name: 'Fuerza', stat:'STR' },
+      { id: 'INT', name: 'Inteligencia', stat:'INT' },
+      { id: 'DEX', name: 'Destreza', stat:'DEX' },
+      { id: 'HEA', name: 'Sanidad', stat:'CON' },
+      { id: 'CRE', name: 'Creación', stat:'PER' },
+      { id: 'SUP', name: 'Soporte', stat:'CHA' },
    ];
 
    // Listado de armas
@@ -406,9 +405,21 @@ const CharacterSheet: React.FC = () => {
       'Tomfas',
    ];
 
+   function validateNumeric(value:string, valueDefault?: number): number{
+      if(isNaN(Number(value))){
+         alert('Valor no numerico');
+         return valueDefault||0;
+      } else if (value === '') {
+         return valueDefault||0;
+      } else {
+         return parseInt(value);
+      }
+   }
+
    // Actualizar el nivel del personaje
-   const handleChangeCharacterLevel = (newLevel: number) => {
-      setCharacterLevel(newLevel);
+   const handleChangeCharacterLevel = (newLevel: string) => {
+      let level = validateNumeric(newLevel,1);
+      setCharacterLevel(level);
    };
    // Manejar el cambio en la selección
    const handleSelectRaceChange = (value: string) => {
@@ -523,30 +534,31 @@ const CharacterSheet: React.FC = () => {
       setSkillsRingList( updatedSetSkillsRingList );
    };
 
-   const handleSelectedRingSkillChange = async (value: string, ring: string, name: string) => {
+   const handleSelectedRingSkillChange = async (value: string, ring: string, name: string, stat: string) => {
       const description = '';
       const existingSkillIndex = skillsAcquired.findIndex(elem => elem.value === value);
-      const id:string = skillsTypes.find(item => item.id === ring)?.skills.find(item => item.value === name)?.id || '';
-      //console.log(' handleSelectedRingSkillChange: ', existingSkillIndex, '- id:', id);
+      const id:string = skillsTypes.find(item => item.id === ring)?.skills.find(item => item.value === stat)?.id || '';
+      console.log(' handleSelectedRingSkillChange: ', existingSkillIndex, '- ring:', ring, '- id:', id, '- value:', value, '- skillsTypes:', skillsTypes);
 
       if (existingSkillIndex !== -1) {
          // Si la habilidad ya existe, actualizarla
          const updatedSkills = [...skillsAcquired];
-         updatedSkills[existingSkillIndex] = { id, value, name, description, ring };
+         updatedSkills[existingSkillIndex] = { id, value, name, description, ring, stat };
          
          setSkillsAcquired(updatedSkills);
-         //console.log('handleSelectedRingSkillChange - updatedSkills', updatedSkills);
+         console.log('handleSelectedRingSkillChange - updatedSkills', updatedSkills);
       } else {
          // Si la habilidad no existe, añadirla
-         setSkillsAcquired(prevSkills => [...prevSkills, { id, value, name, description, ring }]);
+         setSkillsAcquired(prevSkills => [...prevSkills, { id, value, name, description, ring, stat }]);
       }
       
    };
 
    // Funcion para editar la cantidad de monedas
-   const handleCoinsChange = (index: number, value: number) => {
+   const handleCoinsChange = (index: number, value: string) => {
+      let numericValue = validateNumeric(value);
       const updatedCoins = [...coins];
-      updatedCoins[index] = value || 0; // Parse input value as integer or default to 0
+      updatedCoins[index] = numericValue;
       setCoins(updatedCoins);
    };
 
@@ -583,13 +595,19 @@ const CharacterSheet: React.FC = () => {
       if(error) alert('Error eliminado itemn del inventario');
    };
   
-   const handleEditCount = (id: string, newCount: number) => {
+   const handleEditCount = (id: string, newCount: string) => {
+      let numericValue = validateNumeric(newCount, 1);
       setInvObjects((prevObjects) =>
          prevObjects.map((obj) =>
-            obj.id === id ? { ...obj, count: newCount } : obj
+            obj.id === id ? { ...obj, count: numericValue } : obj
          )
       );
    };
+
+   const handleNewCount = (value: string) => {
+      let numericValue = validateNumeric(value, 1);
+      setNewObjectCount(numericValue);
+   }
 
    const handleOpenModal = () => {
       // Obtener todos los elementos con el atributo required
@@ -668,6 +686,7 @@ const CharacterSheet: React.FC = () => {
       updatedInputsStatsData[5].valueDice = randomNumber;
       
       setInputsStatsData(updatedInputsStatsData);
+      return;
    }
 
    const getClassName = (id: string|undefined): string | undefined  => {
@@ -695,8 +714,8 @@ const CharacterSheet: React.FC = () => {
    const getExtraSkillName = (id: string|undefined): string | undefined  => {
       return optionsSkillExtra.find(elem => elem.value === id)?.name;
    }
-   const getSkillName = (ring: string, id: string): string | undefined  => {
-      return skillsTypes.find(skill => skill.id === ring)?.skills.find(ele => ele.value === id)?.name;
+   const getSkillName = (id: string, stat: string): string | undefined  => {
+      return skillsTypes.find(skill => skill.id === stat)?.skills.find(ele => ele.value === id)?.name;
    }
 
    async function saveData() {
@@ -917,6 +936,7 @@ const CharacterSheet: React.FC = () => {
                className="form-input col-start-2 col-end-3 mr-2 focus:border-black focus:shadow"
                onChange={(e) => setCharacterName(e.target.value)}
                value={characterName}
+               maxLength={50}
                required
             />
 
@@ -927,14 +947,15 @@ const CharacterSheet: React.FC = () => {
             <FormSelectInfoPlayer id="characterJob" label="Trabajo" options={optionsCharacterJob} selectedValue={selectedJobValue} onSelectChange={handleCharacterJobSelectChange} ></FormSelectInfoPlayer>
 
             <label htmlFor="characterLevel" className="form-lbl-y col-start-1 md:col-start-3 col-span-2 md:col-span-1 row-start-2 md:row-start-1 bg-grey-lighter ">Nivel</label>
-            <input type="number" 
+            <input type="text" 
                id="characterLevel" 
                placeholder="Nivel"
-               min="1" 
+               min="1"
                max="10"
-               className="form-input-y col-start-1 md:col-start-3 col-span-2 md:col-span-1 row-start-3 md:row-start-2 row-span-1 md:row-span-4 focus:border-black focus:shadow"
+               className="form-input-y numeric-input col-start-1 md:col-start-3 col-span-2 md:col-span-1 row-start-3 md:row-start-2 row-span-1 md:row-span-4 focus:border-black focus:shadow"
                value={characterLevel}
-               onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeCharacterLevel(parseInt(e.target.value))}
+               onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeCharacterLevel(e.target.value)}
+               maxLength={2}
                required
             />
             <label htmlFor="characterImage" className="form-lbl-y col-start-1 md:col-start-4 col-span-2 md:col-span-1 row-start-4 md:row-start-1 bg-grey-lighter ">Imagen</label>
@@ -948,6 +969,7 @@ const CharacterSheet: React.FC = () => {
                className="form-input-y col-start-1 md:col-start-1 col-span-4 row-start-9 md:row-start-7 row-span-1 focus:border-black focus:shadow"
                onChange={(e) => setCharacterDescription(e.target.value)}
                value={characterDescription}
+               maxLength={500}
                required
             />
             
@@ -959,7 +981,7 @@ const CharacterSheet: React.FC = () => {
             <legend>Estadisticas del personaje</legend>
             <header className='stats-player-header col-span-3 col-start-3'>
                <Tooltip className="bg-dark text-light px-2 py-1" placement="top" content={ "Estadisticas al azar" } >
-                  <button className='btn-save-character' onClick={() => randomRoll()} >
+                  <button type='button' className='btn-save-character' onClick={randomRoll} >
                      <SvgD4Roll className='btn-roll' width={30} height={30} />
                   </button>
                </Tooltip>
@@ -1054,26 +1076,29 @@ const CharacterSheet: React.FC = () => {
             <label htmlFor="goldCoins" className="form-lbl-coins ml-2 col-span-1 bg-grey-lighter ">Oro</label>
             <label htmlFor="silverCoins" className="form-lbl-coins col-span-1 bg-grey-lighter ">Plata</label>
             <label htmlFor="bronzeCoins" className="form-lbl-coins mr-2 col-span-1 bg-grey-lighter ">Bronce</label>
-            <input type="number" 
+            <input type="text" 
                id="goldCoins" 
                placeholder="Oro" 
                className="form-input ml-2 col-span-1 focus:border-black focus:shadow"
                value={coins[0]}
-               onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(0, parseInt(e.target.value))}
+               maxLength={3}
+               onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(0, e.target.value)}
             />
-            <input type="number" 
+            <input type="text" 
                id="silverCoins" 
                placeholder="Plata" 
                className="form-input col-span-1 focus:border-black focus:shadow"
                value={coins[1]}
-               onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(1, parseInt(e.target.value))}
+               maxLength={3}
+               onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(1, e.target.value)}
             />
-            <input type="number" 
+            <input type="text" 
                id="bronzeCoins" 
                placeholder="Bronce" 
                className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
                value={coins[2]}
-               onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(2, parseInt(e.target.value))}
+               maxLength={3}
+               onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(2, e.target.value)}
             />
 
             <label htmlFor="objectInput" className="form-lbl mb-1 col-span-3 bg-grey-lighter ">Bolsa</label>
@@ -1082,12 +1107,13 @@ const CharacterSheet: React.FC = () => {
                <Tooltip className="bg-dark text-light px-2 py-1" key={"object"+elem.id} placement="left" content={ elem.description } >
                   <label htmlFor={"object"+elem.id} className="form-lbl object-item col-span-3 bg-grey-lighter "> {elem.name} 
                      <input type="hidden" value={elem.id} />
-                     <input type="number" 
+                     <input type="text" 
                         id={"object"+elem.id} 
                         placeholder="Cantidad" 
                         className="form-input-count focus:border-black focus:shadow"
                         value={elem.count}
-                        onChange={(e) => handleEditCount(elem.id, parseInt(e.target.value, 10))}
+                        maxLength={2}
+                        onChange={(e) => handleEditCount(elem.id, e.target.value)}
                         readOnly={elem.readOnly}
                      />
                      <button type="button" className="btn-delete-object" onClick={() => handleDeleteObject(elem.id)} >
@@ -1104,12 +1130,13 @@ const CharacterSheet: React.FC = () => {
                value={newObjectName}
                onChange={(e) => setNewObjectName(e.target.value)}
             />
-            <input type="number" 
+            <input type="text" 
                id="objectCount" 
                placeholder="Cantidad" 
                className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
                value={newObjectCount}
-               onChange={(e) => setNewObjectCount(parseInt(e.target.value, 10))}
+               maxLength={2}
+               onChange={(e) => handleNewCount(e.target.value)}
             />
             <input type="text" 
                id="objectDescription" 
@@ -1193,7 +1220,7 @@ const CharacterSheet: React.FC = () => {
                   <li><strong>Habilidad principal: </strong>{getMainSkillName(dataCharacter?.mainSkill)}</li>
                   <li><strong>Habilidad extra: </strong>{getExtraSkillName(dataCharacter?.extraSkill)}</li>
                   {dataCharacter?.skills.map((elem) => (
-                     <li key={elem.value}><strong>Habilidad: </strong>{getSkillName(elem.ring,elem.name)}</li>
+                     <li key={elem.value}><strong>Habilidad: </strong>{getSkillName(elem.name,elem.stat||'')}</li>
                   ))}
                </ul>
                <ul className='dialog-card grid grid-cols-1 gap-3 col-start-2 row-start-2 items-center'>

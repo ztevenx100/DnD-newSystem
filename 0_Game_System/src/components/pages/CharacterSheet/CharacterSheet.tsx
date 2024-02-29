@@ -895,8 +895,8 @@ const CharacterSheet: React.FC = () => {
                id="player" 
                placeholder="Nombre del jugador" 
                className="form-input col-start-2 col-end-3 mr-2 focus:border-black focus:shadow"
-               onChange={(e) => setPlayerName(e.target.value)}
                value={playerName}
+               onChange={(e) => setPlayerName(e.target.value)}
                required
                readOnly
             />
@@ -905,9 +905,9 @@ const CharacterSheet: React.FC = () => {
                id="character" 
                placeholder="Nombre del personaje" 
                className="form-input col-start-2 col-end-3 mr-2 focus:border-black focus:shadow"
-               onChange={(e) => setCharacterName(e.target.value)}
                value={characterName}
                maxLength={50}
+               onChange={(e) => setCharacterName(e.target.value)}
                required
             />
 
@@ -925,8 +925,8 @@ const CharacterSheet: React.FC = () => {
                max="10"
                className="form-input-y numeric-input col-start-1 md:col-start-3 col-span-2 md:col-span-1 row-start-3 md:row-start-2 row-span-1 md:row-span-4 focus:border-black focus:shadow"
                value={characterLevel}
-               onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeCharacterLevel(e.target.value)}
                maxLength={2}
+               onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeCharacterLevel(e.target.value)}
                required
             />
             <label htmlFor="characterImage" className="form-lbl-y col-start-1 md:col-start-4 col-span-2 md:col-span-1 row-start-4 md:row-start-1 bg-grey-lighter ">Imagen</label>
@@ -938,9 +938,9 @@ const CharacterSheet: React.FC = () => {
                name='characterDescription'
                placeholder="Descripcion del personaje" 
                className="form-input-y col-start-1 md:col-start-1 col-span-4 row-start-9 md:row-start-7 row-span-1 focus:border-black focus:shadow"
-               onChange={(e) => setCharacterDescription(e.target.value)}
                value={characterDescription}
                maxLength={500}
+               onChange={(e) => setCharacterDescription(e.target.value)}
                required
             />
             
@@ -1099,6 +1099,7 @@ const CharacterSheet: React.FC = () => {
                placeholder="Objeto" 
                className="form-input ml-2 col-span-2 row-span-1 focus:border-black focus:shadow"
                value={newObjectName}
+               maxLength={50}
                onChange={(e) => setNewObjectName(e.target.value)}
             />
             <input type="text" 
@@ -1114,6 +1115,7 @@ const CharacterSheet: React.FC = () => {
                placeholder="Descripción" 
                className="form-input mx-2 col-span-3 row-span-2 focus:border-black focus:shadow"
                value={newObjectDescription}
+               maxLength={100}
                onChange={(e) => setNewObjectDescription(e.target.value)}
             />
             <button type="button" className="btn-add-object col-span-3 mx-2" onClick={() => handleAddObject()} >Añadir</button>

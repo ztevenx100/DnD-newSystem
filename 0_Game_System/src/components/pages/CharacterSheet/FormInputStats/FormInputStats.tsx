@@ -81,8 +81,8 @@ const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValu
                 min="1" 
                 className="form-input stats-sub ml-2 col-start-1 col-end-2 focus:border-black focus:shadow"
                 value={inputStats.valueDice}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(0, e.target.value)}
                 maxLength={2}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(0, e.target.value)}
                 required
             />
         </Tooltip>
@@ -104,8 +104,8 @@ const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValu
                 min="1" 
                 className="form-input stats-sub-end mr-2 col-start-3 col-end-4 focus:border-black focus:shadow"
                 value={inputStats.valueLevel}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(2, e.target.value)}
                 maxLength={2}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(2, e.target.value)}
            />
         </Tooltip>
     

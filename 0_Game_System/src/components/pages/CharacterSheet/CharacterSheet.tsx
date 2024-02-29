@@ -49,8 +49,9 @@ const CharacterSheet: React.FC = () => {
    const [selectedSkillValue, setSelectedSkillValue] = useState<string>(''); 
    const [selectedExtraSkillValue, setSelectedExtraSkillValue] = useState<string>(''); 
    const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([{id:'', value:'0', name:'', description: '', ring:''},{id:'', value:'1',name:'', description: '', ring:''},{id:'', value:'2', name:'', description: '', ring:''}]);
-   
    const [coins,setCoins] = useState<number[]>([0,3,0]);
+   const [luckyPoints,setLuckyPoints] = useState<number>(1);
+   
    const [invObjects, setInvObjects] = useState<InventoryObject[]>([]);
    const [systemGame, setSystemGame] = useState<DBSistemaJuego>({sju_id: '', sju_nombre: ''});
    const [skillsRingList, setSkillsRingList] = useState<SkillTypes[]> ([{id:'0', skills: []},{id:'1', skills: []},{id:'2', skills: []}]);
@@ -83,6 +84,7 @@ const CharacterSheet: React.FC = () => {
       race: string;
       job: string;
       level: number;
+      luckyPoints: number;
       description: string;
       knowledge: string[];
       str: [{ dice: number, class: number, level: number }];
@@ -194,7 +196,7 @@ const CharacterSheet: React.FC = () => {
       if(params.id === null || params.id ===  undefined) return;
       
       const { data } = await supabase.from("pus_personajes_usuario").select(
-         'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria,pus_cantidad_oro,pus_cantidad_plata,pus_cantidad_bronce, sju_sistema_juego(sju_id,sju_nombre)'
+         'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria,pus_cantidad_oro,pus_cantidad_plata,pus_cantidad_bronce, pus_puntos_suerte, sju_sistema_juego(sju_id,sju_nombre)'
       ).eq("pus_id",params.id)
       .returns<DBPersonajesUsuario[]>();
       //console.log('getCharacter ',data);
@@ -220,6 +222,7 @@ const CharacterSheet: React.FC = () => {
          updateSystemGame.sju_id = data[0].sju_sistema_juego.sju_id;
          updateSystemGame.sju_nombre = data[0].sju_sistema_juego.sju_nombre;
          setSystemGame(updateSystemGame);
+         setLuckyPoints(data[0].pus_puntos_suerte);
       }
    }
    async function getCharacterImage() {
@@ -406,6 +409,10 @@ const CharacterSheet: React.FC = () => {
    const handleChangeCharacterLevel = (newLevel: string) => {
       let level = validateNumeric(newLevel,1);
       setCharacterLevel(level);
+   };
+   const handleChangeLuckyPoints = (newPoints: string) => {
+      let value = validateNumeric(newPoints,1);
+      setLuckyPoints(value);
    };
    // Manejar el cambio en la selección
    const handleSelectRaceChange = (value: string) => {
@@ -613,6 +620,7 @@ const CharacterSheet: React.FC = () => {
          race: selectedRaceValue,
          job: selectedJobValue,
          level: characterLevel,
+         luckyPoints: luckyPoints,
          description: characterDescription,
          knowledge: selectedCheckValues,
          str: [{ dice: inputsStatsData[0].valueDice, class: inputsStatsData[0].valueClass, level: inputsStatsData[0].valueLevel }],
@@ -725,6 +733,7 @@ const CharacterSheet: React.FC = () => {
             pus_cantidad_oro: dataCharacter?.coinsInv[0],
             pus_cantidad_plata: dataCharacter?.coinsInv[1],
             pus_cantidad_bronce: dataCharacter?.coinsInv[2],
+            pus_puntos_suerte: dataCharacter?.luckyPoints,
          })
          .eq("pus_id",params.id)
          .select();
@@ -754,6 +763,7 @@ const CharacterSheet: React.FC = () => {
             pus_cantidad_plata: dataCharacter?.coinsInv[1],
             pus_cantidad_bronce: dataCharacter?.coinsInv[2],
             pus_sistema_juego: systemGame.sju_id,
+            pus_puntos_suerte: dataCharacter?.luckyPoints,
          })
          .select();
          if(data !== null) return data[0].pus_id;
@@ -890,21 +900,21 @@ const CharacterSheet: React.FC = () => {
          <fieldset className="fieldset-form info-player col-span-2 md:col-span-2 lg:col-span-3 bg-white shadow-lg rounded">
             <legend><SvgCharacter width={20} height={20} className={"inline"} /> Informacion del jugador </legend>
 
-            <label htmlFor="player" className="form-lbl col-start-1 col-end-2 bg-grey-lighter ">Jugador</label>
+            <label htmlFor="player" className="form-lbl col-start-1 bg-grey-lighter ">Jugador</label>
             <input type="text" 
                id="player" 
                placeholder="Nombre del jugador" 
-               className="form-input col-start-2 col-end-3 mr-2 focus:border-black focus:shadow"
+               className="form-input col-start-2 col-end-3 col-span-1 mr-2 focus:border-black focus:shadow"
                value={playerName}
                onChange={(e) => setPlayerName(e.target.value)}
                required
                readOnly
             />
-            <label htmlFor="character" className="form-lbl col-start-1 col-end-2 bg-grey-lighter ">Personaje</label>
+            <label htmlFor="character" className="form-lbl col-start-1 bg-grey-lighter ">Personaje</label>
             <input type="text" 
                id="character" 
                placeholder="Nombre del personaje" 
-               className="form-input col-start-2 col-end-3 mr-2 focus:border-black focus:shadow"
+               className="form-input col-start-2 mr-2 focus:border-black focus:shadow"
                value={characterName}
                maxLength={50}
                onChange={(e) => setCharacterName(e.target.value)}
@@ -917,27 +927,39 @@ const CharacterSheet: React.FC = () => {
             
             <FormSelectInfoPlayer id="characterJob" label="Trabajo" options={optionsCharacterJob} selectedValue={selectedJobValue} onSelectChange={handleCharacterJobSelectChange} ></FormSelectInfoPlayer>
 
-            <label htmlFor="characterLevel" className="form-lbl-y col-start-1 md:col-start-3 col-span-2 md:col-span-1 row-start-2 md:row-start-1 bg-grey-lighter ">Nivel</label>
-            <input type="text" 
-               id="characterLevel" 
+            <label htmlFor="characterLevel" className="form-lbl-y col-start-1 md:col-start-3 col-span-1 row-start-2 md:row-start-1 bg-grey-lighter ">Nivel</label>
+            <input type="text"
+               id="characterLevel"
                placeholder="Nivel"
                min="1"
                max="10"
-               className="form-input-y numeric-input col-start-1 md:col-start-3 col-span-2 md:col-span-1 row-start-3 md:row-start-2 row-span-1 md:row-span-4 focus:border-black focus:shadow"
+               className="form-input-y numeric-input col-start-1 md:col-start-3 col-span-1 row-start-3 md:row-start-2 row-span-1 md:row-span-4 focus:border-black focus:shadow"
                value={characterLevel}
                maxLength={2}
                onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeCharacterLevel(e.target.value)}
                required
             />
-            <label htmlFor="characterImage" className="form-lbl-y col-start-1 md:col-start-4 col-span-2 md:col-span-1 row-start-4 md:row-start-1 bg-grey-lighter ">Imagen</label>
-            <FormImageFile externalStyles={'col-start-1 md:col-start-4 col-span-2 md:col-span-1 row-start-5 md:row-start-2 row-span-3 md:row-span-4 mr-2 ml-2'} locationImage={characterImage} onFormImageFileChange={handleCharacterImageFileChange} />
+            <label htmlFor="luckyPoints" className="form-lbl-y col-start-2 md:col-start-4 col-span-1 row-start-2 md:row-start-1 bg-grey-lighter ">Puntos de suerte</label>
+            <input type="text"
+               id="luckyPoints"
+               placeholder="Puntos de suerte"
+               min="1"
+               max="10"
+               className="form-input-y numeric-input col-start-2 md:col-start-4 col-span-1 row-start-3 md:row-start-2 row-span-1 md:row-span-4 focus:border-black focus:shadow"
+               value={luckyPoints}
+               maxLength={2}
+               onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeLuckyPoints(e.target.value)}
+               required
+            />
+            <label htmlFor="characterImage" className="form-lbl-y col-start-1 md:col-start-5 col-span-2 md:col-span-1 row-start-4 md:row-start-1 bg-grey-lighter ">Imagen</label>
+            <FormImageFile externalStyles={'col-start-1 md:col-start-5 col-span-2 md:col-span-1 row-start-5 md:row-start-2 row-span-3 md:row-span-4 mr-2 ml-2'} locationImage={characterImage} onFormImageFileChange={handleCharacterImageFileChange} />
 
-            <label htmlFor="characterDescription" className="form-lbl-y col-start-1 md:col-start-1 col-span-4 row-start-8 md:row-start-6 bg-grey-lighter ">Descripción</label>
+            <label htmlFor="characterDescription" className="form-lbl-y col-start-1 md:col-start-1 col-span-5 row-start-12 md:row-start-6 bg-grey-lighter ">Descripción</label>
             <textarea
                id="characterDescription" 
                name='characterDescription'
                placeholder="Descripcion del personaje" 
-               className="form-input-y col-start-1 md:col-start-1 col-span-4 row-start-9 md:row-start-7 row-span-1 focus:border-black focus:shadow"
+               className="form-input-y col-start-1 md:col-start-1 col-span-5 row-start-13 md:row-start-7 row-span-1 focus:border-black focus:shadow"
                value={characterDescription}
                maxLength={500}
                onChange={(e) => setCharacterDescription(e.target.value)}

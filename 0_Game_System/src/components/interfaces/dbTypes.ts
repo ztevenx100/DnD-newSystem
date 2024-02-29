@@ -21,6 +21,7 @@ export interface DBPersonajesUsuario{
     pus_cantidad_oro: number;
     pus_cantidad_plata: number;
     pus_cantidad_bronce: number;
+    pus_puntos_suerte: number;
     sju_sistema_juego: DBSistemaJuego | {
       sju_id: string;
       sju_nombre: string;

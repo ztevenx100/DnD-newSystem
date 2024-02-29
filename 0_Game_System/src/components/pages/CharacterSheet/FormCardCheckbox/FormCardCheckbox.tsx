@@ -30,11 +30,11 @@ const FormCardCheckbox: React.FC<CardWithCheckboxesProps> = ({ id, label, checkb
   return (
     <>
 
-      <label id={id} className="form-lbl-y col-start-1 row-start-10 md:row-start-8 col-span-2 md:col-span-4 bg-grey-lighter ">{label}</label>
-      <Card className="flex flex-row flex-wrap justify-around col-start-1 col-span-2 md:col-span-4 row-span-2 ml-2 mr-2 border-1 border-black rounded-t-none" placeholder = ''>
+      <label id={id} className="form-lbl-y col-start-1 row-start-14 md:row-start-8 col-span-2 md:col-span-5 bg-grey-lighter ">{label}</label>
+      <Card className="flex flex-row flex-wrap justify-around col-start-1 col-span-2 md:col-span-5 row-span-2 ml-2 mr-2 border-1 border-black rounded-t-none" placeholder = ''>
 
           {checkboxes.map((checkbox) => (
-          <List className="flex-row" key={checkbox.id} placeholder = ''>
+          <List className="flex-row min-w-10 p-0" key={checkbox.id} placeholder = ''>
           <ListItem className="p-0" placeholder = '' >
               <label htmlFor={checkbox.id} className="flex w-full cursor-pointer items-center " >
                   <ListItemPrefix className="mr-2" placeholder = ''>

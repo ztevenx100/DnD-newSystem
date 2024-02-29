@@ -1,7 +1,6 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import supabase from '../../database/supabase';
-//import { QueryResult, QueryData, QueryError } from '@supabase/supabase-js'
 import { v4 as uuidv4 } from 'uuid';
 
 import { useBackground } from '../../../App';
@@ -13,7 +12,7 @@ import "./CharacterSheet.css";
 // Interfaces
 import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields, Option } from '../../interfaces/typesCharacterSheet';
 import { DBHabilidadPersonaje, DBPersonajesUsuario, DBSistemaJuego } from '../../interfaces/dbTypes';
-
+// Components
 import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
 import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
 import FormInputStats from './FormInputStats/FormInputStats';
@@ -21,6 +20,7 @@ import FormInputSkillsRing from './FormInputSkillsRing/FormInputSkillsRing';
 import FormImageFile from './FormImageFile/FormImageFile';
 
 import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
+import ScreenLoader from '../../../components/UI/ScreenLoader/ScreenLoader';
 import SvgCharacter from '../../../components/UI/Icons/SvgCharacter';
 import SvgSaveCharacter from '../../../components/UI/Icons/SvgSaveCharacter';
 import SvgD4Roll from '../../../components/UI/Icons/SvgD4Roll';
@@ -59,6 +59,7 @@ const CharacterSheet: React.FC = () => {
    const [newObjectDescription, setNewObjectDescription] = useState<string>('');
    const [newObjectCount, setNewObjectCount] = useState<number>(1);
    const [SystemGameList, setSystemGameList] = useState<Option[]>([]);
+   const [deleteItems, setDeleteItems] = useState<String[]>([]);
 
    // Listado del select skillClass
    const [optionsSkillClass, setOptionsSkillClass] = useState<Option[]>([]);
@@ -101,12 +102,9 @@ const CharacterSheet: React.FC = () => {
    }
    const [dataCharacter, setDataCharacter] = useState<DataCharacter>();
 
-   // Cargue de informacion de base de datos
    const params = useParams();
-   //console.log("id:" + params.id);
 
    useEffect(() => {
-      // Lógica que se ejecutará después de que skillsTypes se ha actualizado
       getSkills()
     }, [skillsTypes]);
 
@@ -139,7 +137,6 @@ const CharacterSheet: React.FC = () => {
    async function getUser() {
       const { data } = await supabase.from("usu_usuario").select('usu_id, usu_nombre')
          .eq("usu_id",params.user);
-      console.log('User: ',params.user);
       //console.log('getUser ',data);
 
       if (data !== null) {
@@ -282,9 +279,7 @@ const CharacterSheet: React.FC = () => {
                
                const selectTypeRing = document.getElementById('skillTypeRing' + numCampo) as HTMLSelectElement;
                selectTypeRing.value = estadisticaBase;
-               //console.log(selectTypeRing);
                
-               // Actualizar listado
                handleSelectedTypeRingSkillChange(numCampo,estadisticaBase);
                updatedSkills[Number(numCampo)] = { id: elem.hpe_habilidad, value: numCampo,  name: acronym, description: '', ring: estadisticaBase };
             }
@@ -299,7 +294,6 @@ const CharacterSheet: React.FC = () => {
       const updatedInvObjects = [...invObjects];
       
       if(params.id === null || params.id ===  undefined){
-         // añadir inventario por defectp
          updatedInvObjects.push({id:uuidv4(), name:'Gema', description:'Articulo del elegido', count: 1, readOnly: true})
          setInvObjects(updatedInvObjects);
          return;
@@ -313,13 +307,11 @@ const CharacterSheet: React.FC = () => {
          data.forEach(elem => {
             updatedInvObjects.push({ id: elem.inp_id, name: elem.inp_nombre, description: elem.inp_descripcion, count: elem.inp_cantidad, readOnly: false })
          });
-         //console.log('getInventory - updatedInvObjects', updatedInvObjects);
          setInvObjects(updatedInvObjects);
       }
-      //console.log('updatedInvObjects: ', updatedInvObjects);
+      //console.log('getInventory - updatedInvObjects', updatedInvObjects);
    }
    
-   // Listado del select characterClass
    const optionsCharacterClass = [
       { value: 'WAR', name: 'Guerrero', work: 'FOR', mainStat: 'STR' },
       { value: 'MAG', name: 'Mago', work: 'ARC', mainStat: 'INT' },
@@ -328,7 +320,6 @@ const CharacterSheet: React.FC = () => {
       { value: 'RES', name: 'Investigador', work: 'ALC', mainStat: 'PER' },
       { value: 'ACT', name: 'Actor', work: 'PSY', mainStat: 'CHA' },
     ];
-   // Listado del select characterRace
    const optionsCharacterRace = [
       { value: 'HUM', name: 'Humano' },
       { value: 'ELF', name: 'Elfo' },
@@ -336,7 +327,6 @@ const CharacterSheet: React.FC = () => {
       { value: 'AAS', name: 'Aasimars' },
       { value: 'TIE', name: 'Tieflings' },
     ];
-   // Listado del select characterJob
    const optionsCharacterJob = [
       { value: 'HUN', name: 'Cazador', extraPoint:'DEX,PER' },
       { value: 'BLA', name: 'Herrero', extraPoint:'STR,DEX' },
@@ -345,7 +335,6 @@ const CharacterSheet: React.FC = () => {
       { value: 'PRI', name: 'Sacerdote', extraPoint:'CON,CHA' },
       { value: 'STR', name: 'Estratega', extraPoint:'INT,CON' },
     ];
-   // Listado de characterKnowledge
    const checkboxesData = [
       { id: 'KHIS', name: 'Historia', value: 'HIS' },
       { id: 'KALC', name: 'Alquimia', value: 'ALC' },
@@ -360,7 +349,6 @@ const CharacterSheet: React.FC = () => {
       { id: 'KNSC', name: 'Ciencias Naturales', value: 'NSC' },
       { id: 'KAPP', name: 'Tasación', value: 'APP' },
    ];
-   // Listado de stats
    const [inputsStatsData, setInputsStatsData] = useState<InputStats[]>([
       { id: 'STR', label: 'Fuerza', description: 'Su capacidad física excepcional lo distingue como un héroe. Este individuo supera los desafíos con determinación, llevando a cabo hazañas que van más allá de los límites convencionales', valueDice: 0, valueClass: 0, valueLevel: 0 },
       { id: 'INT', label: 'Inteligencia', description: 'Su capacidad para absorber conocimiento, procesar información y forjar juicios fundamentados. Este individuo enfrenta cada desafío con resolución, una destreza mental que va más allá de la normal', valueDice: 0, valueClass: 0, valueLevel: 0 },
@@ -369,17 +357,15 @@ const CharacterSheet: React.FC = () => {
       { id: 'PER', label: 'Percepcion', description: 'Su capacidad para interpretar las sensaciones recibidas a través de los sentidos, dando lugar a una impresión, ya sea consciente o inconsciente, de la realidad física del entorno. Se erige como el faro que guía al héroe a través del tejido de la realidad, revelando sus misterios y desafíos con una claridad incomparable.', valueDice: 0, valueClass: 0, valueLevel: 0 },
       { id: 'CHA', label: 'Carisma', description: 'Su capacidad se manifiesta como la capacidad natural para cautivar a los demás a través de su presencia, su palabra y su encantadora personalidad. Se convierte en la fuerza que une a las personas, dejando una huella indeleble en cada interacción y dejando una impresión imborrable en quienes se cruzan su camino.', valueDice: 0, valueClass: 0, valueLevel: 0 },
    ]);
-   // Listado del select skillTypeRing
    const optionsRingTypes = [
-      { id: 'STR', name: 'Fuerza' },
-      { id: 'INT', name: 'Inteligencia' },
-      { id: 'DEX', name: 'Destreza' },
-      { id: 'HEA', name: 'Sanidad' },
-      { id: 'CRE', name: 'Creación' },
-      { id: 'SUP', name: 'Soporte' },
+      { id: 'STR', name: 'Fuerza', stat:'STR' },
+      { id: 'INT', name: 'Inteligencia', stat:'INT' },
+      { id: 'DEX', name: 'Destreza', stat:'DEX' },
+      { id: 'HEA', name: 'Sanidad', stat:'CON' },
+      { id: 'CRE', name: 'Creación', stat:'PER' },
+      { id: 'SUP', name: 'Soporte', stat:'CHA' },
    ];
 
-   // Listado de armas
    const listWearpons = [
       'Arco corto',
       'Arco largo',
@@ -406,9 +392,20 @@ const CharacterSheet: React.FC = () => {
       'Tomfas',
    ];
 
+   function validateNumeric(value:string, valueDefault?: number): number{
+      if(isNaN(Number(value))){
+         alert('Valor no numerico');
+         return valueDefault||0;
+      } else if (value === '') {
+         return valueDefault||0;
+      } else {
+         return parseInt(value);
+      }
+   }
    // Actualizar el nivel del personaje
-   const handleChangeCharacterLevel = (newLevel: number) => {
-      setCharacterLevel(newLevel);
+   const handleChangeCharacterLevel = (newLevel: string) => {
+      let level = validateNumeric(newLevel,1);
+      setCharacterLevel(level);
    };
    // Manejar el cambio en la selección
    const handleSelectRaceChange = (value: string) => {
@@ -432,7 +429,6 @@ const CharacterSheet: React.FC = () => {
       setSelectedExtraSkillValue(currentSkill);
    };
 
-   // Poner todos los valores de valueClass en cero
    const setAllValueClassesToZero = () => {
       setInputsStatsData(prevItems  => prevItems.map(item => ({ ...item, valueClass: 0 })));
    };
@@ -451,7 +447,6 @@ const CharacterSheet: React.FC = () => {
       setInputsStatsData(updatedInputsStatsData);
    };
    
-   // Manejar el cambio en la selección characterClass
    const handleCharacterClassChange = (value: string) => {
       setSelectedClassValue(value);
       
@@ -476,7 +471,6 @@ const CharacterSheet: React.FC = () => {
 
    // Manejar el cambio de la URL de la imagen en characterImage
    const handleCharacterImageFileChange = async (value: string, file: File) => {
-      //const avatarFile = event.target.files[0]
       const { data, error } = await supabase
       .storage
       .from('dnd-system')
@@ -499,11 +493,9 @@ const CharacterSheet: React.FC = () => {
       setInputsStatsData(prevItems => prevItems.map( item => item.id === newInputStats.id ? { ...item, item: newInputStats} : item ));
    }
 
-   // Manejar el cambio en la selección
    const handleAlingmentChange = (value: string) => {
       setAlignmentValue(value);
       
-      // Color fondo
       const formElement = document.getElementById('form-sheet');
       if (value === 'O') {
          formElement?.classList.add('orden');
@@ -523,34 +515,31 @@ const CharacterSheet: React.FC = () => {
       setSkillsRingList( updatedSetSkillsRingList );
    };
 
-   const handleSelectedRingSkillChange = async (value: string, ring: string, name: string) => {
+   const handleSelectedRingSkillChange = async (value: string, ring: string, name: string, stat: string) => {
       const description = '';
       const existingSkillIndex = skillsAcquired.findIndex(elem => elem.value === value);
-      const id:string = skillsTypes.find(item => item.id === ring)?.skills.find(item => item.value === name)?.id || '';
-      //console.log(' handleSelectedRingSkillChange: ', existingSkillIndex, '- id:', id);
+      const id:string = skillsTypes.find(item => item.id === ring)?.skills.find(item => item.value === stat)?.id || '';
+      console.log(' handleSelectedRingSkillChange: ', existingSkillIndex, '- ring:', ring, '- id:', id, '- value:', value, '- skillsTypes:', skillsTypes);
 
       if (existingSkillIndex !== -1) {
-         // Si la habilidad ya existe, actualizarla
          const updatedSkills = [...skillsAcquired];
-         updatedSkills[existingSkillIndex] = { id, value, name, description, ring };
+         updatedSkills[existingSkillIndex] = { id, value, name, description, ring, stat };
          
          setSkillsAcquired(updatedSkills);
-         //console.log('handleSelectedRingSkillChange - updatedSkills', updatedSkills);
+         console.log('handleSelectedRingSkillChange - updatedSkills', updatedSkills);
       } else {
-         // Si la habilidad no existe, añadirla
-         setSkillsAcquired(prevSkills => [...prevSkills, { id, value, name, description, ring }]);
+         setSkillsAcquired(prevSkills => [...prevSkills, { id, value, name, description, ring, stat }]);
       }
       
    };
 
-   // Funcion para editar la cantidad de monedas
-   const handleCoinsChange = (index: number, value: number) => {
+   const handleCoinsChange = (index: number, value: string) => {
+      let numericValue = validateNumeric(value);
       const updatedCoins = [...coins];
-      updatedCoins[index] = value || 0; // Parse input value as integer or default to 0
+      updatedCoins[index] = numericValue;
       setCoins(updatedCoins);
    };
 
-   // Funciones para adicionar, editar o eliminar objetos de la lista de inventario
    const handleAddObject = () => {
       if(!newObjectName || newObjectName === '' ){
          alert('Por favor digitar este campo');
@@ -574,27 +563,28 @@ const CharacterSheet: React.FC = () => {
   
    async function handleDeleteObject (id: string) {
       setInvObjects((prevObjects) => prevObjects.filter((obj) => obj.id !== id));
-      // Eliminar objeto db
-      const { error } = await supabase
-      .from('inp_inventario_personaje')
-      .delete()
-      .eq('inp_id', id);
-
-      if(error) alert('Error eliminado itemn del inventario');
+      const updatedDeleteItems = [...deleteItems];
+      updatedDeleteItems.push(id);
+      setDeleteItems(updatedDeleteItems);
    };
   
-   const handleEditCount = (id: string, newCount: number) => {
+   const handleEditCount = (id: string, newCount: string) => {
+      let numericValue = validateNumeric(newCount, 1);
       setInvObjects((prevObjects) =>
          prevObjects.map((obj) =>
-            obj.id === id ? { ...obj, count: newCount } : obj
+            obj.id === id ? { ...obj, count: numericValue } : obj
          )
       );
    };
 
+   const handleNewCount = (value: string) => {
+      let numericValue = validateNumeric(value, 1);
+      setNewObjectCount(numericValue);
+   }
+
    const handleOpenModal = () => {
       // Obtener todos los elementos con el atributo required
       let requiredElements = Array.from(document.querySelectorAll('[required]')) as HTMLInputElement[];
-      // Variable para rastrear si hay algún campo vacío
       let hayCamposVacios = false;
       let fieldsRequired: string[] = [];
 
@@ -602,11 +592,9 @@ const CharacterSheet: React.FC = () => {
       for (var i = 0; i < requiredElements.length; i++) {
          if (requiredElements[i].value.trim() === '') {
             hayCamposVacios = true;
-            // Puedes realizar acciones adicionales, como resaltar el campo vacío
             requiredElements[i].classList.add('required-input');
             fieldsRequired.push(requiredElements[i].id);
          } else {
-            // Restablecer el estilo si el campo no está vacío
             requiredElements[i].classList.remove('required-input');
          }
       }
@@ -668,6 +656,7 @@ const CharacterSheet: React.FC = () => {
       updatedInputsStatsData[5].valueDice = randomNumber;
       
       setInputsStatsData(updatedInputsStatsData);
+      return;
    }
 
    const getClassName = (id: string|undefined): string | undefined  => {
@@ -695,8 +684,8 @@ const CharacterSheet: React.FC = () => {
    const getExtraSkillName = (id: string|undefined): string | undefined  => {
       return optionsSkillExtra.find(elem => elem.value === id)?.name;
    }
-   const getSkillName = (ring: string, id: string): string | undefined  => {
-      return skillsTypes.find(skill => skill.id === ring)?.skills.find(ele => ele.value === id)?.name;
+   const getSkillName = (id: string, stat: string): string | undefined  => {
+      return skillsTypes.find(skill => skill.id === stat)?.skills.find(ele => ele.value === id)?.name;
    }
 
    async function saveData() {
@@ -716,13 +705,11 @@ const CharacterSheet: React.FC = () => {
    }
    
    const reloadPage = (character: string) => {
-      //console.log('/CharacterSheet/'+params.user+'/'+character);
       navigate('/CharacterSheet/'+params.user+'/'+character);
    };
 
    async function uploadInfoCharacter(newRecord: boolean) {
       if (!newRecord) {
-         // Actualizar
          const { data, error } = await supabase
          .from('pus_personajes_usuario')
          .update({
@@ -749,7 +736,6 @@ const CharacterSheet: React.FC = () => {
          
          if(error)return '';
       } else {
-         // Añadir
          const { data, error } = await supabase
          .from('pus_personajes_usuario')
          .insert({ 
@@ -780,7 +766,6 @@ const CharacterSheet: React.FC = () => {
       //console.log('uploadStats ', inputsStatsData);
       
       if (!isNewCharacter) {
-         // Actualizar
          for(const element of inputsStatsData) {
             const { error } = await supabase
             .from('epe_estadistica_personaje')
@@ -797,7 +782,6 @@ const CharacterSheet: React.FC = () => {
          }
       } else {
          let saveStats = [];
-         // Añadir
          for(const element of inputsStatsData) {
             saveStats.push({
                epe_usuario: params.user,
@@ -877,14 +861,20 @@ const CharacterSheet: React.FC = () => {
       .select();
    
       if(error) alert('Items not upload.');
+
+      // Eliminar objeto db
+      const { error: deleteError } = await supabase
+      .from('inp_inventario_personaje')
+      .delete()
+      .in('inp_id', deleteItems);
+
+      if(deleteError) alert('Error eliminado items del inventario');
    }
 
    return (
       <>
       {loading && (
-         <aside className='screen-loader'>
-            <span className='loader'></span>
-         </aside>
+         <ScreenLoader/>
       )}
       <form id='form-sheet' className="min-h-screen form-sheet grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4">
          
@@ -905,8 +895,8 @@ const CharacterSheet: React.FC = () => {
                id="player" 
                placeholder="Nombre del jugador" 
                className="form-input col-start-2 col-end-3 mr-2 focus:border-black focus:shadow"
-               onChange={(e) => setPlayerName(e.target.value)}
                value={playerName}
+               onChange={(e) => setPlayerName(e.target.value)}
                required
                readOnly
             />
@@ -915,8 +905,9 @@ const CharacterSheet: React.FC = () => {
                id="character" 
                placeholder="Nombre del personaje" 
                className="form-input col-start-2 col-end-3 mr-2 focus:border-black focus:shadow"
-               onChange={(e) => setCharacterName(e.target.value)}
                value={characterName}
+               maxLength={50}
+               onChange={(e) => setCharacterName(e.target.value)}
                required
             />
 
@@ -927,14 +918,15 @@ const CharacterSheet: React.FC = () => {
             <FormSelectInfoPlayer id="characterJob" label="Trabajo" options={optionsCharacterJob} selectedValue={selectedJobValue} onSelectChange={handleCharacterJobSelectChange} ></FormSelectInfoPlayer>
 
             <label htmlFor="characterLevel" className="form-lbl-y col-start-1 md:col-start-3 col-span-2 md:col-span-1 row-start-2 md:row-start-1 bg-grey-lighter ">Nivel</label>
-            <input type="number" 
+            <input type="text" 
                id="characterLevel" 
                placeholder="Nivel"
-               min="1" 
+               min="1"
                max="10"
-               className="form-input-y col-start-1 md:col-start-3 col-span-2 md:col-span-1 row-start-3 md:row-start-2 row-span-1 md:row-span-4 focus:border-black focus:shadow"
+               className="form-input-y numeric-input col-start-1 md:col-start-3 col-span-2 md:col-span-1 row-start-3 md:row-start-2 row-span-1 md:row-span-4 focus:border-black focus:shadow"
                value={characterLevel}
-               onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeCharacterLevel(parseInt(e.target.value))}
+               maxLength={2}
+               onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeCharacterLevel(e.target.value)}
                required
             />
             <label htmlFor="characterImage" className="form-lbl-y col-start-1 md:col-start-4 col-span-2 md:col-span-1 row-start-4 md:row-start-1 bg-grey-lighter ">Imagen</label>
@@ -946,8 +938,9 @@ const CharacterSheet: React.FC = () => {
                name='characterDescription'
                placeholder="Descripcion del personaje" 
                className="form-input-y col-start-1 md:col-start-1 col-span-4 row-start-9 md:row-start-7 row-span-1 focus:border-black focus:shadow"
-               onChange={(e) => setCharacterDescription(e.target.value)}
                value={characterDescription}
+               maxLength={500}
+               onChange={(e) => setCharacterDescription(e.target.value)}
                required
             />
             
@@ -959,7 +952,7 @@ const CharacterSheet: React.FC = () => {
             <legend>Estadisticas del personaje</legend>
             <header className='stats-player-header col-span-3 col-start-3'>
                <Tooltip className="bg-dark text-light px-2 py-1" placement="top" content={ "Estadisticas al azar" } >
-                  <button className='btn-save-character' onClick={() => randomRoll()} >
+                  <button type='button' className='btn-save-character' onClick={randomRoll} >
                      <SvgD4Roll className='btn-roll' width={30} height={30} />
                   </button>
                </Tooltip>
@@ -1054,26 +1047,29 @@ const CharacterSheet: React.FC = () => {
             <label htmlFor="goldCoins" className="form-lbl-coins ml-2 col-span-1 bg-grey-lighter ">Oro</label>
             <label htmlFor="silverCoins" className="form-lbl-coins col-span-1 bg-grey-lighter ">Plata</label>
             <label htmlFor="bronzeCoins" className="form-lbl-coins mr-2 col-span-1 bg-grey-lighter ">Bronce</label>
-            <input type="number" 
+            <input type="text" 
                id="goldCoins" 
                placeholder="Oro" 
                className="form-input ml-2 col-span-1 focus:border-black focus:shadow"
                value={coins[0]}
-               onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(0, parseInt(e.target.value))}
+               maxLength={3}
+               onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(0, e.target.value)}
             />
-            <input type="number" 
+            <input type="text" 
                id="silverCoins" 
                placeholder="Plata" 
                className="form-input col-span-1 focus:border-black focus:shadow"
                value={coins[1]}
-               onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(1, parseInt(e.target.value))}
+               maxLength={3}
+               onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(1, e.target.value)}
             />
-            <input type="number" 
+            <input type="text" 
                id="bronzeCoins" 
                placeholder="Bronce" 
                className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
                value={coins[2]}
-               onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(2, parseInt(e.target.value))}
+               maxLength={3}
+               onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(2, e.target.value)}
             />
 
             <label htmlFor="objectInput" className="form-lbl mb-1 col-span-3 bg-grey-lighter ">Bolsa</label>
@@ -1082,12 +1078,13 @@ const CharacterSheet: React.FC = () => {
                <Tooltip className="bg-dark text-light px-2 py-1" key={"object"+elem.id} placement="left" content={ elem.description } >
                   <label htmlFor={"object"+elem.id} className="form-lbl object-item col-span-3 bg-grey-lighter "> {elem.name} 
                      <input type="hidden" value={elem.id} />
-                     <input type="number" 
+                     <input type="text" 
                         id={"object"+elem.id} 
                         placeholder="Cantidad" 
                         className="form-input-count focus:border-black focus:shadow"
                         value={elem.count}
-                        onChange={(e) => handleEditCount(elem.id, parseInt(e.target.value, 10))}
+                        maxLength={2}
+                        onChange={(e) => handleEditCount(elem.id, e.target.value)}
                         readOnly={elem.readOnly}
                      />
                      <button type="button" className="btn-delete-object" onClick={() => handleDeleteObject(elem.id)} >
@@ -1102,20 +1099,23 @@ const CharacterSheet: React.FC = () => {
                placeholder="Objeto" 
                className="form-input ml-2 col-span-2 row-span-1 focus:border-black focus:shadow"
                value={newObjectName}
+               maxLength={50}
                onChange={(e) => setNewObjectName(e.target.value)}
             />
-            <input type="number" 
+            <input type="text" 
                id="objectCount" 
                placeholder="Cantidad" 
                className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
                value={newObjectCount}
-               onChange={(e) => setNewObjectCount(parseInt(e.target.value, 10))}
+               maxLength={2}
+               onChange={(e) => handleNewCount(e.target.value)}
             />
             <input type="text" 
                id="objectDescription" 
                placeholder="Descripción" 
                className="form-input mx-2 col-span-3 row-span-2 focus:border-black focus:shadow"
                value={newObjectDescription}
+               maxLength={100}
                onChange={(e) => setNewObjectDescription(e.target.value)}
             />
             <button type="button" className="btn-add-object col-span-3 mx-2" onClick={() => handleAddObject()} >Añadir</button>
@@ -1123,7 +1123,7 @@ const CharacterSheet: React.FC = () => {
          </fieldset>
 
          <aside className='panel-save'>
-            <button className='btn-save-character' onClick={() => handleOpenModal()} >
+            <button type='button' className='btn-save-character' onClick={() => handleOpenModal()} >
                <SvgSaveCharacter className='icon' width={40} height={40} />
             </button>
          </aside>
@@ -1193,7 +1193,7 @@ const CharacterSheet: React.FC = () => {
                   <li><strong>Habilidad principal: </strong>{getMainSkillName(dataCharacter?.mainSkill)}</li>
                   <li><strong>Habilidad extra: </strong>{getExtraSkillName(dataCharacter?.extraSkill)}</li>
                   {dataCharacter?.skills.map((elem) => (
-                     <li key={elem.value}><strong>Habilidad: </strong>{getSkillName(elem.ring,elem.name)}</li>
+                     <li key={elem.value}><strong>Habilidad: </strong>{getSkillName(elem.name,elem.stat||'')}</li>
                   ))}
                </ul>
                <ul className='dialog-card grid grid-cols-1 gap-3 col-start-2 row-start-2 items-center'>

@@ -13,27 +13,39 @@ const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValu
   //const [inputValues, setInputValues] = useState<number[]>([0, 0, 0]);
   let sum = inputStats.valueDice + inputStats.valueClass + inputStats.valueLevel;
 
-  const handleInputChange = (index: number, value: number) => {
-    switch (index) {
-        case 0:
-            inputStats.valueDice = value;
-            break;
-        case 1:
-            inputStats.valueClass = value;
-            break;
-        case 2:
-            inputStats.valueLevel = value;
-            break;
-    
-        default:
-            break;
+  function validateNumeric(value:string, valueDefault?: number): number{
+    if(isNaN(Number(value))){
+       alert('Valor no numerico');
+       return valueDefault||0;
+    } else if (value === '') {
+       return valueDefault||0;
+    } else {
+       return parseInt(value);
     }
-    onSelectedValuesChange(inputStats);
-    sum = inputStats.valueDice + inputStats.valueClass + inputStats.valueLevel;
-  };
+  }
 
-  return (
-    <>
+    const handleInputChange = (index: number, value: string) => {
+        let numericValue = validateNumeric(value);
+        switch (index) {
+            case 0:
+                inputStats.valueDice = numericValue;
+                break;
+            case 1:
+                inputStats.valueClass = numericValue;
+                break;
+            case 2:
+                inputStats.valueLevel = numericValue;
+                break;
+        
+            default:
+                break;
+        }
+        onSelectedValuesChange(inputStats);
+        sum = inputStats.valueDice + inputStats.valueClass + inputStats.valueLevel;
+    };
+
+    return (
+        <>
 
         <Tooltip 
             className="bg-dark text-light px-2 py-1" placement="right"
@@ -63,13 +75,14 @@ const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValu
             readOnly
         />
         <Tooltip className="bg-dark text-light px-2 py-1" placement="bottom" content={ "Dado" } >
-            <input type="number" 
+            <input type="text" 
                 id={inputStats.id.toLowerCase() + "Dice"} 
                 placeholder="Dado" 
                 min="1" 
                 className="form-input stats-sub ml-2 col-start-1 col-end-2 focus:border-black focus:shadow"
-                onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(0, parseInt(e.target.value))}
                 value={inputStats.valueDice}
+                maxLength={2}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(0, e.target.value)}
                 required
             />
         </Tooltip>
@@ -79,24 +92,25 @@ const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValu
                 placeholder="Clase" 
                 min="1" 
                 className="form-input stats-sub col-start-2 col-end-3 focus:border-black focus:shadow"
-                onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(1, parseInt(e.target.value))}
                 value={inputStats.valueClass}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(1, e.target.value)}
                 readOnly
             />
         </Tooltip>
         <Tooltip className="bg-dark text-light px-2 py-1" placement="bottom" content={ "Nivel" } >
-            <input type="number" 
+            <input type="text" 
                 id={inputStats.id.toLowerCase() + "Level"} 
                 placeholder="Nivel" 
                 min="1" 
                 className="form-input stats-sub-end mr-2 col-start-3 col-end-4 focus:border-black focus:shadow"
-                onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(2, parseInt(e.target.value))}
                 value={inputStats.valueLevel}
+                maxLength={2}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(2, e.target.value)}
            />
         </Tooltip>
     
-    </>
-  );
+        </>
+    );
 };
 
 export default FormInputStats;

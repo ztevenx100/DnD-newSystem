@@ -1,0 +1,49 @@
+/*
+    Created on : 2024/02/29
+    Author     : Steven
+*/
+
+.container .screen-loader{
+    position: absolute;
+    left: 0;
+    min-width: 100%;
+    height: 100%;
+    background-color: #0004;
+    z-index: 10;
+    cursor: wait;
+}
+
+.loader {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    top: calc(50vh - 50px);
+    left: calc(50% - 50px);
+    z-index: 100;
+    background-color: rgba(0, 0, 0, 0.5);
+    transform: rotate(45deg);
+    overflow: hidden;
+    &:after{
+        content: '';
+        position: absolute;
+        inset: 12px;
+        margin: auto;
+        background: #222b32;
+    }
+    &:before{
+        content: '';
+        position: absolute;
+        inset: -20px;
+        margin: auto;
+        background: var(--bg-loader);
+        animation: diamondLoader 2s linear infinite;
+    }
+}
+@keyframes diamondLoader {
+    0%  ,10% {
+      transform: translate(-100px , -100px) rotate(-45deg)
+    }
+    90% , 100% {
+      transform: translate(0px , 0px) rotate(-45deg)
+    }
+}

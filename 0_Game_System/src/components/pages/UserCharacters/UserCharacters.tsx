@@ -84,7 +84,7 @@ const UserCharacters: React.FC = () => {
     return (
         <>
             
-            <article className="min-h-screen grid grid-cols-1 grid-rows-6 gap-x-0 gap-y-4 py-4 mb-3">
+            <section className="min-h-screen grid grid-cols-1 grid-rows-6 gap-x-0 gap-y-4 py-4 mb-3">
                 <header className='bg-white shadow-lg rounded py-2 grid items-center'>
                     <h1 className='title-list'>Listado de personajes</h1>
                 </header>
@@ -135,7 +135,7 @@ const UserCharacters: React.FC = () => {
                         ))}
                     </List>
                 </Card>
-            </article>
+            </section>
             <aside className='panel-save'>
                 <button className='btn-save-character' onClick={() => handleOpenCharacter()} >
                     <SvgAddCharacter className='icon' width={40} height={40} />

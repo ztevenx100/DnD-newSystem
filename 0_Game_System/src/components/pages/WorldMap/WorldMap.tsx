@@ -16,16 +16,32 @@ const WorldMap: React.FC = () => {
 
     //const [open, setOpen] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
+    const [map, setMap] = useState<string[][]>([]);
     //const [newRecord, setNewRecord] = useState<boolean>(true);
     //const handleOpen = () => setOpen(!open);
 
     useEffect(() => {
         const loadInfo = async () => {
+            buildMap();
             setLoading(false);
+
         }
   
         loadInfo();
      }, []);
+
+    function buildMap(){
+        const templateMap: string[][] = [...map];
+        for (let i = 0; i < 7; i++) {
+            templateMap.push([]);
+            for (let j = 0; j < 8; j++) {
+                templateMap[i].push(' - ');
+                //templateMap[i][j] = '';
+            }
+        }
+        console.log('templateMap', templateMap);
+        setMap(templateMap);
+    }
 
     return (
         <>
@@ -39,9 +55,15 @@ const WorldMap: React.FC = () => {
             <header className='bg-white shadow-lg rounded py-2 grid items-center'>
                 <h1 className='title-list'>Mapamundi</h1>
             </header>
-            <div className="relative flex flex-col bg-clip-border rounded-xl bg-white text-gray-700 shadow-md w-full px-10 py-5 row-span-6">
-
-            </div>
+            <article className="relative grid grid-rows-7 rounded-xl bg-blue-900 text-gray-700 shadow-md w-full px-10 py-5 row-span-6">
+                {map.map((fila, rowIndex) => (
+                    <div key={rowIndex} className='grid-rows-1 grid grid-cols-8 '>
+                        {fila.map((elemento, colIndex) => (
+                            <div key={colIndex} className='grid-cols-1 border-dashed border-black border-2'>{elemento}</div>
+                        ))}
+                    </div>
+                ))}
+            </article>
         </section>
 
         </>

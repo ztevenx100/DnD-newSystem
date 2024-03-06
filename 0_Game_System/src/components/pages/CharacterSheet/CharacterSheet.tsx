@@ -485,7 +485,7 @@ const CharacterSheet: React.FC = () => {
          cacheControl: '3600',
          upsert: true
       });
-      console.log('handleCharacterImageFileChange: ', data);
+      //console.log('handleCharacterImageFileChange: ', data);
       
       if(error) alert(alert);
       

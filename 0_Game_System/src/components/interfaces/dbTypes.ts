@@ -53,3 +53,12 @@ export interface DBSistemaJuego{
   sju_nombre: string;
   sju_descripcion?: string;
 }
+
+export interface DBMapamundi{
+  mmu_id: string;
+  mmu_sju: string;
+  mmu_esc: string;
+  mmu_ubi: string;
+  mmu_pos_x: number;
+  mmu_pos_y: number;
+}

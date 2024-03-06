@@ -5,4 +5,13 @@
 :root{
     --bg-btn-hover: #AAA8;
     --bg-item: #F2AF29;
+    --bg-map-opacity: #0002;
+}
+
+.map-grid{
+    & .map-grid-row{
+        background-color: var(--bg-map-opacity);
+    }
+    & .map-grid-col{
+    }
 }

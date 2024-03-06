@@ -75,6 +75,7 @@ const CharacterSheet: React.FC = () => {
    const randomValueRefreshImage = Math.random().toString(36).substring(7);
    const handleOpen = () => setOpen(!open);
    const navigate = useNavigate();
+   const params = useParams();
 
    interface DataCharacter{
       id: string;
@@ -104,7 +105,6 @@ const CharacterSheet: React.FC = () => {
    }
    const [dataCharacter, setDataCharacter] = useState<DataCharacter>();
 
-   const params = useParams();
 
    useEffect(() => {
       getSkills()

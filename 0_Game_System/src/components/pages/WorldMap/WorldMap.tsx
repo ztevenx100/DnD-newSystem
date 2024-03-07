@@ -142,7 +142,7 @@ const WorldMap: React.FC = () => {
                                 return (
                                     <Popover key={rowIndex + colIndex} placement="bottom">
                                         <PopoverHandler>
-                                            <div className='map-grid-col grid-cols-1 border-dashed border-gray-600 border-2 text-light'>
+                                            <div className='map-grid-col grid-cols-1 border-dashed border-white border-2 text-light'>
                                                 {/* {elemento.mmu_ubi} */}
                                                 {getIconUbi('type' + elemento.ubi_ubicacion?.ubi_tipo)}
                                             </div>
@@ -156,7 +156,7 @@ const WorldMap: React.FC = () => {
                                 );
                             } else {
                                 return (
-                                    <div key={rowIndex + colIndex} className='map-grid-col-empty grid-cols-1 border-dashed border-gray-600 border-2 text-light'></div>
+                                    <div key={rowIndex + colIndex} className='map-grid-col-empty grid-cols-1 border-dashed border-[#000c] border-1 text-light'></div>
                                 );
                             }
                         })}

@@ -7,7 +7,7 @@ import { DBPersonajesUsuario } from '../../interfaces/dbTypes';
 import SvgAddCharacter from '../../../components/UI/Icons/SvgAddCharacter';
 import SvgDeleteItem from '../../../components/UI/Icons/SvgDeleteItem';
 
-import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, IconButton} from "@material-tailwind/react";
+import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, IconButton } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./UserCharacters.css";

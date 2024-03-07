@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 import { DBSistemaJuego } from '../../interfaces/dbTypes';
 
-import { List, ListItem, Card, ListItemPrefix, Typography} from "@material-tailwind/react";
+import { List, ListItem, Card, ListItemPrefix, Typography } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./SystemsGameList.css";

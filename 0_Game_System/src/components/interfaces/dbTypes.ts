@@ -53,10 +53,17 @@ export interface DBSistemaJuego{
   sju_nombre: string;
   sju_descripcion?: string;
 }
+
 export interface DBEscenario{
   esc_id: string;
   esc_tipo: string;
   esc_nombre: string;
+}
+
+export interface DBUbicacion{
+  ubi_id: string;
+  ubi_tipo: string;
+  ubi_nombre: string;
 }
 
 export interface DBMapamundi{
@@ -69,6 +76,11 @@ export interface DBMapamundi{
     esc_nombre: string;
   } | null;
   mmu_ubi: string;
+  ubi_ubicacion: DBUbicacion | {
+    ubi_id: string;
+    ubi_tipo: string;
+    ubi_nombre: string;
+  } | null;
   mmu_pos_x: number;
   mmu_pos_y: number;
 }

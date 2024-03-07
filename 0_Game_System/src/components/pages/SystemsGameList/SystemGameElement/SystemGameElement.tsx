@@ -25,7 +25,6 @@ const SystemGameElement: React.FC = () => {
         //console.log("getGame - data: " , data);
         if (data !== null) {
             setGame(data[0]);
-            //console.log("getGame - data: " , data);
         }
     }
 

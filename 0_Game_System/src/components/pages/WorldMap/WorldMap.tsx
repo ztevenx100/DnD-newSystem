@@ -4,17 +4,21 @@ import supabase from '../../database/supabase';
 //import supabase from '../../database/supabase';
 
 import { useBackground } from '../../../App';
-//import { List, ListItem, Card, ListItemPrefix, Typography} from "@material-tailwind/react";
+import { Popover, PopoverHandler, PopoverContent } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./WorldMap.css";
 
 // Interfaces
+import { Components } from '../../interfaces/typesCharacterSheet';
 import { DBEscenario, DBMapamundi } from '../../interfaces/dbTypes';
 
 import ScreenLoader from '../../../components/UI/ScreenLoader/ScreenLoader';
 
 import bgMapWorld from '../../../assets/img/jpg/bg-mapWorld.webp';
+import SvgUnknown from '../../../components/UI/Icons/SvgUnknown';
+import SvgTavern from '../../../components/UI/Icons/SvgTavern';
+import SvgArmory from '../../../components/UI/Icons/SvgArmory';
 
 const WorldMap: React.FC = () => {
     // Cambia la imagen de fondo cuando el componente se monta
@@ -26,14 +30,17 @@ const WorldMap: React.FC = () => {
     const [currentStage, setCurrentStage] = useState<DBEscenario>({esc_id:'', esc_tipo:'', esc_nombre:''});
     const [imageStage, setImagetStage] = useState<string>('');
 
-
-
     const params = useParams();
     //const [open, setOpen] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
     const randomValueRefreshImage = Math.random().toString(36).substring(7);
     //const [newRecord, setNewRecord] = useState<boolean>(true);
     //const handleOpen = () => setOpen(!open);
+
+    const itemsTipoUbgSvg: Components = {
+        typeA: SvgArmory,
+        typeT: SvgTavern,
+    }
 
     useEffect(() => {
         const loadInfo = async () => {
@@ -57,6 +64,7 @@ const WorldMap: React.FC = () => {
             mmu_esc: '',
             esc_escenario: null,
             mmu_ubi: '', 
+            ubi_ubicacion: null,
             mmu_pos_x: 0, 
             mmu_pos_y: 0,
         };
@@ -71,7 +79,7 @@ const WorldMap: React.FC = () => {
     }
 
     async function getMap(templateMap: DBMapamundi[][]) {
-        const { data } = await supabase.from("mmu_mapamundi").select('mmu_sju, mmu_esc, esc_escenario(esc_id, esc_tipo, esc_nombre), mmu_ubi, mmu_pos_x, mmu_pos_y')
+        const { data } = await supabase.from("mmu_mapamundi").select('mmu_sju, mmu_esc, esc_escenario(esc_id, esc_tipo, esc_nombre), mmu_ubi, ubi_ubicacion(ubi_id, ubi_tipo, ubi_nombre),mmu_pos_x, mmu_pos_y')
            .eq("mmu_sju",'d127c085-469a-4627-8801-77dc7262d41b')
             //.eq("mmu_id",'036bd999-f79e-4203-bc93-ecce0bfdca35')
             .order('mmu_pos_x', {ascending: true})
@@ -105,6 +113,16 @@ const WorldMap: React.FC = () => {
         setImagetStage(data.publicUrl+ '?' + randomValueRefreshImage);
     }
 
+    const getIconUbi = (component:string): React.ReactElement => {
+        const componentSeleted = itemsTipoUbgSvg[component];
+
+        if (componentSeleted) {
+            return React.createElement(componentSeleted, { width: 50, height: 50 });
+        } else {
+            return <SvgUnknown width={50} height={50} />;
+        }
+    }
+
     return (
         <>
 
@@ -122,15 +140,24 @@ const WorldMap: React.FC = () => {
                         {fila.map((elemento, colIndex) => {
                             if (elemento.mmu_id !== '') {
                                 return (
-                                    <div key={colIndex} className='map-grid-col grid-cols-1 border-dashed border-gray-600 border-2 text-light'>
-                                        {elemento.mmu_ubi}
-                                    </div>
+                                    <Popover key={rowIndex + colIndex} placement="bottom">
+                                        <PopoverHandler>
+                                            <div className='map-grid-col grid-cols-1 border-dashed border-gray-600 border-2 text-light'>
+                                                {/* {elemento.mmu_ubi} */}
+                                                {getIconUbi('type' + elemento.ubi_ubicacion?.ubi_tipo)}
+                                            </div>
+                                        </PopoverHandler>
+                                        <PopoverContent placeholder=''>
+                                            <aside className='card-ubi-info'>
+                                                <header>{elemento.ubi_ubicacion?.ubi_nombre}</header>
+                                            </aside>
+                                        </PopoverContent>
+                                    </Popover>
                                 );
                             } else {
                                 return (
-                                    <div key={colIndex} className='map-grid-col-empty grid-cols-1 border-dashed border-gray-600 border-2 text-light'></div>
+                                    <div key={rowIndex + colIndex} className='map-grid-col-empty grid-cols-1 border-dashed border-gray-600 border-2 text-light'></div>
                                 );
-
                             }
                         })}
                     </div>

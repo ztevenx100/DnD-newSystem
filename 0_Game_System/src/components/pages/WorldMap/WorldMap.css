@@ -27,8 +27,15 @@
         background-color: var(--bg-map-opacity);
     }
     & .map-grid-col{
+        display: flex;
+        align-items: center;
+        justify-content: center;
         &:hover{
             background-color: var(--bg-map-opacity);
         }
     }
+}
+
+.card-ubi-info{
+    width: 200px;
 }

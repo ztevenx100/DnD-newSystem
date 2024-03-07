@@ -50,3 +50,7 @@ export interface SkillFields {
     skill: string;
     field: string;
 }
+
+export type Components = {
+    [key: string]: React.ComponentType<any>;
+};

@@ -47,7 +47,7 @@ const UserCharacters: React.FC = () => {
     }
 
     function getUrlImage(character:DBPersonajesUsuario) {
-        const path:string = character.pus_usuario + '/' + character.pus_id + '.webp';
+        const path:string = 'usuarios/' + character.pus_usuario + '/' + character.pus_id + '.webp';
         const { data } = supabase
         .storage
         .from('dnd-system')

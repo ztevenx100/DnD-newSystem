@@ -230,7 +230,7 @@ const CharacterSheet: React.FC = () => {
       const { data } = await supabase
       .storage
       .from('dnd-system')
-      .getPublicUrl(params.user + '/' + params.id + '.webp');
+      .getPublicUrl('usuarios/' + params.user + '/' + params.id + '.webp');
       //console.log('getCharacterImage: ', data);
 
       setCharacterImage(data.publicUrl+ '?' + randomValueRefreshImage);
@@ -481,7 +481,7 @@ const CharacterSheet: React.FC = () => {
       const { data, error } = await supabase
       .storage
       .from('dnd-system')
-      .upload(params.user + '/' + params.id + '.webp', file, {
+      .upload('usuarios/' + params.user + '/' + params.id + '.webp', file, {
          cacheControl: '3600',
          upsert: true
       });

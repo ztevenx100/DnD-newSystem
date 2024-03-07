@@ -1,0 +1,31 @@
+/*
+    Created on : 2024/03/07
+    Author     : Steven
+*/
+:root{
+    --bg-btn: #F2AF29;
+}
+
+.btn-stage-selector{
+    display: flex;
+    position: absolute;
+    top: 10rem;
+    right: 0.5rem;
+    background-color: var(--bg-btn);
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 10;
+}
+
+.menu-selector{
+    width: 160px;
+    height: 200px;
+    overflow: auto;
+    & .stage-item{
+        aspect-ratio: 16/9;
+        background-size: cover;
+        background-position: center;
+        border: 1px solid black;
+        border-radius: 5px;
+    }
+}

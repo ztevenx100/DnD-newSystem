@@ -4,18 +4,23 @@ import supabase from '../../database/supabase';
 //import supabase from '../../database/supabase';
 
 import { useBackground } from '../../../App';
-import { Popover, PopoverHandler, PopoverContent } from "@material-tailwind/react";
+import { Popover, PopoverHandler, PopoverContent, Tooltip } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./WorldMap.css";
 
 // Interfaces
-import { Components } from '../../interfaces/typesCharacterSheet';
+import { Components, stageImageList } from '../../interfaces/typesCharacterSheet';
 import { DBEscenario, DBMapamundi } from '../../interfaces/dbTypes';
 
 import ScreenLoader from '../../../components/UI/ScreenLoader/ScreenLoader';
+import StageSelector from './StageSelector/StageSelector';
 
 import bgMapWorld from '../../../assets/img/jpg/bg-mapWorld.webp';
+import SvgPerson from '../../../components/UI/Icons/SvgPerson';
+import SvgLookImage from '../../../components/UI/Icons/SvgLookImage';
+import SvgSong from '../../../components/UI/Icons/SvgSong';
+import SvgTaskList from '../../../components/UI/Icons/SvgTaskList';
 import SvgUnknown from '../../../components/UI/Icons/SvgUnknown';
 import SvgTavern from '../../../components/UI/Icons/SvgTavern';
 import SvgArmory from '../../../components/UI/Icons/SvgArmory';
@@ -29,6 +34,7 @@ const WorldMap: React.FC = () => {
     const [listItemsMap, setListItemsMap] = useState<DBMapamundi[]>([]);
     const [currentStage, setCurrentStage] = useState<DBEscenario>({esc_id:'', esc_tipo:'', esc_nombre:''});
     const [imageStage, setImagetStage] = useState<string>('');
+    const [imageStageList, setImageStageList] = useState<stageImageList[]>([]);
 
     const params = useParams();
     //const [open, setOpen] = useState<boolean>(false);
@@ -42,13 +48,23 @@ const WorldMap: React.FC = () => {
         typeT: SvgTavern,
     }
 
+    const emptyTemplate:DBMapamundi = {
+        mmu_id: '', 
+        mmu_sju: '', 
+        mmu_esc: '',
+        esc_escenario: null,
+        mmu_ubi: '', 
+        ubi_ubicacion: null,
+        mmu_pos_x: 0, 
+        mmu_pos_y: 0,
+    };
+
     useEffect(() => {
         const loadInfo = async () => {
             const templateMap: DBMapamundi[][] = buildTemplateMap();
             console.log('params: ',params);
             
             await getMap(templateMap);
-            console.log('listItemsMap: ',listItemsMap);
 
             setLoading(false);
         }
@@ -58,20 +74,11 @@ const WorldMap: React.FC = () => {
 
     function buildTemplateMap(){
         const templateMap: DBMapamundi[][] = [...geographicalMap];
-        const temp:DBMapamundi = {
-            mmu_id: '', 
-            mmu_sju: '', 
-            mmu_esc: '',
-            esc_escenario: null,
-            mmu_ubi: '', 
-            ubi_ubicacion: null,
-            mmu_pos_x: 0, 
-            mmu_pos_y: 0,
-        };
+        
         for (let i = 0; i < 7; i++) {
             templateMap.push([]);
             for (let j = 0; j < 11; j++) {
-                templateMap[i].push(temp);
+                templateMap[i].push(emptyTemplate);
             }
         }
         //console.log('templateMap', templateMap);
@@ -79,38 +86,57 @@ const WorldMap: React.FC = () => {
     }
 
     async function getMap(templateMap: DBMapamundi[][]) {
-        const { data } = await supabase.from("mmu_mapamundi").select('mmu_sju, mmu_esc, esc_escenario(esc_id, esc_tipo, esc_nombre), mmu_ubi, ubi_ubicacion(ubi_id, ubi_tipo, ubi_nombre),mmu_pos_x, mmu_pos_y')
+        const { data } = await supabase.from("mmu_mapamundi").select('mmu_id, mmu_sju, mmu_esc, esc_escenario(esc_id, esc_tipo, esc_nombre), mmu_ubi, ubi_ubicacion(ubi_id, ubi_tipo, ubi_nombre),mmu_pos_x, mmu_pos_y')
            .eq("mmu_sju",'d127c085-469a-4627-8801-77dc7262d41b')
             //.eq("mmu_id",'036bd999-f79e-4203-bc93-ecce0bfdca35')
             .order('mmu_pos_x', {ascending: true})
             .order('mmu_pos_y', {ascending: true})
             .returns<DBMapamundi[]>();
-        console.log('getMap - data: ',data);
+        //console.log('getMap - data: ',data);
   
         if (data !== null) {
             let stage:DBEscenario = data[0].esc_escenario as DBEscenario;
-            data.map((elem) => (
-                templateMap[elem.mmu_pos_y][elem.mmu_pos_x] = elem
-            ));
+            const updatedImageStageList = [...imageStageList];
 
+            data.map((elem) => {
+                if(updatedImageStageList.length === 0){
+                    updatedImageStageList.push({id: elem.mmu_esc, url:''});
+                }else{
+                    if(updatedImageStageList[updatedImageStageList.length-1].id !== elem.mmu_esc) updatedImageStageList.push({id: elem.mmu_esc, url:''});
+                }
+                if(stage.esc_id === elem.mmu_esc){
+                    templateMap[elem.mmu_pos_y][elem.mmu_pos_x] = elem;
+                }
+            });
+
+            
+            
             setListItemsMap(data);
             setCurrentStage(stage);
-            await getMapImage(stage.esc_id);
-            console.log('getMap - stage: ',stage);
+            setImageStageList(updatedImageStageList);
+            await getMapImage(updatedImageStageList, stage.esc_id);
+            //console.log('getMap - stage: ',stage);
+            //console.log('getMap - updatedImageStageList: ',updatedImageStageList);
         }
-        console.log('getMap - ',templateMap);
+        //console.log('getMap - ',templateMap);
         setGeographicalMap(templateMap);
     }
 
-    async function getMapImage(idEsc:string) {
-        if(idEsc === null || idEsc ===  undefined) return;
-        const { data } = await supabase
-        .storage
-        .from('dnd-system')
-        .getPublicUrl('escenarios/' + idEsc + '.webp');
-        //console.log('getMapImage: ', data);
+    async function getMapImage(imageList:stageImageList[], idEsc:string) {
+
+        await imageList.map(async (image) => {
+            const { data } = await supabase
+            .storage
+            .from('dnd-system')
+            .getPublicUrl('escenarios/' + image.id + '.webp');
+
+            if(data) image.url = data.publicUrl + '?' + randomValueRefreshImage;
+        })
+        //console.log('getMapImage - imageList: ', imageList, ' , idEsc:', idEsc);
         
-        setImagetStage(data.publicUrl+ '?' + randomValueRefreshImage);
+        if(idEsc !== null && idEsc !== undefined && imageList){
+            setImagetStage(imageList.find(elem => elem.id === idEsc)?.url || '');
+        }
     }
 
     const getIconUbi = (component:string): React.ReactElement => {
@@ -123,6 +149,44 @@ const WorldMap: React.FC = () => {
         }
     }
 
+    function openNewWindowImage(idUbi:string | undefined){
+        if(idUbi === undefined) return;
+        
+        const path:string = 'ubicaciones/' + idUbi + '.webp';
+        const { data } = supabase
+        .storage
+        .from('dnd-system')
+        .getPublicUrl(path);
+
+        if (data !== null) {
+            let myWindow = window.open("", "MsgWindow", "width=800,height=800");
+            let imageHtml = "<img src='" + data.publicUrl + '?' + randomValueRefreshImage + "' style='position: absolute; top:0; left:0; width:100%; height: 100%; object-fit: cover; object-position: center top; overflow:hidden; margin: 0;' alt='Imagen del personaje' />";
+            myWindow?.document.write(imageHtml);
+        }
+        return true;
+    }
+
+    const handleImageStageChange = (idEsc: string) => {
+        let listItemsByStage = listItemsMap.filter(elem => elem.mmu_esc === idEsc);
+
+        setImagetStage(imageStageList.find(elem => elem.id === idEsc)?.url || '');
+        setCurrentStage(listItemsByStage[0]?.esc_escenario as DBEscenario);
+        mapChange(listItemsByStage);
+    }
+
+    const mapChange = (list: DBMapamundi[]) => {
+        const templateMap = geographicalMap.map((row) => 
+            row.map((col) => (col.mmu_id !== '' ? emptyTemplate : col))
+        );
+
+        list.map((elem) => {
+            templateMap[elem.mmu_pos_y][elem.mmu_pos_x] = elem;
+        })
+        
+        //console.log('mapChange :', templateMap);
+        setGeographicalMap(templateMap);
+    }
+
     return (
         <>
 
@@ -130,26 +194,46 @@ const WorldMap: React.FC = () => {
             <ScreenLoader/>
         )}
         <section className="min-h-screen grid grid-cols-1 grid-rows-[100px_repeat(3,minmax(0,_1fr))] gap-x-0 gap-y-0 py-4">
+            <StageSelector title='Listados de escenarios' imageList={imageStageList} onImageChange={handleImageStageChange}/>
             <header className='bg-white shadow-lg rounded py-0 grid items-center mb-2'>
                 <h1 className='title-list'>Mapamundi</h1>
                 <h2 className='subtitle-list'>{currentStage.esc_nombre}</h2>
             </header>
             <article className="map-grid relative grid grid-rows-7 rounded-xl bg-blue-900 text-gray-700 shadow-md w-full px-12 py-5 row-span-5" style={{backgroundImage: `url("${imageStage}")`}}>
-                {geographicalMap.map((fila, rowIndex) => (
+                {geographicalMap.map((row, rowIndex) => (
                     <div key={rowIndex} className='map-grid-row grid-rows-1 grid grid-cols-11 '>
-                        {fila.map((elemento, colIndex) => {
-                            if (elemento.mmu_id !== '') {
+                        {row.map((elem, colIndex) => {
+                            if (elem.mmu_id !== '') {
                                 return (
                                     <Popover key={rowIndex + colIndex} placement="bottom">
                                         <PopoverHandler>
                                             <div className='map-grid-col grid-cols-1 border-dashed border-white border-2 text-light'>
-                                                {/* {elemento.mmu_ubi} */}
-                                                {getIconUbi('type' + elemento.ubi_ubicacion?.ubi_tipo)}
+                                                {getIconUbi('type' + elem.ubi_ubicacion?.ubi_tipo)}
                                             </div>
                                         </PopoverHandler>
                                         <PopoverContent placeholder=''>
                                             <aside className='card-ubi-info'>
-                                                <header>{elemento.ubi_ubicacion?.ubi_nombre}</header>
+                                                <header className='flex justify-between items-center border-b border-black py-1'>
+                                                    <h6 className='text-black font-semibold '>{elem.ubi_ubicacion?.ubi_nombre}</h6>
+                                                    <Tooltip className="bg-dark text-light px-2 py-1" placement="top" content={ "Encargado del local" } >
+                                                        <button type="button" className='btn-card-ubi-header'>
+                                                            <SvgPerson width={20} height={20} />
+                                                        </button>
+                                                    </Tooltip>
+                                                    <Tooltip className="bg-dark text-light px-2 py-1" placement="top" content={ "Imagen de la ubicación" } >
+                                                        <button type="button" className='btn-card-ubi-header' onClick={() => openNewWindowImage(elem.ubi_ubicacion?.ubi_id)} >
+                                                            <SvgLookImage width={20} height={20} />
+                                                        </button>
+                                                    </Tooltip>
+                                                </header>
+                                                <menu className='py-2'>
+                                                    <div className='flex justify-between py-2' >
+                                                        <button type="button" className='btn-card-ubi'><SvgTaskList height={20} width={20} /></button>
+                                                    </div>
+                                                    <div className='flex justify-between py-2' >
+                                                        <button type="button" className='btn-card-ubi'><SvgSong height={20} width={20} /></button>
+                                                    </div>
+                                                </menu>
                                             </aside>
                                         </PopoverContent>
                                     </Popover>

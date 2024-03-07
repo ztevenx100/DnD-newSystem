@@ -183,7 +183,7 @@ const WorldMap: React.FC = () => {
             templateMap[elem.mmu_pos_y][elem.mmu_pos_x] = elem;
         })
         
-        console.log('mapChange :', templateMap);
+        //console.log('mapChange :', templateMap);
         setGeographicalMap(templateMap);
     }
 
@@ -208,7 +208,6 @@ const WorldMap: React.FC = () => {
                                     <Popover key={rowIndex + colIndex} placement="bottom">
                                         <PopoverHandler>
                                             <div className='map-grid-col grid-cols-1 border-dashed border-white border-2 text-light'>
-                                                {/* {elemento.mmu_ubi} */}
                                                 {getIconUbi('type' + elem.ubi_ubicacion?.ubi_tipo)}
                                             </div>
                                         </PopoverHandler>

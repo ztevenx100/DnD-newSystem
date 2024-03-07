@@ -54,3 +54,8 @@ export interface SkillFields {
 export type Components = {
     [key: string]: React.ComponentType<any>;
 };
+
+export interface stageImageList {
+    id: string;
+    url: string;
+}

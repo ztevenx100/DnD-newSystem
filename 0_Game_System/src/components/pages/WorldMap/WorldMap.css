@@ -5,7 +5,9 @@
 :root{
     --bg-btn-hover: #AAA8;
     --bg-item: #F2AF29;
-    --bg-map-opacity: #0002;
+    --bg-map-col-opacity: #fff6;
+    --bg-map-col-opacity-hover: #F2AF2966;
+    --bg-map-row-opacity: #0002;
 }
 
 .title-list{
@@ -24,18 +26,46 @@
     background-position: center;
     & .map-grid-row{
         /*max-height: 100px;*/
-        background-color: var(--bg-map-opacity);
+        background-color: var(--bg-map-row-opacity);
     }
     & .map-grid-col{
         display: flex;
         align-items: center;
         justify-content: center;
+        background-color: var(--bg-map-col-opacity);
         &:hover{
-            background-color: var(--bg-map-opacity);
+            background-color: var(--bg-map-col-opacity-hover);
         }
     }
 }
 
 .card-ubi-info{
     width: 200px;
+    & .btn-card-ubi-header{
+        padding: 2px;
+        border-radius: 5px;
+        border: 2px solid #000;
+        & svg{
+            transition-property: transform;
+            transition-duration: .5s;
+            transition-timing-function: ease;
+            &:hover{
+                transform: scale(1.2);
+            }
+        }
+    }
+    & .btn-card-ubi{
+        padding: 2px;
+        background-color: var(--bg-item);
+        border-radius: 5px;
+        border: 2px solid #000;
+        & svg{
+            transition-property: transform;
+            transition-duration: .5s;
+            transition-timing-function: ease;
+            &:hover{
+                transform: scale(1.2);
+            }
+        }
+    }
 }

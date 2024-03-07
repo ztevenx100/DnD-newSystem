@@ -5,6 +5,7 @@ import { Tooltip } from "@material-tailwind/react";
 import  SvgHome from '../../../components/UI/Icons/SvgHome';
 import  SvgPerson from '../../../components/UI/Icons/SvgPerson';
 import  SvgSystemList from '../../../components/UI/Icons/SvgSystemList';
+import  SvgMap from '../../../components/UI/Icons/SvgMap';
 
 import './Navbar.css';
 
@@ -13,6 +14,10 @@ const Navbar: React.FC = () => {
     <>
       <nav className="navbar ml-2">
         <menu>
+          {/* MapWorld */}
+          <Tooltip className="bg-dark text-light px-2 py-1" placement="right" content={"Mapamundi"} >
+            <li><NavLink className={({ isActive }) => isActive ? 'active' : ''} to="/WorldMap" ><SvgMap width="30" height="30" fill='#fff' stroke='#fff' /></NavLink></li>
+          </Tooltip>
           {/* Home */}
           <Tooltip className="bg-dark text-light px-2 py-1" placement="right" content={"Inicio"} >
             <li><NavLink className={({ isActive }) => isActive ? 'active' : ''} to="/" ><SvgHome width="30" height="30" fill='none' stroke='#fff' /></NavLink></li>

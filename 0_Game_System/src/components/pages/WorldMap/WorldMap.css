@@ -1,0 +1,41 @@
+/*
+    Created on : 2024/03/01
+    Author     : Steven
+*/
+:root{
+    --bg-btn-hover: #AAA8;
+    --bg-item: #F2AF29;
+    --bg-map-opacity: #0002;
+}
+
+.title-list{
+    font-weight: 700;
+    text-align: center;
+    font-size: 20px;
+}
+.subtitle-list{
+    font-weight: 600;
+    text-align: center;
+    font-size: 15px;
+}
+
+.map-grid{
+    background-size: cover;
+    background-position: center;
+    & .map-grid-row{
+        /*max-height: 100px;*/
+        background-color: var(--bg-map-opacity);
+    }
+    & .map-grid-col{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        &:hover{
+            background-color: var(--bg-map-opacity);
+        }
+    }
+}
+
+.card-ubi-info{
+    width: 200px;
+}

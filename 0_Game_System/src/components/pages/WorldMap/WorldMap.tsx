@@ -205,20 +205,20 @@ const WorldMap: React.FC = () => {
                 <h1 className='title-list'>Mapamundi</h1>
                 <h2 className='subtitle-list'>{currentStage.esc_nombre}</h2>
             </header>
-            <article className="map-grid relative grid grid-rows-7 rounded-xl bg-blue-900 text-gray-700 shadow-md w-full px-12 py-5 row-span-5" style={{backgroundImage: `url("${imageStage}")`}}>
+            <article className="map-grid relative grid grid-rows-7 rounded-xl bg-blue-900 text-gray-700 shadow-md w-full px-12 py-2 row-span-5" style={{backgroundImage: `url("${imageStage}")`}}>
                 {geographicalMap.map((row, rowIndex) => (
                     <div key={rowIndex} className='map-grid-row grid-rows-1 grid grid-cols-11 '>
                         {row.map((elem, colIndex) => {
                             if (elem.mmu_id !== '') {
                                 return (
                                     // Location panel
-                                    <Popover key={rowIndex + colIndex} placement="bottom">
+                                    <Popover key={rowIndex + colIndex} placement="bottom" offset={5}>
                                         <PopoverHandler>
                                             <div className='map-grid-col grid-cols-1 border-dashed border-white border-2 text-light'>
                                                 {getIconUbi('type' + elem.ubi_ubicacion?.ubi_tipo)}
                                             </div>
                                         </PopoverHandler>
-                                        <PopoverContent placeholder=''>
+                                        <PopoverContent className='p-2' placeholder=''>
                                             <aside className='card-ubi-info'>
                                                 <header className='flex justify-between items-center border-b border-black py-1'>
                                                     <h6 className='text-black font-semibold '>{elem.ubi_ubicacion?.ubi_nombre}</h6>
@@ -233,13 +233,13 @@ const WorldMap: React.FC = () => {
                                                         </button>
                                                     </Tooltip>
                                                 </header>
-                                                <menu className='py-2'>
-                                                    <div className='flex justify-between py-2' >
-                                                        <Popover key={rowIndex + colIndex} placement="left">
+                                                <menu className='py-0'>
+                                                    <div className='flex justify-between py-1' >
+                                                        <Popover key={rowIndex + colIndex} placement="left" offset={{mainAxis: 170, crossAxis: 0, alignmentAxis:10}}>
                                                             <PopoverHandler>
                                                                 <button type="button" className='btn-card-ubi'><SvgTaskList height={20} width={20} /></button>
                                                             </PopoverHandler>
-                                                            <PopoverContent className='ml-50' placeholder=''>
+                                                            <PopoverContent className='popover-panel' placeholder=''>
                                                                 <aside className='card-ubi-info'>
                                                                     <header className='flex justify-between items-center border-b border-black py-1'>
                                                                         <h6 className='text-black font-semibold '>Listado de misiones</h6>
@@ -250,7 +250,7 @@ const WorldMap: React.FC = () => {
                                                         <button type="button" className='btn-card-ubi'><SvgEnemy height={20} width={20} /></button>
                                                         <button type="button" className='btn-card-ubi'><SvgGroup height={20} width={20} /></button>
                                                     </div>
-                                                    <div className='flex justify-between py-2' >
+                                                    <div className='flex justify-between py-1' >
                                                         <button type="button" className='btn-card-ubi'><SvgSong height={20} width={20} /></button>
                                                     </div>
                                                 </menu>

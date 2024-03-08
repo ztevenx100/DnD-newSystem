@@ -40,9 +40,8 @@
 }
 
 .card-ubi-info{
-    width: 200px;
+    width: 180px;
     & .btn-card-ubi-header{
-        padding: 2px;
         border-radius: 5px;
         border: 2px solid #000;
         & svg{

@@ -17,15 +17,18 @@
     z-index: 10;
 }
 
-.menu-selector{
-    width: 160px;
-    height: 200px;
-    overflow: auto;
-    & .stage-item{
-        aspect-ratio: 16/9;
-        background-size: cover;
-        background-position: center;
-        border: 1px solid black;
-        border-radius: 5px;
+.panel-stage{
+    width: 130px;
+    & .menu-selector{
+        width: 120px;
+        height: 150px;
+        overflow: auto;
+        & .stage-item{
+            aspect-ratio: 16/9;
+            background-size: cover;
+            background-position: center;
+            border: 1px solid black;
+            border-radius: 5px;
+        }
     }
 }

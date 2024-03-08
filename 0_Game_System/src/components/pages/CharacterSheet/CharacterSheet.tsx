@@ -18,7 +18,7 @@ import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
 import FormInputStats from './FormInputStats/FormInputStats';
 import FormInputSkillsRing from './FormInputSkillsRing/FormInputSkillsRing';
 import FormImageFile from './FormImageFile/FormImageFile';
-
+// Images
 import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
 import ScreenLoader from '../../../components/UI/ScreenLoader/ScreenLoader';
 import SvgCharacter from '../../../components/UI/Icons/SvgCharacter';

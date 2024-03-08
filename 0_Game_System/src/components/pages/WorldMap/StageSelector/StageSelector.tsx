@@ -3,8 +3,9 @@ import React from 'react';
 import { Popover, PopoverHandler, PopoverContent } from "@material-tailwind/react";
 import "./StageSelector.css";
 
+// Interfaces
 import { stageImageList } from '../../../interfaces/typesCharacterSheet';
-
+// Images
 import SvgChangeItem from '../../../../components/UI/Icons/SvgChangeItem';
 
 interface StageSelectorProps{
@@ -22,8 +23,8 @@ const StageSelector: React.FC<StageSelectorProps> = ({title, imageList, onImageC
                     <button type="button" ><SvgChangeItem height={30} width={30} /></button>
                 </PopoverHandler>
                 <PopoverContent placeholder=''>
-                    <aside className='p-1'>
-                        <header>{title}</header>
+                    <aside className='panel-stage p-0'>
+                        <header className='border-b-1 border-black mb-4 text-center'>{title}</header>
                         <menu className='menu-selector'>
                             {imageList.map((elem, index) => (
                                 <li key={index} className='stage-item mb-1'>

@@ -84,3 +84,16 @@ export interface DBMapamundi{
   mmu_pos_x: number;
   mmu_pos_y: number;
 }
+
+export interface DBSonidoUbicacion{
+  sub_id: string;
+  sub_ubi: string;
+  sub_son: string;
+  son_sonidos: {
+    son_id: string;
+    son_nombre: string;
+  } | null;
+  sub_sound_url: string;
+  sub_tipo: string;
+  sub_icon: string;
+}

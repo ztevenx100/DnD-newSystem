@@ -59,7 +59,7 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
             const { data } = await supabase
             .storage
             .from('dnd-system')
-            .getPublicUrl('sonidos/' + sound.sub_son + '.wav');
+            .getPublicUrl('sonidos/' + sound.sub_son + '.mp3');
             if(data) sound.sub_sound_url = data.publicUrl ;
         })
         //console.log('getSonuds - soundsList: ', soundsList);
@@ -123,7 +123,7 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
                         <header className='border-b-1 border-black mb-4 text-center'>{title}</header>
                         <menu className='menu-selector'>
                             {list.map((elem) => (
-                                <button key={elem.sub_icon} className={'sounds-item flex justify-center ' + (buttonActive && currentAudioIndex === elem.sub_icon ? 'active':'')} type="button" onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}>{getIconSonds('type' + elem.sub_icon)}</button>
+                                <button key={elem.sub_icon} className={'sounds-item flex justify-center items-center ' + (buttonActive && currentAudioIndex === elem.sub_icon ? 'active':'')} type="button" onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}>{getIconSonds('type' + elem.sub_icon)}</button>
                             ))}
                         </menu>
                     </aside>

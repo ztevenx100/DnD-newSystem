@@ -13,6 +13,8 @@ import SvgUnknown from '../../../UI/Icons/SvgUnknown';
 import SvgRain from '../../../UI/Icons/SvgRain';
 import SvgStorm from '../../../UI/Icons/SvgStorm';
 import SvgWind from '../../../UI/Icons/SvgWind';
+import SvgNight from '../../../UI/Icons/SvgNight';
+import SvgBonfire from '../../../UI/Icons/SvgBonfire';
 
 interface AmbientSoundsSelectorProps{
     title: string;
@@ -29,7 +31,9 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
     const [sound, setSound] = useState<HTMLAudioElement>();
 
     const itemsSoundsSvg: Components = {
+        typeF: SvgBonfire,
         typeL: SvgRain,
+        typeN: SvgNight,
         typeT: SvgStorm,
         typeV: SvgWind,
     }
@@ -79,6 +83,7 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
             setSound(audio);
             
             if (!isPlaying) {
+                audio.volume = 1;
                 audio.play();
                 setIsPlaying(true);
                 setButtonActive(true);
@@ -90,9 +95,20 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
                 setButtonActive(false);
                 setCurrentAudioIndex('');
                 if(sound){
-                    sound.pause();
+                    let currentVolume = sound.volume;
+                    
+                    const fadeInterval = setInterval(() => {
+                        currentVolume -= 0.05;
+                        if (currentVolume <= 0){
+                            clearInterval(fadeInterval);
+                            sound.pause();
+                            sound.currentTime = 0;
+                        } else {
+                            sound.volume = currentVolume;
+                        }
+                    }, 200);
                 }
-              }
+            }
         }
     }
 

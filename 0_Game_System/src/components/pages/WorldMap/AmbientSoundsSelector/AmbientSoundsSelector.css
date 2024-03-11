@@ -24,13 +24,20 @@
         height: 150px;
         overflow: auto;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
+        flex-basis: 50%;
+        flex-wrap: wrap;
         row-gap: 0.5rem;
+        column-gap: 0.5rem;
         & .sounds-item{
+            padding: 2px;
             background-size: cover;
             background-position: center;
             border: 1px solid black;
             border-radius: 5px;
+            transition-property: background;
+            transition-duration: .5s;
+            transition-timing-function: ease;
             & svg{
                 transition-property: transform;
                 transition-duration: .5s;
@@ -41,6 +48,9 @@
             }
             &.active{
                 background: var(--bg-btn-active);
+                & svg{
+                    transform: scale(1.2);
+                }
             }
         }
     }

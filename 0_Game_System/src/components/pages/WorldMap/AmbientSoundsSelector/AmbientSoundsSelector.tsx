@@ -1,7 +1,7 @@
 import React, {useEffect, useState, ChangeEvent} from 'react';
 import supabase from '../../../database/supabase';
 
-import { Popover, PopoverHandler, PopoverContent } from "@material-tailwind/react";
+import { Popover, PopoverHandler, PopoverContent, Tooltip } from "@material-tailwind/react";
 import "./AmbientSoundsSelector.css";
 
 // Interfaces
@@ -141,7 +141,9 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
                         </label>
                         <menu className='menu-selector'>
                             {list.map((elem) => (
-                                <button key={elem.sub_icon} className={'sounds-item flex justify-center items-center ' + (buttonActive && currentAudioIndex === elem.sub_icon ? 'active':'')} type="button" onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}>{getIconSonds('type' + elem.sub_icon)}</button>
+                                <Tooltip className="bg-dark text-light px-2 py-1" placement="top" content={ elem.son_sonidos?.son_nombre } >
+                                    <button key={elem.sub_icon} className={'sounds-item flex justify-center items-center ' + (buttonActive && currentAudioIndex === elem.sub_icon ? 'active':'')} type="button" onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}>{getIconSonds('type' + elem.sub_icon)}</button>
+                                </Tooltip>
                             ))}
                         </menu>
                     </aside>

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, ChangeEvent} from 'react';
 import supabase from '../../../database/supabase';
 
 import { Popover, PopoverHandler, PopoverContent } from "@material-tailwind/react";
@@ -15,6 +15,7 @@ import SvgStorm from '../../../UI/Icons/SvgStorm';
 import SvgWind from '../../../UI/Icons/SvgWind';
 import SvgNight from '../../../UI/Icons/SvgNight';
 import SvgBonfire from '../../../UI/Icons/SvgBonfire';
+import SvgBird from '../../../UI/Icons/SvgBird';
 
 interface AmbientSoundsSelectorProps{
     title: string;
@@ -29,11 +30,13 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
     const [buttonActive, setButtonActive] = useState<boolean>(false);
     const [currentAudioIndex, setCurrentAudioIndex] = useState<string>('');
     const [sound, setSound] = useState<HTMLAudioElement>();
+    const [volumen, setVolumen] = useState<number>(1);
 
     const itemsSoundsSvg: Components = {
         typeF: SvgBonfire,
         typeL: SvgRain,
         typeN: SvgNight,
+        typeP: SvgBird,
         typeT: SvgStorm,
         typeV: SvgWind,
     }
@@ -83,7 +86,7 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
             setSound(audio);
             
             if (!isPlaying) {
-                audio.volume = 1;
+                audio.volume = volumen;
                 audio.play();
                 setIsPlaying(true);
                 setButtonActive(true);
@@ -112,6 +115,14 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
         }
     }
 
+    const handleVolumeChange = (value: number) => {
+        const newValue = value/100;
+        console.log('sound', sound, ' volume ', value);
+        
+        if (sound) sound.volume = newValue;
+        setVolumen(newValue);
+    };
+
     return (
         <>
             <Popover placement='left-start'>
@@ -120,7 +131,11 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
                 </PopoverHandler>
                 <PopoverContent placeholder=''>
                     <aside className='panel-sounds p-0'>
-                        <header className='border-b-1 border-black mb-4 text-center'>{title}</header>
+                        <header className='border-b-1 border-black mb-2 text-center'>{title}</header>
+                        <label className='mb-2'>
+                            <p>Volumen: {volumen*100}</p>
+                            <input type="range" className='range-selector' min={0} max={100} step={10} value={volumen*100} onChange={(e: ChangeEvent<HTMLInputElement>) => handleVolumeChange(parseInt(e.target.value))} />
+                        </label>
                         <menu className='menu-selector'>
                             {list.map((elem) => (
                                 <button key={elem.sub_icon} className={'sounds-item flex justify-center items-center ' + (buttonActive && currentAudioIndex === elem.sub_icon ? 'active':'')} type="button" onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}>{getIconSonds('type' + elem.sub_icon)}</button>

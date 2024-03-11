@@ -20,6 +20,10 @@
 
 .panel-sounds{
     width: 130px;
+    & .range-selector{
+        color: var(--bg-btn-active);
+        background: var(--bg-btn-active);
+    }
     & .menu-selector{
         height: 150px;
         overflow: auto;
@@ -44,12 +48,12 @@
                 transition-timing-function: ease;
             }
             &:hover svg{
-                transform: scale(1.2);
+                transform: scale(1.1);
             }
             &.active{
                 background: var(--bg-btn-active);
                 & svg{
-                    transform: scale(1.2);
+                    transform: scale(1.1);
                 }
             }
         }

@@ -47,7 +47,7 @@ const WorldMap: React.FC = () => {
     //const [newRecord, setNewRecord] = useState<boolean>(true);
     //const handleOpen = () => setOpen(!open);
 
-    const itemsTyoeUbgSvg: Components = {
+    const itemsTypeUbgSvg: Components = {
         typeA: SvgArmory,
         typeC: SvgCave,
         typeR: SvgRuins,
@@ -144,7 +144,7 @@ const WorldMap: React.FC = () => {
     }
 
     const getIconUbi = (component:string): React.ReactElement => {
-        const componentSeleted = itemsTyoeUbgSvg[component];
+        const componentSeleted = itemsTypeUbgSvg[component];
 
         if (componentSeleted) {
             return React.createElement(componentSeleted, { width: 50, height: 50 });

@@ -16,6 +16,7 @@ import SvgWind from '../../../UI/Icons/SvgWind';
 import SvgNight from '../../../UI/Icons/SvgNight';
 import SvgBonfire from '../../../UI/Icons/SvgBonfire';
 import SvgBird from '../../../UI/Icons/SvgBird';
+import SvgWave from '../../../UI/Icons/SvgWave';
 
 interface AmbientSoundsSelectorProps{
     title: string;
@@ -36,6 +37,7 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
         typeF: SvgBonfire,
         typeL: SvgRain,
         typeN: SvgNight,
+        typeO: SvgWave,
         typeP: SvgBird,
         typeT: SvgStorm,
         typeV: SvgWind,
@@ -87,6 +89,7 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
             
             if (!isPlaying) {
                 audio.volume = volumen;
+                audio.loop = true;
                 audio.play();
                 setIsPlaying(true);
                 setButtonActive(true);

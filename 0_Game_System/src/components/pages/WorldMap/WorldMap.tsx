@@ -14,6 +14,7 @@ import { DBEscenario, DBMapamundi } from '../../interfaces/dbTypes';
 // Components
 import ScreenLoader from '../../../components/UI/ScreenLoader/ScreenLoader';
 import StageSelector from './StageSelector/StageSelector';
+import AmbientSoundsSelector from './AmbientSoundsSelector/AmbientSoundsSelector';
 // Images
 import bgMapWorld from '../../../assets/img/jpg/bg-mapWorld.webp';
 import SvgPerson from '../../../components/UI/Icons/SvgPerson';
@@ -46,7 +47,7 @@ const WorldMap: React.FC = () => {
     //const [newRecord, setNewRecord] = useState<boolean>(true);
     //const handleOpen = () => setOpen(!open);
 
-    const itemsTipoUbgSvg: Components = {
+    const itemsTypeUbgSvg: Components = {
         typeA: SvgArmory,
         typeC: SvgCave,
         typeR: SvgRuins,
@@ -113,13 +114,11 @@ const WorldMap: React.FC = () => {
                     templateMap[elem.mmu_pos_y][elem.mmu_pos_x] = elem;
                 }
             });
-
-            
             
             setListItemsMap(data);
             setCurrentStage(stage);
-            setImageStageList(updatedImageStageList);
             await getMapImage(updatedImageStageList, stage.esc_id);
+            setImageStageList(updatedImageStageList);
             //console.log('getMap - stage: ',stage);
             //console.log('getMap - updatedImageStageList: ',updatedImageStageList);
         }
@@ -145,7 +144,7 @@ const WorldMap: React.FC = () => {
     }
 
     const getIconUbi = (component:string): React.ReactElement => {
-        const componentSeleted = itemsTipoUbgSvg[component];
+        const componentSeleted = itemsTypeUbgSvg[component];
 
         if (componentSeleted) {
             return React.createElement(componentSeleted, { width: 50, height: 50 });
@@ -200,7 +199,9 @@ const WorldMap: React.FC = () => {
             <ScreenLoader/>
         )}
         <section className="min-h-screen grid grid-cols-1 grid-rows-[100px_repeat(3,minmax(0,_1fr))] gap-x-0 gap-y-0 py-4">
+            {/* selecionar escenarios */}
             <StageSelector title='Listados de escenarios' imageList={imageStageList} onImageChange={handleImageStageChange}/>
+            <AmbientSoundsSelector title='Lista de sonidos' />
             <header className='bg-white shadow-lg rounded py-0 grid items-center mb-2'>
                 <h1 className='title-list'>Mapamundi</h1>
                 <h2 className='subtitle-list'>{currentStage.esc_nombre}</h2>
@@ -222,11 +223,6 @@ const WorldMap: React.FC = () => {
                                             <aside className='card-ubi-info'>
                                                 <header className='flex justify-between items-center border-b border-black py-1'>
                                                     <h6 className='text-black font-semibold '>{elem.ubi_ubicacion?.ubi_nombre}</h6>
-                                                    <Tooltip className="bg-dark text-light px-2 py-1" placement="top" content={ "Encargado del local" } >
-                                                        <button type="button" className='btn-card-ubi-header'>
-                                                            <SvgPerson width={20} height={20} />
-                                                        </button>
-                                                    </Tooltip>
                                                     <Tooltip className="bg-dark text-light px-2 py-1" placement="top" content={ "Imagen de la ubicación" } >
                                                         <button type="button" className='btn-card-ubi-header' onClick={() => openNewWindowImage(elem.mmu_ubi)} >
                                                             <SvgLookImage width={20} height={20} />
@@ -235,7 +231,14 @@ const WorldMap: React.FC = () => {
                                                 </header>
                                                 <menu className='py-0'>
                                                     <div className='flex justify-between py-1' >
-                                                        <Popover key={rowIndex + colIndex} placement="left" offset={{mainAxis: 170, crossAxis: 0, alignmentAxis:10}}>
+                                                        <Tooltip className="bg-dark text-light px-2 py-1" placement="top" content={ "Encargado del local" } >
+                                                            <button type="button" className='btn-card-ubi'>
+                                                                <SvgPerson width={20} height={20} />
+                                                            </button>
+                                                        </Tooltip>
+                                                    </div>
+                                                    <div className='flex justify-between py-1' >
+                                                        <Popover key={rowIndex + colIndex} placement="right" offset={{mainAxis: 100, crossAxis: 0, alignmentAxis:10}}>
                                                             <PopoverHandler>
                                                                 <button type="button" className='btn-card-ubi'><SvgTaskList height={20} width={20} /></button>
                                                             </PopoverHandler>

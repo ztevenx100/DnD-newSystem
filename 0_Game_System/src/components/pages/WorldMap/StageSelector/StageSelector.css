@@ -20,8 +20,7 @@
 .panel-stage{
     width: 130px;
     & .menu-selector{
-        width: 120px;
-        height: 150px;
+        height: 160px;
         overflow: auto;
         & .stage-item{
             aspect-ratio: 16/9;

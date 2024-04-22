@@ -59,7 +59,6 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
     }
 
     async function getSonuds(soundsList:DBSonidoUbicacion[]) {
-
         await soundsList.map(async (sound) => {
             const { data } = await supabase
             .storage
@@ -68,7 +67,6 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
             if(data) sound.sub_sound_url = data.publicUrl ;
         })
         //console.log('getSonuds - soundsList: ', soundsList);
-        
     }
 
     const getIconSonds = (component:string): React.ReactElement => {
@@ -140,9 +138,16 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
                             <input type="range" className='range-selector' min={0} max={100} step={10} value={volumen*100} onChange={(e: ChangeEvent<HTMLInputElement>) => handleVolumeChange(parseInt(e.target.value))} />
                         </label>
                         <menu className='menu-selector'>
-                            {list.map((elem) => (
-                                <Tooltip className="bg-dark text-light px-2 py-1" placement="top" content={ elem.son_sonidos?.son_nombre } >
-                                    <button key={elem.sub_icon} className={'sounds-item flex justify-center items-center ' + (buttonActive && currentAudioIndex === elem.sub_icon ? 'active':'')} type="button" onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}>{getIconSonds('type' + elem.sub_icon)}</button>
+                            {list.map((elem, index) => (
+                                <Tooltip key={index} className="bg-dark text-light px-2 py-1" placement="top" content={ elem.son_sonidos?.son_nombre } >
+                                    <button 
+                                        type="button" 
+                                        key={elem.sub_icon} 
+                                        className={'sounds-item flex justify-center items-center ' + (buttonActive && currentAudioIndex === elem.sub_icon ? 'active':'')} 
+                                        onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}
+                                    >
+                                        {getIconSonds('type' + elem.sub_icon)}
+                                    </button>
                                 </Tooltip>
                             ))}
                         </menu>

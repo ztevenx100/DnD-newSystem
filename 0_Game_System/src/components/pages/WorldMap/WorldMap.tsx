@@ -10,11 +10,14 @@ import "./WorldMap.css";
 
 // Interfaces
 import { Components, stageImageList } from '../../interfaces/typesCharacterSheet';
-import { DBEscenario, DBMapamundi } from '../../interfaces/dbTypes';
+import { DBEscenario, DBMapamundi, DBSonidoUbicacion } from '../../interfaces/dbTypes';
 // Components
 import ScreenLoader from '../../../components/UI/ScreenLoader/ScreenLoader';
 import StageSelector from './StageSelector/StageSelector';
 import AmbientSoundsSelector from './AmbientSoundsSelector/AmbientSoundsSelector';
+// Funciones
+import {getIcon} from '../../utils/utilIcons';
+
 // Images
 import bgMapWorld from '../../../assets/img/jpg/bg-mapWorld.webp';
 import SvgPerson from '../../../components/UI/Icons/SvgPerson';
@@ -23,7 +26,6 @@ import SvgSong from '../../../components/UI/Icons/SvgSong';
 import SvgEnemy from '../../../components/UI/Icons/SvgEnemy';
 import SvgGroup from '../../../components/UI/Icons/SvgGroup';
 import SvgTaskList from '../../../components/UI/Icons/SvgTaskList';
-import SvgUnknown from '../../../components/UI/Icons/SvgUnknown';
 import SvgArmory from '../../../components/UI/Icons/SvgArmory';
 import SvgCave from '../../../components/UI/Icons/SvgCave';
 import SvgRuins from '../../../components/UI/Icons/SvgRuins';
@@ -104,7 +106,7 @@ const WorldMap: React.FC = () => {
             let stage:DBEscenario = data[0].esc_escenario as DBEscenario;
             const updatedImageStageList = [...imageStageList];
 
-            data.map((elem) => {
+            data.map(async (elem) => {
                 if(updatedImageStageList.length === 0){
                     updatedImageStageList.push({id: elem.mmu_esc, url:''});
                 }else{
@@ -112,6 +114,13 @@ const WorldMap: React.FC = () => {
                 }
                 if(stage.esc_id === elem.mmu_esc){
                     templateMap[elem.mmu_pos_y][elem.mmu_pos_x] = elem;
+                    console.log('ubi: ',elem.mmu_ubi);
+                    try {
+                        templateMap[elem.mmu_pos_y][elem.mmu_pos_x].lista_sonidos = await getSoundList(elem.mmu_id);
+                        
+                    } catch (error) {
+                        templateMap[elem.mmu_pos_y][elem.mmu_pos_x].lista_sonidos = [];
+                    }
                 }
             });
             
@@ -133,7 +142,7 @@ const WorldMap: React.FC = () => {
             .storage
             .from('dnd-system')
             .getPublicUrl('escenarios/' + image.id + '.webp');
-
+    
             if(data) image.url = data.publicUrl + '?' + randomValueRefreshImage;
         })
         //console.log('getMapImage - imageList: ', imageList, ' , idEsc:', idEsc);
@@ -142,15 +151,32 @@ const WorldMap: React.FC = () => {
             setImagetStage(imageList.find(elem => elem.id === idEsc)?.url || '');
         }
     }
+    
+    async function getSoundList(ubiId:string): Promise<DBSonidoUbicacion[]>{
+        let list: DBSonidoUbicacion[] = [];
+        if (ubiId == undefined || ubiId == null) return list;
 
-    const getIconUbi = (component:string): React.ReactElement => {
-        const componentSeleted = itemsTypeUbgSvg[component];
-
-        if (componentSeleted) {
-            return React.createElement(componentSeleted, { width: 50, height: 50 });
-        } else {
-            return <SvgUnknown width={50} height={50} />;
+        const { data } = await supabase.from("sub_sonido_ubicacion").select('sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre) ')
+        .eq('sub_tipo','G')
+        .returns<DBSonidoUbicacion[]>();
+        //console.log("getList - data: " , data);
+        if (data !== null) {
+            await getSonuds(data);
+            list = data;
         }
+        return list;
+    }
+
+    async function getSonuds(soundsList:DBSonidoUbicacion[]) {
+
+        await soundsList.map(async (sound) => {
+            const { data } = await supabase
+            .storage
+            .from('dnd-system')
+            .getPublicUrl('sonidos/' + sound.sub_son + '.mp3');
+            if(data) sound.sub_sound_url = data.publicUrl ;
+        })
+        //console.log('getSonuds - soundsList: ', soundsList);
     }
 
     function openNewWindowImage(idUbi:string | undefined){
@@ -216,7 +242,7 @@ const WorldMap: React.FC = () => {
                                     <Popover key={rowIndex + colIndex} placement="bottom" offset={5}>
                                         <PopoverHandler>
                                             <div className='map-grid-col grid-cols-1 border-dashed border-white border-2 text-light'>
-                                                {getIconUbi('type' + elem.ubi_ubicacion?.ubi_tipo)}
+                                                {getIcon('type' + elem.ubi_ubicacion?.ubi_tipo, itemsTypeUbgSvg, 50, 50)}
                                             </div>
                                         </PopoverHandler>
                                         <PopoverContent className='p-2' placeholder=''>
@@ -254,7 +280,32 @@ const WorldMap: React.FC = () => {
                                                         <button type="button" className='btn-card-ubi'><SvgGroup height={20} width={20} /></button>
                                                     </div>
                                                     <div className='flex justify-between py-1' >
-                                                        <button type="button" className='btn-card-ubi'><SvgSong height={20} width={20} /></button>
+                                                        <Popover key={rowIndex + colIndex} placement="right" offset={{mainAxis: 100, crossAxis: 0, alignmentAxis:10}}>
+                                                            <PopoverHandler>
+                                                                <button type="button" className='btn-card-ubi'><SvgSong height={20} width={20} /></button>
+                                                            </PopoverHandler>
+                                                            <PopoverContent className='popover-panel' placeholder=''>
+                                                                <aside className='card-ubi-info'>
+                                                                    <header className='flex justify-between items-center border-b border-black py-1'>
+                                                                        <h6 className='text-black font-semibold '>Listado de canciones</h6>
+                                                                    </header>
+                                                                    <menu className='menu-selector'>
+                                                                        {elem.lista_sonidos?.map((elem, index) => (
+                                                                            <Tooltip key={index} className="bg-dark text-light px-2 py-1" placement="top" content={ elem.son_sonidos?.son_nombre } >
+                                                                                <button 
+                                                                                    type="button" 
+                                                                                    key={elem.sub_icon} 
+                                                                                    className={'sounds-item flex justify-center items-center '} 
+                                                                                    // onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}
+                                                                                >
+                                                                                    {getIcon('type' + elem.sub_icon, itemsTypeUbgSvg)}
+                                                                                </button>
+                                                                            </Tooltip>
+                                                                        ))}
+                                                                    </menu>
+                                                                </aside>
+                                                            </PopoverContent>
+                                                        </Popover>
                                                     </div>
                                                 </menu>
                                             </aside>

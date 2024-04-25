@@ -15,6 +15,8 @@ import { DBEscenario, DBMapamundi, DBSonidoUbicacion } from '../../interfaces/db
 import ScreenLoader from '../../../components/UI/ScreenLoader/ScreenLoader';
 import StageSelector from './StageSelector/StageSelector';
 import AmbientSoundsSelector from './AmbientSoundsSelector/AmbientSoundsSelector';
+import BtnMenuSound from '../../../components/UI/Buttons/BtnMenuSound';
+
 // Funciones
 import {getIcon} from '../../utils/utilIcons';
 
@@ -65,16 +67,20 @@ const WorldMap: React.FC = () => {
         ubi_ubicacion: null,
         mmu_pos_x: 0, 
         mmu_pos_y: 0,
+        lista_sonidos: [],
     };
 
     useEffect(() => {
         const loadInfo = async () => {
             const templateMap: DBMapamundi[][] = buildTemplateMap();
             console.log('params: ',params);
-            
-            await getMap(templateMap);
+            //await getMap(templateMap);
 
-            setLoading(false);
+            Promise.all ([
+                getMap(templateMap),
+             ]).finally(() => {
+                setLoading(false);
+             });
         }
 
         loadInfo();
@@ -106,24 +112,24 @@ const WorldMap: React.FC = () => {
             let stage:DBEscenario = data[0].esc_escenario as DBEscenario;
             const updatedImageStageList = [...imageStageList];
 
-            data.map(async (elem) => {
-                if(updatedImageStageList.length === 0){
-                    updatedImageStageList.push({id: elem.mmu_esc, url:''});
-                }else{
-                    if(updatedImageStageList[updatedImageStageList.length-1].id !== elem.mmu_esc) updatedImageStageList.push({id: elem.mmu_esc, url:''});
-                }
-                if(stage.esc_id === elem.mmu_esc){
-                    templateMap[elem.mmu_pos_y][elem.mmu_pos_x] = elem;
-                    console.log('ubi: ',elem.mmu_ubi);
-                    try {
-                        templateMap[elem.mmu_pos_y][elem.mmu_pos_x].lista_sonidos = await getSoundList(elem.mmu_id);
-                        
-                    } catch (error) {
-                        templateMap[elem.mmu_pos_y][elem.mmu_pos_x].lista_sonidos = [];
+            await Promise.all(
+                data.map(async (elem) => {
+                    if(updatedImageStageList.length === 0){
+                        updatedImageStageList.push({id: elem.mmu_esc, url:''});
+                    }else{
+                        if(updatedImageStageList[updatedImageStageList.length-1].id !== elem.mmu_esc) updatedImageStageList.push({id: elem.mmu_esc, url:''});
                     }
-                }
-            });
-            
+                    if(stage.esc_id === elem.mmu_esc){
+                        templateMap[elem.mmu_pos_y][elem.mmu_pos_x] = elem;
+                        try {
+                            templateMap[elem.mmu_pos_y][elem.mmu_pos_x].lista_sonidos = await getSoundList(elem.mmu_ubi);
+                        } catch (error) {
+                            //templateMap[elem.mmu_pos_y][elem.mmu_pos_x].lista_sonidos = [];
+                        }
+                    }
+                })
+            );
+
             setListItemsMap(data);
             setCurrentStage(stage);
             await getMapImage(updatedImageStageList, stage.esc_id);
@@ -154,20 +160,25 @@ const WorldMap: React.FC = () => {
     
     async function getSoundList(ubiId:string): Promise<DBSonidoUbicacion[]>{
         let list: DBSonidoUbicacion[] = [];
+        //console.log('ubiId: ', ubiId);
+        
         if (ubiId == undefined || ubiId == null) return list;
 
         const { data } = await supabase.from("sub_sonido_ubicacion").select('sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre) ')
-        .eq('sub_tipo','G')
+        .eq('sub_tipo','U')
+        .eq('sub_estado','A')
+        .eq('sub_ubi',ubiId)
         .returns<DBSonidoUbicacion[]>();
-        //console.log("getList - data: " , data);
+        //console.log("getSoundList - data: " , data);
         if (data !== null) {
-            await getSonuds(data);
+            await getSounds(data);
             list = data;
         }
+        
         return list;
     }
 
-    async function getSonuds(soundsList:DBSonidoUbicacion[]) {
+    async function getSounds(soundsList:DBSonidoUbicacion[]) {
 
         await soundsList.map(async (sound) => {
             const { data } = await supabase
@@ -237,6 +248,7 @@ const WorldMap: React.FC = () => {
                     <div key={rowIndex} className='map-grid-row grid-rows-1 grid grid-cols-11 '>
                         {row.map((elem, colIndex) => {
                             if (elem.mmu_id !== '') {
+                                
                                 return (
                                     // Location panel
                                     <Popover key={rowIndex + colIndex} placement="bottom" offset={5}>
@@ -290,15 +302,16 @@ const WorldMap: React.FC = () => {
                                                                         <h6 className='text-black font-semibold '>Listado de canciones</h6>
                                                                     </header>
                                                                     <menu className='menu-selector'>
-                                                                        {elem.lista_sonidos?.map((elem, index) => (
-                                                                            <Tooltip key={index} className="bg-dark text-light px-2 py-1" placement="top" content={ elem.son_sonidos?.son_nombre } >
+                                                                        <BtnMenuSound list={elem.lista_sonidos} iconList={itemsTypeUbgSvg} />
+                                                                        { elem.lista_sonidos?.map((sound, index) => (
+                                                                            <Tooltip key={index} className="bg-dark text-light px-2 py-1" placement="top" content={ sound.son_sonidos?.son_nombre } >
                                                                                 <button 
                                                                                     type="button" 
-                                                                                    key={elem.sub_icon} 
+                                                                                    key={sound.sub_icon} 
                                                                                     className={'sounds-item flex justify-center items-center '} 
                                                                                     // onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}
                                                                                 >
-                                                                                    {getIcon('type' + elem.sub_icon, itemsTypeUbgSvg)}
+                                                                                    {getIcon('type' + sound.sub_icon, itemsTypeUbgSvg)}
                                                                                 </button>
                                                                             </Tooltip>
                                                                         ))}

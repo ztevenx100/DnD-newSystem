@@ -17,11 +17,10 @@ import SvgNight from '../../../UI/Icons/SvgNight';
 import SvgBonfire from '../../../UI/Icons/SvgBonfire';
 import SvgBird from '../../../UI/Icons/SvgBird';
 import SvgWave from '../../../UI/Icons/SvgWave';
+import SvgHeart from '../../../UI/Icons/SvgHeart';
 
 interface AmbientSoundsSelectorProps{
     title: string;
-    //imageList: stageImageList[];
-    //onImageChange: (id: string) => void;
 }
 
 const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) => {
@@ -41,6 +40,7 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
         typeP: SvgBird,
         typeT: SvgStorm,
         typeV: SvgWind,
+        typeC: SvgHeart,
     }
 
     useEffect(() => {
@@ -50,6 +50,7 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
     async function getList() {
         const { data } = await supabase.from("sub_sonido_ubicacion").select('sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre) ')
         .eq('sub_tipo','G')
+        .eq('sub_estado','A')
         .returns<DBSonidoUbicacion[]>();
         //console.log("getList - data: " , data);
         if (data !== null) {
@@ -69,7 +70,7 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
         //console.log('getSonuds - soundsList: ', soundsList);
     }
 
-    const getIconSonds = (component:string): React.ReactElement => {
+    const getIconSounds = (component:string): React.ReactElement => {
         const componentSeleted = itemsSoundsSvg[component];
 
         if (componentSeleted) {
@@ -146,7 +147,7 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
                                         className={'sounds-item flex justify-center items-center ' + (buttonActive && currentAudioIndex === elem.sub_icon ? 'active':'')} 
                                         onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}
                                     >
-                                        {getIconSonds('type' + elem.sub_icon)}
+                                        {getIconSounds('type' + elem.sub_icon)}
                                     </button>
                                 </Tooltip>
                             ))}

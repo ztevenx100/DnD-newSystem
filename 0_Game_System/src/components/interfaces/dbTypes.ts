@@ -83,6 +83,7 @@ export interface DBMapamundi{
   } | null;
   mmu_pos_x: number;
   mmu_pos_y: number;
+  lista_sonidos: DBSonidoUbicacion[];
 }
 
 export interface DBSonidoUbicacion{

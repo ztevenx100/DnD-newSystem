@@ -1,0 +1,44 @@
+/*
+    Created on : 2024/03/24
+    Author     : Steven
+*/
+:root{
+    --bg-btn: #F2AF29;
+    --bg-btn-active: #31E981;
+}
+
+.menu-sound-selector{
+    min-height: 50px;
+    overflow: auto;
+    display: flex;
+    flex-direction: row;
+    flex-basis: 50%;
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+    column-gap: 0.5rem;
+    & .sounds-item{
+        height: 3rem;
+        padding: 2px;
+        background-size: cover;
+        background-position: center;
+        border: 1px solid black;
+        border-radius: 5px;
+        transition-property: background;
+        transition-duration: .5s;
+        transition-timing-function: ease;
+        & svg{
+            transition-property: transform;
+            transition-duration: .5s;
+            transition-timing-function: ease;
+        }
+        &:hover svg{
+            transform: scale(1.1);
+        }
+        &.active{
+            background: var(--bg-btn-active);
+            & svg{
+                transform: scale(1.1);
+            }
+        }
+    }
+}

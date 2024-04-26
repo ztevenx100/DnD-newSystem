@@ -301,21 +301,7 @@ const WorldMap: React.FC = () => {
                                                                     <header className='flex justify-between items-center border-b border-black py-1'>
                                                                         <h6 className='text-black font-semibold '>Listado de canciones</h6>
                                                                     </header>
-                                                                    <menu className='menu-selector'>
-                                                                        <BtnMenuSound list={elem.lista_sonidos} iconList={itemsTypeUbgSvg} />
-                                                                        { elem.lista_sonidos?.map((sound, index) => (
-                                                                            <Tooltip key={index} className="bg-dark text-light px-2 py-1" placement="top" content={ sound.son_sonidos?.son_nombre } >
-                                                                                <button 
-                                                                                    type="button" 
-                                                                                    key={sound.sub_icon} 
-                                                                                    className={'sounds-item flex justify-center items-center '} 
-                                                                                    // onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}
-                                                                                >
-                                                                                    {getIcon('type' + sound.sub_icon, itemsTypeUbgSvg)}
-                                                                                </button>
-                                                                            </Tooltip>
-                                                                        ))}
-                                                                    </menu>
+                                                                    <BtnMenuSound list={elem.lista_sonidos} iconList={itemsTypeUbgSvg} />
                                                                 </aside>
                                                             </PopoverContent>
                                                         </Popover>

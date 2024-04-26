@@ -22,20 +22,24 @@ const BtnMenuSound: React.FC<BtnMenuSoundProps> = ({list, iconList}) => {
     const [buttonActive, setButtonActive] = useState<boolean>(false);
     const [currentAudioIndex, setCurrentAudioIndex] = useState<string>('');
     const [sound, setSound] = useState<HTMLAudioElement>();
-    const [volumen, setVolumen] = useState<number>(1);
+    //const [volumen, setVolumen] = useState<number>(1);
 
     const playSound = (soundUrl:string, type:string, vol?:number) => {
-        vol = (vol !== null && vol !== undefined)?vol:(volumen !== null && volumen !== undefined)?volumen:1;
+        vol = (vol !== null && vol !== undefined)?vol:1;
 
         if (soundUrl) {
             const audio = new Audio(soundUrl);
             //console.log('playSound ', audio, ' type ', type);
+            console.log('playSound: ', soundUrl);
+            
             setSound(audio);
+            
             
             if (!isPlaying) {
                 audio.volume = vol;
                 audio.loop = true;
                 audio.play();
+                
                 setIsPlaying(true);
                 setButtonActive(true);
                 setCurrentAudioIndex(type);

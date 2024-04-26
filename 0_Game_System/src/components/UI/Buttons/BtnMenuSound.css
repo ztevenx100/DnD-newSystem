@@ -7,8 +7,8 @@
     --bg-btn-active: #31E981;
 }
 
-.menu-selector{
-    height: 150px;
+.menu-sound-selector{
+    min-height: 50px;
     overflow: auto;
     display: flex;
     flex-direction: row;
@@ -17,6 +17,7 @@
     row-gap: 0.5rem;
     column-gap: 0.5rem;
     & .sounds-item{
+        height: 3rem;
         padding: 2px;
         background-size: cover;
         background-position: center;

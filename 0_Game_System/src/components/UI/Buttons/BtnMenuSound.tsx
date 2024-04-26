@@ -69,7 +69,7 @@ const BtnMenuSound: React.FC<BtnMenuSoundProps> = ({list, iconList}) => {
 
     return (
       <>
-        <menu className='menu-selector'>
+        <menu className='menu-sound-selector mt-2'>
             {list.map((elem, index) => (
                 <Tooltip key={index} className="bg-dark text-light px-2 py-1" placement="top" content={ elem.son_sonidos?.son_nombre } >
                     <button 

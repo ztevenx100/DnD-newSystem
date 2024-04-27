@@ -7,6 +7,7 @@ const SvgWind = (props: SVGProps<SVGSVGElement>) => (
     height="1em"
     {...props}
   >
+    <title>{"Wind"}</title>
     <path
       d="M0 .68h24v24H0z"
       style={{

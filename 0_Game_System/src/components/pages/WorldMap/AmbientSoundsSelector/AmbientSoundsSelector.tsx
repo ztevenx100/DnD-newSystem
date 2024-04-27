@@ -5,22 +5,14 @@ import { Popover, PopoverHandler, PopoverContent, Tooltip } from "@material-tail
 import "./AmbientSoundsSelector.css";
 
 // Interfaces
-import { Components } from '../../../interfaces/typesCharacterSheet';
 import { DBSonidoUbicacion } from '../../../interfaces/dbTypes';
+import { itemsSoundsSvg } from '../../../interfaces/iconInterface';
 
 // Funciones
 import {getIcon} from '../../../utils/utilIcons';
 
 // Images
 import SvgWeather from '../../../UI/Icons/SvgWeather';
-import SvgRain from '../../../UI/Icons/SvgRain';
-import SvgStorm from '../../../UI/Icons/SvgStorm';
-import SvgWind from '../../../UI/Icons/SvgWind';
-import SvgNight from '../../../UI/Icons/SvgNight';
-import SvgBonfire from '../../../UI/Icons/SvgBonfire';
-import SvgBird from '../../../UI/Icons/SvgBird';
-import SvgWave from '../../../UI/Icons/SvgWave';
-import SvgHeart from '../../../UI/Icons/SvgHeart';
 
 interface AmbientSoundsSelectorProps{
     title: string;
@@ -34,17 +26,6 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
     const [currentAudioIndex, setCurrentAudioIndex] = useState<string>('');
     const [sound, setSound] = useState<HTMLAudioElement>();
     const [volumen, setVolumen] = useState<number>(1);
-
-    const itemsSoundsSvg: Components = {
-        typeF: SvgBonfire,
-        typeL: SvgRain,
-        typeN: SvgNight,
-        typeO: SvgWave,
-        typeP: SvgBird,
-        typeT: SvgStorm,
-        typeV: SvgWind,
-        typeC: SvgHeart,
-    }
 
     useEffect(() => {
         getList();

@@ -9,8 +9,9 @@ import "uno.css";
 import "./WorldMap.css";
 
 // Interfaces
-import { Components, stageImageList } from '../../interfaces/typesCharacterSheet';
+import { stageImageList } from '../../interfaces/typesCharacterSheet';
 import { DBEscenario, DBMapamundi, DBSonidoUbicacion } from '../../interfaces/dbTypes';
+import { itemsTypeUbgSvg, itemsSoundsSvg } from '../../interfaces/iconInterface';
 // Components
 import ScreenLoader from '../../../components/UI/ScreenLoader/ScreenLoader';
 import StageSelector from './StageSelector/StageSelector';
@@ -28,10 +29,6 @@ import SvgSong from '../../../components/UI/Icons/SvgSong';
 import SvgEnemy from '../../../components/UI/Icons/SvgEnemy';
 import SvgGroup from '../../../components/UI/Icons/SvgGroup';
 import SvgTaskList from '../../../components/UI/Icons/SvgTaskList';
-import SvgArmory from '../../../components/UI/Icons/SvgArmory';
-import SvgCave from '../../../components/UI/Icons/SvgCave';
-import SvgRuins from '../../../components/UI/Icons/SvgRuins';
-import SvgTavern from '../../../components/UI/Icons/SvgTavern';
 
 const WorldMap: React.FC = () => {
     // Cambia la imagen de fondo cuando el componente se monta
@@ -51,12 +48,6 @@ const WorldMap: React.FC = () => {
     //const [newRecord, setNewRecord] = useState<boolean>(true);
     //const handleOpen = () => setOpen(!open);
 
-    const itemsTypeUbgSvg: Components = {
-        typeA: SvgArmory,
-        typeC: SvgCave,
-        typeR: SvgRuins,
-        typeT: SvgTavern,
-    }
 
     const emptyTemplate: DBMapamundi = {
         mmu_id: '', 
@@ -301,7 +292,7 @@ const WorldMap: React.FC = () => {
                                                                     <header className='flex justify-between items-center border-b border-black py-1'>
                                                                         <h6 className='text-black font-semibold '>Listado de canciones</h6>
                                                                     </header>
-                                                                    <BtnMenuSound list={elem.lista_sonidos} iconList={itemsTypeUbgSvg} />
+                                                                    <BtnMenuSound list={elem.lista_sonidos} iconList={itemsSoundsSvg} />
                                                                 </aside>
                                                             </PopoverContent>
                                                         </Popover>

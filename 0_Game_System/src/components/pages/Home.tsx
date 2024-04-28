@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useBackground } from '../../App';
 
 import "./Home.css";
 import homeBackground from '../../assets/img/jpg/bg-home-03.jpg';
 
 const Home: React.FC = () => {
+  // Cambia la imagen de fondo cuando el componente se monta
   const { setBackgroundImage } = useBackground();
 
-  // Cambia la imagen de fondo cuando el componente se monta
-  setBackgroundImage(homeBackground);
+  useEffect(() => {
+    setBackgroundImage(homeBackground);
+ }, []);
+
 
   return (
     <div className="bg-home">

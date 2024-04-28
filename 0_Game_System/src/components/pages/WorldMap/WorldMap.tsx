@@ -22,7 +22,7 @@ import BtnMenuSound from '../../../components/UI/Buttons/BtnMenuSound';
 import {getIcon} from '../../utils/utilIcons';
 
 // Images
-import bgMapWorld from '../../../assets/img/jpg/bg-mapWorld.webp';
+import bgMapWorld from '../../../assets/img/webp/bg-mapWorld.webp';
 import SvgPerson from '../../../components/UI/Icons/SvgPerson';
 import SvgLookImage from '../../../components/UI/Icons/SvgLookImage';
 import SvgSong from '../../../components/UI/Icons/SvgSong';
@@ -33,7 +33,6 @@ import SvgTaskList from '../../../components/UI/Icons/SvgTaskList';
 const WorldMap: React.FC = () => {
     // Cambia la imagen de fondo cuando el componente se monta
     const { setBackgroundImage } = useBackground();
-    setBackgroundImage(bgMapWorld);
     
     const [geographicalMap, setGeographicalMap] = useState<DBMapamundi[][]>([]);
     const [listItemsMap, setListItemsMap] = useState<DBMapamundi[]>([]);
@@ -62,6 +61,8 @@ const WorldMap: React.FC = () => {
     };
 
     useEffect(() => {
+        setBackgroundImage(bgMapWorld);
+
         const loadInfo = async () => {
             const templateMap: DBMapamundi[][] = buildTemplateMap();
             console.log('params: ',params);

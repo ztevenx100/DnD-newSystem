@@ -29,7 +29,6 @@ import SvgDeleteItem from '../../../components/UI/Icons/SvgDeleteItem';
 const CharacterSheet: React.FC = () => {
    // Cambia la imagen de fondo cuando el componente se monta
    const { setBackgroundImage } = useBackground();
-   setBackgroundImage(homeBackground);
 
    // Varibles - estados
    const [playerName, setPlayerName] = useState<string>('');
@@ -111,6 +110,8 @@ const CharacterSheet: React.FC = () => {
     }, [skillsTypes]);
 
    useEffect(() => {
+      setBackgroundImage(homeBackground);
+      
       const loadInfo = async () => {
          document.documentElement.scrollTop = 0;
          if(params.id === null || params.id ===  undefined){

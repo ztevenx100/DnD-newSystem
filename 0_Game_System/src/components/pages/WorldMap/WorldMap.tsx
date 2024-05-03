@@ -182,7 +182,7 @@ const WorldMap: React.FC = () => {
         //console.log('getSonuds - soundsList: ', soundsList);
     }
 
-    function openNewWindowImage(idUbi:string | undefined){
+    function openNewWindowImageUbi(idUbi:string | undefined){
         if(idUbi === undefined) return;
         
         const path:string = 'ubicaciones/' + idUbi + '.webp';
@@ -193,11 +193,15 @@ const WorldMap: React.FC = () => {
         //console.log('openNewWindowImage :', data);
 
         if (data !== null) {
-            let myWindow = window.open("", "MsgWindow", "width=800,height=800");
-            let imageHtml = "<img src='" + data.publicUrl + '?' + randomValueRefreshImage + "' style='position: absolute; top:0; left:0; width:100%; height: 100%; object-fit: cover; object-position: center top; overflow:hidden; margin: 0;' alt='Ubicacion' />";
-            myWindow?.document.write(imageHtml);
+            openNewWindowImage(data.publicUrl);
         }
         return true;
+    }
+
+    function openNewWindowImage(url: string){
+        const myWindow = window.open("", "MsgWindow", "width=800,height=800");
+        let imageHtml = "<img src='" + url + '?' + randomValueRefreshImage + "' style='position: absolute; top:0; left:0; width:100%; height: 100%; object-fit: cover; object-position: center top; overflow:hidden; margin: 0;' alt='Ubicacion' />";
+        myWindow?.document.write(imageHtml);
     }
 
     const handleImageStageChange = (idEsc: string) => {
@@ -254,21 +258,58 @@ const WorldMap: React.FC = () => {
                                                 <header className='flex justify-between items-center border-b border-black py-1'>
                                                     <h6 className='text-black font-semibold '>{elem.ubi_ubicacion?.ubi_nombre}</h6>
                                                     <Tooltip className="bg-dark text-light px-2 py-1" placement="top" content={ "Imagen de la ubicación" } >
-                                                        <button type="button" className='btn-card-ubi-header' onClick={() => openNewWindowImage(elem.mmu_ubi)} >
+                                                        <button type="button" className='btn-card-ubi-header' onClick={() => openNewWindowImageUbi(elem.mmu_ubi)} >
                                                             <SvgLookImage width={20} height={20} />
                                                         </button>
                                                     </Tooltip>
                                                 </header>
                                                 <menu className='py-0'>
                                                     <div className='flex justify-between py-1' >
-                                                        <Tooltip className="bg-dark text-light px-2 py-1" placement="top" content={ "Encargado del local" } >
-                                                            <button type="button" className='btn-card-ubi'>
-                                                                <SvgPerson width={20} height={20} />
-                                                            </button>
-                                                        </Tooltip>
+                                                        <Popover placement="right" offset={{mainAxis: 100, crossAxis: 0, alignmentAxis:10}}>
+                                                            <PopoverHandler>
+                                                                <button type="button" className='btn-card-ubi'><SvgPerson width={20} height={20} /></button>
+                                                            </PopoverHandler>
+                                                            <PopoverContent className='popover-panel' placeholder=''>
+                                                                <aside className='card-info-character'>
+                                                                    <header className='flex justify-between items-center border-b border-black py-1 mb-1'>
+                                                                        <h6 className='text-black font-semibold '>Encargado del local</h6>
+                                                                        <button type="button" className='btn-card-character' onClick={() => openNewWindowImageUbi(elem.mmu_ubi)} >
+                                                                            <SvgLookImage width={20} height={20} />
+                                                                        </button>
+                                                                    </header>
+                                                                    <h6 className='text-center'>Nombre</h6>
+                                                                    <p>Raza: </p>
+                                                                    <p>Clase: </p>
+                                                                    <p>Trabajo: </p>
+                                                                    <p>Edad: </p>
+                                                                    <table className='mt-1'>
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th>STR</th>
+                                                                                <th>INT</th>
+                                                                                <th>DEX</th>
+                                                                                <th>CON</th>
+                                                                                <th>PER</th>
+                                                                                <th>CHA</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                <td>0</td>
+                                                                                <td>0</td>
+                                                                                <td>0</td>
+                                                                                <td>0</td>
+                                                                                <td>0</td>
+                                                                                <td>0</td>
+                                                                            </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </aside>
+                                                            </PopoverContent>
+                                                        </Popover>
                                                     </div>
                                                     <div className='flex justify-between py-1' >
-                                                        <Popover key={rowIndex + colIndex} placement="right" offset={{mainAxis: 100, crossAxis: 0, alignmentAxis:10}}>
+                                                        <Popover placement="right" offset={{mainAxis: 100, crossAxis: 0, alignmentAxis:10}}>
                                                             <PopoverHandler>
                                                                 <button type="button" className='btn-card-ubi'><SvgTaskList height={20} width={20} /></button>
                                                             </PopoverHandler>
@@ -284,7 +325,7 @@ const WorldMap: React.FC = () => {
                                                         <button type="button" className='btn-card-ubi'><SvgGroup height={20} width={20} /></button>
                                                     </div>
                                                     <div className='flex justify-between py-1' >
-                                                        <Popover key={rowIndex + colIndex} placement="right" offset={{mainAxis: 100, crossAxis: 0, alignmentAxis:10}}>
+                                                        <Popover placement="right" offset={{mainAxis: 100, crossAxis: 0, alignmentAxis:10}}>
                                                             <PopoverHandler>
                                                                 <button type="button" className='btn-card-ubi'><SvgSong height={20} width={20} /></button>
                                                             </PopoverHandler>

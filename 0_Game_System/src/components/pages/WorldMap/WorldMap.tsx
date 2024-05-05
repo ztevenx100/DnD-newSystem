@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import supabase from '../../database/supabase';
 
-import { useBackground } from '../../../App';
 import { Popover, PopoverHandler, PopoverContent, Tooltip } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
 import "uno.css";
@@ -30,9 +29,11 @@ import SvgEnemy from '../../../components/UI/Icons/SvgEnemy';
 import SvgGroup from '../../../components/UI/Icons/SvgGroup';
 import SvgTaskList from '../../../components/UI/Icons/SvgTaskList';
 
-const WorldMap: React.FC = () => {
-    // Cambia la imagen de fondo cuando el componente se monta
-    const { setBackgroundImage } = useBackground();
+interface WorldMapProps {
+    changeBackground: (newBackground: string) => void;
+}
+
+const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     
     const [geographicalMap, setGeographicalMap] = useState<DBMapamundi[][]>([]);
     const [listItemsMap, setListItemsMap] = useState<DBMapamundi[]>([]);
@@ -61,7 +62,7 @@ const WorldMap: React.FC = () => {
     };
 
     useEffect(() => {
-        setBackgroundImage(bgMapWorld);
+        changeBackground(bgMapWorld);
 
         const loadInfo = async () => {
             const templateMap: DBMapamundi[][] = buildTemplateMap();

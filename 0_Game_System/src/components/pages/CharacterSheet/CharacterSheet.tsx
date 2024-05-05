@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import supabase from '../../database/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
-import { useBackground } from '../../../App';
+//import { useBackground } from '../../../App';
 import { Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
 import "uno.css";
@@ -19,16 +19,19 @@ import FormInputStats from './FormInputStats/FormInputStats';
 import FormInputSkillsRing from './FormInputSkillsRing/FormInputSkillsRing';
 import FormImageFile from './FormImageFile/FormImageFile';
 // Images
-import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
+import mainBackground from '../../../assets/img/webp/bg-home-02.webp';
 import ScreenLoader from '../../../components/UI/ScreenLoader/ScreenLoader';
 import SvgCharacter from '../../../components/UI/Icons/SvgCharacter';
 import SvgSaveCharacter from '../../../components/UI/Icons/SvgSaveCharacter';
 import SvgD4Roll from '../../../components/UI/Icons/SvgD4Roll';
 import SvgDeleteItem from '../../../components/UI/Icons/SvgDeleteItem';
 
-const CharacterSheet: React.FC = () => {
+interface CharacterSheetProps {
+   changeBackground: (newBackground: string) => void;
+}
+
+const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => {
    // Cambia la imagen de fondo cuando el componente se monta
-   const { setBackgroundImage } = useBackground();
 
    // Varibles - estados
    const [playerName, setPlayerName] = useState<string>('');
@@ -110,7 +113,7 @@ const CharacterSheet: React.FC = () => {
     }, [skillsTypes]);
 
    useEffect(() => {
-      setBackgroundImage(homeBackground);
+      changeBackground(mainBackground);
       
       const loadInfo = async () => {
          document.documentElement.scrollTop = 0;

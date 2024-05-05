@@ -4,7 +4,9 @@
 
 
 .bg-base{
+  max-height: 100vh;
   background-size: cover;
+  background-position: center;
   object-fit: contain;
 }
 

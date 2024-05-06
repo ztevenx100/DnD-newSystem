@@ -1,7 +1,7 @@
 import React, { ChangeEvent } from 'react';
 
 
-import { Option } from '../../../interfaces/typesCharacterSheet';
+import { Option } from '@interfaces/typesCharacterSheet';
 
 // Definir el tipo para los elementos del array 'options'
 

@@ -1,5 +1,5 @@
 import React, { ChangeEvent,useEffect } from 'react';
-import { SkillTypes, SkillsAcquired} from '../../../interfaces/typesCharacterSheet';
+import { SkillTypes, SkillsAcquired} from '@interfaces/typesCharacterSheet';
 
 
 interface RingTypes {

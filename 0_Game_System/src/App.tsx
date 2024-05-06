@@ -1,18 +1,18 @@
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import React, { useState } from 'react';
 
-import homeBackground from './assets/img/webp/bg-home-01.webp';
+import homeBackground from '@img/webp/bg-home-01.webp';
 
-import Navbar from './components/UI/Navbar/Navbar';
-import Footer from './components/UI/Footer/Footer';
-import BackgroundChanger from './components/UI/Background/BackgroundChanger';
-import BtnBackToTop from './components/UI/Buttons/BtnBackToTop';
-import Home from './components/pages/Home';
-import CharacterSheet from './components/pages/CharacterSheet/CharacterSheet';
-import UserCharacters from './components/pages/UserCharacters/UserCharacters';
-import SystemsGameList from './components/pages/SystemsGameList/SystemsGameList';
-import SystemGameElement from './components/pages/SystemsGameList/SystemGameElement/SystemGameElement';
-import WorldMap from './components/pages/WorldMap/WorldMap';
+import Navbar from '@UI/Navbar/Navbar';
+import Footer from '@UI/Footer/Footer';
+import BackgroundChanger from '@UI/Background/BackgroundChanger';
+import BtnBackToTop from '@UI/Buttons/BtnBackToTop';
+import Home from '@pages/Home';
+import CharacterSheet from '@pages/CharacterSheet/CharacterSheet';
+import UserCharacters from '@pages/UserCharacters/UserCharacters';
+import SystemsGameList from '@pages/SystemsGameList/SystemsGameList';
+import SystemGameElement from '@pages/SystemsGameList/SystemGameElement/SystemGameElement';
+import WorldMap from '@pages/WorldMap/WorldMap';
 
 import "@unocss/reset/tailwind.css";
 import "uno.css";

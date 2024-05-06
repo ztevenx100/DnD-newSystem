@@ -1,8 +1,8 @@
 import React from 'react';
 
-import '../../../App.css';
+import '@/App.css';
 
-import homeBackground from '../../../assets/img/jpg/bg-home-01.jpg';
+import homeBackground from '@img/jpg/bg-home-01.jpg';
 
 // Interfaz para las propiedades del componente BackgroundChanger
 interface BackgroundChangerProps {

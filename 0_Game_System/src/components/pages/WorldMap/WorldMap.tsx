@@ -8,26 +8,26 @@ import "uno.css";
 import "./WorldMap.css";
 
 // Interfaces
-import { stageImageList } from '../../interfaces/typesCharacterSheet';
-import { DBEscenario, DBMapamundi, DBSonidoUbicacion } from '../../interfaces/dbTypes';
-import { itemsTypeUbgSvg, itemsSoundsSvg } from '../../interfaces/iconInterface';
+import { stageImageList } from '@interfaces/typesCharacterSheet';
+import { DBEscenario, DBMapamundi, DBSonidoUbicacion } from '@interfaces/dbTypes';
+import { itemsTypeUbgSvg, itemsSoundsSvg } from '@interfaces/iconInterface';
 // Components
-import ScreenLoader from '../../../components/UI/ScreenLoader/ScreenLoader';
+import ScreenLoader from '@UI/ScreenLoader/ScreenLoader';
 import StageSelector from './StageSelector/StageSelector';
 import AmbientSoundsSelector from './AmbientSoundsSelector/AmbientSoundsSelector';
-import BtnMenuSound from '../../../components/UI/Buttons/BtnMenuSound';
+import BtnMenuSound from '@UI/Buttons/BtnMenuSound';
 
 // Funciones
-import {getIcon} from '../../utils/utilIcons';
+import {getIcon} from '@utils/utilIcons';
 
 // Images
-import bgMapWorld from '../../../assets/img/webp/bg-mapWorld.webp';
-import SvgPerson from '../../../components/UI/Icons/SvgPerson';
-import SvgLookImage from '../../../components/UI/Icons/SvgLookImage';
-import SvgSong from '../../../components/UI/Icons/SvgSong';
-import SvgEnemy from '../../../components/UI/Icons/SvgEnemy';
-import SvgGroup from '../../../components/UI/Icons/SvgGroup';
-import SvgTaskList from '../../../components/UI/Icons/SvgTaskList';
+import bgMapWorld from '@img/webp/bg-mapWorld.webp';
+import SvgPerson from '@UI/Icons/SvgPerson';
+import SvgLookImage from '@UI/Icons/SvgLookImage';
+import SvgSong from '@UI/Icons/SvgSong';
+import SvgEnemy from '@UI/Icons/SvgEnemy';
+import SvgGroup from '@UI/Icons/SvgGroup';
+import SvgTaskList from '@UI/Icons/SvgTaskList';
 
 interface WorldMapProps {
     changeBackground: (newBackground: string) => void;

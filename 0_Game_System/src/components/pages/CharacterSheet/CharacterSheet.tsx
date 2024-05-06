@@ -1,17 +1,17 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import supabase from '../../database/supabase';
+import supabase from '@database/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
-//import { useBackground } from '../../../App';
+//import { useBackground } from '@/App';
 import { Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./CharacterSheet.css";
 
 // Interfaces
-import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields, Option } from '../../interfaces/typesCharacterSheet';
-import { DBHabilidadPersonaje, DBPersonajesUsuario, DBSistemaJuego } from '../../interfaces/dbTypes';
+import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields, Option } from '@interfaces/typesCharacterSheet';
+import { DBHabilidadPersonaje, DBPersonajesUsuario, DBSistemaJuego } from '@interfaces/dbTypes';
 // Components
 import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
 import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
@@ -19,12 +19,12 @@ import FormInputStats from './FormInputStats/FormInputStats';
 import FormInputSkillsRing from './FormInputSkillsRing/FormInputSkillsRing';
 import FormImageFile from './FormImageFile/FormImageFile';
 // Images
-import mainBackground from '../../../assets/img/webp/bg-home-02.webp';
-import ScreenLoader from '../../../components/UI/ScreenLoader/ScreenLoader';
-import SvgCharacter from '../../../components/UI/Icons/SvgCharacter';
-import SvgSaveCharacter from '../../../components/UI/Icons/SvgSaveCharacter';
-import SvgD4Roll from '../../../components/UI/Icons/SvgD4Roll';
-import SvgDeleteItem from '../../../components/UI/Icons/SvgDeleteItem';
+import mainBackground from '@img/webp/bg-home-02.webp';
+import ScreenLoader from '@UI/ScreenLoader/ScreenLoader';
+import SvgCharacter from '@Icons/SvgCharacter';
+import SvgSaveCharacter from '@Icons/SvgSaveCharacter';
+import SvgD4Roll from '@Icons/SvgD4Roll';
+import SvgDeleteItem from '@Icons/SvgDeleteItem';
 
 interface CharacterSheetProps {
    changeBackground: (newBackground: string) => void;

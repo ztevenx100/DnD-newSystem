@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 
 import "./Home.css";
-import homeBackground from '../../assets/img/webp/bg-home-03.webp';
+import homeBackground from '@img/webp/bg-home-03.webp';
 
 interface HomeProps {
   changeBackground: (newBackground: string) => void;

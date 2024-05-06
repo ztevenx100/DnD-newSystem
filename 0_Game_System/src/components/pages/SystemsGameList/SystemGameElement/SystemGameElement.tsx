@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import supabase from '../../../database/supabase';
+import supabase from '@database/supabase';
 
-import { DBSistemaJuego } from '../../../interfaces/dbTypes';
+import { DBSistemaJuego } from '@interfaces/dbTypes';
 
 import { Card } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";

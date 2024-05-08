@@ -84,6 +84,7 @@ export interface DBMapamundi{
   mmu_pos_x: number;
   mmu_pos_y: number;
   lista_sonidos: DBSonidoUbicacion[];
+  lista_pnj: DBPersonajeNoJugable[];
 }
 
 export interface DBSonidoUbicacion{
@@ -97,4 +98,20 @@ export interface DBSonidoUbicacion{
   sub_sound_url: string;
   sub_tipo: string;
   sub_icon: string;
+}
+
+export interface DBPersonajeNoJugable{
+  pnj_id: string;
+  pnj_nombre: string;
+  pnj_raza: string;
+  pnj_clase: string;
+  pnj_trabajo: string;
+  pnj_edad: number;
+  pnj_tipo: string;
+  pnj_str: number;
+  pnj_int: number;
+  pnj_dex: number;
+  pnj_con: number;
+  pnj_cha: number;
+  pnj_per: number;
 }

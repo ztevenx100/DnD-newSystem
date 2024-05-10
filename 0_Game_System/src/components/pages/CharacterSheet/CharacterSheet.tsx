@@ -117,6 +117,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       
       const loadInfo = async () => {
          document.documentElement.scrollTop = 0;
+         if(params.user === null || params.user ===  undefined){
+            navigate('/UserCharacters');
+         }
          if(params.id === null || params.id ===  undefined){
             setNewRecord(true);
          } else {

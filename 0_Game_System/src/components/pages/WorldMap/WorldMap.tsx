@@ -109,6 +109,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             await Promise.all(
                 data.map(async (elem) => {
                     // console.log('elem', elem.mmu_ubi);
+                    let npcList: DBPersonajeNoJugable[] = [];
                     
                     if(updatedImageStageList.length === 0){
                         updatedImageStageList.push({id: elem.mmu_esc, url:''});
@@ -117,7 +118,8 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                     }
                     try {
                         elem.lista_sonidos = await getSoundList(elem.mmu_ubi);
-                        elem.lista_pnj = await getMainNpc(elem.mmu_ubi);
+                        npcList = await getMainNpc(elem.mmu_ubi)
+                        elem.lista_pnj = npcList;
                         //console.log('getMap - pnj_encargado: ',templateMap[elem.mmu_pos_y][elem.mmu_pos_x].pnj_encargado);
                     } catch (error) {
                         //templateMap[elem.mmu_pos_y][elem.mmu_pos_x].lista_sonidos = [];
@@ -194,9 +196,10 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         if (ubiId == undefined || ubiId == null) return character;
 
         const { data } = await supabase.from("pnj_personaje_no_jugable").select('pnj_id, pnj_nombre, pnj_raza, pnj_clase, pnj_trabajo, pnj_edad, pnj_tipo, pnj_str, pnj_int, pnj_dex, pnj_con, pnj_cha, pnj_per')
-        .eq('pnj_tipo','M')
+        //.eq('pnj_tipo','M')
         .eq('pnj_estado','A')
         .eq('pnj_ubi',ubiId)
+        .order('pnj_tipo', {ascending: true})
         .returns<DBPersonajeNoJugable[]>();
 
         if (data !== null) {
@@ -319,7 +322,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                                                                                 <SvgLookImage width={20} height={20} />
                                                                             </button>
                                                                         </header>
-                                                                        <h6 className='text-center'>{elem.lista_pnj[0].pnj_nombre}</h6>
+                                                                        <h6 className='text-center text-black font-bold'>{elem.lista_pnj[0].pnj_nombre}</h6>
                                                                         <p>Raza: {elem.lista_pnj[0].pnj_raza}</p>
                                                                         <p>Clase: {elem.lista_pnj[0].pnj_clase}</p>
                                                                         <p>Trabajo: {elem.lista_pnj[0].pnj_trabajo}</p>
@@ -365,7 +368,58 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                                                             </PopoverContent>
                                                         </Popover>
                                                         <button type="button" className='btn-card-ubi'><SvgEnemy height={20} width={20} /></button>
-                                                        <button type="button" className='btn-card-ubi'><SvgGroup height={20} width={20} /></button>
+                                                        {elem.lista_pnj && elem.lista_pnj.length > 1 && (
+                                                            <Popover placement="right" offset={{mainAxis: 30, crossAxis: 0, alignmentAxis:10}}>
+                                                                <PopoverHandler>
+                                                                    <button type="button" className='btn-card-ubi'><SvgGroup height={20} width={20} /></button>
+                                                                </PopoverHandler>
+                                                                <PopoverContent className='popover-panel' placeholder=''>
+                                                                    <article className='card-ubi-info character-popover'>
+                                                                        <header className='flex justify-between items-center border-b border-black py-1 mb-2'>
+                                                                            <h6 className='text-black font-semibold '>Listado de personajes</h6>
+                                                                        </header>
+                                                                        {elem.lista_pnj.slice(1)?.map((character, index) => (
+                                                                            <Tooltip key={index} className="bg-dark text-light px-2 py-1" placement="bottom" 
+                                                                                content={ 
+                                                                                    <div className="w-50 p-2">
+                                                                                        <p>Raza: {character.pnj_raza}</p>
+                                                                                        <p>Clase: {character.pnj_clase}</p>
+                                                                                        <p>Trabajo: {character.pnj_trabajo}</p>
+                                                                                        <p>Edad: {character.pnj_edad}</p>
+                                                                                        <table className='w-full mt-1'>
+                                                                                            <thead>
+                                                                                                <tr>
+                                                                                                    <th>STR</th>
+                                                                                                    <th>INT</th>
+                                                                                                    <th>DEX</th>
+                                                                                                    <th>CON</th>
+                                                                                                    <th>PER</th>
+                                                                                                    <th>CHA</th>
+                                                                                                </tr>
+                                                                                            </thead>
+                                                                                            <tbody>
+                                                                                                <tr>
+                                                                                                    <td>{character.pnj_str}</td>
+                                                                                                    <td>{character.pnj_int}</td>
+                                                                                                    <td>{character.pnj_dex}</td>
+                                                                                                    <td>{character.pnj_con}</td>
+                                                                                                    <td>{character.pnj_per}</td>
+                                                                                                    <td>{character.pnj_cha}</td>
+                                                                                                </tr>
+                                                                                            </tbody>
+                                                                                        </table>
+                                                                                    </div>
+                                                                                } 
+                                                                            >
+                                                                                <button type="button" className='btn-character' onClick={() => openNewWindowImagePnj(character.pnj_id)} >
+                                                                                {character.pnj_nombre}
+                                                                                </button>
+                                                                            </Tooltip>
+                                                                        ))}
+                                                                    </article>
+                                                                </PopoverContent>
+                                                            </Popover>
+                                                        )}
                                                     </div>
                                                     <div className='flex justify-between py-1' >
                                                         <Popover placement="right" offset={{mainAxis: 100, crossAxis: 0, alignmentAxis:10}}>

@@ -13,6 +13,7 @@ import UserCharacters from '@pages/UserCharacters/UserCharacters';
 import SystemsGameList from '@pages/SystemsGameList/SystemsGameList';
 import SystemGameElement from '@pages/SystemsGameList/SystemGameElement/SystemGameElement';
 import WorldMap from '@pages/WorldMap/WorldMap';
+import ErrorPage from '@pages/ErrorPage/ErrorPage';
 
 import "@unocss/reset/tailwind.css";
 import "uno.css";
@@ -33,24 +34,33 @@ const App: React.FC = () => {
       children:[
         { index: true, element: <Home changeBackground={changeBackground} /> },
         {
+          id: "CharacterSheet",
           path: "/CharacterSheet/:user/:id?",
           element: <CharacterSheet changeBackground={changeBackground} />,
         },
         {
+          id: "UserCharacters",
           path: "/UserCharacters",
           element: <UserCharacters />,
         },
         {
+          id: "SystemsGameList",
           path: "/SystemsGameList",
           element: <SystemsGameList />,
         },
         {
+          id: "SystemGameElement",
           path: "/SystemGameElement/:id",
           element: <SystemGameElement />,
         },
         {
+          id: "WorldMap",
           path: "/WorldMap",
           element: <WorldMap changeBackground={changeBackground} />,
+        },
+        {
+          path: "*",
+          element: <ErrorPage/>,
         }
       ]
     },

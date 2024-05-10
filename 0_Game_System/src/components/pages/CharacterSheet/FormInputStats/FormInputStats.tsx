@@ -2,7 +2,7 @@ import React, { ChangeEvent } from 'react';
 
 import { Tooltip, Typography } from "@material-tailwind/react";
 
-import { InputStats } from '../../../interfaces/typesCharacterSheet';
+import { InputStats } from '@interfaces/typesCharacterSheet';
 
 interface InputNumberProps {
     inputStats: InputStats;

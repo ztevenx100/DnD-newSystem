@@ -4,11 +4,11 @@ import { Tooltip } from "@material-tailwind/react";
 import './BtnMenuSound.css';
 
 // Interfaces
-import { Components } from '../../interfaces/typesCharacterSheet';
-import { DBSonidoUbicacion } from '../../interfaces/dbTypes';
+import { Components } from '@interfaces/typesCharacterSheet';
+import { DBSonidoUbicacion } from '@interfaces/dbTypes';
 
 // Funciones
-import {getIcon} from '../../utils/utilIcons';
+import {getIcon} from '@utils/utilIcons';
 
 interface BtnMenuSoundProps{
     list: DBSonidoUbicacion[];

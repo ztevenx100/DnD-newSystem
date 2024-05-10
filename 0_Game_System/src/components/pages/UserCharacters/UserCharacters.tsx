@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import supabase from '../../database/supabase';
+import supabase from '@database/supabase';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, IconButton } from "@material-tailwind/react";
@@ -8,10 +8,10 @@ import "uno.css";
 import "./UserCharacters.css";
 
 // Interfaces
-import { DBPersonajesUsuario } from '../../interfaces/dbTypes';
+import { DBPersonajesUsuario } from '@interfaces/dbTypes';
 // Images
-import SvgAddCharacter from '../../../components/UI/Icons/SvgAddCharacter';
-import SvgDeleteItem from '../../../components/UI/Icons/SvgDeleteItem';
+import SvgAddCharacter from '@Icons/SvgAddCharacter';
+import SvgDeleteItem from '@Icons/SvgDeleteItem';
 
 const UserCharacters: React.FC = () => {
     const [list, setList] = useState<DBPersonajesUsuario[]>([]);

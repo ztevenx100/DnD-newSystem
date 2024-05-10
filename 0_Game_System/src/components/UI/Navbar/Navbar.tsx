@@ -2,10 +2,10 @@ import React from 'react';
 import { Outlet, NavLink } from "react-router-dom";
 import { Tooltip } from "@material-tailwind/react";
 
-import  SvgHome from '../../../components/UI/Icons/SvgHome';
-import  SvgPerson from '../../../components/UI/Icons/SvgPerson';
-import  SvgSystemList from '../../../components/UI/Icons/SvgSystemList';
-import  SvgMap from '../../../components/UI/Icons/SvgMap';
+import  SvgHome from '@Icons/SvgHome';
+import  SvgPerson from '@Icons/SvgPerson';
+import  SvgSystemList from '@Icons/SvgSystemList';
+import  SvgMap from '@Icons/SvgMap';
 
 import './Navbar.css';
 

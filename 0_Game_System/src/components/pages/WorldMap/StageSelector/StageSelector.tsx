@@ -4,9 +4,9 @@ import { Popover, PopoverHandler, PopoverContent } from "@material-tailwind/reac
 import "./StageSelector.css";
 
 // Interfaces
-import { stageImageList } from '../../../interfaces/typesCharacterSheet';
+import { stageImageList } from '@interfaces/typesCharacterSheet';
 // Images
-import SvgChangeItem from '../../../../components/UI/Icons/SvgChangeItem';
+import SvgChangeItem from '@Icons/SvgChangeItem';
 
 interface StageSelectorProps{
     title: string;

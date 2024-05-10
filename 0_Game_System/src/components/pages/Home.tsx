@@ -1,17 +1,17 @@
 import React, { useEffect } from 'react';
-import { useBackground } from '../../App';
 
 import "./Home.css";
-import homeBackground from '../../assets/img/jpg/bg-home-03.jpg';
+import homeBackground from '@img/webp/bg-home-03.webp';
 
-const Home: React.FC = () => {
+interface HomeProps {
+  changeBackground: (newBackground: string) => void;
+}
+
+const Home: React.FC<HomeProps> = ({ changeBackground }) => {
   // Cambia la imagen de fondo cuando el componente se monta
-  const { setBackgroundImage } = useBackground();
-
   useEffect(() => {
-    setBackgroundImage(homeBackground);
- }, []);
-
+    changeBackground(homeBackground);
+  }, []);
 
   return (
     <div className="bg-home">

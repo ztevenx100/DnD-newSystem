@@ -1,84 +1,72 @@
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
-import React, { createContext, useContext, useState } from 'react';
+import React, { useState } from 'react';
 
-import homeBackground from './assets/img/jpg/bg-home-01.jpg';
+import homeBackground from '@img/webp/bg-home-01.webp';
 
-import Navbar from './components/UI/Navbar/Navbar';
-import Footer from './components/UI/Footer/Footer';
-import BtnBackToTop from './components/UI/Buttons/BtnBackToTop';
-import Home from './components/pages/Home';
-import CharacterSheet from './components/pages/CharacterSheet/CharacterSheet';
-import UserCharacters from './components/pages/UserCharacters/UserCharacters';
-import SystemsGameList from './components/pages/SystemsGameList/SystemsGameList';
-import SystemGameElement from './components/pages/SystemsGameList/SystemGameElement/SystemGameElement';
-import WorldMap from './components/pages/WorldMap/WorldMap';
+import Navbar from '@UI/Navbar/Navbar';
+import Footer from '@UI/Footer/Footer';
+import BackgroundChanger from '@UI/Background/BackgroundChanger';
+import BtnBackToTop from '@UI/Buttons/BtnBackToTop';
+import Home from '@pages/Home';
+import CharacterSheet from '@pages/CharacterSheet/CharacterSheet';
+import UserCharacters from '@pages/UserCharacters/UserCharacters';
+import SystemsGameList from '@pages/SystemsGameList/SystemsGameList';
+import SystemGameElement from '@pages/SystemsGameList/SystemGameElement/SystemGameElement';
+import WorldMap from '@pages/WorldMap/WorldMap';
 
 import "@unocss/reset/tailwind.css";
 import "uno.css";
-import './App.css'
+import './App.css';
 
-// Cargar imagen de fondo
-
-interface BackgroundContextType {
-  backgroundImage: string;
-  setBackgroundImage: React.Dispatch<React.SetStateAction<string>>;
-}
-
-export const useBackground = () => {
-  const context = useContext(BackgroundContext);
-  if (!context) {
-    throw new Error('useBackground debe ser utilizado dentro de un BackgroundProvider');
-  }
-  return context;
-};
-
-export const BackgroundContext = createContext<BackgroundContextType | undefined>(undefined);
-
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Navbar />,
-    children:[
-      { index: true, element: <Home /> },
-      {
-        path: "/CharacterSheet/:user/:id?",
-        element: <CharacterSheet />,
-      },
-      {
-        path: "/UserCharacters",
-        element: <UserCharacters />,
-      },
-      {
-        path: "/SystemsGameList",
-        element: <SystemsGameList />,
-      },
-      {
-        path: "/SystemGameElement/:id",
-        element: <SystemGameElement />,
-      },
-      {
-        path: "/WorldMap",
-        element: <WorldMap />,
-      }
-    ]
-  },
-]);
-
-function App() {
+const App: React.FC = () => {
   // const [count, setCount] = useState(0)
-  const [backgroundImage, setBackgroundImage] = useState(homeBackground);
+  const [background, setBackground] = useState(homeBackground);
+
+  const changeBackground = (newBackground: string) => {
+    setBackground(newBackground);
+  };
+
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <Navbar />,
+      children:[
+        { index: true, element: <Home changeBackground={changeBackground} /> },
+        {
+          path: "/CharacterSheet/:user/:id?",
+          element: <CharacterSheet changeBackground={changeBackground} />,
+        },
+        {
+          path: "/UserCharacters",
+          element: <UserCharacters />,
+        },
+        {
+          path: "/SystemsGameList",
+          element: <SystemsGameList />,
+        },
+        {
+          path: "/SystemGameElement/:id",
+          element: <SystemGameElement />,
+        },
+        {
+          path: "/WorldMap",
+          element: <WorldMap changeBackground={changeBackground} />,
+        }
+      ]
+    },
+  ]);
 
   return (
-    <BackgroundContext.Provider value={{backgroundImage, setBackgroundImage }}>
-      <aside className="bg-base" style={{ backgroundImage: `url(${backgroundImage})`}} >
+    <>
+      <BackgroundChanger initialBackground={background} >
         <main className='container mx-auto bg-main' >
             <RouterProvider router={router} />
         </main>
         <BtnBackToTop/>
         <Footer />
-      </aside>
-    </BackgroundContext.Provider>
+      </BackgroundChanger>
+    </>
   )
 }
 
-export default App
+export default App;

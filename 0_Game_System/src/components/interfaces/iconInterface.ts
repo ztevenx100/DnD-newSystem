@@ -1,17 +1,17 @@
 // Imagenes
-import SvgArmory from '../UI/Icons/SvgArmory';
-import SvgBird from '../UI/Icons/SvgBird';
-import SvgBonfire from '../UI/Icons/SvgBonfire';
-import SvgCave from '../UI/Icons/SvgCave';
-import SvgHeart from '../UI/Icons/SvgHeart';
-import SvgNight from '../UI/Icons/SvgNight';
-import SvgRain from '../UI/Icons/SvgRain';
-import SvgRuins from '../UI/Icons/SvgRuins';
-import SvgSong from '../UI/Icons/SvgSong';
-import SvgStorm from '../UI/Icons/SvgStorm';
-import SvgTavern from '../UI/Icons/SvgTavern';
-import SvgWave from '../UI/Icons/SvgWave';
-import SvgWind from '../UI/Icons/SvgWind';
+import SvgArmory from '@Icons/SvgArmory';
+import SvgBird from '@Icons/SvgBird';
+import SvgBonfire from '@Icons/SvgBonfire';
+import SvgCave from '@Icons/SvgCave';
+import SvgHeart from '@Icons/SvgHeart';
+import SvgNight from '@Icons/SvgNight';
+import SvgRain from '@Icons/SvgRain';
+import SvgRuins from '@Icons/SvgRuins';
+import SvgSong from '@Icons/SvgSong';
+import SvgStorm from '@Icons/SvgStorm';
+import SvgTavern from '@Icons/SvgTavern';
+import SvgWave from '@Icons/SvgWave';
+import SvgWind from '@Icons/SvgWind';
 
 export type ComponentIcon = {
     [key: string]: React.ComponentType<any>;

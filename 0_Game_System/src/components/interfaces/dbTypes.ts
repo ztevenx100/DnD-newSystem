@@ -85,6 +85,7 @@ export interface DBMapamundi{
   mmu_pos_y: number;
   lista_sonidos: DBSonidoUbicacion[];
   lista_pnj: DBPersonajeNoJugable[];
+  lista_enemigo: DBEnemigo[];
 }
 
 export interface DBSonidoUbicacion{
@@ -114,4 +115,20 @@ export interface DBPersonajeNoJugable{
   pnj_con: number;
   pnj_cha: number;
   pnj_per: number;
+}
+
+export interface DBEnemigo{
+  ene_id: string;
+  ene_nombre: string;
+  ene_raza: string;
+  ene_clase: string;
+  ene_trabajo: string;
+  ene_edad: number;
+  ene_tipo: string;
+  ene_str: number;
+  ene_int: number;
+  ene_dex: number;
+  ene_con: number;
+  ene_cha: number;
+  ene_per: number;
 }

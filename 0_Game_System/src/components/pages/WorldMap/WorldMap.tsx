@@ -9,7 +9,7 @@ import "./WorldMap.css";
 
 // Interfaces
 import { stageImageList } from '@interfaces/typesCharacterSheet';
-import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable } from '@interfaces/dbTypes';
+import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo } from '@interfaces/dbTypes';
 import { itemsTypeUbgSvg, itemsSoundsSvg } from '@interfaces/iconInterface';
 // Components
 import ScreenLoader from '@UI/ScreenLoader/ScreenLoader';
@@ -60,6 +60,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         mmu_pos_y: 0,
         lista_sonidos: [],
         lista_pnj: [],
+        lista_enemigo: [],
     };
 
     useEffect(() => {
@@ -118,8 +119,9 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                     }
                     try {
                         elem.lista_sonidos = await getSoundList(elem.mmu_ubi);
-                        npcList = await getMainNpc(elem.mmu_ubi)
+                        npcList = await getNpc(elem.mmu_ubi);
                         elem.lista_pnj = npcList;
+                        elem.lista_enemigo = await getEnemy(elem.mmu_ubi);
                         //console.log('getMap - pnj_encargado: ',templateMap[elem.mmu_pos_y][elem.mmu_pos_x].pnj_encargado);
                     } catch (error) {
                         //templateMap[elem.mmu_pos_y][elem.mmu_pos_x].lista_sonidos = [];
@@ -190,7 +192,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         //console.log('getSonuds - soundsList: ', soundsList);
     }
 
-    async function getMainNpc(ubiId:string): Promise<DBPersonajeNoJugable[]>{
+    async function getNpc(ubiId:string): Promise<DBPersonajeNoJugable[]>{
         let character: DBPersonajeNoJugable[] = [];
         
         if (ubiId == undefined || ubiId == null) return character;
@@ -201,6 +203,26 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         .eq('pnj_ubi',ubiId)
         .order('pnj_tipo', {ascending: true})
         .returns<DBPersonajeNoJugable[]>();
+
+        if (data !== null) {
+            //console.log("getMainNpc - data: " , data, ' idUbi: ', ubiId);
+            character = data;
+        }
+
+        return character;
+    }
+
+    async function getEnemy(ubiId:string): Promise<DBEnemigo[]>{
+        let character: DBEnemigo[] = [];
+        
+        if (ubiId == undefined || ubiId == null) return character;
+
+        const { data } = await supabase.from("ene_enemigo").select('ene_id, ene_nombre, ene_raza, ene_clase, ene_trabajo, ene_edad, ene_tipo, ene_str, ene_int, ene_dex, ene_con, ene_cha, ene_per')
+        //.eq('pnj_tipo','M')
+        .eq('ene_estado','A')
+        .eq('ene_ubi',ubiId)
+        .order('ene_tipo', {ascending: true})
+        .returns<DBEnemigo[]>();
 
         if (data !== null) {
             //console.log("getMainNpc - data: " , data, ' idUbi: ', ubiId);
@@ -230,6 +252,22 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         if(idPnj === undefined) return;
         
         const path:string = 'personajes/' + idPnj + '.webp';
+        const { data } = supabase
+        .storage
+        .from('dnd-system')
+        .getPublicUrl(path);
+        //console.log('openNewWindowImage :', data);
+
+        if (data !== null) {
+            openNewWindowImage(data.publicUrl);
+        }
+        return true;
+    }
+
+    function openNewWindowImageEnemy(idEnemy:string | undefined){
+        if(idEnemy === undefined) return;
+        
+        const path:string = 'enemigos/' + idEnemy + '.webp';
         const { data } = supabase
         .storage
         .from('dnd-system')
@@ -367,7 +405,58 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                                                                 </aside>
                                                             </PopoverContent>
                                                         </Popover>
-                                                        <button type="button" className='btn-card-ubi'><SvgEnemy height={20} width={20} /></button>
+                                                        {elem.lista_enemigo && elem.lista_enemigo.length > 0 && (
+                                                            <Popover placement="right" offset={{mainAxis: 50, crossAxis: 0, alignmentAxis:10}}>
+                                                                <PopoverHandler>
+                                                                    <button type="button" className='btn-card-ubi'><SvgEnemy height={20} width={20} /></button>
+                                                                </PopoverHandler>
+                                                                <PopoverContent className='popover-panel' placeholder=''>
+                                                                    <article className='card-ubi-info character-popover'>
+                                                                        <header className='flex justify-between items-center border-b border-black py-1 mb-2'>
+                                                                            <h6 className='text-black font-semibold '>Listado de enemigos</h6>
+                                                                        </header>
+                                                                        {elem.lista_enemigo.map((enemy, index) => (
+                                                                            <Tooltip key={index} className="bg-dark text-light px-2 py-1" placement="bottom" 
+                                                                                content={ 
+                                                                                    <div className="w-50 p-2">
+                                                                                        <p>Raza: {enemy.ene_raza}</p>
+                                                                                        <p>Clase: {enemy.ene_clase}</p>
+                                                                                        <p>Trabajo: {enemy.ene_trabajo}</p>
+                                                                                        <p>Edad: {enemy.ene_edad}</p>
+                                                                                        <table className='w-full mt-1'>
+                                                                                            <thead>
+                                                                                                <tr>
+                                                                                                    <th>STR</th>
+                                                                                                    <th>INT</th>
+                                                                                                    <th>DEX</th>
+                                                                                                    <th>CON</th>
+                                                                                                    <th>PER</th>
+                                                                                                    <th>CHA</th>
+                                                                                                </tr>
+                                                                                            </thead>
+                                                                                            <tbody>
+                                                                                                <tr>
+                                                                                                    <td>{enemy.ene_str}</td>
+                                                                                                    <td>{enemy.ene_int}</td>
+                                                                                                    <td>{enemy.ene_dex}</td>
+                                                                                                    <td>{enemy.ene_con}</td>
+                                                                                                    <td>{enemy.ene_per}</td>
+                                                                                                    <td>{enemy.ene_cha}</td>
+                                                                                                </tr>
+                                                                                            </tbody>
+                                                                                        </table>
+                                                                                    </div>
+                                                                                } 
+                                                                            >
+                                                                                <button type="button" className='btn-character' onClick={() => openNewWindowImageEnemy(enemy.ene_id)} >
+                                                                                    {enemy.ene_nombre}
+                                                                                </button>
+                                                                            </Tooltip>
+                                                                        ))}
+                                                                    </article>
+                                                                </PopoverContent>
+                                                            </Popover>
+                                                        )}
                                                         {elem.lista_pnj && elem.lista_pnj.length > 1 && (
                                                             <Popover placement="right" offset={{mainAxis: 30, crossAxis: 0, alignmentAxis:10}}>
                                                                 <PopoverHandler>
@@ -412,7 +501,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                                                                                 } 
                                                                             >
                                                                                 <button type="button" className='btn-character' onClick={() => openNewWindowImagePnj(character.pnj_id)} >
-                                                                                {character.pnj_nombre}
+                                                                                    {character.pnj_nombre}
                                                                                 </button>
                                                                             </Tooltip>
                                                                         ))}

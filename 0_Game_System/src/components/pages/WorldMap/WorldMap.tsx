@@ -9,7 +9,7 @@ import "./WorldMap.css";
 
 // Interfaces
 import { stageImageList } from '@interfaces/typesCharacterSheet';
-import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo } from '@interfaces/dbTypes';
+import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision } from '@interfaces/dbTypes';
 import { itemsTypeUbgSvg, itemsSoundsSvg } from '@interfaces/iconInterface';
 // Components
 import ScreenLoader from '@UI/ScreenLoader/ScreenLoader';
@@ -61,6 +61,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         lista_sonidos: [],
         lista_pnj: [],
         lista_enemigo: [],
+        lista_mision: [],
     };
 
     useEffect(() => {
@@ -122,6 +123,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                         npcList = await getNpc(elem.mmu_ubi);
                         elem.lista_pnj = npcList;
                         elem.lista_enemigo = await getEnemy(elem.mmu_ubi);
+                        elem.lista_mision = await getMission(elem.mmu_ubi);
                         //console.log('getMap - pnj_encargado: ',templateMap[elem.mmu_pos_y][elem.mmu_pos_x].pnj_encargado);
                     } catch (error) {
                         //templateMap[elem.mmu_pos_y][elem.mmu_pos_x].lista_sonidos = [];
@@ -213,9 +215,9 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     }
 
     async function getEnemy(ubiId:string): Promise<DBEnemigo[]>{
-        let character: DBEnemigo[] = [];
+        let enemy: DBEnemigo[] = [];
         
-        if (ubiId == undefined || ubiId == null) return character;
+        if (ubiId == undefined || ubiId == null) return enemy;
 
         const { data } = await supabase.from("ene_enemigo").select('ene_id, ene_nombre, ene_raza, ene_clase, ene_trabajo, ene_edad, ene_tipo, ene_str, ene_int, ene_dex, ene_con, ene_cha, ene_per')
         //.eq('pnj_tipo','M')
@@ -226,10 +228,30 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
 
         if (data !== null) {
             //console.log("getMainNpc - data: " , data, ' idUbi: ', ubiId);
-            character = data;
+            enemy = data;
         }
 
-        return character;
+        return enemy;
+    }
+
+    async function getMission(ubiId:string): Promise<DBMision[]>{
+        let mission: DBMision[] = [];
+        
+        if (ubiId == undefined || ubiId == null) return mission;
+
+        const { data } = await supabase.from("mis_mision").select('mis_id, mis_nombre, mis_tipo, mis_cumplido')
+        //.eq('pnj_tipo','M')
+        .eq('mis_estado','A')
+        .eq('mis_ubi',ubiId)
+        .order('mis_tipo', {ascending: true})
+        .returns<DBMision[]>();
+
+        if (data !== null) {
+            //console.log("getMainNpc - data: " , data, ' idUbi: ', ubiId);
+            mission = data;
+        }
+
+        return mission;
     }
 
     function openNewWindowImageUbi(idUbi:string | undefined){
@@ -393,18 +415,36 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                                                         )}
                                                     </div>
                                                     <div className='flex justify-between py-1' >
-                                                        <Popover placement="right" offset={{mainAxis: 100, crossAxis: 0, alignmentAxis:10}}>
-                                                            <PopoverHandler>
-                                                                <button type="button" className='btn-card-ubi'><SvgTaskList height={20} width={20} /></button>
-                                                            </PopoverHandler>
-                                                            <PopoverContent className='popover-panel' placeholder=''>
-                                                                <aside className='card-ubi-info'>
-                                                                    <header className='flex justify-between items-center border-b border-black py-1'>
-                                                                        <h6 className='text-black font-semibold '>Listado de misiones</h6>
-                                                                    </header>
-                                                                </aside>
-                                                            </PopoverContent>
-                                                        </Popover>
+                                                        {elem.lista_mision && elem.lista_mision.length > 0 && (
+                                                            <Popover placement="right" offset={{mainAxis: 100, crossAxis: 0, alignmentAxis:10}}>
+                                                                <PopoverHandler>
+                                                                    <button type="button" className='btn-card-ubi'><SvgTaskList height={20} width={20} /></button>
+                                                                </PopoverHandler>
+                                                                <PopoverContent className='popover-panel' placeholder=''>
+                                                                    <article className='card-ubi-info character-popover'>
+                                                                        <header className='flex justify-between items-center border-b border-black py-1'>
+                                                                            <h6 className='text-black font-semibold '>Listado de misiones</h6>
+                                                                        </header>
+                                                                        {elem.lista_mision.map((mission, index) => (
+                                                                            <label
+                                                                                htmlFor="vertical-list-react"
+                                                                                className="flex w-full cursor-pointer items-center p-1"
+                                                                            >
+                                                                                <input 
+                                                                                    type='checkbox'
+                                                                                    id="vertical-list-react"
+                                                                                    key={index}
+                                                                                    className="p-0 mr-2"
+                                                                                    value={mission.mis_cumplido}
+                                                                                />
+                                                                                {mission.mis_nombre}
+                                                                            </label>
+                                                                        ))}
+                                                                    </article>
+                                                                </PopoverContent>
+                                                            </Popover>
+                                                            
+                                                        )}
                                                         {elem.lista_enemigo && elem.lista_enemigo.length > 0 && (
                                                             <Popover placement="right" offset={{mainAxis: 50, crossAxis: 0, alignmentAxis:10}}>
                                                                 <PopoverHandler>

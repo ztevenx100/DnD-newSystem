@@ -86,6 +86,7 @@ export interface DBMapamundi{
   lista_sonidos: DBSonidoUbicacion[];
   lista_pnj: DBPersonajeNoJugable[];
   lista_enemigo: DBEnemigo[];
+  lista_mision: DBMision[];
 }
 
 export interface DBSonidoUbicacion{
@@ -131,4 +132,11 @@ export interface DBEnemigo{
   ene_con: number;
   ene_cha: number;
   ene_per: number;
+}
+
+export interface DBMision{
+  mis_id: string;
+  mis_nombre: string;
+  mis_tipo: string;
+  mis_cumplido: string;
 }

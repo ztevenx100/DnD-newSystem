@@ -329,6 +329,21 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         setGeographicalMap(templateMap);
     }
 
+    const handleCheckboxChange = async (event: React.ChangeEvent<HTMLInputElement>, id: string) => {
+        let isCompleted = event.target.checked;
+        //console.log('handleCheckboxChange', isCompleted);
+        
+        const { error } = await supabase
+        .from('mis_mision')
+        .update({
+            mis_cumplido: ((isCompleted)?'S':'N'),
+        })
+        .eq("mis_id", id)
+        .select();
+        if(error) alert('Stat not upload.');
+        
+      };
+
     return (
         <>
 
@@ -428,14 +443,15 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                                                                         {elem.lista_mision.map((mission, index) => (
                                                                             <label
                                                                                 htmlFor="vertical-list-react"
+                                                                                key={index}
                                                                                 className="flex w-full cursor-pointer items-center p-1"
                                                                             >
                                                                                 <input 
                                                                                     type='checkbox'
                                                                                     id="vertical-list-react"
-                                                                                    key={index}
                                                                                     className="p-0 mr-2"
                                                                                     value={mission.mis_cumplido}
+                                                                                    onChange={(e) => handleCheckboxChange(e, mission.mis_id)}
                                                                                 />
                                                                                 {mission.mis_nombre}
                                                                             </label>

@@ -13,9 +13,10 @@ import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEn
 import { itemsTypeUbgSvg, itemsSoundsSvg } from '@interfaces/iconInterface';
 // Components
 import ScreenLoader from '@UI/ScreenLoader/ScreenLoader';
+import BtnMenuSound from '@UI/Buttons/BtnMenuSound';
 import StageSelector from './StageSelector/StageSelector';
 import AmbientSoundsSelector from './AmbientSoundsSelector/AmbientSoundsSelector';
-import BtnMenuSound from '@UI/Buttons/BtnMenuSound';
+import DiceThrower from './DiceThrower/DiceThrower';
 
 // Funciones
 import {getIcon} from '@utils/utilIcons';
@@ -354,6 +355,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             {/* selecionar escenarios */}
             <StageSelector title='Listados de escenarios' imageList={imageStageList} onImageChange={handleImageStageChange}/>
             <AmbientSoundsSelector title='Lista de sonidos' />
+            <DiceThrower title='Lanzador de dados' />
             <header className='bg-white shadow-lg rounded py-0 grid items-center mb-2'>
                 <h1 className='title-list'>Mapamundi</h1>
                 <h2 className='subtitle-list'>{currentStage.esc_nombre}</h2>

@@ -392,11 +392,6 @@ body{
     }
 }
 
-.dialog{
-    background-color: var(--bg-color-1);
-    padding: 10px;
-}
-
 .btn-dialog-accept{
     background: var(--bg-color-3);
 }
@@ -410,9 +405,13 @@ body{
     }
 }
 
-.dialog-body{
-    height: 45rem;
-    overflow: scroll;
+.dialog{
+    background-color: var(--bg-color-1);
+    padding: 10px;
+    & .dialog-body{
+        height: 45rem;
+        overflow: scroll;
+    }
 }
 @media (max-height:900px){
     .dialog-body{

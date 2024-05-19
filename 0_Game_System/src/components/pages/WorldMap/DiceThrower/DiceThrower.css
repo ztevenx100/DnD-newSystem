@@ -5,6 +5,7 @@
 :root{
     --bg-btn: #F2AF29;
     --bg-btn-active: #31E981;
+    --bg-color-1: #E5E7EB;
 }
 
 .btn-dice-thrower-selector{
@@ -25,15 +26,21 @@
         background: var(--bg-btn-active);
     }
     & .menu-selector{
-        height: 150px;
+        height: 200px;
         overflow: auto;
         display: flex;
         flex-direction: row;
-        flex-basis: 50%;
         flex-wrap: wrap;
         row-gap: 0.5rem;
         column-gap: 0.5rem;
+        & input[type=text]{
+            width: 100%;
+            flex-basis: 55%;
+            border: 1px solid #000;
+            padding: 5px;
+        }
         & .sounds-item{
+            flex-basis: 3rem;
             padding: 2px;
             background-size: cover;
             background-position: center;
@@ -57,6 +64,59 @@
                 }
             }
         }
+        & .btn-dice{
+            width: 100%;
+            background: var(--bg-btn);
+            border: 1px solid black;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            transition-property: font-size;
+            transition-duration: .5s;
+            transition-timing-function: ease;
+            &:hover{
+                font-size: 1rem;
+            }
+        }
     }
 }
 
+
+.dialogDice{
+    background-color: var(--bg-color-1);
+    padding: 10px;
+    & .dialog-body{
+        height: 10rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+}
+
+.dice-container{
+    display: flex;
+    height: 5rem;
+    width: 5rem;
+    background: var(--bg-btn);
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    transition-property: transform;
+    transition-duration: .5s;
+    transition-timing-function: ease;
+    &.d4{
+        clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    }
+    &.d6{
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+    }
+    &.d8{
+        clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    }
+    &.d20{
+        clip-path: polygon(50% 0%, 100% 17%, 100% 81%, 50% 100%, 0 81%, 0 17%);
+    }
+    & p{
+        font-weight: 800;
+        font-size: 2rem;
+        color: #000;
+    }
+}

@@ -10,7 +10,13 @@ interface BackgroundChangerProps {
     children: React.ReactNode; // Permitir elementos HTML adicionales dentro del BackgroundChanger
   }
 
-// Componente BackgroundChanger
+/**
+ * Componente que genera un background para la pagina.
+ * 
+ * @component BackgroundChanger
+ * @param {BackgroundChangerProps} props - Las props del componente.
+ * @returns {JSX.Element} El componente renderizado.
+ */
 const BackgroundChanger: React.FC<BackgroundChangerProps> = ({ initialBackground, children }) => {
 
     return (

@@ -7,6 +7,7 @@ import "./DiceThrower.css";
 
 // Funciones
 import {validateNumeric} from '@utils/utilConversions';
+import {getRandomInt} from '@utils/utilOperations';
 
 // Images
 import SvgRollDice from '@Icons/SvgRollDice';
@@ -33,10 +34,6 @@ const DiceThrower: React.FC<DiceThrowerProps> = ({title}) => {
         style:string;
         value:number;
     }
-
-    const getRandomInt = (min: number, max: number): number => {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    };
 
     const handleOpenModal = () => {
         let updatedDices = [];

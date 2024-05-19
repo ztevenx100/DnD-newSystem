@@ -6,6 +6,15 @@ import SvgUnknown from '../UI/Icons/SvgUnknown';
 // Interfaces
 import { Components } from '../interfaces/typesCharacterSheet';
 
+/**
+ * Retorna el icono a utilizar segun un valor-clave.
+ * 
+ * @param {string} component - El valor-clave del icono a retonar.
+ * @param {Components} itemsSvg - Listado de iconos.
+ * @param {number} iconWidth - El valor de anchura de icono (opcional).
+ * @param {number} iconHeight - El valor de altura de icono (opcional).
+ * @returns {React.ReactElement} Retorna un icono SVG.
+ */
 export function getIcon (component: string, itemsSvg: Components, iconWidth?: number, iconHeight?: number): React.ReactElement {
     const componentSeleted = itemsSvg[component];
     if(!iconWidth) iconWidth = 30;

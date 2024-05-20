@@ -16,6 +16,13 @@ interface BtnMenuSoundProps{
     //onFormImageFileChange: (value: string, file: File) => void;
   }
 
+/**
+ * Componente que genera un panel con varias opciones de sonido.
+ * 
+ * @component BtnMenuSound
+ * @param {BtnMenuSoundProps} props - Las props del componente.
+ * @returns {JSX.Element} El componente renderizado.
+ */
 const BtnMenuSound: React.FC<BtnMenuSoundProps> = ({list, iconList}) => {
 
     const [isPlaying, setIsPlaying] = useState<boolean>(false);

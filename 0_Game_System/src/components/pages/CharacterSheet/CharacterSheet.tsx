@@ -18,6 +18,8 @@ import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
 import FormInputStats from './FormInputStats/FormInputStats';
 import FormInputSkillsRing from './FormInputSkillsRing/FormInputSkillsRing';
 import FormImageFile from './FormImageFile/FormImageFile';
+// Funciones
+import {validateNumeric} from '@utils/utilConversions';
 // Images
 import mainBackground from '@img/webp/bg-home-02.webp';
 import ScreenLoader from '@UI/ScreenLoader/ScreenLoader';
@@ -402,16 +404,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       'Tomfas',
    ];
 
-   function validateNumeric(value:string, valueDefault?: number): number{
-      if(isNaN(Number(value))){
-         alert('Valor no numerico');
-         return valueDefault||0;
-      } else if (value === '') {
-         return valueDefault||0;
-      } else {
-         return parseInt(value);
-      }
-   }
    // Actualizar el nivel del personaje
    const handleChangeCharacterLevel = (newLevel: string) => {
       let level = validateNumeric(newLevel,1);

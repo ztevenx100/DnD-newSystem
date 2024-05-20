@@ -166,6 +166,7 @@ const DiceThrower: React.FC<DiceThrowerProps> = ({title}) => {
             </Popover>
             
          {/* Modal/Dialog */}
+         {/* <div className='relative bg-white m-4 rounded-lg shadow-2xl text-blue-gray-500 antialiased font-sans text-base font-light leading-relaxed w-full md:w-2/3 lg:w-2/4 2xl:w-1/3 min-w-[80%] md:min-w-[66.666667%] lg:min-w-[50%] 2xl:min-w-[33.333333%] max-w-[80%] md:max-w-[66.666667%] lg:max-w-[50%] 2xl:max-w-[33.333333%] dialogDice'></div> */}
          <Dialog
             open={ open }
             size={"sm"}

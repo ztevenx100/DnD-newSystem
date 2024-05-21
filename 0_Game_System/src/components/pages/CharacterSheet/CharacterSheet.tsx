@@ -1,6 +1,6 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import supabase from '@database/supabase';
+import dbConnection from '@database/dbConnection';
 import { v4 as uuidv4 } from 'uuid';
 
 //import { useBackground } from '@/App';
@@ -146,7 +146,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    }, []);
 
    async function getUser() {
-      const { data } = await supabase.from("usu_usuario").select('usu_id, usu_nombre')
+      const { data } = await dbConnection.from("usu_usuario").select('usu_id, usu_nombre')
          .eq("usu_id",params.user);
       //console.log('getUser ',data);
 
@@ -156,7 +156,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       }
    }
    async function getListSkill() {
-      const { data } = await supabase.from("hab_habilidad").select( 'hab_id, hab_nombre, had_estadistica_base, hab_siglas, hab_tipo' )
+      const { data } = await dbConnection.from("hab_habilidad").select( 'hab_id, hab_nombre, had_estadistica_base, hab_siglas, hab_tipo' )
          .in("hab_tipo",["C","E","R"])
          .order('hab_tipo', {ascending: true})
          .order('had_estadistica_base', {ascending: true});
@@ -189,7 +189,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       }
    }
    async function getGameSystemList() {
-      const { data } = await supabase.from("sju_sistema_juego").select('sju_id, sju_nombre')
+      const { data } = await dbConnection.from("sju_sistema_juego").select('sju_id, sju_nombre')
          .eq('sju_estado', 'A')
          .returns<DBSistemaJuego[]>();
       //console.log("getGameSystemList - data: ", data);
@@ -204,7 +204,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    async function getCharacter() {
       if(params.id === null || params.id ===  undefined) return;
       
-      const { data } = await supabase.from("pus_personajes_usuario").select(
+      const { data } = await dbConnection.from("pus_personajes_usuario").select(
          'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria,pus_cantidad_oro,pus_cantidad_plata,pus_cantidad_bronce, pus_puntos_suerte, sju_sistema_juego(sju_id,sju_nombre)'
       ).eq("pus_id",params.id)
       .returns<DBPersonajesUsuario[]>();
@@ -236,7 +236,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    }
    async function getCharacterImage() {
       if(params.id === null || params.id ===  undefined) return;
-      const { data } = await supabase
+      const { data } = await dbConnection
       .storage
       .from('dnd-system')
       .getPublicUrl('usuarios/' + params.user + '/' + params.id + '.webp');
@@ -247,7 +247,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    async function getStats() {
       if(params.id === null || params.id === undefined) return;
 
-      const { data } = await supabase.from("epe_estadistica_personaje").select( 'epe_sigla, epe_nombre, epe_num_dado, epe_num_clase, epe_num_nivel' )
+      const { data } = await dbConnection.from("epe_estadistica_personaje").select( 'epe_sigla, epe_nombre, epe_num_dado, epe_num_clase, epe_num_nivel' )
          .eq("epe_personaje",params.id);
       //console.log('getStats ',data);
 
@@ -265,7 +265,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    async function getSkills() {
       if(params.id === null || params.id === undefined) return;
       
-      const { data } = await supabase.from("hpe_habilidad_personaje").select( 'hpe_habilidad, hpe_campo, hpe_alineacion, hab_habilidad(hab_id, hab_nombre, had_estadistica_base, hab_siglas)' )
+      const { data } = await dbConnection.from("hpe_habilidad_personaje").select( 'hpe_habilidad, hpe_campo, hpe_alineacion, hab_habilidad(hab_id, hab_nombre, had_estadistica_base, hab_siglas)' )
          .eq("hpe_personaje",params.id)
          .order('hpe_campo', {ascending: true})
          .returns<DBHabilidadPersonaje[]>()
@@ -311,7 +311,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          return;
       }
       
-      const { data } = await supabase.from("inp_inventario_personaje").select( 'inp_id, inp_nombre, inp_descripcion, inp_cantidad ' )
+      const { data } = await dbConnection.from("inp_inventario_personaje").select( 'inp_id, inp_nombre, inp_descripcion, inp_cantidad ' )
          .eq( "inp_personaje", params.id );
       //console.log('getInventory ',data);
 
@@ -477,7 +477,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
 
    // Manejar el cambio de la URL de la imagen en characterImage
    const handleCharacterImageFileChange = async (value: string, file: File) => {
-      const { data, error } = await supabase
+      const { data, error } = await dbConnection
       .storage
       .from('dnd-system')
       .upload('usuarios/' + params.user + '/' + params.id + '.webp', file, {
@@ -717,7 +717,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
 
    async function uploadInfoCharacter(newRecord: boolean) {
       if (!newRecord) {
-         const { data, error } = await supabase
+         const { data, error } = await dbConnection
          .from('pus_personajes_usuario')
          .update({
             pus_nombre: dataCharacter?.name,
@@ -744,7 +744,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          
          if(error)return '';
       } else {
-         const { data, error } = await supabase
+         const { data, error } = await dbConnection
          .from('pus_personajes_usuario')
          .insert({ 
             pus_usuario: params.user,
@@ -776,7 +776,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       
       if (!isNewCharacter) {
          for(const element of inputsStatsData) {
-            const { error } = await supabase
+            const { error } = await dbConnection
             .from('epe_estadistica_personaje')
             .update({ 
                epe_nombre: element?.label,
@@ -802,7 +802,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
                epe_num_nivel: element?.valueLevel,
             });
          }
-         const { error } = await supabase
+         const { error } = await dbConnection
          .from('epe_estadistica_personaje')
          .insert(saveStats)
          .select();
@@ -841,7 +841,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       }
       //console.log('saveSkill ', saveSkill);
       
-      const { error } = await supabase
+      const { error } = await dbConnection
       .from('hpe_habilidad_personaje')
       .upsert(saveSkill)
       .select();
@@ -864,7 +864,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          });
       }
 
-      const { error } = await supabase
+      const { error } = await dbConnection
       .from('inp_inventario_personaje')
       .upsert(saveItems)
       .select();
@@ -872,7 +872,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       if(error) alert('Items not upload.');
 
       // Eliminar objeto db
-      const { error: deleteError } = await supabase
+      const { error: deleteError } = await dbConnection
       .from('inp_inventario_personaje')
       .delete()
       .in('inp_id', deleteItems);

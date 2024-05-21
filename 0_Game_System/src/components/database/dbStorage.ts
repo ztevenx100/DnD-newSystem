@@ -1,5 +1,5 @@
 // @filename: storage.ts
-import supabase from '@database/supabase';
+import dbConnection from '@database/dbConnection';
 
 const DB_FROM:string = 'dnd-system';
 const SEPARATOR_PATH:string = '/';
@@ -114,7 +114,7 @@ export const getUrl = async (folder:string, id:string) => {
 export const getUrlStorage = async (path: string) => {
     let url = '';
 
-    const { data } = await supabase
+    const { data } = await dbConnection
     .storage
     .from(DB_FROM)
     .getPublicUrl(path);

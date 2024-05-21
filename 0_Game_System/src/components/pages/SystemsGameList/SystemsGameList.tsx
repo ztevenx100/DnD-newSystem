@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import supabase from '@database/supabase';
+import dbConnection from '@database/dbConnection';
 import { Link } from 'react-router-dom';
 
 import { DBSistemaJuego } from '@interfaces/dbTypes';
@@ -17,7 +17,7 @@ const SystemsGameList: React.FC = () => {
     }, []);
 
     async function getList() {
-        const { data } = await supabase.from("sju_sistema_juego").select('sju_id, sju_nombre, sju_descripcion ')
+        const { data } = await dbConnection.from("sju_sistema_juego").select('sju_id, sju_nombre, sju_descripcion ')
         .returns<DBSistemaJuego[]>();
         //console.log("getList - data: " , data);
         if (data !== null) {

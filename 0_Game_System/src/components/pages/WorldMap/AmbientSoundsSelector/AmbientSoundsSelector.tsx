@@ -1,5 +1,5 @@
 import React, {useEffect, useState, ChangeEvent} from 'react';
-import supabase from '@database/supabase';
+import dbConnection from '@database/dbConnection';
 
 import { Popover, PopoverHandler, PopoverContent, Tooltip } from "@material-tailwind/react";
 import "./AmbientSoundsSelector.css";
@@ -32,7 +32,7 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
     }, []);
 
     async function getList() {
-        const { data } = await supabase.from("sub_sonido_ubicacion").select('sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre) ')
+        const { data } = await dbConnection.from("sub_sonido_ubicacion").select('sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre) ')
         .eq('sub_tipo','G')
         .eq('sub_estado','A')
         .returns<DBSonidoUbicacion[]>();
@@ -45,7 +45,7 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
 
     async function getSonuds(soundsList:DBSonidoUbicacion[]) {
         await soundsList.map(async (sound) => {
-            const { data } = await supabase
+            const { data } = await dbConnection
             .storage
             .from('dnd-system')
             .getPublicUrl('sonidos/' + sound.sub_son + '.mp3');

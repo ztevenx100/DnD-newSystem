@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import supabase from '@database/supabase';
+import dbConnection from '@database/dbConnection';
 
 import { Popover, PopoverHandler, PopoverContent, Tooltip } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
@@ -97,7 +97,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     }
 
     async function getMap(templateMap: DBMapamundi[][]) {
-        const { data } = await supabase.from("mmu_mapamundi").select('mmu_id, mmu_sju, mmu_esc, esc_escenario(esc_id, esc_tipo, esc_nombre), mmu_ubi, ubi_ubicacion(ubi_id, ubi_tipo, ubi_nombre),mmu_pos_x, mmu_pos_y')
+        const { data } = await dbConnection.from("mmu_mapamundi").select('mmu_id, mmu_sju, mmu_esc, esc_escenario(esc_id, esc_tipo, esc_nombre), mmu_ubi, ubi_ubicacion(ubi_id, ubi_tipo, ubi_nombre),mmu_pos_x, mmu_pos_y')
            .eq("mmu_sju",'d127c085-469a-4627-8801-77dc7262d41b')
             //.eq("mmu_id",'036bd999-f79e-4203-bc93-ecce0bfdca35')
             .order('mmu_pos_x', {ascending: true})
@@ -150,7 +150,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     async function getMapImage(imageList:stageImageList[], idEsc:string) {
 
         await imageList.map(async (image) => {
-            const { data } = await supabase
+            const { data } = await dbConnection
             .storage
             .from('dnd-system')
             .getPublicUrl('escenarios/' + image.id + '.webp');
@@ -170,7 +170,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         
         if (ubiId == undefined || ubiId == null) return list;
 
-        const { data } = await supabase.from("sub_sonido_ubicacion").select('sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre) ')
+        const { data } = await dbConnection.from("sub_sonido_ubicacion").select('sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre) ')
         .eq('sub_tipo','U')
         .eq('sub_estado','A')
         .eq('sub_ubi',ubiId)
@@ -186,7 +186,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
 
     async function getSounds(soundsList:DBSonidoUbicacion[]) {
         await soundsList.map(async (sound) => {
-            const { data } = await supabase
+            const { data } = await dbConnection
             .storage
             .from('dnd-system')
             .getPublicUrl('sonidos/' + sound.sub_son + '.mp3');
@@ -200,7 +200,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         
         if (ubiId == undefined || ubiId == null) return character;
 
-        const { data } = await supabase.from("pnj_personaje_no_jugable").select('pnj_id, pnj_nombre, pnj_raza, pnj_clase, pnj_trabajo, pnj_edad, pnj_tipo, pnj_str, pnj_int, pnj_dex, pnj_con, pnj_cha, pnj_per')
+        const { data } = await dbConnection.from("pnj_personaje_no_jugable").select('pnj_id, pnj_nombre, pnj_raza, pnj_clase, pnj_trabajo, pnj_edad, pnj_tipo, pnj_str, pnj_int, pnj_dex, pnj_con, pnj_cha, pnj_per')
         //.eq('pnj_tipo','M')
         .eq('pnj_estado','A')
         .eq('pnj_ubi',ubiId)
@@ -220,7 +220,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         
         if (ubiId == undefined || ubiId == null) return enemy;
 
-        const { data } = await supabase.from("ene_enemigo").select('ene_id, ene_nombre, ene_raza, ene_clase, ene_trabajo, ene_edad, ene_tipo, ene_str, ene_int, ene_dex, ene_con, ene_cha, ene_per')
+        const { data } = await dbConnection.from("ene_enemigo").select('ene_id, ene_nombre, ene_raza, ene_clase, ene_trabajo, ene_edad, ene_tipo, ene_str, ene_int, ene_dex, ene_con, ene_cha, ene_per')
         //.eq('pnj_tipo','M')
         .eq('ene_estado','A')
         .eq('ene_ubi',ubiId)
@@ -240,7 +240,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         
         if (ubiId == undefined || ubiId == null) return mission;
 
-        const { data } = await supabase.from("mis_mision").select('mis_id, mis_nombre, mis_tipo, mis_cumplido')
+        const { data } = await dbConnection.from("mis_mision").select('mis_id, mis_nombre, mis_tipo, mis_cumplido')
         //.eq('pnj_tipo','M')
         .eq('mis_estado','A')
         .eq('mis_ubi',ubiId)
@@ -259,7 +259,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         if(idUbi === undefined) return;
         
         const path:string = 'ubicaciones/' + idUbi + '.webp';
-        const { data } = supabase
+        const { data } = dbConnection
         .storage
         .from('dnd-system')
         .getPublicUrl(path);
@@ -275,7 +275,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         if(idPnj === undefined) return;
         
         const path:string = 'personajes/' + idPnj + '.webp';
-        const { data } = supabase
+        const { data } = dbConnection
         .storage
         .from('dnd-system')
         .getPublicUrl(path);
@@ -291,7 +291,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         if(idEnemy === undefined) return;
         
         const path:string = 'enemigos/' + idEnemy + '.webp';
-        const { data } = supabase
+        const { data } = dbConnection
         .storage
         .from('dnd-system')
         .getPublicUrl(path);
@@ -334,7 +334,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         let isCompleted = event.target.checked;
         //console.log('handleCheckboxChange', isCompleted);
         
-        const { error } = await supabase
+        const { error } = await dbConnection
         .from('mis_mision')
         .update({
             mis_cumplido: ((isCompleted)?'S':'N'),

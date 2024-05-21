@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import supabase from '@database/supabase';
+import dbConnection from '@database/dbConnection';
 
 import { DBSistemaJuego } from '@interfaces/dbTypes';
 
@@ -19,7 +19,7 @@ const SystemGameElement: React.FC = () => {
     }, []);
 
     async function getGame() {
-        const { data } = await supabase.from("sju_sistema_juego").select('sju_id, sju_nombre, sju_descripcion ')
+        const { data } = await dbConnection.from("sju_sistema_juego").select('sju_id, sju_nombre, sju_descripcion ')
         .eq("sju_id",params.id)
         .returns<DBSistemaJuego[]>();
         //console.log("getGame - data: " , data);

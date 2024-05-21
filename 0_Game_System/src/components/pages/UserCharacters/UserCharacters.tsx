@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import supabase from '@database/supabase';
+import dbConnection from '@database/dbConnection';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, IconButton } from "@material-tailwind/react";
@@ -36,7 +36,7 @@ const UserCharacters: React.FC = () => {
     async function getList(user:string) {
         if(user === '' || user === null) return;
 
-        const { data } = await supabase.from("pus_personajes_usuario").select('pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, usu_usuario(usu_id, usu_nombre), sju_sistema_juego(sju_id, sju_nombre)')
+        const { data } = await dbConnection.from("pus_personajes_usuario").select('pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, usu_usuario(usu_id, usu_nombre), sju_sistema_juego(sju_id, sju_nombre)')
         .eq('pus_usuario', user)
         .returns<DBPersonajesUsuario[]>();
         //console.log("getList - data: " , data);
@@ -49,7 +49,7 @@ const UserCharacters: React.FC = () => {
 
     function getUrlImage(character:DBPersonajesUsuario) {
         const path:string = 'usuarios/' + character.pus_usuario + '/' + character.pus_id + '.webp';
-        const { data } = supabase
+        const { data } = dbConnection
         .storage
         .from('dnd-system')
         .getPublicUrl(path);
@@ -68,7 +68,7 @@ const UserCharacters: React.FC = () => {
         //console.log('handleDeleteCharacter', id);
         
         // Eliminar objeto db
-        const { error } = await supabase
+        const { error } = await dbConnection
         .from('pus_personajes_usuario')
         .delete()
         .eq('pus_id', id);

@@ -1,14 +1,13 @@
 // @filename: storage.ts
-import dbConnection from '@database/dbConnection';
+import dbConnection, {dbName} from '@database/dbConnection'
 
-const DB_FROM:string = 'dnd-system';
-const SEPARATOR_PATH:string = '/';
-const FOLDER_ENEMYS:string = 'enemigos';
-const FOLDER_STAGES:string = 'escenarios';
-const FOLDER_NPC:string = 'personajes';
-const FOLDER_SOUNDS:string = 'sonidos';
-const FOLDER_LOCATIONS:string = 'ubicaciones';
-const FOLDER_USERS:string = 'usuarios';
+const SEPARATOR_PATH:string = '/'
+const FOLDER_ENEMYS:string = 'enemigos'
+const FOLDER_STAGES:string = 'escenarios'
+const FOLDER_NPC:string = 'personajes'
+const FOLDER_SOUNDS:string = 'sonidos'
+const FOLDER_LOCATIONS:string = 'ubicaciones'
+const FOLDER_USERS:string = 'usuarios'
 //const randomValueRefreshImage = Math.random().toString(36).substring(7);
 
 /**
@@ -18,7 +17,7 @@ const FOLDER_USERS:string = 'usuarios';
  * @returns {string} URL publica del archivo.
  */
 export const getUrlEnemy = async ( id:string) => {
-    return getUrlImage(FOLDER_ENEMYS, id);
+    return getUrlImage(FOLDER_ENEMYS, id)
 }
 
 /**
@@ -28,7 +27,7 @@ export const getUrlEnemy = async ( id:string) => {
  * @returns {string} URL publica del archivo.
  */
 export const getUrlStage = async (id:string) => {
-    return getUrlImage(FOLDER_STAGES, id);
+    return getUrlImage(FOLDER_STAGES, id)
 }
 
 /**
@@ -38,7 +37,7 @@ export const getUrlStage = async (id:string) => {
  * @returns {string} URL publica del archivo.
  */
 export const getUrlNpc = async (id:string) => {
-    return getUrlImage(FOLDER_NPC, id);
+    return getUrlImage(FOLDER_NPC, id)
 }
 
 /**
@@ -48,7 +47,7 @@ export const getUrlNpc = async (id:string) => {
  * @returns {string} URL publica del archivo.
  */
 export const getUrlSound = async (id:string) => {
-    return getUrlSoundFile(FOLDER_SOUNDS, id);
+    return getUrlSoundFile(FOLDER_SOUNDS, id)
 }
 
 /**
@@ -58,7 +57,7 @@ export const getUrlSound = async (id:string) => {
  * @returns {string} URL publica del archivo.
  */
 export const getUrlLocation = async (id:string) => {
-    return getUrlImage(FOLDER_LOCATIONS, id);
+    return getUrlImage(FOLDER_LOCATIONS, id)
 }
 
 /**
@@ -69,7 +68,7 @@ export const getUrlLocation = async (id:string) => {
  * @returns {string} URL publica del archivo.
  */
 export const getUrlCharacter = async (idUser:string, id:string) => {
-    return getUrlImage(FOLDER_USERS + SEPARATOR_PATH + idUser, id);
+    return getUrlImage(FOLDER_USERS + SEPARATOR_PATH + idUser, id)
 }
 
 /**
@@ -80,7 +79,7 @@ export const getUrlCharacter = async (idUser:string, id:string) => {
  * @returns {string} URL publica del archivo.
  */
 export const getUrlImage = async (folder:string, id:string) => {
-    return getUrl(folder, id + ".webp");
+    return getUrl(folder, id + ".webp")
 }
 
 /**
@@ -91,7 +90,7 @@ export const getUrlImage = async (folder:string, id:string) => {
  * @returns {string} URL publica del archivo.
  */
 export const getUrlSoundFile = async (folder:string, id:string) => {
-    return getUrl(folder, id + ".mp3");
+    return getUrl(folder, id + ".mp3")
 }
 
 /**
@@ -102,7 +101,7 @@ export const getUrlSoundFile = async (folder:string, id:string) => {
  * @returns {string} URL publica del archivo.
  */
 export const getUrl = async (folder:string, id:string) => {
-    return getUrlStorage(folder + SEPARATOR_PATH + id);
+    return getUrlStorage(folder + SEPARATOR_PATH + id)
 }
 
 /**
@@ -112,16 +111,16 @@ export const getUrl = async (folder:string, id:string) => {
  * @returns {string} URL publica del archivo.
  */
 export const getUrlStorage = async (path: string) => {
-    let url = '';
+    let url = ''
 
     const { data } = await dbConnection
     .storage
-    .from(DB_FROM)
-    .getPublicUrl(path);
+    .from(dbName)
+    .getPublicUrl(path)
 
     if (data !== null) {
-        url = data.publicUrl;
+        url = data.publicUrl
     }
 
-    return url;
+    return url
 }

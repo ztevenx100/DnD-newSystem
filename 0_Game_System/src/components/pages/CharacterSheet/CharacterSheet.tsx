@@ -1,7 +1,8 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import dbConnection from '@database/dbConnection';
 import { v4 as uuidv4 } from 'uuid';
+import dbConnection from '@database/dbConnection';
+import { getUrlCharacter } from '@database/dbStorage';
 
 //import { useBackground } from '@/App';
 import { Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip } from "@material-tailwind/react";
@@ -235,15 +236,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       }
    }
    async function getCharacterImage() {
+      if(params.user === null || params.user ===  undefined) return;
       if(params.id === null || params.id ===  undefined) return;
-      const { data } = await dbConnection
-      .storage
-      .from('dnd-system')
-      .getPublicUrl('usuarios/' + params.user + '/' + params.id + '.webp');
-      //console.log('getCharacterImage: ', data);
+      
+      const url = await getUrlCharacter(params.user, params.id);
 
-      setCharacterImage(data.publicUrl+ '?' + randomValueRefreshImage);
+      setCharacterImage(url + '?' + randomValueRefreshImage);
    }
+
    async function getStats() {
       if(params.id === null || params.id === undefined) return;
 

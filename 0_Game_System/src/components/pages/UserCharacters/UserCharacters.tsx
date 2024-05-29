@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import dbConnection from '@database/dbConnection';
 import { Link, useNavigate } from 'react-router-dom';
+import dbConnection from '@database/dbConnection';
+import { getUrlCharacter } from '@database/dbStorage';
 
 import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, IconButton } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
@@ -47,18 +48,10 @@ const UserCharacters: React.FC = () => {
         }
     }
 
-    function getUrlImage(character:DBPersonajesUsuario) {
-        const path:string = 'usuarios/' + character.pus_usuario + '/' + character.pus_id + '.webp';
-        const { data } = dbConnection
-        .storage
-        .from('dnd-system')
-        .getPublicUrl(path);
-        //console.log('getUrlImage', data);
-
-        if (data !== null) {
-            return data.publicUrl;
-        }
-        return '';
+    async function getUrlImage(character:DBPersonajesUsuario) {
+        const url = await getUrlCharacter(character.pus_usuario, character.pus_id);
+        
+        return url;
     }
 
     async function handleDeleteCharacter (id: string) {

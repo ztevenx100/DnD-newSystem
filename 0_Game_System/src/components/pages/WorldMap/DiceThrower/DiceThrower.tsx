@@ -82,6 +82,7 @@ const DiceThrower: React.FC<DiceThrowerProps> = ({title}) => {
                                 name='txtD4' 
                                 id='txtD4'
                                 placeholder='D4'
+                                defaultValue={0}
                                 className=''
                                 maxLength={1}
                                 value={countDices[0]} 

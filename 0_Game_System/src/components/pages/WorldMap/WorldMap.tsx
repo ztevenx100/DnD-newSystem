@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import dbConnection from '@database/dbConnection';
+import { getUrlStage, getUrlSound, getUrlLocation, getUrlNpc, getUrlEnemy } from '@database/dbStorage';
 
 import { Popover, PopoverHandler, PopoverContent, Tooltip } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
@@ -111,7 +112,6 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
 
             await Promise.all(
                 data.map(async (elem) => {
-                    // console.log('elem', elem.mmu_ubi);
                     let npcList: DBPersonajeNoJugable[] = [];
                     
                     if(updatedImageStageList.length === 0){
@@ -125,23 +125,21 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                         elem.lista_pnj = npcList;
                         elem.lista_enemigo = await getEnemy(elem.mmu_ubi);
                         elem.lista_mision = await getMission(elem.mmu_ubi);
-                        //console.log('getMap - pnj_encargado: ',templateMap[elem.mmu_pos_y][elem.mmu_pos_x].pnj_encargado);
                     } catch (error) {
-                        //templateMap[elem.mmu_pos_y][elem.mmu_pos_x].lista_sonidos = [];
                     }
                     if(stage.esc_id === elem.mmu_esc){
                         templateMap[elem.mmu_pos_y][elem.mmu_pos_x] = elem;
                     }
+                    getMapImage(updatedImageStageList, stage.esc_id);
                 })
             );
 
             setListItemsMap(data);
             setCurrentStage(stage);
-            await getMapImage(updatedImageStageList, stage.esc_id);
             setImageStageList(updatedImageStageList);
+            //console.log('getMap - updatedImageStageList: ',updatedImageStageList);
             //console.log('getMap - stage: ',stage);
             //console.log('getMap - data: ',data);
-            //console.log('getMap - updatedImageStageList: ',updatedImageStageList);
         }
         //console.log('getMap - ',templateMap);
         setGeographicalMap(templateMap);
@@ -149,13 +147,9 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
 
     async function getMapImage(imageList:stageImageList[], idEsc:string) {
 
-        await imageList.map(async (image) => {
-            const { data } = await dbConnection
-            .storage
-            .from('dnd-system')
-            .getPublicUrl('escenarios/' + image.id + '.webp');
-    
-            if(data) image.url = data.publicUrl + '?' + randomValueRefreshImage;
+        imageList.map(async (image) => {
+            const url:string = await Promise.resolve(getUrlStage(image.id))
+            image.url = url + '?' + randomValueRefreshImage
         })
         //console.log('getMapImage - imageList: ', imageList, ' , idEsc:', idEsc);
         
@@ -186,13 +180,9 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
 
     async function getSounds(soundsList:DBSonidoUbicacion[]) {
         await soundsList.map(async (sound) => {
-            const { data } = await dbConnection
-            .storage
-            .from('dnd-system')
-            .getPublicUrl('sonidos/' + sound.sub_son + '.mp3');
-            if(data) sound.sub_sound_url = data.publicUrl ;
+            const url:string = await Promise.resolve(getUrlSound(sound.sub_son))
+            sound.sub_sound_url = url + '?' + randomValueRefreshImage
         })
-        //console.log('getSonuds - soundsList: ', soundsList);
     }
 
     async function getNpc(ubiId:string): Promise<DBPersonajeNoJugable[]>{
@@ -255,52 +245,25 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         return mission;
     }
 
-    function openNewWindowImageUbi(idUbi:string | undefined){
-        if(idUbi === undefined) return;
-        
-        const path:string = 'ubicaciones/' + idUbi + '.webp';
-        const { data } = dbConnection
-        .storage
-        .from('dnd-system')
-        .getPublicUrl(path);
-        //console.log('openNewWindowImage :', data);
+    async function openNewWindowImageUbi(idUbi:string | undefined){
+        if(idUbi === undefined) return
 
-        if (data !== null) {
-            openNewWindowImage(data.publicUrl);
-        }
-        return true;
+        const url:string = await Promise.resolve(getUrlLocation(idUbi))
+        openNewWindowImage(url)
     }
 
-    function openNewWindowImagePnj(idPnj:string | undefined){
-        if(idPnj === undefined) return;
-        
-        const path:string = 'personajes/' + idPnj + '.webp';
-        const { data } = dbConnection
-        .storage
-        .from('dnd-system')
-        .getPublicUrl(path);
-        //console.log('openNewWindowImage :', data);
+    async function openNewWindowImageNpc(idNpc:string | undefined){
+        if(idNpc === undefined) return;
 
-        if (data !== null) {
-            openNewWindowImage(data.publicUrl);
-        }
-        return true;
+        const url:string = await Promise.resolve(getUrlNpc(idNpc))
+        openNewWindowImage(url);
     }
 
-    function openNewWindowImageEnemy(idEnemy:string | undefined){
+    async function openNewWindowImageEnemy(idEnemy:string | undefined){
         if(idEnemy === undefined) return;
-        
-        const path:string = 'enemigos/' + idEnemy + '.webp';
-        const { data } = dbConnection
-        .storage
-        .from('dnd-system')
-        .getPublicUrl(path);
-        //console.log('openNewWindowImage :', data);
 
-        if (data !== null) {
-            openNewWindowImage(data.publicUrl);
-        }
-        return true;
+        const url:string = await Promise.resolve(getUrlEnemy(idEnemy))
+        openNewWindowImage(url);
     }
 
     function openNewWindowImage(url: string){
@@ -395,7 +358,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                                                                     <article className='card-info-character'>
                                                                         <header className='flex justify-between items-center border-b border-black py-1 mb-1'>
                                                                             <h6 className='text-black font-semibold '>Encargado del local</h6>
-                                                                            <button type="button" className='btn-card-character' onClick={() => openNewWindowImagePnj(elem.lista_pnj[0].pnj_id)} >
+                                                                            <button type="button" className='btn-card-character' onClick={() => openNewWindowImageNpc(elem.lista_pnj[0].pnj_id)} >
                                                                                 <SvgLookImage width={20} height={20} />
                                                                             </button>
                                                                         </header>
@@ -558,7 +521,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                                                                                     </div>
                                                                                 } 
                                                                             >
-                                                                                <button type="button" className='btn-character' onClick={() => openNewWindowImagePnj(character.pnj_id)} >
+                                                                                <button type="button" className='btn-character' onClick={() => openNewWindowImageNpc(character.pnj_id)} >
                                                                                     {character.pnj_nombre}
                                                                                 </button>
                                                                             </Tooltip>

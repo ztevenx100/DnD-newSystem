@@ -1,5 +1,6 @@
-import supabase from '@database/supabase';
+import supabase, {databaseName} from '@database/supabase'
 
-const dbConnection = supabase;
+const dbConnection = supabase
+export const dbName = databaseName
 
-export default dbConnection;
+export default dbConnection

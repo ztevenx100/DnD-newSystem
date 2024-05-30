@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import dbConnection from '@database/dbConnection';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import dbConnection from '@database/dbConnection'
+import { getUrlCharacter } from '@database/dbStorage'
 
-import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, IconButton } from "@material-tailwind/react";
-import "@unocss/reset/tailwind.css";
-import "uno.css";
-import "./UserCharacters.css";
+import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, IconButton } from "@material-tailwind/react"
+import "@unocss/reset/tailwind.css"
+import "uno.css"
+import "./UserCharacters.css"
 
 // Interfaces
-import { DBPersonajesUsuario } from '@interfaces/dbTypes';
+import { DBPersonajesUsuario } from '@interfaces/dbTypes'
 // Images
-import SvgAddCharacter from '@Icons/SvgAddCharacter';
-import SvgDeleteItem from '@Icons/SvgDeleteItem';
+import SvgAddCharacter from '@Icons/SvgAddCharacter'
+import SvgDeleteItem from '@Icons/SvgDeleteItem'
 
 const UserCharacters: React.FC = () => {
     const [list, setList] = useState<DBPersonajesUsuario[]>([]);
@@ -21,7 +22,6 @@ const UserCharacters: React.FC = () => {
 
     useEffect(() => {
         getUser().then((user) => {
-            //console.log('user: ', user);
             getList(user);
         });
     }, []);
@@ -41,24 +41,22 @@ const UserCharacters: React.FC = () => {
         .returns<DBPersonajesUsuario[]>();
         //console.log("getList - data: " , data);
         if (data !== null) {
-            //setList(data as unknown as DBPersonajesUsuario[]);
+
+            await Promise.all(
+                data.map(async (elem) => {
+                    elem.url_character_image = await getUrlImage(elem);
+                })
+            );
+
             setList(data);
             console.log("getList - data: " , data);
         }
     }
 
-    function getUrlImage(character:DBPersonajesUsuario) {
-        const path:string = 'usuarios/' + character.pus_usuario + '/' + character.pus_id + '.webp';
-        const { data } = dbConnection
-        .storage
-        .from('dnd-system')
-        .getPublicUrl(path);
-        //console.log('getUrlImage', data);
-
-        if (data !== null) {
-            return data.publicUrl;
-        }
-        return '';
+    async function getUrlImage(character:DBPersonajesUsuario) {
+        const url = await getUrlCharacter(character.pus_usuario, character.pus_id);
+        
+        return url + '?' + randomValueRefreshImage;
     }
 
     async function handleDeleteCharacter (id: string) {
@@ -107,7 +105,7 @@ const UserCharacters: React.FC = () => {
                             <ListItem key={elem.pus_id} ripple={false} className='character-item flex' placeholder=''>
                                 <Link to={`/CharacterSheet/${elem.usu_usuario.usu_id}/${elem.pus_id}`} className='flex flex-1'>
                                     <ListItemPrefix className='image-space' placeholder=''>
-                                        <Avatar variant="circular" alt={"character Image"} src={getUrlImage(elem) + '?' + randomValueRefreshImage} placeholder = ''/>
+                                        <Avatar variant="circular" alt={"character Image"} src={elem.url_character_image} placeholder = ''/>
                                     </ListItemPrefix>
                                     <div className='px-2'>
                                         <Typography variant="h4" color="blue-gray" className='font-black mb-1' placeholder=''>

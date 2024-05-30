@@ -10,7 +10,7 @@
 .btn-ambient-sounds-selector{
     display: flex;
     position: absolute;
-    top: 15rem;
+    top: 17rem;
     right: 0.75rem;
     background-color: var(--bg-btn);
     padding: 10px;

@@ -1,5 +1,6 @@
 import React, {useEffect, useState, ChangeEvent} from 'react';
 import dbConnection from '@database/dbConnection';
+import { getUrlSound } from '@database/dbStorage';
 
 import { Popover, PopoverHandler, PopoverContent, Tooltip } from "@material-tailwind/react";
 import "./AmbientSoundsSelector.css";
@@ -38,18 +39,15 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
         .returns<DBSonidoUbicacion[]>();
         //console.log("getList - data: " , data);
         if (data !== null) {
-            await getSonuds(data);
+            await getSounds(data);
             setList(data);
         }
     }
 
-    async function getSonuds(soundsList:DBSonidoUbicacion[]) {
-        await soundsList.map(async (sound) => {
-            const { data } = await dbConnection
-            .storage
-            .from('dnd-system')
-            .getPublicUrl('sonidos/' + sound.sub_son + '.mp3');
-            if(data) sound.sub_sound_url = data.publicUrl ;
+    async function getSounds(soundsList:DBSonidoUbicacion[]) {
+        soundsList.map(async (sound) => {
+            const url:string = await Promise.resolve(getUrlSound(sound.sub_son))
+            sound.sub_sound_url = url ;
         })
         //console.log('getSonuds - soundsList: ', soundsList);
     }

@@ -27,6 +27,8 @@ export const getUrlEnemy = async ( id:string) => {
  * @returns {string} URL publica del archivo.
  */
 export const getUrlStage = async (id:string) => {
+    console.log(FOLDER_STAGES, 'id:', id);
+    
     return getUrlImage(FOLDER_STAGES, id)
 }
 

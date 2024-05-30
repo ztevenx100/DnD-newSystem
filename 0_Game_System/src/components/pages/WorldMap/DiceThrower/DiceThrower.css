@@ -11,7 +11,7 @@
 .btn-dice-thrower-selector{
     display: flex;
     position: absolute;
-    top: 20rem;
+    top: 22rem;
     right: 0.75rem;
     background-color: var(--bg-btn);
     padding: 10px;

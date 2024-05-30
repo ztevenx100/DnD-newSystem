@@ -9,7 +9,7 @@
 .btn-stage-selector{
     display: flex;
     position: absolute;
-    top: 10rem;
+    top: 12rem;
     right: 0.75rem;
     background-color: var(--bg-btn);
     padding: 10px;
@@ -23,7 +23,7 @@
         height: 160px;
         overflow: auto;
         & .stage-item{
-            aspect-ratio: 16/9;
+            aspect-ratio: 3/2;
             background-size: cover;
             background-position: center;
             border: 1px solid black;

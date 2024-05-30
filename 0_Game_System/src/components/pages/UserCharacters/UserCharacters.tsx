@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import dbConnection from '@database/dbConnection';
-import { getUrlCharacter } from '@database/dbStorage';
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import dbConnection from '@database/dbConnection'
+import { getUrlCharacter } from '@database/dbStorage'
 
-import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, IconButton } from "@material-tailwind/react";
-import "@unocss/reset/tailwind.css";
-import "uno.css";
-import "./UserCharacters.css";
+import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, IconButton } from "@material-tailwind/react"
+import "@unocss/reset/tailwind.css"
+import "uno.css"
+import "./UserCharacters.css"
 
 // Interfaces
-import { DBPersonajesUsuario } from '@interfaces/dbTypes';
+import { DBPersonajesUsuario } from '@interfaces/dbTypes'
 // Images
-import SvgAddCharacter from '@Icons/SvgAddCharacter';
-import SvgDeleteItem from '@Icons/SvgDeleteItem';
+import SvgAddCharacter from '@Icons/SvgAddCharacter'
+import SvgDeleteItem from '@Icons/SvgDeleteItem'
 
 const UserCharacters: React.FC = () => {
     const [list, setList] = useState<DBPersonajesUsuario[]>([]);
@@ -22,7 +22,6 @@ const UserCharacters: React.FC = () => {
 
     useEffect(() => {
         getUser().then((user) => {
-            //console.log('user: ', user);
             getList(user);
         });
     }, []);

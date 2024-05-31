@@ -1,0 +1,32 @@
+/*
+    Created on : 2024/05/30
+    Author     : Steven
+*/
+:root{
+    --bg-btn-link: #FFF;
+    --bg-btn-link-hover: #F2AF29;
+}
+
+.btn-link-player-map{
+    position: absolute;
+    top: 7rem;
+    right: 1rem;
+    padding: 10px;
+    background: var(--bg-btn-link);
+    border-radius: 10px;
+    z-index: 10;
+    transition-property: background;
+    transition-duration: .5s;
+    transition-timing-function: ease;
+    &:hover{
+        background: var(--bg-btn-link-hover);
+    }
+    & svg{
+        transition-property: transform;
+        transition-duration: .5s;
+        transition-timing-function: ease;
+    }
+    &:hover svg{
+        transform: scale(1.1);
+    }
+}

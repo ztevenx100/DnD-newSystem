@@ -34,16 +34,21 @@ const PlayerMap: React.FC<PlayerMapProps> = ({imageStage}) => {
                             <meta charset="UTF-8" />
                             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
                             <title>Mapa del jugador</title>
-                            <link rel="stylesheet" href="/assets/styles.css" >
+                            <script src="https://cdn.tailwindcss.com"></script>
                         </head>
                         <body>
-                            <article class='' >
-                                <img 
-                                    src='${imageStage}'
-                                    id='bgStage'
-                                    style='position: absolute; top:0; left:0; width:100%; height: 100%; object-fit: cover; object-position: center top; overflow:hidden; margin: 0;' 
-                                    alt='Escenario' 
-                                />
+                            <article class='max-h-screen max-w-screen' >
+                                <section class='w-full m-10' >
+                                    <img 
+                                        src='${imageStage}'
+                                        id='bgStage'
+                                        class='relative top-0 left-0 w-full h-full object-cover object-top overflow-hidden m-0 '
+                                        alt='Escenario' 
+                                    />
+                                </section>
+                                <section>
+                                    <h1></h1>
+                                </section>
                             </article>
                         </body>
                     </html>

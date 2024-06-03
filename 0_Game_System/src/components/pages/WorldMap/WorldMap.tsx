@@ -322,14 +322,14 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             <StageSelector title='Listados de escenarios' imageList={imageStageList} onImageChange={handleImageStageChange}/>
             <AmbientSoundsSelector title='Lista de sonidos' />
             <DiceThrower title='Lanzador de dados' />
-            <header className='bg-white shadow-lg rounded py-0 grid items-center mb-2'>
+            <header className='bg-white shadow-lg rounded py-0 grid items-center mb-4'>
                 <h1 className='title-list'>Mapamundi</h1>
                 <h2 className='subtitle-list'>{currentStage.esc_nombre}</h2>
             </header>
 
-            <PlayerMap imageStage={imageStage} />
 
             <article className="map-grid relative grid grid-rows-7 rounded-xl bg-blue-900 text-gray-700 shadow-md w-full px-12 py-2 row-span-5" style={{backgroundImage: `url("${imageStage}")`}}>
+                <PlayerMap imageStage={imageStage} title={currentStage.esc_nombre} />
                 {geographicalMap.map((row, rowIndex) => (
                     <div key={rowIndex} className='map-grid-row grid-rows-1 grid grid-cols-11 '>
                         {row.map((elem, colIndex) => {

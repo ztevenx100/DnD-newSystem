@@ -7,13 +7,19 @@ import "./PlayerMap.css";
 // Images
 import SvgPlayerMap from '@UI/Icons/SvgPlayerMap';
 
+// Images
+import bgTab from '@img/webp/bg-tab.webp';
+
 interface PlayerMapProps{
     imageStage: string;
+    title: string;
 }
 
-const PlayerMap: React.FC<PlayerMapProps> = ({imageStage}) => {
+const PlayerMap: React.FC<PlayerMapProps> = ({imageStage, title}) => {
 
     const newTabRef = useRef<Window | null>(null);
+    //console.log(process.env.PUBLIC_URL);
+    
     const openUserStage = () =>{
         let data = {url:imageStage,title:'imagen'}
         if (newTabRef.current && !newTabRef.current.closed) {
@@ -36,23 +42,27 @@ const PlayerMap: React.FC<PlayerMapProps> = ({imageStage}) => {
                             <title>Mapa del jugador</title>
                             <script src="https://cdn.tailwindcss.com"></script>
                         </head>
-                        <body>
-                            <article class='max-h-screen max-w-screen' >
-                                <section class='w-full m-10' >
+                        <body id='bg-new-tab' style='background-image: url("${bgTab}") ' >
+                            <article class='max-h-screen max-w-screen grid grid-rows-11 gap-y-4 p-5 '>
+                                <section class='w-full flex overflow-hidden row-span-10 ' >
                                     <img 
                                         src='${imageStage}'
                                         id='bgStage'
-                                        class='relative top-0 left-0 w-full h-full object-cover object-top overflow-hidden m-0 '
+                                        class='w-full object-cover object-center rounded-lg overflow-hidden '
                                         alt='Escenario' 
                                     />
                                 </section>
-                                <section>
-                                    <h1></h1>
+                                <section class='row-span-1 bg-white rounded-lg' >
+                                    <h1 class='h-full text-center content-center font-bold text-3xl ' >${title}</h1>
                                 </section>
                             </article>
                         </body>
                     </html>
                 `);
+                const bgImg = newTab.document.getElementById('bg-new-tab') as HTMLBodyElement | null
+                //console.log(bgTab);
+                
+                if(bgImg) bgImg.style.backgroundImage = `url(${bgTab})`
                 //newTab.document.close();
             }
             newTabRef.current = newTab;

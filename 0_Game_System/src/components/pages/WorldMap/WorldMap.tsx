@@ -17,6 +17,7 @@ import ScreenLoader from '@UI/ScreenLoader/ScreenLoader';
 import BtnMenuSound from '@UI/Buttons/BtnMenuSound';
 import StageSelector from './StageSelector/StageSelector';
 import AmbientSoundsSelector from './AmbientSoundsSelector/AmbientSoundsSelector';
+import PlayerMap from './PlayerMap/PlayerMap';
 import DiceThrower from './DiceThrower/DiceThrower';
 
 // Funciones
@@ -268,7 +269,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
 
     function openNewWindowImage(url: string){
         const myWindow = window.open("", "MsgWindow", "width=800,height=800");
-        let imageHtml = "<img src='" + url + '?' + randomValueRefreshImage + "' style='position: absolute; top:0; left:0; width:100%; height: 100%; object-fit: cover; object-position: center top; overflow:hidden; margin: 0;' alt='Ubicacion' />";
+        let imageHtml = `<img src='${url}?${randomValueRefreshImage}' style='position: absolute; top:0; left:0; width:100%; height: 100%; object-fit: cover; object-position: center top; overflow:hidden; margin: 0;' alt='Ubicacion' />`;
         myWindow?.document.write(imageHtml);
     }
 
@@ -306,7 +307,8 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         .select();
         if(error) alert('Stat not upload.');
         
-      };
+    };
+    
 
     return (
         <>
@@ -315,15 +317,19 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             <ScreenLoader/>
         )}
         <section className="min-h-screen grid grid-cols-1 grid-rows-[100px_repeat(3,minmax(0,_1fr))] gap-x-0 gap-y-0 py-4">
-            {/* selecionar escenarios */}
+            {/* Selecionar escenarios */}
+            {/* Botones */}
             <StageSelector title='Listados de escenarios' imageList={imageStageList} onImageChange={handleImageStageChange}/>
             <AmbientSoundsSelector title='Lista de sonidos' />
             <DiceThrower title='Lanzador de dados' />
-            <header className='bg-white shadow-lg rounded py-0 grid items-center mb-2'>
+            <header className='bg-white shadow-lg rounded py-0 grid items-center mb-4'>
                 <h1 className='title-list'>Mapamundi</h1>
                 <h2 className='subtitle-list'>{currentStage.esc_nombre}</h2>
             </header>
+
+
             <article className="map-grid relative grid grid-rows-7 rounded-xl bg-blue-900 text-gray-700 shadow-md w-full px-12 py-2 row-span-5" style={{backgroundImage: `url("${imageStage}")`}}>
+                <PlayerMap imageStage={imageStage} title={currentStage.esc_nombre} />
                 {geographicalMap.map((row, rowIndex) => (
                     <div key={rowIndex} className='map-grid-row grid-rows-1 grid grid-cols-11 '>
                         {row.map((elem, colIndex) => {

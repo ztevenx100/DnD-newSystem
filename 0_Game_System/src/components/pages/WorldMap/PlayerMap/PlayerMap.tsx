@@ -45,8 +45,8 @@ const PlayerMap: React.FC<PlayerMapProps> = ({imageStage, title}) => {
                             <script src="https://cdn.tailwindcss.com"></script>
                         </head>
                         <body id='bgNewTab' style='background-image: url("${bgTab}") ' >
-                            <article class='max-h-screen max-w-screen grid grid-rows-11 gap-y-4 p-5 '>
-                                <section class='w-full flex overflow-hidden row-span-10 ' >
+                            <article class='max-h-screen max-w-screen grid grid-rows-12 gap-y-4 p-5 '>
+                                <section class='w-full flex overflow-hidden row-span-12 row-start-1 col-start-1 ' >
                                     <img 
                                         src='${imageStage}'
                                         id='bgStage'
@@ -54,10 +54,20 @@ const PlayerMap: React.FC<PlayerMapProps> = ({imageStage, title}) => {
                                         alt='Escenario' 
                                     />
                                 </section>
-                                <section class='row-span-1 bg-white rounded-lg border-b-black' >
+                                <section class='lbl-stage row-span-2 row-start-11 col-start-1 bg-white rounded-lg border-b-black z-1 mx-48 my-5' >
                                     <h1 id='textStage' class='h-full text-center content-center font-bold text-3xl ' >${title}</h1>
                                 </section>
                             </article>
+                            <style>
+                                .lbl-stage{
+                                    animation: 2s ease 0s normal forwards 1 fadein;
+                                }
+                                @keyframes fadein{
+                                    0% { opacity:0; }
+                                    66% { opacity:0; }
+                                    100% { opacity:1; }
+                                }
+                            </style>
                         </body>
                     </html>
                 `);

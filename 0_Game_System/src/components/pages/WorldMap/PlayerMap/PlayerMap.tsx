@@ -27,6 +27,8 @@ const PlayerMap: React.FC<PlayerMapProps> = ({imageStage, title}) => {
             
             const imgElement = newTabRef.current.document.getElementById('bgStage') as HTMLImageElement | null;
             if (imgElement) imgElement.src = imageStage;
+            const textMap = newTabRef.current.document.getElementById('textStage') as HTMLBodyElement | null
+            if(textMap) textMap.innerHTML = title
             
             newTabRef.current.postMessage(data, window.location.origin);
           } else {
@@ -42,7 +44,7 @@ const PlayerMap: React.FC<PlayerMapProps> = ({imageStage, title}) => {
                             <title>Mapa del jugador</title>
                             <script src="https://cdn.tailwindcss.com"></script>
                         </head>
-                        <body id='bg-new-tab' style='background-image: url("${bgTab}") ' >
+                        <body id='bgNewTab' style='background-image: url("${bgTab}") ' >
                             <article class='max-h-screen max-w-screen grid grid-rows-11 gap-y-4 p-5 '>
                                 <section class='w-full flex overflow-hidden row-span-10 ' >
                                     <img 
@@ -52,16 +54,14 @@ const PlayerMap: React.FC<PlayerMapProps> = ({imageStage, title}) => {
                                         alt='Escenario' 
                                     />
                                 </section>
-                                <section class='row-span-1 bg-white rounded-lg' >
-                                    <h1 class='h-full text-center content-center font-bold text-3xl ' >${title}</h1>
+                                <section class='row-span-1 bg-white rounded-lg border-b-black' >
+                                    <h1 id='textStage' class='h-full text-center content-center font-bold text-3xl ' >${title}</h1>
                                 </section>
                             </article>
                         </body>
                     </html>
                 `);
-                const bgImg = newTab.document.getElementById('bg-new-tab') as HTMLBodyElement | null
-                //console.log(bgTab);
-                
+                const bgImg = newTab.document.getElementById('bgNewTab') as HTMLBodyElement | null
                 if(bgImg) bgImg.style.backgroundImage = `url(${bgTab})`
                 //newTab.document.close();
             }

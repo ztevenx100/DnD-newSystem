@@ -118,7 +118,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                     if(updatedImageStageList.length === 0){
                         updatedImageStageList.push({id: elem.mmu_esc, url:''});
                     }else{
-                        if(updatedImageStageList[updatedImageStageList.length-1].id !== elem.mmu_esc) updatedImageStageList.push({id: elem.mmu_esc, url:''});
+                        if( !updatedImageStageList.some(list => list.id === elem.mmu_esc) ) updatedImageStageList.push({id: elem.mmu_esc, url:''});
                     }
                     try {
                         elem.lista_sonidos = await getSoundList(elem.mmu_ubi);
@@ -138,7 +138,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             setListItemsMap(data);
             setCurrentStage(stage);
             setImageStageList(updatedImageStageList);
-            //console.log('getMap - updatedImageStageList: ',updatedImageStageList);
+            console.log('getMap - updatedImageStageList: ',updatedImageStageList);
             //console.log('getMap - stage: ',stage);
             //console.log('getMap - data: ',data);
         }

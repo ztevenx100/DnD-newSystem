@@ -19,9 +19,7 @@ const SystemsGameList: React.FC = () => {
     async function getList() {
         const { data } = await dbConnection.from("sju_sistema_juego").select('sju_id, sju_nombre, sju_descripcion ')
         .returns<DBSistemaJuego[]>();
-        //console.log("getList - data: " , data);
         if (data !== null) {
-            //setList(data as unknown as DBPersonajesUsuario[]);
             setList(data);
             //console.log("getList - data: " , data);
         }

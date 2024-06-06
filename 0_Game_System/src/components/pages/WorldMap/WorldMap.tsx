@@ -1,56 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import dbConnection from '@database/dbConnection';
-import { getUrlStage, getUrlSound, getUrlLocation, getUrlNpc, getUrlEnemy } from '@database/dbStorage';
+import React, { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
+import dbConnection from '@database/dbConnection'
+import { getUrlStage, getUrlSound, getUrlLocation, getUrlNpc, getUrlEnemy } from '@database/dbStorage'
 
-import { Popover, PopoverHandler, PopoverContent, Tooltip } from "@material-tailwind/react";
-import "@unocss/reset/tailwind.css";
-import "uno.css";
-import "./WorldMap.css";
+import { Popover, PopoverHandler, PopoverContent, Tooltip } from "@material-tailwind/react"
+import "@unocss/reset/tailwind.css"
+import "uno.css"
+import "./WorldMap.css"
 
 // Interfaces
-import { stageImageList } from '@interfaces/typesCharacterSheet';
-import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision } from '@interfaces/dbTypes';
-import { itemsTypeUbgSvg, itemsSoundsSvg } from '@interfaces/iconInterface';
+import { stageImageList } from '@interfaces/typesCharacterSheet'
+import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision } from '@interfaces/dbTypes'
+import { itemsTypeUbgSvg, itemsSoundsSvg } from '@interfaces/iconInterface'
+
 // Components
-import ScreenLoader from '@UI/ScreenLoader/ScreenLoader';
-import BtnMenuSound from '@UI/Buttons/BtnMenuSound';
-import StageSelector from './StageSelector/StageSelector';
-import AmbientSoundsSelector from './AmbientSoundsSelector/AmbientSoundsSelector';
-import PlayerMap from './PlayerMap/PlayerMap';
-import DiceThrower from './DiceThrower/DiceThrower';
+import ScreenLoader from '@UI/ScreenLoader/ScreenLoader'
+import BtnMenuSound from '@UI/Buttons/BtnMenuSound'
+import StageSelector from './StageSelector/StageSelector'
+import AmbientSoundsSelector from './AmbientSoundsSelector/AmbientSoundsSelector'
+import PlayerMap from './PlayerMap/PlayerMap'
+import DiceThrower from './DiceThrower/DiceThrower'
 
 // Funciones
-import {getIcon} from '@utils/utilIcons';
+import {getIcon} from '@utils/utilIcons'
 
 // Images
-import bgMapWorld from '@img/webp/bg-mapWorld.webp';
-import SvgPerson from '@UI/Icons/SvgPerson';
-import SvgLookImage from '@UI/Icons/SvgLookImage';
-import SvgSong from '@UI/Icons/SvgSong';
-import SvgEnemy from '@UI/Icons/SvgEnemy';
-import SvgGroup from '@UI/Icons/SvgGroup';
-import SvgTaskList from '@UI/Icons/SvgTaskList';
+import bgMapWorld from '@img/webp/bg-mapWorld.webp'
+import SvgPerson from '@UI/Icons/SvgPerson'
+import SvgLookImage from '@UI/Icons/SvgLookImage'
+import SvgSong from '@UI/Icons/SvgSong'
+import SvgEnemy from '@UI/Icons/SvgEnemy'
+import SvgGroup from '@UI/Icons/SvgGroup'
+import SvgTaskList from '@UI/Icons/SvgTaskList'
 
 interface WorldMapProps {
-    changeBackground: (newBackground: string) => void;
+    changeBackground: (newBackground: string) => void
 }
 
 const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     
-    const [geographicalMap, setGeographicalMap] = useState<DBMapamundi[][]>([]);
-    const [listItemsMap, setListItemsMap] = useState<DBMapamundi[]>([]);
-    const [currentStage, setCurrentStage] = useState<DBEscenario>({esc_id:'', esc_tipo:'', esc_nombre:''});
-    const [imageStage, setImagetStage] = useState<string>('');
-    const [imageStageList, setImageStageList] = useState<stageImageList[]>([]);
+    const [geographicalMap, setGeographicalMap] = useState<DBMapamundi[][]>([])
+    const [listItemsMap, setListItemsMap] = useState<DBMapamundi[]>([])
+    const [currentStage, setCurrentStage] = useState<DBEscenario>({esc_id:'', esc_tipo:'', esc_nombre:''})
+    const [imageStage, setImagetStage] = useState<string>('')
+    const [imageStageList, setImageStageList] = useState<stageImageList[]>([])
 
-    const params = useParams();
-    //const [open, setOpen] = useState<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(true);
-    const randomValueRefreshImage = Math.random().toString(36).substring(7);
-    //const [newRecord, setNewRecord] = useState<boolean>(true);
-    //const handleOpen = () => setOpen(!open);
-
+    const params = useParams()
+    const [loading, setLoading] = useState<boolean>(true)
+    const randomValueRefreshImage = Math.random().toString(36).substring(7)
 
     const emptyTemplate: DBMapamundi = {
         mmu_id: '', 
@@ -65,238 +62,270 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         lista_pnj: [],
         lista_enemigo: [],
         lista_mision: [],
-    };
+    }
 
     useEffect(() => {
         changeBackground(bgMapWorld);
 
         const loadInfo = async () => {
-            const templateMap: DBMapamundi[][] = buildTemplateMap();
-            console.log('params: ',params);
-            //await getMap(templateMap);
+            const templateMap: DBMapamundi[][] = buildTemplateMap()
+            console.log('params: ',params)
 
             Promise.all ([
                 getMap(templateMap),
-             ]).finally(() => {
-                setLoading(false);
-             });
+            ]).finally(() => {
+                setLoading(false)
+            });
         }
 
-        loadInfo();
-     }, []);
+        loadInfo()
+    }, []);
 
-    function buildTemplateMap(){
-        const templateMap: DBMapamundi[][] = [...geographicalMap];
+    /**
+     * Inicializar matriz del mapa.
+     * @returns {DBMapamundi[][]} Retorna el mapa vacio.
+     */
+    const buildTemplateMap = () => {
+        const templateMap: DBMapamundi[][] = [...geographicalMap]
         
         for (let i = 0; i < 7; i++) {
-            templateMap.push([]);
+            templateMap.push([])
             for (let j = 0; j < 11; j++) {
-                templateMap[i].push(emptyTemplate);
+                templateMap[i].push(emptyTemplate)
             }
         }
         //console.log('templateMap', templateMap);
-        return templateMap;
+        return templateMap
     }
 
-    async function getMap(templateMap: DBMapamundi[][]) {
-        const { data } = await dbConnection.from("mmu_mapamundi").select('mmu_id, mmu_sju, mmu_esc, esc_escenario(esc_id, esc_tipo, esc_nombre), mmu_ubi, ubi_ubicacion(ubi_id, ubi_tipo, ubi_nombre),mmu_pos_x, mmu_pos_y')
-           .eq("mmu_sju",'d127c085-469a-4627-8801-77dc7262d41b')
+    /**
+     * Llenar el mapa con informacion de base de datos
+     * @param {DBMapamundi[][]} templateMap - Mapa vacio.
+     */
+    const getMap = async(templateMap: DBMapamundi[][]) => {
+        const { data } = await dbConnection.from("mmu_mapamundi")
+            .select('mmu_id, mmu_sju, mmu_esc, esc_escenario(esc_id, esc_tipo, esc_nombre), mmu_ubi, ubi_ubicacion(ubi_id, ubi_tipo, ubi_nombre),mmu_pos_x, mmu_pos_y')
+            .eq("mmu_sju",'d127c085-469a-4627-8801-77dc7262d41b')
             //.eq("mmu_id",'036bd999-f79e-4203-bc93-ecce0bfdca35')
             .order('mmu_pos_x', {ascending: true})
             .order('mmu_pos_y', {ascending: true})
-            .returns<DBMapamundi[]>();
-        //console.log('getMap - data: ',data);
+            .returns<DBMapamundi[]>()
   
         if (data !== null) {
-            let stage:DBEscenario = data[0].esc_escenario as DBEscenario;
-            const updatedImageStageList = [...imageStageList];
+            let stage:DBEscenario = data[0].esc_escenario as DBEscenario
+            const updatedImageStageList = [...imageStageList]
 
             await Promise.all(
                 data.map(async (elem) => {
-                    let npcList: DBPersonajeNoJugable[] = [];
+                    let npcList: DBPersonajeNoJugable[] = []
                     
                     if(updatedImageStageList.length === 0){
-                        updatedImageStageList.push({id: elem.mmu_esc, url:''});
+                        updatedImageStageList.push({id: elem.mmu_esc, url:''})
                     }else{
-                        if( !updatedImageStageList.some(list => list.id === elem.mmu_esc) ) updatedImageStageList.push({id: elem.mmu_esc, url:''});
+                        if( !updatedImageStageList.some(list => list.id === elem.mmu_esc) ) updatedImageStageList.push({id: elem.mmu_esc, url:''})
                     }
                     try {
-                        elem.lista_sonidos = await getSoundList(elem.mmu_ubi);
-                        npcList = await getNpc(elem.mmu_ubi);
-                        elem.lista_pnj = npcList;
-                        elem.lista_enemigo = await getEnemy(elem.mmu_ubi);
-                        elem.lista_mision = await getMission(elem.mmu_ubi);
+                        elem.lista_sonidos = await getSoundList(elem.mmu_ubi)
+                        npcList = await getNpcList(elem.mmu_ubi)
+                        elem.lista_pnj = npcList
+                        elem.lista_enemigo = await getEnemyList(elem.mmu_ubi)
+                        elem.lista_mision = await getMissionList(elem.mmu_ubi)
                     } catch (error) {
                     }
                     if(stage.esc_id === elem.mmu_esc){
-                        templateMap[elem.mmu_pos_y][elem.mmu_pos_x] = elem;
+                        templateMap[elem.mmu_pos_y][elem.mmu_pos_x] = elem
                     }
-                    getMapImage(updatedImageStageList, stage.esc_id);
+                    getMapImage(updatedImageStageList, stage.esc_id)
                 })
-            );
+            )
 
-            setListItemsMap(data);
-            setCurrentStage(stage);
-            setImageStageList(updatedImageStageList);
-            console.log('getMap - updatedImageStageList: ',updatedImageStageList);
-            //console.log('getMap - stage: ',stage);
-            //console.log('getMap - data: ',data);
+            setListItemsMap(data)
+            setCurrentStage(stage)
+            setImageStageList(updatedImageStageList)
+            //console.log('getMap - updatedImageStageList: ',updatedImageStageList)
+            //console.log('getMap - stage: ',stage)
+            //console.log('getMap - data: ',data)
         }
-        //console.log('getMap - ',templateMap);
-        setGeographicalMap(templateMap);
+        //console.log('getMap - ',templateMap)
+        setGeographicalMap(templateMap)
     }
 
-    async function getMapImage(imageList:stageImageList[], idEsc:string) {
+    /**
+     * Llenar listado de escenarios con las URL de imagen.
+     * @param {stageImageList[]} imageList - Listado de escenarios.
+     * @param {string} idEsc - Identificador del escenario.
+     */
+    const getMapImage = async(imageList:stageImageList[], idEsc:string) => {
 
         imageList.map(async (image) => {
             const url:string = await Promise.resolve(getUrlStage(image.id))
             image.url = url + '?' + randomValueRefreshImage
         })
-        //console.log('getMapImage - imageList: ', imageList, ' , idEsc:', idEsc);
         
-        if(idEsc !== null && idEsc !== undefined && imageList){
-            setImagetStage(imageList.find(elem => elem.id === idEsc)?.url || '');
-        }
+        if(idEsc !== null && idEsc !== undefined && imageList) setImagetStage(imageList.find(elem => elem.id === idEsc)?.url || '')
+
     }
     
-    async function getSoundList(ubiId:string): Promise<DBSonidoUbicacion[]>{
-        let list: DBSonidoUbicacion[] = [];
-        //console.log('ubiId: ', ubiId);
+    /**
+     * Llenar listado de URL de los sonidos por ubicacion.
+     * @param {string} ubiId - Identificador de la ubicacion.
+     * @returns {DBSonidoUbicacion[]} Retorna el listado de sonidos por ubicacion.
+     */
+    const getSoundList = async(ubiId:string): Promise<DBSonidoUbicacion[]> => {
+        let list: DBSonidoUbicacion[] = []
         
-        if (ubiId == undefined || ubiId == null) return list;
+        if (ubiId == undefined || ubiId == null) return list
 
-        const { data } = await dbConnection.from("sub_sonido_ubicacion").select('sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre) ')
+        const { data } = await dbConnection.from("sub_sonido_ubicacion")
+        .select('sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre) ')
         .eq('sub_tipo','U')
         .eq('sub_estado','A')
         .eq('sub_ubi',ubiId)
-        .returns<DBSonidoUbicacion[]>();
+        .returns<DBSonidoUbicacion[]>()
         //console.log("getSoundList - data: " , data);
         if (data !== null) {
-            await getSounds(data);
-            list = data;
+            await getSounds(data)
+            list = data
         }
         //console.log(list);
-        return list;
+        return list
     }
 
-    async function getSounds(soundsList:DBSonidoUbicacion[]) {
+    const getSounds = async(soundsList:DBSonidoUbicacion[]) => {
         await soundsList.map(async (sound) => {
             const url:string = await Promise.resolve(getUrlSound(sound.sub_son))
             sound.sub_sound_url = url + '?' + randomValueRefreshImage
         })
     }
 
-    async function getNpc(ubiId:string): Promise<DBPersonajeNoJugable[]>{
-        let character: DBPersonajeNoJugable[] = [];
+    /**
+     * Llenar listado de personajes no jugables por ubicacion.
+     * @param {string} ubiId - Identificador de la ubicacion.
+     * @returns {DBPersonajeNoJugable[]} Retorna el listado de personajes no jugables por ubicacion.
+     */
+    const getNpcList = async(ubiId:string): Promise<DBPersonajeNoJugable[]> => {
+        let characterList: DBPersonajeNoJugable[] = []
         
-        if (ubiId == undefined || ubiId == null) return character;
+        if (ubiId == undefined || ubiId == null) return characterList
 
-        const { data } = await dbConnection.from("pnj_personaje_no_jugable").select('pnj_id, pnj_nombre, pnj_raza, pnj_clase, pnj_trabajo, pnj_edad, pnj_tipo, pnj_str, pnj_int, pnj_dex, pnj_con, pnj_cha, pnj_per')
+        const { data } = await dbConnection.from("pnj_personaje_no_jugable")
+        .select('pnj_id, pnj_nombre, pnj_raza, pnj_clase, pnj_trabajo, pnj_edad, pnj_tipo, pnj_str, pnj_int, pnj_dex, pnj_con, pnj_cha, pnj_per')
         //.eq('pnj_tipo','M')
         .eq('pnj_estado','A')
         .eq('pnj_ubi',ubiId)
         .order('pnj_tipo', {ascending: true})
-        .returns<DBPersonajeNoJugable[]>();
+        .returns<DBPersonajeNoJugable[]>()
 
         if (data !== null) {
             //console.log("getMainNpc - data: " , data, ' idUbi: ', ubiId);
-            character = data;
+            characterList = data
         }
 
-        return character;
+        return characterList
     }
 
-    async function getEnemy(ubiId:string): Promise<DBEnemigo[]>{
-        let enemy: DBEnemigo[] = [];
+    /**
+     * Llenar listado de enemigos por ubicacion.
+     * @param {string} ubiId - Identificador de la ubicacion.
+     * @returns {DBPersonajeNoJugable[]} Retorna el listado de enemigos por ubicacion.
+     */
+    const getEnemyList = async(ubiId:string): Promise<DBEnemigo[]> => {
+        let enemyList: DBEnemigo[] = []
         
-        if (ubiId == undefined || ubiId == null) return enemy;
+        if (ubiId == undefined || ubiId == null) return enemyList
 
-        const { data } = await dbConnection.from("ene_enemigo").select('ene_id, ene_nombre, ene_raza, ene_clase, ene_trabajo, ene_edad, ene_tipo, ene_str, ene_int, ene_dex, ene_con, ene_cha, ene_per')
+        const { data } = await dbConnection.from("ene_enemigo")
+        .select('ene_id, ene_nombre, ene_raza, ene_clase, ene_trabajo, ene_edad, ene_tipo, ene_str, ene_int, ene_dex, ene_con, ene_cha, ene_per')
         //.eq('pnj_tipo','M')
         .eq('ene_estado','A')
         .eq('ene_ubi',ubiId)
         .order('ene_tipo', {ascending: true})
-        .returns<DBEnemigo[]>();
+        .returns<DBEnemigo[]>()
 
         if (data !== null) {
             //console.log("getMainNpc - data: " , data, ' idUbi: ', ubiId);
-            enemy = data;
+            enemyList = data
         }
 
-        return enemy;
+        return enemyList
     }
 
-    async function getMission(ubiId:string): Promise<DBMision[]>{
-        let mission: DBMision[] = [];
+    /**
+     * Llenar listado de misiones por ubicacion.
+     * @param {string} ubiId - Identificador de la ubicacion.
+     * @returns {DBPersonajeNoJugable[]} Retorna el listado de misiones por ubicacion.
+     */
+    const getMissionList = async (ubiId:string): Promise<DBMision[]> => {
+        let missionList: DBMision[] = []
         
-        if (ubiId == undefined || ubiId == null) return mission;
+        if (ubiId == undefined || ubiId == null) return missionList
 
-        const { data } = await dbConnection.from("mis_mision").select('mis_id, mis_nombre, mis_tipo, mis_cumplido')
+        const { data } = await dbConnection.from("mis_mision")
+        .select('mis_id, mis_nombre, mis_tipo, mis_cumplido')
         //.eq('pnj_tipo','M')
         .eq('mis_estado','A')
         .eq('mis_ubi',ubiId)
         .order('mis_tipo', {ascending: true})
-        .returns<DBMision[]>();
+        .returns<DBMision[]>()
 
         if (data !== null) {
             //console.log("getMainNpc - data: " , data, ' idUbi: ', ubiId);
-            mission = data;
+            missionList = data
         }
 
-        return mission;
+        return missionList
     }
 
-    async function openNewWindowImageUbi(idUbi:string | undefined){
+    const openNewWindowImageUbi = async(idUbi:string | undefined) => {
         if(idUbi === undefined) return
 
         const url:string = await Promise.resolve(getUrlLocation(idUbi))
         openNewWindowImage(url)
     }
 
-    async function openNewWindowImageNpc(idNpc:string | undefined){
-        if(idNpc === undefined) return;
+    const openNewWindowImageNpc = async(idNpc:string | undefined) => {
+        if(idNpc === undefined) return
 
         const url:string = await Promise.resolve(getUrlNpc(idNpc))
-        openNewWindowImage(url);
+        openNewWindowImage(url)
     }
 
-    async function openNewWindowImageEnemy(idEnemy:string | undefined){
-        if(idEnemy === undefined) return;
+    const openNewWindowImageEnemy = async(idEnemy:string | undefined) => {
+        if(idEnemy === undefined) return
 
         const url:string = await Promise.resolve(getUrlEnemy(idEnemy))
-        openNewWindowImage(url);
+        openNewWindowImage(url)
     }
 
-    function openNewWindowImage(url: string){
+    const openNewWindowImage = (url: string) => {
         const myWindow = window.open("", "MsgWindow", "width=800,height=800");
-        let imageHtml = `<img src='${url}?${randomValueRefreshImage}' style='position: absolute; top:0; left:0; width:100%; height: 100%; object-fit: cover; object-position: center top; overflow:hidden; margin: 0;' alt='Ubicacion' />`;
-        myWindow?.document.write(imageHtml);
+        let imageHtml = `<img src='${url}?${randomValueRefreshImage}' style='position: absolute; top:0; left:0; width:100%; height: 100%; object-fit: cover; object-position: center top; overflow:hidden; margin: 0;' alt='Ubicacion' />`
+        myWindow?.document.write(imageHtml)
     }
 
     const handleImageStageChange = (idEsc: string) => {
-        let listItemsByStage = listItemsMap.filter(elem => elem.mmu_esc === idEsc);
+        let listItemsByStage = listItemsMap.filter(elem => elem.mmu_esc === idEsc)
 
-        setImagetStage(imageStageList.find(elem => elem.id === idEsc)?.url || '');
-        setCurrentStage(listItemsByStage[0]?.esc_escenario as DBEscenario);
-        mapChange(listItemsByStage);
+        setImagetStage(imageStageList.find(elem => elem.id === idEsc)?.url || '')
+        setCurrentStage(listItemsByStage[0]?.esc_escenario as DBEscenario)
+        mapChange(listItemsByStage)
     }
 
     const mapChange = (list: DBMapamundi[]) => {
         const templateMap = geographicalMap.map((row) => 
             row.map((col) => (col.mmu_id !== '' ? emptyTemplate : col))
-        );
+        )
 
         list.map((elem) => {
             templateMap[elem.mmu_pos_y][elem.mmu_pos_x] = elem;
         })
         
-        //console.log('mapChange :', templateMap);
-        setGeographicalMap(templateMap);
+        //console.log('mapChange :', templateMap)
+        setGeographicalMap(templateMap)
     }
 
     const handleCheckboxChange = async (event: React.ChangeEvent<HTMLInputElement>, id: string) => {
-        let isCompleted = event.target.checked;
-        //console.log('handleCheckboxChange', isCompleted);
+        let isCompleted = event.target.checked
         
         const { error } = await dbConnection
         .from('mis_mision')
@@ -304,11 +333,10 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             mis_cumplido: ((isCompleted)?'S':'N'),
         })
         .eq("mis_id", id)
-        .select();
-        if(error) alert('Stat not upload.');
+        .select()
+        if(error) alert('Stat not upload.')
         
     };
-    
 
     return (
         <>
@@ -316,19 +344,19 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         {loading && (
             <ScreenLoader/>
         )}
-        <section className="min-h-screen grid grid-cols-1 grid-rows-[100px_repeat(3,minmax(0,_1fr))] gap-x-0 gap-y-0 py-4">
+        <section className="min-h-screen grid grid-cols-1 grid-rows-[80px_repeat(3,minmax(0,_1fr))] gap-x-0 gap-y-0 py-2">
             {/* Selecionar escenarios */}
             {/* Botones */}
             <StageSelector title='Listados de escenarios' imageList={imageStageList} onImageChange={handleImageStageChange}/>
             <AmbientSoundsSelector title='Lista de sonidos' />
             <DiceThrower title='Lanzador de dados' />
-            <header className='bg-white shadow-lg rounded py-0 grid items-center mb-4'>
+            <header className='bg-white shadow-lg rounded py-0 grid items-center mb-2'>
                 <h1 className='title-list'>Mapamundi</h1>
                 <h2 className='subtitle-list'>{currentStage.esc_nombre}</h2>
             </header>
 
 
-            <article className="map-grid relative grid grid-rows-7 rounded-xl bg-blue-900 text-gray-700 shadow-md w-full px-12 py-2 row-span-5" style={{backgroundImage: `url("${imageStage}")`}}>
+            <article className="map-grid relative grid grid-rows-7 rounded-xl bg-blue-900 text-gray-700 shadow-md w-full px-12 py-2 row-span-5 " style={{backgroundImage: `url("${imageStage}")`}}>
                 <PlayerMap imageStage={imageStage} title={currentStage.esc_nombre} />
                 {geographicalMap.map((row, rowIndex) => (
                     <div key={rowIndex} className='map-grid-row grid-rows-1 grid grid-cols-11 '>
@@ -538,19 +566,21 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                                                         )}
                                                     </div>
                                                     <div className='flex justify-between py-1' >
-                                                        <Popover placement="right" offset={{mainAxis: 100, crossAxis: 0, alignmentAxis:10}}>
-                                                            <PopoverHandler>
-                                                                <button type="button" className='btn-card-ubi'><SvgSong height={20} width={20} /></button>
-                                                            </PopoverHandler>
-                                                            <PopoverContent className='popover-panel' placeholder=''>
-                                                                <article className='card-ubi-info'>
-                                                                    <header className='flex justify-between items-center border-b border-black py-1'>
-                                                                        <h6 className='text-black font-semibold '>Listado de canciones</h6>
-                                                                    </header>
-                                                                    <BtnMenuSound list={elem.lista_sonidos} iconList={itemsSoundsSvg} />
-                                                                </article>
-                                                            </PopoverContent>
-                                                        </Popover>
+                                                        {elem.lista_sonidos && elem.lista_sonidos.length > 0 && (
+                                                            <Popover placement="right" offset={{mainAxis: 100, crossAxis: 0, alignmentAxis:10}}>
+                                                                <PopoverHandler>
+                                                                    <button type="button" className='btn-card-ubi'><SvgSong height={20} width={20} /></button>
+                                                                </PopoverHandler>
+                                                                <PopoverContent className='popover-panel' placeholder=''>
+                                                                    <article className='card-ubi-info'>
+                                                                        <header className='flex justify-between items-center border-b border-black py-1'>
+                                                                            <h6 className='text-black font-semibold '>Listado de canciones</h6>
+                                                                        </header>
+                                                                        <BtnMenuSound list={elem.lista_sonidos} iconList={itemsSoundsSvg} />
+                                                                    </article>
+                                                                </PopoverContent>
+                                                            </Popover>
+                                                        )}
                                                     </div>
                                                 </menu>
                                             </aside>
@@ -560,7 +590,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                             } else {
                                 return (
                                     <div key={rowIndex + colIndex} className='map-grid-col-empty grid-cols-1 border-dashed border-[#000c] border-1 text-light'></div>
-                                );
+                                )
                             }
                         })}
                     </div>

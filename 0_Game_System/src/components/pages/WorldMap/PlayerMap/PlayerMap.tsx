@@ -1,14 +1,14 @@
-import React, { useRef } from 'react';
+import React, { useRef } from 'react'
 
-import "@unocss/reset/tailwind.css";
-import "uno.css";
-import "./PlayerMap.css";
-
-// Images
-import SvgPlayerMap from '@UI/Icons/SvgPlayerMap';
+import "@unocss/reset/tailwind.css"
+import "uno.css"
+import "./PlayerMap.css"
 
 // Images
-import bgTab from '@img/webp/bg-tab.webp';
+import SvgPlayerMap from '@UI/Icons/SvgPlayerMap'
+
+// Images
+import bgTab from '@img/webp/bg-tab.webp'
 
 interface PlayerMapProps{
     imageStage: string;
@@ -17,16 +17,16 @@ interface PlayerMapProps{
 
 const PlayerMap: React.FC<PlayerMapProps> = ({imageStage, title}) => {
 
-    const newTabRef = useRef<Window | null>(null);
-    //console.log(process.env.PUBLIC_URL);
+    const newTabRef = useRef<Window | null>(null)
+    //console.log(process.env.PUBLIC_URL)
     
     const openUserStage = () =>{
         let data = {url:imageStage,title:'imagen'}
         if (newTabRef.current && !newTabRef.current.closed) {
             // Si la pestaña ya está abierta, actualiza la imagen
             
-            const imgElement = newTabRef.current.document.getElementById('bgStage') as HTMLImageElement | null;
-            if (imgElement) imgElement.src = imageStage;
+            const imgElement = newTabRef.current.document.getElementById('bgStage') as HTMLImageElement | null
+            if (imgElement) imgElement.src = imageStage
             const textMap = newTabRef.current.document.getElementById('textStage') as HTMLBodyElement | null
             if(textMap) textMap.innerHTML = title
             
@@ -75,7 +75,7 @@ const PlayerMap: React.FC<PlayerMapProps> = ({imageStage, title}) => {
                 if(bgImg) bgImg.style.backgroundImage = `url(${bgTab})`
                 //newTab.document.close();
             }
-            newTabRef.current = newTab;
+            newTabRef.current = newTab
           }
     }
 
@@ -94,4 +94,4 @@ const PlayerMap: React.FC<PlayerMapProps> = ({imageStage, title}) => {
     );
 };
 
-export default PlayerMap;
+export default PlayerMap

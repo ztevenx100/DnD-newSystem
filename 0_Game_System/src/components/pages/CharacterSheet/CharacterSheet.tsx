@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 import dbConnection from '@database/dbConnection';
 import { getUrlCharacter } from '@database/dbStorage';
 
-//import { useBackground } from '@/App';
 import { Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
 import "uno.css";
@@ -34,7 +33,6 @@ interface CharacterSheetProps {
 }
 
 const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => {
-   // Cambia la imagen de fondo cuando el componente se monta
 
    // Varibles - estados
    const [playerName, setPlayerName] = useState<string>('');
@@ -157,7 +155,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       }
    }
    async function getListSkill() {
-      const { data } = await dbConnection.from("hab_habilidad").select( 'hab_id, hab_nombre, had_estadistica_base, hab_siglas, hab_tipo' )
+      const { data } = await dbConnection.from("hab_habilidad")
+         .select( 'hab_id, hab_nombre, had_estadistica_base, hab_siglas, hab_tipo' )
          .in("hab_tipo",["C","E","R"])
          .order('hab_tipo', {ascending: true})
          .order('had_estadistica_base', {ascending: true});
@@ -190,7 +189,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       }
    }
    async function getGameSystemList() {
-      const { data } = await dbConnection.from("sju_sistema_juego").select('sju_id, sju_nombre')
+      const { data } = await dbConnection.from("sju_sistema_juego")
+         .select('sju_id, sju_nombre')
          .eq('sju_estado', 'A')
          .returns<DBSistemaJuego[]>();
       //console.log("getGameSystemList - data: ", data);
@@ -205,11 +205,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    async function getCharacter() {
       if(params.id === null || params.id ===  undefined) return;
       
-      const { data } = await dbConnection.from("pus_personajes_usuario").select(
-         'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria,pus_cantidad_oro,pus_cantidad_plata,pus_cantidad_bronce, pus_puntos_suerte, sju_sistema_juego(sju_id,sju_nombre)'
-      ).eq("pus_id",params.id)
-      .returns<DBPersonajesUsuario[]>();
-      //console.log('getCharacter ',data);
+      const { data } = await dbConnection.from("pus_personajes_usuario")
+         .select(
+            'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria,pus_cantidad_oro,pus_cantidad_plata,pus_cantidad_bronce, pus_puntos_suerte, sju_sistema_juego(sju_id,sju_nombre)'
+         ).eq("pus_id",params.id)
+         .returns<DBPersonajesUsuario[]>();
+         //console.log('getCharacter ',data);
 
       if (data !== null) {
          const updatedCoins = [...coins];
@@ -247,7 +248,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    async function getStats() {
       if(params.id === null || params.id === undefined) return;
 
-      const { data } = await dbConnection.from("epe_estadistica_personaje").select( 'epe_sigla, epe_nombre, epe_num_dado, epe_num_clase, epe_num_nivel' )
+      const { data } = await dbConnection.from("epe_estadistica_personaje")
+         .select( 'epe_sigla, epe_nombre, epe_num_dado, epe_num_clase, epe_num_nivel' )
          .eq("epe_personaje",params.id);
       //console.log('getStats ',data);
 
@@ -265,7 +267,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    async function getSkills() {
       if(params.id === null || params.id === undefined) return;
       
-      const { data } = await dbConnection.from("hpe_habilidad_personaje").select( 'hpe_habilidad, hpe_campo, hpe_alineacion, hab_habilidad(hab_id, hab_nombre, had_estadistica_base, hab_siglas)' )
+      const { data } = await dbConnection.from("hpe_habilidad_personaje")
+         .select( 'hpe_habilidad, hpe_campo, hpe_alineacion, hab_habilidad(hab_id, hab_nombre, had_estadistica_base, hab_siglas)' )
          .eq("hpe_personaje",params.id)
          .order('hpe_campo', {ascending: true})
          .returns<DBHabilidadPersonaje[]>()
@@ -667,13 +670,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    }
 
    const getClassName = (id: string|undefined): string | undefined  => {
-      return optionsCharacterClass.find(elem => elem.value === id)?.name;
+      return optionsCharacterClass.find(elem => elem.value === id)?.name
    }
    const getRaceName = (id: string|undefined): string | undefined  => {
-      return optionsCharacterRace.find(elem => elem.value === id)?.name;
+      return optionsCharacterRace.find(elem => elem.value === id)?.name
    }
    const getJobName = (id: string|undefined): string | undefined  => {
-      return optionsCharacterJob.find(elem => elem.value === id)?.name;
+      return optionsCharacterJob.find(elem => elem.value === id)?.name
    }
    const getKnowledgeName = (ids: string[]|undefined): string | undefined  => {
       let names = '';
@@ -686,13 +689,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       return names;
    }
    const getMainSkillName = (id: string|undefined): string | undefined  => {
-      return optionsSkillClass.find(elem => elem.value === id)?.name;
+      return optionsSkillClass.find(elem => elem.value === id)?.name
    }
    const getExtraSkillName = (id: string|undefined): string | undefined  => {
-      return optionsSkillExtra.find(elem => elem.value === id)?.name;
+      return optionsSkillExtra.find(elem => elem.value === id)?.name
    }
    const getSkillName = (id: string, stat: string): string | undefined  => {
-      return skillsTypes.find(skill => skill.id === stat)?.skills.find(ele => ele.value === id)?.name;
+      return skillsTypes.find(skill => skill.id === stat)?.skills.find(ele => ele.value === id)?.name
    }
 
    async function saveData() {
@@ -712,7 +715,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    }
    
    const reloadPage = (character: string) => {
-      navigate('/CharacterSheet/'+params.user+'/'+character);
+      navigate('/CharacterSheet/'+params.user+'/'+character)
    };
 
    async function uploadInfoCharacter(newRecord: boolean) {
@@ -885,7 +888,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       {loading && (
          <ScreenLoader/>
       )}
-      <form id='form-sheet' className="min-h-screen form-sheet grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4">
+      <form id='form-sheet' className="form-sheet min-h-screen grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4">
          
          {/* Titulo */}
          <fieldset className="fieldset-form form-title col-span-2 md:col-span-2 lg:col-span-3 shadow-lg rounded">

@@ -63,7 +63,6 @@ const UserCharacters: React.FC = () => {
         if(!confirm('¿Seguro de que desea eliminar el personaje?')) return;
 
         if(id === null || id === '') return;
-        //console.log('handleDeleteCharacter', id);
         
         // Eliminar objeto db
         const { error } = await dbConnection

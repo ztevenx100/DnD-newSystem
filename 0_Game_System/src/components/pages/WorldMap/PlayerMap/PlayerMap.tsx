@@ -1,14 +1,14 @@
-import React, { useRef } from 'react';
+import React, { useRef } from 'react'
 
-import "@unocss/reset/tailwind.css";
-import "uno.css";
-import "./PlayerMap.css";
-
-// Images
-import SvgPlayerMap from '@UI/Icons/SvgPlayerMap';
+import "@unocss/reset/tailwind.css"
+import "uno.css"
+import "./PlayerMap.css"
 
 // Images
-import bgTab from '@img/webp/bg-tab.webp';
+import SvgPlayerMap from '@UI/Icons/SvgPlayerMap'
+
+// Images
+import bgTab from '@img/webp/bg-tab.webp'
 
 interface PlayerMapProps{
     imageStage: string;
@@ -17,16 +17,18 @@ interface PlayerMapProps{
 
 const PlayerMap: React.FC<PlayerMapProps> = ({imageStage, title}) => {
 
-    const newTabRef = useRef<Window | null>(null);
-    //console.log(process.env.PUBLIC_URL);
+    const newTabRef = useRef<Window | null>(null)
+    //console.log(process.env.PUBLIC_URL)
     
     const openUserStage = () =>{
         let data = {url:imageStage,title:'imagen'}
         if (newTabRef.current && !newTabRef.current.closed) {
             // Si la pestaña ya está abierta, actualiza la imagen
             
-            const imgElement = newTabRef.current.document.getElementById('bgStage') as HTMLImageElement | null;
-            if (imgElement) imgElement.src = imageStage;
+            const imgElement = newTabRef.current.document.getElementById('bgStage') as HTMLImageElement | null
+            if (imgElement) imgElement.src = imageStage
+            const textMap = newTabRef.current.document.getElementById('textStage') as HTMLBodyElement | null
+            if(textMap) textMap.innerHTML = title
             
             newTabRef.current.postMessage(data, window.location.origin);
           } else {
@@ -42,9 +44,9 @@ const PlayerMap: React.FC<PlayerMapProps> = ({imageStage, title}) => {
                             <title>Mapa del jugador</title>
                             <script src="https://cdn.tailwindcss.com"></script>
                         </head>
-                        <body id='bg-new-tab' style='background-image: url("${bgTab}") ' >
-                            <article class='max-h-screen max-w-screen grid grid-rows-11 gap-y-4 p-5 '>
-                                <section class='w-full flex overflow-hidden row-span-10 ' >
+                        <body id='bgNewTab' style='background-image: url("${bgTab}") ' >
+                            <article class='max-h-screen max-w-screen grid grid-rows-12 gap-y-4 p-5 '>
+                                <section class='w-full flex overflow-hidden row-span-12 row-start-1 col-start-1 ' >
                                     <img 
                                         src='${imageStage}'
                                         id='bgStage'
@@ -52,20 +54,28 @@ const PlayerMap: React.FC<PlayerMapProps> = ({imageStage, title}) => {
                                         alt='Escenario' 
                                     />
                                 </section>
-                                <section class='row-span-1 bg-white rounded-lg' >
-                                    <h1 class='h-full text-center content-center font-bold text-3xl ' >${title}</h1>
+                                <section class='lbl-stage row-span-2 row-start-11 col-start-1 bg-white rounded-lg border-b-black z-1 mx-48 my-5' >
+                                    <h1 id='textStage' class='h-full text-center content-center font-bold text-3xl ' >${title}</h1>
                                 </section>
                             </article>
+                            <style>
+                                .lbl-stage{
+                                    animation: 2s ease 0s normal forwards 1 fadein;
+                                }
+                                @keyframes fadein{
+                                    0% { opacity:0; }
+                                    66% { opacity:0; }
+                                    100% { opacity:1; }
+                                }
+                            </style>
                         </body>
                     </html>
                 `);
-                const bgImg = newTab.document.getElementById('bg-new-tab') as HTMLBodyElement | null
-                //console.log(bgTab);
-                
+                const bgImg = newTab.document.getElementById('bgNewTab') as HTMLBodyElement | null
                 if(bgImg) bgImg.style.backgroundImage = `url(${bgTab})`
                 //newTab.document.close();
             }
-            newTabRef.current = newTab;
+            newTabRef.current = newTab
           }
     }
 
@@ -84,4 +94,4 @@ const PlayerMap: React.FC<PlayerMapProps> = ({imageStage, title}) => {
     );
 };
 
-export default PlayerMap;
+export default PlayerMap

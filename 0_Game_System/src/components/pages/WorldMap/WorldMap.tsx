@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import dbConnection from '@database/dbConnection'
-//import { getDataQuerySimple } from '@database/dbTables'
+import { getDataQueryMmu, getDataQuerySub, getDataQueryPnj, getDataQueryEne, getDataQueryMis } from '@database/dbTables'
 import { getUrlStage, getUrlSound, getUrlLocation, getUrlNpc, getUrlEnemy } from '@database/dbStorage'
 
 import { Popover, PopoverHandler, PopoverContent, Tooltip } from "@material-tailwind/react"
@@ -71,9 +71,6 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         const loadInfo = async () => {
             const templateMap: DBMapamundi[][] = buildTemplateMap()
             console.log('params: ',params)
-
-           // let data = getDataQuerySimple('usu_usuario','*')
-            //console.log('data:', data);
             
             Promise.all ([
                 getMap(templateMap),
@@ -107,13 +104,13 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
      * @param {DBMapamundi[][]} templateMap - Mapa vacio.
      */
     const getMap = async(templateMap: DBMapamundi[][]) => {
-        const { data } = await dbConnection.from("mmu_mapamundi")
-            .select('mmu_id, mmu_sju, mmu_esc, esc_escenario(esc_id, esc_tipo, esc_nombre), mmu_ubi, ubi_ubicacion(ubi_id, ubi_tipo, ubi_nombre),mmu_pos_x, mmu_pos_y')
-            .eq("mmu_sju",'d127c085-469a-4627-8801-77dc7262d41b')
-            //.eq("mmu_id",'036bd999-f79e-4203-bc93-ecce0bfdca35')
-            .order('mmu_pos_x', {ascending: true})
-            .order('mmu_pos_y', {ascending: true})
-            .returns<DBMapamundi[]>()
+        const data = await Promise.resolve(
+            getDataQueryMmu(
+                'mmu_id, mmu_sju, mmu_esc, esc_escenario(esc_id, esc_tipo, esc_nombre), mmu_ubi, ubi_ubicacion(ubi_id, ubi_tipo, ubi_nombre),mmu_pos_x, mmu_pos_y'
+                , {'mmu_sju': 'd127c085-469a-4627-8801-77dc7262d41b'}
+                , { 'mmu_pos_x': true, 'mmu_pos_y':true }
+            )
+        )
   
         if (data !== null) {
             let stage:DBEscenario = data[0].esc_escenario as DBEscenario
@@ -180,12 +177,13 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         
         if (ubiId == undefined || ubiId == null) return list
 
-        const { data } = await dbConnection.from("sub_sonido_ubicacion")
-        .select('sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre) ')
-        .eq('sub_tipo','U')
-        .eq('sub_estado','A')
-        .eq('sub_ubi',ubiId)
-        .returns<DBSonidoUbicacion[]>()
+        const data =  await Promise.resolve( 
+            getDataQuerySub(
+                'sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre) '
+                , {'sub_tipo': 'U', 'sub_estado': 'A', 'sub_ubi': ubiId}
+            )
+        )
+
         //console.log("getSoundList - data: " , data);
         if (data !== null) {
             await getSounds(data)
@@ -212,13 +210,13 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         
         if (ubiId == undefined || ubiId == null) return characterList
 
-        const { data } = await dbConnection.from("pnj_personaje_no_jugable")
-        .select('pnj_id, pnj_nombre, pnj_raza, pnj_clase, pnj_trabajo, pnj_edad, pnj_tipo, pnj_str, pnj_int, pnj_dex, pnj_con, pnj_cha, pnj_per')
-        //.eq('pnj_tipo','M')
-        .eq('pnj_estado','A')
-        .eq('pnj_ubi',ubiId)
-        .order('pnj_tipo', {ascending: true})
-        .returns<DBPersonajeNoJugable[]>()
+        const data =  await Promise.resolve(
+            getDataQueryPnj(
+                'pnj_id, pnj_nombre, pnj_raza, pnj_clase, pnj_trabajo, pnj_edad, pnj_tipo, pnj_str, pnj_int, pnj_dex, pnj_con, pnj_cha, pnj_per'
+                , {'pnj_estado': 'A', 'pnj_ubi': ubiId}
+                , {'pnj_tipo': true}
+            )
+        )
 
         if (data !== null) {
             //console.log("getMainNpc - data: " , data, ' idUbi: ', ubiId);
@@ -238,13 +236,13 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         
         if (ubiId == undefined || ubiId == null) return enemyList
 
-        const { data } = await dbConnection.from("ene_enemigo")
-        .select('ene_id, ene_nombre, ene_raza, ene_clase, ene_trabajo, ene_edad, ene_tipo, ene_str, ene_int, ene_dex, ene_con, ene_cha, ene_per')
-        //.eq('pnj_tipo','M')
-        .eq('ene_estado','A')
-        .eq('ene_ubi',ubiId)
-        .order('ene_tipo', {ascending: true})
-        .returns<DBEnemigo[]>()
+        const data =  await Promise.resolve(
+            getDataQueryEne(
+                'ene_id, ene_nombre, ene_raza, ene_clase, ene_trabajo, ene_edad, ene_tipo, ene_str, ene_int, ene_dex, ene_con, ene_cha, ene_per'
+                , {'ene_estado': 'A', 'ene_ubi': ubiId}
+                , {'ene_tipo': true}
+            )
+        )
 
         if (data !== null) {
             //console.log("getMainNpc - data: " , data, ' idUbi: ', ubiId);
@@ -264,13 +262,13 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         
         if (ubiId == undefined || ubiId == null) return missionList
 
-        const { data } = await dbConnection.from("mis_mision")
-        .select('mis_id, mis_nombre, mis_tipo, mis_cumplido')
-        //.eq('pnj_tipo','M')
-        .eq('mis_estado','A')
-        .eq('mis_ubi',ubiId)
-        .order('mis_tipo', {ascending: true})
-        .returns<DBMision[]>()
+        const data =  await Promise.resolve(
+            getDataQueryMis(
+                'mis_id, mis_nombre, mis_tipo, mis_cumplido'
+                , {'mis_estado':'A', 'mis_ubi': ubiId}
+                , {'mis_tipo': true}
+            )
+        )
 
         if (data !== null) {
             //console.log("getMainNpc - data: " , data, ' idUbi: ', ubiId);

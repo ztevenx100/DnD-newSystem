@@ -1,6 +1,10 @@
 // @filename: tables.ts
 import dbConnection from '@database/dbConnection'
 
+
+// Interfaces
+import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision, DBSistemaJuego, DBHabilidadPersonaje, DBUsuario } from '@interfaces/dbTypes'
+
 const TABLE_ENE:string = 'ene_enemigo'
 const TABLE_EPE:string = 'epe_estadistica_personaje'
 const TABLE_ESC:string = 'esc_escenario'
@@ -21,165 +25,188 @@ interface WhereClause {
     [key: string]: string;
 }
 
+interface OrderByClause {
+    [key: string]: boolean;
+}
+
 /**
  * Retorna los datos obtenidos de la consulta a la tabla de enemigos.
  * 
  * @param {string} fields - campos de la base de datos.
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @param {WhereClause} [where] - where de la base de datos (opcional).
+ * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
+ * @returns {DBEnemigo[]} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryEne = async (fields: string) => {
-    return getDataQuery(TABLE_ENE, fields, {})
+export const getDataQueryEne = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+    return getDataQuery<DBEnemigo>(TABLE_ENE, fields, where, orderBy)
 }
 
 /**
  * Retorna los datos obtenidos de la consulta a la tabla de estadisticas por personaje.
  * 
  * @param {string} fields - campos de la base de datos.
+ * @param {WhereClause} [where] - where de la base de datos (opcional).
+ * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryEpe = async (fields: string) => {
-    return getDataQuery(TABLE_EPE, fields, {})
+export const getDataQueryEpe = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+    return getDataQuery(TABLE_EPE, fields, where, orderBy)
 }
 
 /**
  * Retorna los datos obtenidos de la consulta a la tabla de escenarios.
  * 
  * @param {string} fields - campos de la base de datos.
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @param {WhereClause} [where] - where de la base de datos.
+ * @param {OrderByClause} [orderBy] - orderBy de la base de datos.
+ * @returns {DBEscenario[]} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryEsc = async (fields: string) => {
-    return getDataQuery(TABLE_ESC, fields, {})
+export const getDataQueryEsc = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+    return getDataQuery<DBEscenario>(TABLE_ESC, fields, where, orderBy)
 }
 
 /**
  * Retorna los datos obtenidos de la consulta a la tabla de habilidades.
  * 
  * @param {string} fields - campos de la base de datos.
+ * @param {WhereClause} [where] - where de la base de datos (opcional).
+ * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryHad = async (fields: string) => {
-    return getDataQuery(TABLE_HAD, fields, {})
+export const getDataQueryHad = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+    return getDataQuery(TABLE_HAD, fields, where, orderBy)
 }
 
 /**
  * Retorna los datos obtenidos de la consulta a la tabla de habilidades por personaje.
  * 
  * @param {string} fields - campos de la base de datos.
+ * @param {WhereClause} [where] - where de la base de datos (opcional).
+ * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryHpe = async (fields: string) => {
-    return getDataQuery(TABLE_HPE, fields, {})
+export const getDataQueryHpe = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+    return getDataQuery<DBHabilidadPersonaje>(TABLE_HPE, fields, where, orderBy)
 }
 
 /**
  * Retorna los datos obtenidos de la consulta a la tabla de inventario por personaje.
  * 
  * @param {string} fields - campos de la base de datos.
+ * @param {WhereClause} [where] - where de la base de datos (opcional).
+ * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryInp = async (fields: string) => {
-    return getDataQuery(TABLE_INP, fields, {})
+export const getDataQueryInp = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+    return getDataQuery(TABLE_INP, fields, where, orderBy)
 }
 
 /**
  * Retorna los datos obtenidos de la consulta a la tabla de misiones.
  * 
  * @param {string} fields - campos de la base de datos.
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @param {WhereClause} [where] - where de la base de datos (opcional).
+ * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
+ * @returns {DBMision[]} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryMis = async (fields: string) => {
-    return getDataQuery(TABLE_MIS, fields, {})
+export const getDataQueryMis = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+    return getDataQuery<DBMision>(TABLE_MIS, fields, where, orderBy)
 }
 
 /**
  * Retorna los datos obtenidos de la consulta a la tabla de mapamundi.
  * 
  * @param {string} fields - campos de la base de datos.
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @param {WhereClause} [where] - where de la base de datos (opcional).
+ * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
+ * @returns {DBMapamundi[]} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryMmu = async (fields: string) => {
-    return getDataQuery(TABLE_MMU, fields, {})
+export const getDataQueryMmu = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+    return getDataQuery<DBMapamundi>(TABLE_MMU, fields, where, orderBy)
 }
 
 /**
  * Retorna los datos obtenidos de la consulta a la tabla de personjes no jugables.
  * 
  * @param {string} fields - campos de la base de datos.
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @param {WhereClause} [where] - where de la base de datos (opcional).
+ * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
+ * @returns {DBPersonajeNoJugable[]} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryPnj = async (fields: string) => {
-    return getDataQuery(TABLE_PNJ, fields, {})
+export const getDataQueryPnj = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+    return getDataQuery<DBPersonajeNoJugable>(TABLE_PNJ, fields, where, orderBy)
 }
 
 /**
  * Retorna los datos obtenidos de la consulta a la tabla de personajes por usuario.
  * 
  * @param {string} fields - campos de la base de datos.
+ * @param {WhereClause} [where] - where de la base de datos (opcional).
+ * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryPus = async (fields: string) => {
-    return getDataQuery(TABLE_PUS, fields, {})
+export const getDataQueryPus = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+    return getDataQuery(TABLE_PUS, fields, where, orderBy)
 }
 
 /**
  * Retorna los datos obtenidos de la consulta a la tabla de sistemas de juego.
  * 
  * @param {string} fields - campos de la base de datos.
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @param {WhereClause} [where] - where de la base de datos (opcional).
+ * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
+ * @returns {DBSistemaJuego[]} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQuerySju = async (fields: string) => {
-    return getDataQuery(TABLE_SJU, fields, {})
+export const getDataQuerySju = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+    return getDataQuery<DBSistemaJuego>(TABLE_SJU, fields, where, orderBy)
 }
 
 /**
  * Retorna los datos obtenidos de la consulta a la tabla de sonidos.
  * 
  * @param {string} fields - campos de la base de datos.
+ * @param {WhereClause} [where] - where de la base de datos (opcional).
+ * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQuerySon = async (fields: string) => {
-    return getDataQuery(TABLE_SON, fields, {})
+export const getDataQuerySon = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+    return getDataQuery(TABLE_SON, fields, where, orderBy)
 }
 
 /**
  * Retorna los datos obtenidos de la consulta a la tabla de sonidos por ubicacion.
  * 
  * @param {string} fields - campos de la base de datos.
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @param {WhereClause} [where] - where de la base de datos (opcional).
+ * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
+ * @returns {DBSonidoUbicacion[]} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQuerySub = async (fields: string) => {
-    return getDataQuery(TABLE_SUB, fields, {})
+export const getDataQuerySub = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+    return getDataQuery<DBSonidoUbicacion>(TABLE_SUB, fields, where, orderBy)
 }
 
 /**
  * Retorna los datos obtenidos de la consulta a la tabla de ubicaciones.
  * 
  * @param {string} fields - campos de la base de datos.
+ * @param {WhereClause} [where] - where de la base de datos (opcional).
+ * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryUbi = async (fields: string) => {
-    return getDataQuery(TABLE_UBI, fields, {})
+export const getDataQueryUbi = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+    return getDataQuery(TABLE_UBI, fields, where, orderBy)
 }
 
 /**
  * Retorna los datos obtenidos de la consulta a la tabla de usuarios.
  * 
  * @param {string} fields - campos de la base de datos.
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @param {WhereClause} [where] - where de la base de datos (opcional).
+ * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
+ * @returns {DBUsuario[]} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryUsu = async (fields: string) => {
-    return getDataQuery(TABLE_USU, fields, {})
-}
-
-/**
- * Retorna los datos obtenidos de la consulta de base de datos.
- * 
- * @param {string} table - tabla de la base de datos.
- * @param {string} fields - campos de la base de datos.
- * @returns {any} datos obtenidos de la consulta a base de datos.
- */
-export const getDataQuerySimple = async (table: string, fields: string) => {
-    return getDataQuery(table, fields, {})
+export const getDataQueryUsu = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+    return getDataQuery<DBUsuario>(TABLE_USU, fields, where, orderBy)
 }
 
 /**
@@ -188,24 +215,34 @@ export const getDataQuerySimple = async (table: string, fields: string) => {
  * @param {string} table - tabla de la base de datos.
  * @param {string} fields - campos de la base de datos.
  * @param {WhereClause} where - where de la base de datos.
+ * @param {OrderByClause} orderBy - orderBy de la base de datos.
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQuery = async (table: string, fields: string, where: WhereClause) => {
+export const getDataQuery = async<T> (table: string, fields: string, where?: WhereClause, orderBy?: OrderByClause):Promise<T[]> => {
 
     try {
         let query = dbConnection
         .from(table)
         .select(fields)
     
-        for (const [key, value] of Object.entries(where)) {
-            query = query.eq(key, value);
+        if (where) {
+            for (const [key, value] of Object.entries(where)) {
+                query = query.eq(key, value);
+            }
         }
-    
-        const { data, error } = await query
+
+        if (orderBy) {
+            //query = query.order(orderBy.field, { ascending: orderBy.ascending });
+            for (const [key, value] of Object.entries(orderBy)) {
+                query = query.order(key, { ascending: value })
+            }
+        }
+        
+        const { data, error } = await query.returns<T[]>()
 
         if (error) throw error
         
-        return data
+        return data as T[]
     } catch (error) {
         console.error('Error executing select:', error);
         throw error;

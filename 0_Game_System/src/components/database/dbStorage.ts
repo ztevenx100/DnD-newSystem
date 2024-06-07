@@ -1,5 +1,5 @@
 // @filename: storage.ts
-import dbConnection, {dbName} from '@database/dbConnection'
+import dbConnection, {bucketName} from '@database/dbConnection'
 
 const SEPARATOR_PATH:string = '/'
 const FOLDER_ENEMYS:string = 'enemigos'
@@ -113,10 +113,10 @@ export const getUrl = async (folder:string, id:string) => {
 export const getUrlStorage = async (path: string) => {
     let url = ''
 
-    const { data } = await dbConnection
-    .storage
-    .from(dbName)
-    .getPublicUrl(path)
+    const { data } = dbConnection
+        .storage
+        .from(bucketName)
+        .getPublicUrl(path)
 
     if (data !== null) {
         url = data.publicUrl

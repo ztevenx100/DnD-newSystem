@@ -1,6 +1,6 @@
-import supabase, {databaseName} from '@database/supabase'
+import supabase, {bucket} from '@database/supabase'
 
 const dbConnection = supabase
-export const dbName = databaseName
+export const bucketName = bucket
 
 export default dbConnection

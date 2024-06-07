@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import dbConnection from '@database/dbConnection'
+//import { getDataQuerySimple } from '@database/dbTables'
 import { getUrlStage, getUrlSound, getUrlLocation, getUrlNpc, getUrlEnemy } from '@database/dbStorage'
 
 import { Popover, PopoverHandler, PopoverContent, Tooltip } from "@material-tailwind/react"
@@ -71,6 +72,9 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             const templateMap: DBMapamundi[][] = buildTemplateMap()
             console.log('params: ',params)
 
+           // let data = getDataQuerySimple('usu_usuario','*')
+            //console.log('data:', data);
+            
             Promise.all ([
                 getMap(templateMap),
             ]).finally(() => {

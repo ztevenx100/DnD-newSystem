@@ -3,7 +3,7 @@ import dbConnection from '@database/dbConnection'
 
 
 // Interfaces
-import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision, DBSistemaJuego, DBHabilidadPersonaje, DBUsuario } from '@interfaces/dbTypes'
+import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision, DBSistemaJuego, DBHabilidadPersonaje, DBUsuario, DBPersonajesUsuario } from '@interfaces/dbTypes'
 
 const TABLE_ENE:string = 'ene_enemigo'
 const TABLE_EPE:string = 'epe_estadistica_personaje'
@@ -146,7 +146,7 @@ export const getDataQueryPnj = async (fields: string, where?: WhereClause, order
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryPus = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery(TABLE_PUS, fields, where, orderBy)
+    return getDataQuery<DBPersonajesUsuario>(TABLE_PUS, fields, where, orderBy)
 }
 
 /**

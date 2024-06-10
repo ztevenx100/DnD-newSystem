@@ -107,7 +107,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         const data = await Promise.resolve(
             getDataQueryMmu(
                 'mmu_id, mmu_sju, mmu_esc, esc_escenario(esc_id, esc_tipo, esc_nombre), mmu_ubi, ubi_ubicacion(ubi_id, ubi_tipo, ubi_nombre),mmu_pos_x, mmu_pos_y'
-                , {'mmu_sju': 'd127c085-469a-4627-8801-77dc7262d41b'}
+                , { 'mmu_sju': 'd127c085-469a-4627-8801-77dc7262d41b' }
                 , { 'mmu_pos_x': true, 'mmu_pos_y':true }
             )
         )
@@ -180,7 +180,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         const data =  await Promise.resolve( 
             getDataQuerySub(
                 'sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre) '
-                , {'sub_tipo': 'U', 'sub_estado': 'A', 'sub_ubi': ubiId}
+                , { 'sub_tipo': 'U', 'sub_estado': 'A', 'sub_ubi': ubiId }
             )
         )
 

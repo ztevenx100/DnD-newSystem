@@ -3,7 +3,21 @@ import dbConnection from '@database/dbConnection'
 
 
 // Interfaces
-import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision, DBSistemaJuego, DBHabilidadPersonaje, DBUsuario, DBPersonajesUsuario } from '@interfaces/dbTypes'
+import { 
+    DBEscenario, 
+    DBMapamundi, 
+    DBSonidoUbicacion, 
+    DBPersonajeNoJugable, 
+    DBEnemigo, 
+    DBMision, 
+    DBSistemaJuego, 
+    DBHabilidadPersonaje, 
+    DBUsuario, 
+    DBPersonajesUsuario, 
+    DBHabilidad, 
+    DBEstadisticaPersonaje, 
+    DBInventarioPersonaje 
+} from '@interfaces/dbTypes'
 
 const TABLE_ENE:string = 'ene_enemigo'
 const TABLE_EPE:string = 'epe_estadistica_personaje'
@@ -22,7 +36,7 @@ const TABLE_UBI:string = 'ubi_ubicacion'
 const TABLE_USU:string = 'usu_usuario'
 
 interface WhereClause {
-    [key: string]: string;
+    [key: string]: string | string[];
 }
 
 interface OrderByClause {
@@ -50,7 +64,7 @@ export const getDataQueryEne = async (fields: string, where?: WhereClause, order
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryEpe = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery(TABLE_EPE, fields, where, orderBy)
+    return getDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, fields, where, orderBy)
 }
 
 /**
@@ -74,7 +88,7 @@ export const getDataQueryEsc = async (fields: string, where?: WhereClause, order
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryHad = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery(TABLE_HAD, fields, where, orderBy)
+    return getDataQuery<DBHabilidad>(TABLE_HAD, fields, where, orderBy)
 }
 
 /**
@@ -98,7 +112,7 @@ export const getDataQueryHpe = async (fields: string, where?: WhereClause, order
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryInp = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery(TABLE_INP, fields, where, orderBy)
+    return getDataQuery<DBInventarioPersonaje>(TABLE_INP, fields, where, orderBy)
 }
 
 /**
@@ -227,7 +241,11 @@ export const getDataQuery = async<T> (table: string, fields: string, where?: Whe
     
         if (where) {
             for (const [key, value] of Object.entries(where)) {
-                query = query.eq(key, value);
+                if ( Array.isArray(value) && value.every(item => typeof item === 'string')) {
+                    query = query.eq(key, value);
+                } else if ( typeof value === 'string' ) {
+                    query = query.eq(key, value);
+                }
             }
         }
 

@@ -1,6 +1,6 @@
 import React, {useEffect, useState, ChangeEvent} from 'react';
-import dbConnection from '@database/dbConnection';
 import { getUrlSound } from '@database/dbStorage';
+import { getDataQuerySub } from '@/components/database/dbTables';
 
 import { Popover, PopoverHandler, PopoverContent, Tooltip } from "@material-tailwind/react";
 import "./AmbientSoundsSelector.css";
@@ -33,11 +33,12 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
     }, []);
 
     async function getList() {
-        const { data } = await dbConnection.from("sub_sonido_ubicacion").select('sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre) ')
-        .eq('sub_tipo','G')
-        .eq('sub_estado','A')
-        .returns<DBSonidoUbicacion[]>();
-        //console.log("getList - data: " , data);
+        const data =  await Promise.resolve( 
+            getDataQuerySub(
+                'sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre) '
+                , { 'sub_tipo': 'G', 'sub_estado': 'A' }
+            )
+        )
         if (data !== null) {
             await getSounds(data);
             setList(data);

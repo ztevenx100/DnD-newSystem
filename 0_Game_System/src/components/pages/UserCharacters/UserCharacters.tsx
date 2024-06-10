@@ -43,7 +43,6 @@ const UserCharacters: React.FC = () => {
                 , {'pus_usuario': user}
             )
         )
-        //console.log("getList - data: " , data);
         if (data !== null) {
 
             await Promise.all(

@@ -18,13 +18,11 @@ interface PlayerMapProps{
 const PlayerMap: React.FC<PlayerMapProps> = ({imageStage, title}) => {
 
     const newTabRef = useRef<Window | null>(null)
-    //console.log(process.env.PUBLIC_URL)
     
     const openUserStage = () =>{
         let data = {url:imageStage,title:'imagen'}
         if (newTabRef.current && !newTabRef.current.closed) {
             // Si la pestaña ya está abierta, actualiza la imagen
-            
             const imgElement = newTabRef.current.document.getElementById('bgStage') as HTMLImageElement | null
             if (imgElement) imgElement.src = imageStage
             const textMap = newTabRef.current.document.getElementById('textStage') as HTMLBodyElement | null

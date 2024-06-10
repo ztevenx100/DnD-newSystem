@@ -143,7 +143,6 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             setListItemsMap(data)
             setCurrentStage(stage)
             setImageStageList(updatedImageStageList)
-            //console.log('getMap - updatedImageStageList: ',updatedImageStageList)
             //console.log('getMap - stage: ',stage)
             //console.log('getMap - data: ',data)
         }
@@ -183,8 +182,6 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                 , { 'sub_tipo': 'U', 'sub_estado': 'A', 'sub_ubi': ubiId }
             )
         )
-
-        //console.log("getSoundList - data: " , data);
         if (data !== null) {
             await getSounds(data)
             list = data
@@ -218,10 +215,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             )
         )
 
-        if (data !== null) {
-            //console.log("getMainNpc - data: " , data, ' idUbi: ', ubiId);
-            characterList = data
-        }
+        if (data !== null) characterList = data
 
         return characterList
     }
@@ -244,10 +238,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             )
         )
 
-        if (data !== null) {
-            //console.log("getMainNpc - data: " , data, ' idUbi: ', ubiId);
-            enemyList = data
-        }
+        if (data !== null) enemyList = data
 
         return enemyList
     }
@@ -270,10 +261,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             )
         )
 
-        if (data !== null) {
-            //console.log("getMainNpc - data: " , data, ' idUbi: ', ubiId);
-            missionList = data
-        }
+        if (data !== null) missionList = data
 
         return missionList
     }
@@ -301,7 +289,12 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
 
     const openNewWindowImage = (url: string) => {
         const myWindow = window.open("", "MsgWindow", "width=800,height=800");
-        let imageHtml = `<img src='${url}?${randomValueRefreshImage}' style='position: absolute; top:0; left:0; width:100%; height: 100%; object-fit: cover; object-position: center top; overflow:hidden; margin: 0;' alt='Ubicacion' />`
+        let imageHtml = 
+            `<img 
+                src='${url}?${randomValueRefreshImage}' 
+                style='position: absolute; top:0; left:0; width:100%; height: 100%; object-fit: cover; object-position: center top; overflow:hidden; margin: 0;' 
+                alt='Ubicacion' 
+            />`
         myWindow?.document.write(imageHtml)
     }
 
@@ -322,7 +315,6 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             templateMap[elem.mmu_pos_y][elem.mmu_pos_x] = elem;
         })
         
-        //console.log('mapChange :', templateMap)
         setGeographicalMap(templateMap)
     }
 

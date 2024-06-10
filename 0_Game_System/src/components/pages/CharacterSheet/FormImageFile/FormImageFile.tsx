@@ -18,7 +18,6 @@ const FormImageFile: React.FC<FormImageFileProps> = ({externalStyles, locationIm
       lector.onloadend = () => {
         setImagenSeleccionada(lector.result as string);
         onFormImageFileChange(lector.result as string, archivo);
-        //console.log('manejarCambioImagen - url:', lector.result ,' - file:',archivo);
       };
 
       lector.readAsDataURL(archivo);

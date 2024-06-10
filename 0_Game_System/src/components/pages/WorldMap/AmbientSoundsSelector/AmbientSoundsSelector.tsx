@@ -1,6 +1,6 @@
 import React, {useEffect, useState, ChangeEvent} from 'react';
 import { getUrlSound } from '@database/dbStorage';
-import { getDataQuerySub } from '@/components/database/dbTables';
+import { getDataQuerySub } from '@database/dbTables';
 
 import { Popover, PopoverHandler, PopoverContent, Tooltip } from "@material-tailwind/react";
 import "./AmbientSoundsSelector.css";

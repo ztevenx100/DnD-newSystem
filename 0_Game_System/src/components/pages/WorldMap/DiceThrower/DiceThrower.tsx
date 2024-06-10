@@ -21,8 +21,6 @@ interface DiceThrowerProps{
 }
 
 const DiceThrower: React.FC<DiceThrowerProps> = ({title}) => {
-
-    //const [list, setList] = useState<DBSonidoUbicacion[]>([]);
     const [open, setOpen] = useState<boolean>(false);
     const [countDices, setCountDices] = useState<number[]>([0,0,0,0]);
     const [dices, setDices] = useState<diceInfo[]>([]);
@@ -62,7 +60,6 @@ const DiceThrower: React.FC<DiceThrowerProps> = ({title}) => {
         let numericValue = validateNumeric(value);
         const updatedDices = [...countDices];
         updatedDices[index] = numericValue;
-        //console.log(updatedDices);
         setCountDices(updatedDices);
         
     }

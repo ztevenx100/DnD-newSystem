@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import dbConnection from '@database/dbConnection';
 import { getUrlCharacter } from '@database/dbStorage';
-import { getDataQueryEpe, getDataQueryHad, getDataQueryHpe, getDataQueryInp, getDataQueryPus, getDataQuerySju, getDataQueryUsu } from '@/components/database/dbTables';
+import { getDataQueryEpe, getDataQueryHad, getDataQueryHpe, getDataQueryInp, getDataQueryPus, getDataQuerySju, getDataQueryUsu } from '@database/dbTables';
 
 import { Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";

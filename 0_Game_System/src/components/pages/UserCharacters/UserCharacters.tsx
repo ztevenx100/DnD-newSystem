@@ -13,6 +13,7 @@ import { DBPersonajesUsuario } from '@interfaces/dbTypes'
 // Images
 import SvgAddCharacter from '@Icons/SvgAddCharacter'
 import SvgDeleteItem from '@Icons/SvgDeleteItem'
+import { getDataQueryPus } from '@/components/database/dbTables'
 
 const UserCharacters: React.FC = () => {
     const [list, setList] = useState<DBPersonajesUsuario[]>([]);
@@ -35,11 +36,13 @@ const UserCharacters: React.FC = () => {
 
     async function getList(user:string) {
         if(user === '' || user === null) return;
-
-        const { data } = await dbConnection.from("pus_personajes_usuario").select('pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, usu_usuario(usu_id, usu_nombre), sju_sistema_juego(sju_id, sju_nombre)')
-        .eq('pus_usuario', user)
-        .returns<DBPersonajesUsuario[]>();
-        //console.log("getList - data: " , data);
+        
+        const data = await Promise.resolve(
+            getDataQueryPus(
+                'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, usu_usuario(usu_id, usu_nombre), sju_sistema_juego(sju_id, sju_nombre)'
+                , {'pus_usuario': user}
+            )
+        )
         if (data !== null) {
 
             await Promise.all(

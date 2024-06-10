@@ -26,8 +26,6 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
     useEffect(() => {
         setTimeout(() => {
             handleSkillTypeRingChange(values.ring);
-            //console.log('handleSkillTypeRingChange');
-            
           }, 2000);
       }, [values]);
     };

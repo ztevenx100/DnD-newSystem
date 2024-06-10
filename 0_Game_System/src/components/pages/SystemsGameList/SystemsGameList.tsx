@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import dbConnection from '@database/dbConnection';
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom';
+import { getDataQuerySju } from '@/components/database/dbTables'
 
-import { DBSistemaJuego } from '@interfaces/dbTypes';
+// Interfaces
+import { DBSistemaJuego } from '@interfaces/dbTypes'
 
-import { List, ListItem, Card, ListItemPrefix, Typography } from "@material-tailwind/react";
+import { List, ListItem, Card, ListItemPrefix, Typography } from "@material-tailwind/react"
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./SystemsGameList.css";
@@ -17,8 +18,12 @@ const SystemsGameList: React.FC = () => {
     }, []);
 
     async function getList() {
-        const { data } = await dbConnection.from("sju_sistema_juego").select('sju_id, sju_nombre, sju_descripcion ')
-        .returns<DBSistemaJuego[]>();
+        const data =  await Promise.resolve(
+            getDataQuerySju(
+                'sju_id, sju_nombre, sju_descripcion '
+            )
+        )
+
         if (data !== null) {
             setList(data);
             //console.log("getList - data: " , data);

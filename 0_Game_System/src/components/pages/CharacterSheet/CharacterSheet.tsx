@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import dbConnection from '@database/dbConnection';
 import { getUrlCharacter } from '@database/dbStorage';
+import { getDataQueryEpe, getDataQueryHad, getDataQueryHpe, getDataQueryInp, getDataQueryPus, getDataQuerySju, getDataQueryUsu } from '@database/dbTables';
 
 import { Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip } from "@material-tailwind/react";
 import "@unocss/reset/tailwind.css";
@@ -11,7 +12,7 @@ import "./CharacterSheet.css";
 
 // Interfaces
 import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields, Option } from '@interfaces/typesCharacterSheet';
-import { DBHabilidadPersonaje, DBPersonajesUsuario, DBSistemaJuego } from '@interfaces/dbTypes';
+import { DBSistemaJuego } from '@interfaces/dbTypes';
 // Components
 import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
 import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
@@ -145,8 +146,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    }, []);
 
    async function getUser() {
-      const { data } = await dbConnection.from("usu_usuario").select('usu_id, usu_nombre')
-         .eq("usu_id",params.user);
+      // const { data } = await dbConnection.from("usu_usuario").select('usu_id, usu_nombre')
+      //    .eq("usu_id",params.user);
+      if (params.user == undefined || params.user == null) return
+
+      const data = await Promise.resolve(
+         getDataQueryUsu(
+            'usu_id, usu_nombre'
+            , { 'usu_id': params.user }
+         )
+      )
       //console.log('getUser ',data);
 
       if (data !== null) {
@@ -155,11 +164,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       }
    }
    async function getListSkill() {
-      const { data } = await dbConnection.from("hab_habilidad")
-         .select( 'hab_id, hab_nombre, had_estadistica_base, hab_siglas, hab_tipo' )
-         .in("hab_tipo",["C","E","R"])
-         .order('hab_tipo', {ascending: true})
-         .order('had_estadistica_base', {ascending: true});
+      const data = await Promise.resolve(
+         getDataQueryHad(
+            'hab_id, hab_nombre, had_estadistica_base, hab_siglas, hab_tipo'
+            , { 'hab_tipo': ['C','E','R'] }
+            , { 'hab_tipo': true, 'had_estadistica_base': true }
+         )
+      )
 
       if (data !== null){
          const updatedOptionsSkillClass = [];
@@ -189,10 +200,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       }
    }
    async function getGameSystemList() {
-      const { data } = await dbConnection.from("sju_sistema_juego")
-         .select('sju_id, sju_nombre')
-         .eq('sju_estado', 'A')
-         .returns<DBSistemaJuego[]>();
+      const data = await Promise.resolve(
+         getDataQuerySju(
+            'sju_id, sju_nombre'
+            , { 'sju_estado': 'A' }
+         )
+      )
       //console.log("getGameSystemList - data: ", data);
       if (data !== null) {
          const updatedSystemGameList = [];
@@ -205,12 +218,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    async function getCharacter() {
       if(params.id === null || params.id ===  undefined) return;
       
-      const { data } = await dbConnection.from("pus_personajes_usuario")
-         .select(
+      const data = await Promise.resolve(
+         getDataQueryPus(
             'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria,pus_cantidad_oro,pus_cantidad_plata,pus_cantidad_bronce, pus_puntos_suerte, sju_sistema_juego(sju_id,sju_nombre)'
-         ).eq("pus_id",params.id)
-         .returns<DBPersonajesUsuario[]>();
-         //console.log('getCharacter ',data);
+            , { 'pus_id': params.id }
+         )
+      )
+      //console.log('getCharacter ',data);
 
       if (data !== null) {
          const updatedCoins = [...coins];
@@ -248,10 +262,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    async function getStats() {
       if(params.id === null || params.id === undefined) return;
 
-      const { data } = await dbConnection.from("epe_estadistica_personaje")
-         .select( 'epe_sigla, epe_nombre, epe_num_dado, epe_num_clase, epe_num_nivel' )
-         .eq("epe_personaje",params.id);
-      //console.log('getStats ',data);
+      const data = await Promise.resolve(
+         getDataQueryEpe(
+            'epe_personaje, epe_sigla, epe_nombre, epe_num_dado, epe_num_clase, epe_num_nivel'
+            , { 'epe_personaje': params.id }
+         )
+      )
 
       if (data !== null) {
          const updatedInputsStatsData = [...inputsStatsData];
@@ -267,12 +283,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    async function getSkills() {
       if(params.id === null || params.id === undefined) return;
       
-      const { data } = await dbConnection.from("hpe_habilidad_personaje")
-         .select( 'hpe_habilidad, hpe_campo, hpe_alineacion, hab_habilidad(hab_id, hab_nombre, had_estadistica_base, hab_siglas)' )
-         .eq("hpe_personaje",params.id)
-         .order('hpe_campo', {ascending: true})
-         .returns<DBHabilidadPersonaje[]>()
-      //console.log('getSkills ',data);
+      const data = await Promise.resolve(
+         getDataQueryHpe(
+            'hpe_habilidad, hpe_campo, hpe_alineacion, hab_habilidad(hab_id, hab_nombre, had_estadistica_base, hab_siglas)'
+            , { 'hpe_personaje': params.id }
+            , { 'hpe_campo': true }
+         )
+      )
       
       if (data !== null) {
          let acronym: string = '';
@@ -314,9 +331,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          return;
       }
       
-      const { data } = await dbConnection.from("inp_inventario_personaje").select( 'inp_id, inp_nombre, inp_descripcion, inp_cantidad ' )
-         .eq( "inp_personaje", params.id );
-      //console.log('getInventory ',data);
+      const data = await Promise.resolve(
+         getDataQueryInp(
+            'inp_id, inp_nombre, inp_descripcion, inp_cantidad'
+            , { 'inp_personaje': params.id }
+         )
+      )
 
       if (data !== null) {
          data.forEach(elem => {

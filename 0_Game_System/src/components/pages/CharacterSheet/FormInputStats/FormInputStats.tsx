@@ -10,7 +10,6 @@ interface InputNumberProps {
 }
 
 const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValuesChange})  => {
-  //const [inputValues, setInputValues] = useState<number[]>([0, 0, 0]);
   let sum = inputStats.valueDice + inputStats.valueClass + inputStats.valueLevel;
 
   function validateNumeric(value:string, valueDefault?: number): number{

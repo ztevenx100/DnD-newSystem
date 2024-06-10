@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import dbConnection from '@database/dbConnection';
+import { getDataQuerySju } from '@database/dbTables';
 
+// Interfaces
 import { DBSistemaJuego } from '@interfaces/dbTypes';
 
 import { Card } from "@material-tailwind/react";
@@ -19,10 +20,14 @@ const SystemGameElement: React.FC = () => {
     }, []);
 
     async function getGame() {
-        const { data } = await dbConnection.from("sju_sistema_juego").select('sju_id, sju_nombre, sju_descripcion ')
-        .eq("sju_id",params.id)
-        .returns<DBSistemaJuego[]>();
-        //console.log("getGame - data: " , data);
+        if (params.id == undefined || params.id == null) return
+
+        const data =  await Promise.resolve(
+            getDataQuerySju(
+                'sju_id, sju_nombre, sju_descripcion '
+                , { 'sju_id': params.id }
+            )
+        )
         if (data !== null) {
             setGame(data[0]);
         }

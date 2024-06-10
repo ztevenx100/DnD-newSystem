@@ -6,27 +6,35 @@ export interface DBUsuario{
 }
 
 export interface DBPersonajesUsuario{
-    pus_id: string;
-    pus_usuario: string;
-    pus_nombre: string;
-    pus_nivel: number;
-    pus_clase: string;
-    pus_raza: string;
-    pus_trabajo: string;
-    pus_descripcion: string;
-    pus_conocimientos: string;
-    usu_usuario: DBUsuario;
-    pus_arma_principal: string;
-    pus_arma_secundaria: string;
-    pus_cantidad_oro: number;
-    pus_cantidad_plata: number;
-    pus_cantidad_bronce: number;
-    pus_puntos_suerte: number;
-    sju_sistema_juego: DBSistemaJuego | {
-      sju_id: string;
-      sju_nombre: string;
-    };
-    url_character_image?: string;
+  pus_id: string;
+  pus_usuario: string;
+  pus_nombre: string;
+  pus_nivel: number;
+  pus_clase: string;
+  pus_raza: string;
+  pus_trabajo: string;
+  pus_descripcion: string;
+  pus_conocimientos: string;
+  usu_usuario: DBUsuario;
+  pus_arma_principal: string;
+  pus_arma_secundaria: string;
+  pus_cantidad_oro: number;
+  pus_cantidad_plata: number;
+  pus_cantidad_bronce: number;
+  pus_puntos_suerte: number;
+  sju_sistema_juego: DBSistemaJuego | {
+    sju_id: string;
+    sju_nombre: string;
+  };
+  url_character_image?: string;
+}
+
+export interface DBHabilidad{
+  hab_id: string;
+  hab_nombre: string;
+  had_estadistica_base: string;
+  hab_siglas:string;
+  hab_tipo: string;
 }
 
 export interface DBHabilidadPersonaje{
@@ -48,6 +56,22 @@ export interface DBHabilidadPersonaje{
   } [] | null;
 }
 
+export interface DBEstadisticaPersonaje{
+  epe_personaje: string;
+  epe_sigla: string;
+  epe_nombre: string;
+  epe_num_dado: number;
+  epe_num_clase: number;
+  epe_num_nivel: number;
+}
+export interface DBInventarioPersonaje{
+  inp_id: string;
+  inp_personaje: string;
+  inp_nombre: string;
+  inp_descripcion: string;
+  inp_cantidad: number;
+}
+    
 export interface DBSistemaJuego{
   sju_id: string;
   sju_nombre: string;

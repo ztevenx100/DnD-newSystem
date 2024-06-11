@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import dbConnection from '@database/dbConnection'
 import { getDataQueryMmu, getDataQuerySub, getDataQueryPnj, getDataQueryEne, getDataQueryMis } from '@database/dbTables'
-import { getUrlStage, getUrlSound, getUrlLocation, getUrlNpc, getUrlEnemy } from '@database/dbStorage'
+import { getUrlStage, getUrlSound } from '@database/dbStorage'
 
-import { Popover, PopoverHandler, PopoverContent, Tooltip } from "@material-tailwind/react"
 import "@unocss/reset/tailwind.css"
 import "uno.css"
 import "./WorldMap.css"
@@ -12,27 +10,17 @@ import "./WorldMap.css"
 // Interfaces
 import { stageImageList } from '@interfaces/typesCharacterSheet'
 import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision } from '@interfaces/dbTypes'
-import { itemsTypeUbgSvg, itemsSoundsSvg } from '@interfaces/iconInterface'
 
 // Components
 import ScreenLoader from '@UI/ScreenLoader/ScreenLoader'
-import BtnMenuSound from '@UI/Buttons/BtnMenuSound'
 import StageSelector from './StageSelector/StageSelector'
 import AmbientSoundsSelector from './AmbientSoundsSelector/AmbientSoundsSelector'
 import PlayerMap from './PlayerMap/PlayerMap'
 import DiceThrower from './DiceThrower/DiceThrower'
-
-// Funciones
-import {getIcon} from '@utils/utilIcons'
+import ItemUbi from './ItemUbi/ItemUbi'
 
 // Images
 import bgMapWorld from '@img/webp/bg-mapWorld.webp'
-import SvgPerson from '@UI/Icons/SvgPerson'
-import SvgLookImage from '@UI/Icons/SvgLookImage'
-import SvgSong from '@UI/Icons/SvgSong'
-import SvgEnemy from '@UI/Icons/SvgEnemy'
-import SvgGroup from '@UI/Icons/SvgGroup'
-import SvgTaskList from '@UI/Icons/SvgTaskList'
 
 interface WorldMapProps {
     changeBackground: (newBackground: string) => void
@@ -266,38 +254,6 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         return missionList
     }
 
-    const openNewWindowImageUbi = async(idUbi:string | undefined) => {
-        if(idUbi === undefined) return
-
-        const url:string = await Promise.resolve(getUrlLocation(idUbi))
-        openNewWindowImage(url)
-    }
-
-    const openNewWindowImageNpc = async(idNpc:string | undefined) => {
-        if(idNpc === undefined) return
-
-        const url:string = await Promise.resolve(getUrlNpc(idNpc))
-        openNewWindowImage(url)
-    }
-
-    const openNewWindowImageEnemy = async(idEnemy:string | undefined) => {
-        if(idEnemy === undefined) return
-
-        const url:string = await Promise.resolve(getUrlEnemy(idEnemy))
-        openNewWindowImage(url)
-    }
-
-    const openNewWindowImage = (url: string) => {
-        const myWindow = window.open("", "MsgWindow", "width=800,height=800");
-        let imageHtml = 
-            `<img 
-                src='${url}?${randomValueRefreshImage}' 
-                style='position: absolute; top:0; left:0; width:100%; height: 100%; object-fit: cover; object-position: center top; overflow:hidden; margin: 0;' 
-                alt='Ubicacion' 
-            />`
-        myWindow?.document.write(imageHtml)
-    }
-
     const handleImageStageChange = (idEsc: string) => {
         let listItemsByStage = listItemsMap.filter(elem => elem.mmu_esc === idEsc)
 
@@ -317,20 +273,6 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         
         setGeographicalMap(templateMap)
     }
-
-    const handleCheckboxChange = async (event: React.ChangeEvent<HTMLInputElement>, id: string) => {
-        let isCompleted = event.target.checked
-        
-        const { error } = await dbConnection
-        .from('mis_mision')
-        .update({
-            mis_cumplido: ((isCompleted)?'S':'N'),
-        })
-        .eq("mis_id", id)
-        .select()
-        if(error) alert('Stat not upload.')
-        
-    };
 
     return (
         <>
@@ -356,230 +298,8 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                     <div key={rowIndex} className='map-grid-row grid-rows-1 grid grid-cols-11 '>
                         {row.map((elem, colIndex) => {
                             if (elem.mmu_id !== '') {
-                                
                                 return (
-                                    // Location panel
-                                    <Popover key={rowIndex + colIndex} placement="bottom" offset={5}>
-                                        <PopoverHandler>
-                                            <div className='map-grid-col grid-cols-1 border-dashed border-white border-2 text-light'>
-                                                {getIcon('type' + elem.ubi_ubicacion?.ubi_tipo, itemsTypeUbgSvg, 50, 50)}
-                                            </div>
-                                        </PopoverHandler>
-                                        <PopoverContent className='p-2' placeholder=''>
-                                            <aside className='card-ubi-info'>
-                                                <header className='flex justify-between items-center border-b border-black py-1'>
-                                                    <h6 className='text-black font-semibold '>{elem.ubi_ubicacion?.ubi_nombre}</h6>
-                                                    <Tooltip className="bg-dark text-light px-2 py-1" placement="top" content={ "Imagen de la ubicación" } >
-                                                        <button type="button" className='btn-card-ubi-header' onClick={() => openNewWindowImageUbi(elem.mmu_ubi)} >
-                                                            <SvgLookImage width={20} height={20} />
-                                                        </button>
-                                                    </Tooltip>
-                                                </header>
-                                                <menu className='py-0'>
-                                                    <div className='flex justify-between py-1' >
-                                                        {elem.lista_pnj && elem.lista_pnj.length > 0 && (
-                                                            <Popover placement="right" offset={{mainAxis: 100, crossAxis: 0, alignmentAxis:10}}>
-                                                                <PopoverHandler>
-                                                                    <button type="button" className='btn-card-ubi'><SvgPerson width={20} height={20} /></button>
-                                                                </PopoverHandler>
-                                                                <PopoverContent className='popover-panel' placeholder=''>
-                                                                    <article className='card-info-character'>
-                                                                        <header className='flex justify-between items-center border-b border-black py-1 mb-1'>
-                                                                            <h6 className='text-black font-semibold '>Encargado del local</h6>
-                                                                            <button type="button" className='btn-card-character' onClick={() => openNewWindowImageNpc(elem.lista_pnj[0].pnj_id)} >
-                                                                                <SvgLookImage width={20} height={20} />
-                                                                            </button>
-                                                                        </header>
-                                                                        <h6 className='text-center text-black font-bold'>{elem.lista_pnj[0].pnj_nombre}</h6>
-                                                                        <p>Raza: {elem.lista_pnj[0].pnj_raza}</p>
-                                                                        <p>Clase: {elem.lista_pnj[0].pnj_clase}</p>
-                                                                        <p>Trabajo: {elem.lista_pnj[0].pnj_trabajo}</p>
-                                                                        <p>Edad: {elem.lista_pnj[0].pnj_edad}</p>
-                                                                        <table className='mt-1'>
-                                                                            <thead>
-                                                                                <tr>
-                                                                                    <th>STR</th>
-                                                                                    <th>INT</th>
-                                                                                    <th>DEX</th>
-                                                                                    <th>CON</th>
-                                                                                    <th>PER</th>
-                                                                                    <th>CHA</th>
-                                                                                </tr>
-                                                                            </thead>
-                                                                            <tbody>
-                                                                                <tr>
-                                                                                    <td>{elem.lista_pnj[0].pnj_str}</td>
-                                                                                    <td>{elem.lista_pnj[0].pnj_int}</td>
-                                                                                    <td>{elem.lista_pnj[0].pnj_dex}</td>
-                                                                                    <td>{elem.lista_pnj[0].pnj_con}</td>
-                                                                                    <td>{elem.lista_pnj[0].pnj_per}</td>
-                                                                                    <td>{elem.lista_pnj[0].pnj_cha}</td>
-                                                                                </tr>
-                                                                            </tbody>
-                                                                        </table>
-                                                                    </article>
-                                                                </PopoverContent>
-                                                            </Popover>
-                                                        )}
-                                                    </div>
-                                                    <div className='flex justify-between py-1' >
-                                                        {elem.lista_mision && elem.lista_mision.length > 0 && (
-                                                            <Popover placement="right" offset={{mainAxis: 100, crossAxis: 0, alignmentAxis:10}}>
-                                                                <PopoverHandler>
-                                                                    <button type="button" className='btn-card-ubi'><SvgTaskList height={20} width={20} /></button>
-                                                                </PopoverHandler>
-                                                                <PopoverContent className='popover-panel' placeholder=''>
-                                                                    <article className='card-ubi-info character-popover'>
-                                                                        <header className='flex justify-between items-center border-b border-black py-1'>
-                                                                            <h6 className='text-black font-semibold '>Listado de misiones</h6>
-                                                                        </header>
-                                                                        {elem.lista_mision.map((mission, index) => (
-                                                                            <label
-                                                                                htmlFor="vertical-list-react"
-                                                                                key={index}
-                                                                                className="flex w-full cursor-pointer items-center p-1"
-                                                                            >
-                                                                                <input 
-                                                                                    type='checkbox'
-                                                                                    id="vertical-list-react"
-                                                                                    className="p-0 mr-2"
-                                                                                    value={mission.mis_cumplido}
-                                                                                    onChange={(e) => handleCheckboxChange(e, mission.mis_id)}
-                                                                                />
-                                                                                {mission.mis_nombre}
-                                                                            </label>
-                                                                        ))}
-                                                                    </article>
-                                                                </PopoverContent>
-                                                            </Popover>
-                                                            
-                                                        )}
-                                                        {elem.lista_enemigo && elem.lista_enemigo.length > 0 && (
-                                                            <Popover placement="right" offset={{mainAxis: 50, crossAxis: 0, alignmentAxis:10}}>
-                                                                <PopoverHandler>
-                                                                    <button type="button" className='btn-card-ubi'><SvgEnemy height={20} width={20} /></button>
-                                                                </PopoverHandler>
-                                                                <PopoverContent className='popover-panel' placeholder=''>
-                                                                    <article className='card-ubi-info character-popover'>
-                                                                        <header className='flex justify-between items-center border-b border-black py-1 mb-2'>
-                                                                            <h6 className='text-black font-semibold '>Listado de enemigos</h6>
-                                                                        </header>
-                                                                        {elem.lista_enemigo.map((enemy, index) => (
-                                                                            <Tooltip key={index} className="bg-dark text-light px-2 py-1" placement="bottom" 
-                                                                                content={ 
-                                                                                    <div className="w-50 p-2">
-                                                                                        <p>Raza: {enemy.ene_raza}</p>
-                                                                                        <p>Clase: {enemy.ene_clase}</p>
-                                                                                        <p>Trabajo: {enemy.ene_trabajo}</p>
-                                                                                        <p>Edad: {enemy.ene_edad}</p>
-                                                                                        <table className='w-full mt-1'>
-                                                                                            <thead>
-                                                                                                <tr>
-                                                                                                    <th>STR</th>
-                                                                                                    <th>INT</th>
-                                                                                                    <th>DEX</th>
-                                                                                                    <th>CON</th>
-                                                                                                    <th>PER</th>
-                                                                                                    <th>CHA</th>
-                                                                                                </tr>
-                                                                                            </thead>
-                                                                                            <tbody>
-                                                                                                <tr>
-                                                                                                    <td>{enemy.ene_str}</td>
-                                                                                                    <td>{enemy.ene_int}</td>
-                                                                                                    <td>{enemy.ene_dex}</td>
-                                                                                                    <td>{enemy.ene_con}</td>
-                                                                                                    <td>{enemy.ene_per}</td>
-                                                                                                    <td>{enemy.ene_cha}</td>
-                                                                                                </tr>
-                                                                                            </tbody>
-                                                                                        </table>
-                                                                                    </div>
-                                                                                } 
-                                                                            >
-                                                                                <button type="button" className='btn-character' onClick={() => openNewWindowImageEnemy(enemy.ene_id)} >
-                                                                                    {enemy.ene_nombre}
-                                                                                </button>
-                                                                            </Tooltip>
-                                                                        ))}
-                                                                    </article>
-                                                                </PopoverContent>
-                                                            </Popover>
-                                                        )}
-                                                        {elem.lista_pnj && elem.lista_pnj.length > 1 && (
-                                                            <Popover placement="right" offset={{mainAxis: 30, crossAxis: 0, alignmentAxis:10}}>
-                                                                <PopoverHandler>
-                                                                    <button type="button" className='btn-card-ubi'><SvgGroup height={20} width={20} /></button>
-                                                                </PopoverHandler>
-                                                                <PopoverContent className='popover-panel' placeholder=''>
-                                                                    <article className='card-ubi-info character-popover'>
-                                                                        <header className='flex justify-between items-center border-b border-black py-1 mb-2'>
-                                                                            <h6 className='text-black font-semibold '>Listado de personajes</h6>
-                                                                        </header>
-                                                                        {elem.lista_pnj.slice(1)?.map((character, index) => (
-                                                                            <Tooltip key={index} className="bg-dark text-light px-2 py-1" placement="bottom" 
-                                                                                content={ 
-                                                                                    <div className="w-50 p-2">
-                                                                                        <p>Raza: {character.pnj_raza}</p>
-                                                                                        <p>Clase: {character.pnj_clase}</p>
-                                                                                        <p>Trabajo: {character.pnj_trabajo}</p>
-                                                                                        <p>Edad: {character.pnj_edad}</p>
-                                                                                        <table className='w-full mt-1'>
-                                                                                            <thead>
-                                                                                                <tr>
-                                                                                                    <th>STR</th>
-                                                                                                    <th>INT</th>
-                                                                                                    <th>DEX</th>
-                                                                                                    <th>CON</th>
-                                                                                                    <th>PER</th>
-                                                                                                    <th>CHA</th>
-                                                                                                </tr>
-                                                                                            </thead>
-                                                                                            <tbody>
-                                                                                                <tr>
-                                                                                                    <td>{character.pnj_str}</td>
-                                                                                                    <td>{character.pnj_int}</td>
-                                                                                                    <td>{character.pnj_dex}</td>
-                                                                                                    <td>{character.pnj_con}</td>
-                                                                                                    <td>{character.pnj_per}</td>
-                                                                                                    <td>{character.pnj_cha}</td>
-                                                                                                </tr>
-                                                                                            </tbody>
-                                                                                        </table>
-                                                                                    </div>
-                                                                                } 
-                                                                            >
-                                                                                <button type="button" className='btn-character' onClick={() => openNewWindowImageNpc(character.pnj_id)} >
-                                                                                    {character.pnj_nombre}
-                                                                                </button>
-                                                                            </Tooltip>
-                                                                        ))}
-                                                                    </article>
-                                                                </PopoverContent>
-                                                            </Popover>
-                                                        )}
-                                                    </div>
-                                                    <div className='flex justify-between py-1' >
-                                                        {elem.lista_sonidos && elem.lista_sonidos.length > 0 && (
-                                                            <Popover placement="right" offset={{mainAxis: 100, crossAxis: 0, alignmentAxis:10}}>
-                                                                <PopoverHandler>
-                                                                    <button type="button" className='btn-card-ubi'><SvgSong height={20} width={20} /></button>
-                                                                </PopoverHandler>
-                                                                <PopoverContent className='popover-panel' placeholder=''>
-                                                                    <article className='card-ubi-info'>
-                                                                        <header className='flex justify-between items-center border-b border-black py-1'>
-                                                                            <h6 className='text-black font-semibold '>Listado de canciones</h6>
-                                                                        </header>
-                                                                        <BtnMenuSound list={elem.lista_sonidos} iconList={itemsSoundsSvg} />
-                                                                    </article>
-                                                                </PopoverContent>
-                                                            </Popover>
-                                                        )}
-                                                    </div>
-                                                </menu>
-                                            </aside>
-                                        </PopoverContent>
-                                    </Popover>
+                                    <ItemUbi item={elem} row={rowIndex} col={colIndex} />
                                 );
                             } else {
                                 return (

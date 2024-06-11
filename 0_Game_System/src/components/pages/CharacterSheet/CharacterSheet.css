@@ -408,24 +408,38 @@ body{
 .dialog{
     background-color: var(--bg-color-1);
     padding: 10px;
+    height: 40rem;
+    margin-top: 0;
+    margin-bottom: 0;
     & .dialog-body{
-        height: 45rem;
-        overflow: scroll;
+        height: 40rem;
+        overflow-y: scroll;
+        scrollbar-width: thin;
+        scrollbar-color: var(--bg-color-3);
     }
 }
 @media (max-height:900px){
-    .dialog-body{
+    .dialog{
         height: 35rem;
+        & .dialog-body{
+            height: 35rem;
+        }
     }
 }
 @media (max-height:750px){
-    .dialog-body{
+    .dialog{
         height: 30rem;
+        & .dialog-body{
+            height: 30rem;
+        }
     }
 }
 @media (max-height:550px){
-    .dialog-body{
+    .dialog{
         height: 25rem;
+        & .dialog-body{
+            height: 25rem;
+        }
     }
 }
 

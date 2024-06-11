@@ -1,6 +1,5 @@
-import React, { ChangeEvent,useEffect } from 'react';
-import { SkillTypes, SkillsAcquired} from '@interfaces/typesCharacterSheet';
-
+import React, { ChangeEvent,useEffect } from 'react'
+import { SkillTypes, SkillsAcquired} from '@interfaces/typesCharacterSheet'
 
 interface RingTypes {
   id: string;
@@ -25,23 +24,23 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
 
     useEffect(() => {
         setTimeout(() => {
-            handleSkillTypeRingChange(values.ring);
-          }, 2000);
-      }, [values]);
-    };
+            handleSkillTypeRingChange(values.ring)
+          }, 2000)
+      }, [values])
+    }
 
     const handleSkillTypeRingChange = (newRing: string) => {
-        console.log('handleSkillTypeRingChange - skillRing: ', id);
-        const stat:string = ringTypes.find(ring => ring.id === newRing)?.stat || '';
+        console.log('handleSkillTypeRingChange - skillRing: ', id)
+        const stat:string = ringTypes.find(ring => ring.id === newRing)?.stat || ''
         if (stat !== '') {
-            onSelectTypeChange(id, stat);
+            onSelectTypeChange(id, stat)
         }
-        onSelectChange(id, newRing, '', stat);
+        onSelectChange(id, newRing, '', stat)
     };
 
     const handleSkillChange = (id: string, newSkill: string) => {
-        const stat:string = ringTypes.find(ring => ring.id === values.ring)?.stat || '';
-        onSelectChange(id, values.ring, newSkill, stat);
+        const stat:string = ringTypes.find(ring => ring.id === values.ring)?.stat || ''
+        onSelectChange(id, values.ring, newSkill, stat)
     };
 
     return (

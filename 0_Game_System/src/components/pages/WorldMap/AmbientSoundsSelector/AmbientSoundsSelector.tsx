@@ -1,19 +1,19 @@
-import React, {useEffect, useState, ChangeEvent} from 'react';
-import { getUrlSound } from '@database/dbStorage';
-import { getDataQuerySub } from '@database/dbTables';
+import React, {useEffect, useState, ChangeEvent} from 'react'
+import { getUrlSound } from '@database/dbStorage'
+import { getDataQuerySub } from '@database/dbTables'
 
-import { Popover, PopoverHandler, PopoverContent, Tooltip } from "@material-tailwind/react";
-import "./AmbientSoundsSelector.css";
+import { Popover, PopoverTrigger, PopoverContent, Tooltip } from "@nextui-org/react"
+import "./AmbientSoundsSelector.css"
 
 // Interfaces
-import { DBSonidoUbicacion } from '@interfaces/dbTypes';
-import { itemsSoundsSvg } from '@interfaces/iconInterface';
+import { DBSonidoUbicacion } from '@interfaces/dbTypes'
+import { itemsSoundsSvg } from '@interfaces/iconInterface'
 
 // Funciones
-import {getIcon} from '@utils/utilIcons';
+import {getIcon} from '@utils/utilIcons'
 
 // Images
-import SvgWeather from '@Icons/SvgWeather';
+import SvgWeather from '@Icons/SvgWeather'
 
 interface AmbientSoundsSelectorProps{
     title: string;
@@ -105,10 +105,10 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
     return (
         <>
             <Popover placement='left-start'>
-                <PopoverHandler className='btn-ambient-sounds-selector'>
+                <PopoverTrigger className='btn-ambient-sounds-selector'>
                     <button type="button" ><SvgWeather height={30} width={30} /></button>
-                </PopoverHandler>
-                <PopoverContent placeholder=''>
+                </PopoverTrigger>
+                <PopoverContent >
                     <aside className='panel-sounds p-0'>
                         <header className='border-b-1 border-black mb-2 text-center'>{title}</header>
                         <label className='mb-2'>

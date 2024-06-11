@@ -1,14 +1,13 @@
-import React, { useState, ChangeEvent, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
-import dbConnection from '@database/dbConnection';
-import { getUrlCharacter } from '@database/dbStorage';
-import { getDataQueryEpe, getDataQueryHad, getDataQueryHpe, getDataQueryInp, getDataQueryPus, getDataQuerySju, getDataQueryUsu } from '@database/dbTables';
+import React, { useState, ChangeEvent, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { v4 as uuidv4 } from 'uuid'
+import dbConnection from '@database/dbConnection'
+import { getUrlCharacter } from '@database/dbStorage'
+import { getDataQueryEpe, getDataQueryHad, getDataQueryHpe, getDataQueryInp, getDataQueryPus, getDataQuerySju, getDataQueryUsu } from '@database/dbTables'
 
-import { Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip } from "@material-tailwind/react";
-import "@unocss/reset/tailwind.css";
-import "uno.css";
-import "./CharacterSheet.css";
+import { Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from "@nextui-org/react"
+import "uno.css"
+import "./CharacterSheet.css"
 
 // Interfaces
 import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields, Option } from '@interfaces/typesCharacterSheet';
@@ -73,11 +72,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    // Listado del select skillTypeRing
    const [skillsTypes, setSkillsTypes] = useState<SkillTypes[]>([]);
 
-   const [open, setOpen] = useState<boolean>(false);
+   const {isOpen, onOpen, onOpenChange} = useDisclosure();
    const [loading, setLoading] = useState<boolean>(true);
    const [newRecord, setNewRecord] = useState<boolean>(true);
    const randomValueRefreshImage = Math.random().toString(36).substring(7);
-   const handleOpen = () => setOpen(!open);
    const navigate = useNavigate();
    const params = useParams();
 
@@ -652,7 +650,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       };
 
       setDataCharacter(newCharacter);
-      handleOpen();
+      onOpen();
    }
 
    const randomRoll = () => {
@@ -717,7 +715,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       })
       
       document.documentElement.scrollTop = 0;
-      handleOpen();
+      onOpenChange();
       reloadPage(character);
    }
    
@@ -1158,106 +1156,111 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          </aside>
 
          {/* Modal/Dialog */}
-         <Dialog
-            open={ open }
-            size={"lg"}
-            handler={handleOpenModal}
+         <Modal
+            id='modalSave'
+            isOpen={ isOpen }
+            size={"5xl"}
+            onOpenChange={onOpenChange}
             className="dialog "
-            placeholder=''
-            >
-            <DialogHeader  placeholder = '' >Resumen de hoja de personaje</DialogHeader>
-            <DialogBody className='dialog-body grid grid-cols-3 gap-4' placeholder = ''>
-               <ul className='dialog-card col-span-2 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
-                  <li className='col-span-2'><strong>Jugador: </strong>{dataCharacter?.player}</li>
-                  <li className='col-span-2'><strong>Personaje: </strong>{dataCharacter?.name}</li>
-                  <li><strong>Nivel: </strong>{dataCharacter?.level}</li>
-                  <li><strong>Clase: </strong>{getClassName(dataCharacter?.class)}</li>
-                  <li><strong>Raza: </strong>{getRaceName(dataCharacter?.race)}</li>
-                  <li><strong>Trabajo: </strong>{getJobName(dataCharacter?.job)}</li>
-                  <li className='col-span-2'><strong>Descripcion: </strong>{dataCharacter?.description}</li>
-                  <li className='col-span-2'><strong>Conocimientos: </strong>{getKnowledgeName(dataCharacter?.knowledge)}</li>
-               </ul>
-               <table className='dialog-table '>
-                  <thead>
-                     <tr><th colSpan={2}>Estadisticas</th></tr>
-                  </thead>
-                  <tbody>
-                     <tr>
-                        <td>Fuerza</td>
-                        <td>{(dataCharacter?.str[0].dice||0) + (dataCharacter?.str[0].class||0) + (dataCharacter?.str[0].level||0) }</td>
-                     </tr>
-                     <tr>
-                        <td>Inteligencia</td>
-                        <td>{(dataCharacter?.int[0].dice||0) + (dataCharacter?.int[0].class||0) + (dataCharacter?.int[0].level||0) }</td>
-                     </tr>
-                     <tr>
-                        <td>Destreza</td>
-                        <td>{(dataCharacter?.dex[0].dice||0) + (dataCharacter?.dex[0].class||0) + (dataCharacter?.dex[0].level||0) }</td>
-                     </tr>
-                     <tr>
-                        <td>Constitucion</td>
-                        <td>{(dataCharacter?.con[0].dice||0) + (dataCharacter?.con[0].class||0) + (dataCharacter?.con[0].level||0) }</td>
-                     </tr>
-                     <tr>
-                        <td>Percepcion</td>
-                        <td>{(dataCharacter?.per[0].dice||0) + (dataCharacter?.per[0].class||0) + (dataCharacter?.per[0].level||0) }</td>
-                     </tr>
-                     <tr>
-                        <td>Carisma</td>
-                        <td>{(dataCharacter?.cha[0].dice||0) + (dataCharacter?.cha[0].class||0) + (dataCharacter?.cha[0].level||0) }</td>
-                     </tr>
-                  </tbody>
-               </table>
-               <ul className='dialog-card grid grid-cols-1 gap-3 col-start-1 row-start-2 items-center '>
-                  <li className=''><strong>Alineacion: </strong>{dataCharacter?.alignment}</li>
-               </ul>
-               <ul className='dialog-card grid grid-cols-1 gap-3 col-start-1'>
-                  <li><strong>Habilidad principal: </strong>{getMainSkillName(dataCharacter?.mainSkill)}</li>
-                  <li><strong>Habilidad extra: </strong>{getExtraSkillName(dataCharacter?.extraSkill)}</li>
-                  {dataCharacter?.skills.map((elem) => (
-                     <li key={elem.value}><strong>Habilidad: </strong>{getSkillName(elem.name,elem.stat||'')}</li>
-                  ))}
-               </ul>
-               <ul className='dialog-card grid grid-cols-1 gap-3 col-start-2 row-start-2 items-center'>
-                  <li><strong>Arma principal: </strong>{dataCharacter?.mainWeapon}</li>
-               </ul>
-               <ul className='dialog-card grid grid-cols-1 gap-3 col-start-2'>
-                  <li><strong>Arma secundaria: </strong>{dataCharacter?.secondaryWeapon}</li>
-               </ul>
-               <ul className='dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 col-start-3 row-start-2'>
-                  <li className='md:col-span-2 lg:col-span-3'><strong>Dinero: </strong> </li>
-                  <li>Oro: {dataCharacter?.coinsInv[0]}</li>
-                  <li>Plata: {dataCharacter?.coinsInv[1]}</li>
-                  <li>Cobre: {dataCharacter?.coinsInv[2]}</li>
-               </ul>
-               <ul className='dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 col-start-3'>
-                  <li className='md:col-span-2 lg:col-span-3'>Inventario: </li>
-                  {dataCharacter?.inv.map((elem) => (
-                     <li key={elem.id}><strong>{elem.name}: </strong>{elem.count}</li>
-                  ))}
-               </ul>
-            </DialogBody>
-            <DialogFooter placeholder = '' >
-               <Button
-                  variant='text'
-                  color='red'
-                  onClick={() => handleOpen()}
-                  className='mr-1'
-                  placeholder = ''
-               >
-                  <span>Cancelar</span>
-               </Button>
-               <Button
-                  variant='gradient'
-                  className='btn-dialog-accept'
-                  onClick={() => saveData()}
-                  placeholder=''
-                  id='btnSaveData'
-               >
-                  <span>Guardar información</span>
-               </Button>
-            </DialogFooter>
-         </Dialog>
+            classNames={{
+               wrapper: 'my-0',
+               footer: 'px-2 py-2'
+            }}
+         >
+            <ModalContent>
+            {(onClose) => (
+               <>
+               <ModalHeader>Resumen de hoja de personaje</ModalHeader>
+               <ModalBody className='dialog-body grid grid-cols-3 gap-3'>
+                  <ul className='dialog-card col-span-2 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+                     <li className='col-span-2'><strong>Jugador: </strong>{dataCharacter?.player}</li>
+                     <li className='col-span-2'><strong>Personaje: </strong>{dataCharacter?.name}</li>
+                     <li><strong>Nivel: </strong>{dataCharacter?.level}</li>
+                     <li><strong>Clase: </strong>{getClassName(dataCharacter?.class)}</li>
+                     <li><strong>Raza: </strong>{getRaceName(dataCharacter?.race)}</li>
+                     <li><strong>Trabajo: </strong>{getJobName(dataCharacter?.job)}</li>
+                     <li className='col-span-2'><strong>Descripcion: </strong>{dataCharacter?.description}</li>
+                     <li className='col-span-2'><strong>Conocimientos: </strong>{getKnowledgeName(dataCharacter?.knowledge)}</li>
+                  </ul>
+                  <table className='dialog-table '>
+                     <thead>
+                        <tr><th colSpan={2}>Estadisticas</th></tr>
+                     </thead>
+                     <tbody>
+                        <tr>
+                           <td>Fuerza</td>
+                           <td>{(dataCharacter?.str[0].dice||0) + (dataCharacter?.str[0].class||0) + (dataCharacter?.str[0].level||0) }</td>
+                        </tr>
+                        <tr>
+                           <td>Inteligencia</td>
+                           <td>{(dataCharacter?.int[0].dice||0) + (dataCharacter?.int[0].class||0) + (dataCharacter?.int[0].level||0) }</td>
+                        </tr>
+                        <tr>
+                           <td>Destreza</td>
+                           <td>{(dataCharacter?.dex[0].dice||0) + (dataCharacter?.dex[0].class||0) + (dataCharacter?.dex[0].level||0) }</td>
+                        </tr>
+                        <tr>
+                           <td>Constitucion</td>
+                           <td>{(dataCharacter?.con[0].dice||0) + (dataCharacter?.con[0].class||0) + (dataCharacter?.con[0].level||0) }</td>
+                        </tr>
+                        <tr>
+                           <td>Percepcion</td>
+                           <td>{(dataCharacter?.per[0].dice||0) + (dataCharacter?.per[0].class||0) + (dataCharacter?.per[0].level||0) }</td>
+                        </tr>
+                        <tr>
+                           <td>Carisma</td>
+                           <td>{(dataCharacter?.cha[0].dice||0) + (dataCharacter?.cha[0].class||0) + (dataCharacter?.cha[0].level||0) }</td>
+                        </tr>
+                     </tbody>
+                  </table>
+                  <ul className='dialog-card grid grid-cols-1 gap-3 col-start-1 row-start-2 items-center '>
+                     <li className=''><strong>Alineacion: </strong>{dataCharacter?.alignment}</li>
+                  </ul>
+                  <ul className='dialog-card grid grid-cols-1 gap-3 col-start-1'>
+                     <li><strong>Habilidad principal: </strong>{getMainSkillName(dataCharacter?.mainSkill)}</li>
+                     <li><strong>Habilidad extra: </strong>{getExtraSkillName(dataCharacter?.extraSkill)}</li>
+                     {dataCharacter?.skills.map((elem) => (
+                        <li key={elem.value}><strong>Habilidad: </strong>{getSkillName(elem.name,elem.stat||'')}</li>
+                     ))}
+                  </ul>
+                  <ul className='dialog-card grid grid-cols-1 gap-3 col-start-2 row-start-2 items-center'>
+                     <li><strong>Arma principal: </strong>{dataCharacter?.mainWeapon}</li>
+                  </ul>
+                  <ul className='dialog-card grid grid-cols-1 gap-3 col-start-2'>
+                     <li><strong>Arma secundaria: </strong>{dataCharacter?.secondaryWeapon}</li>
+                  </ul>
+                  <ul className='dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 col-start-3 row-start-2'>
+                     <li className='md:col-span-2 lg:col-span-3'><strong>Dinero: </strong> </li>
+                     <li>Oro: {dataCharacter?.coinsInv[0]}</li>
+                     <li>Plata: {dataCharacter?.coinsInv[1]}</li>
+                     <li>Cobre: {dataCharacter?.coinsInv[2]}</li>
+                  </ul>
+                  <ul className='dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3 col-start-3'>
+                     <li className='md:col-span-2 lg:col-span-2'>Inventario: </li>
+                     {dataCharacter?.inv.map((elem) => (
+                        <li key={elem.id}><strong>{elem.name}: </strong>{elem.count}</li>
+                     ))}
+                  </ul>
+               </ModalBody>
+               <ModalFooter >
+                  <Button
+                     onPress={onClose}
+                     className='mr-1'
+                  >
+                     <span>Cancelar</span>
+                  </Button>
+                  <Button
+                     className='btn-dialog-accept'
+                     onClick={() => saveData()}
+                     id='btnSaveData'
+                  >
+                     <span>Guardar información</span>
+                  </Button>
+               </ModalFooter>
+               </>
+            )}
+            </ModalContent>
+         </Modal>
             
       </form>
       </>

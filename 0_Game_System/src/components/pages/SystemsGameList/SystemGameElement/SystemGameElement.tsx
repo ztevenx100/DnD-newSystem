@@ -11,12 +11,12 @@ import "./SystemGameElement.css"
 import { DBSistemaJuego } from '@interfaces/dbTypes'
 
 const SystemGameElement: React.FC = () => {
-    const [game, setGame] = useState<DBSistemaJuego>();
+    const [game, setGame] = useState<DBSistemaJuego>()
     // Cargue de informacion de base de datos
-    const params = useParams();
+    const params = useParams()
     
     useEffect(() => {
-        getGame();
+        getGame()
     }, []);
 
     async function getGame() {
@@ -29,7 +29,7 @@ const SystemGameElement: React.FC = () => {
             )
         )
         if (data !== null) {
-            setGame(data[0]);
+            setGame(data[0])
         }
     }
 
@@ -51,4 +51,4 @@ const SystemGameElement: React.FC = () => {
     );
 }
 
-export default SystemGameElement;
+export default SystemGameElement

@@ -33,11 +33,11 @@ const App: React.FC = () => {
       element: <Navbar />,
       children:[
         { index: true, element: <Home changeBackground={changeBackground} /> },
-        // {
-        //   id: "CharacterSheet",
-        //   path: "/CharacterSheet/:user/:id?",
-        //   element: <CharacterSheet changeBackground={changeBackground} />,
-        // },
+        {
+          id: "CharacterSheet",
+          path: "/CharacterSheet/:user/:id?",
+          element: <CharacterSheet changeBackground={changeBackground} />,
+        },
         {
           id: "UserCharacters",
           path: "/UserCharacters",
@@ -53,11 +53,11 @@ const App: React.FC = () => {
           path: "/SystemGameElement/:id",
           element: <SystemGameElement />,
         },
-        // {
-        //   id: "WorldMap",
-        //   path: "/WorldMap",
-        //   element: <WorldMap changeBackground={changeBackground} />,
-        // },
+        {
+          id: "WorldMap",
+          path: "/WorldMap",
+          element: <WorldMap changeBackground={changeBackground} />,
+        },
         {
           path: "*",
           element: <ErrorPage/>,

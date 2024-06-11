@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 import { getDataQuerySju } from '@/components/database/dbTables'
 
 // Interfaces
 import { DBSistemaJuego } from '@interfaces/dbTypes'
 
-import { Card, CardBody, Listbox, ListboxItem } from "@nextui-org/react";
-import "@unocss/reset/tailwind.css";
-import "uno.css";
-import "./SystemsGameList.css";
+import { Card, CardBody, Listbox, ListboxItem } from "@nextui-org/react"
+import "@unocss/reset/tailwind.css"
+import "uno.css"
+import "./SystemsGameList.css"
 
 const SystemsGameList: React.FC = () => {
-    const [list, setList] = useState<DBSistemaJuego[]>([]);
+    const [list, setList] = useState<DBSistemaJuego[]>([])
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -26,7 +26,7 @@ const SystemsGameList: React.FC = () => {
         )
 
         if (data !== null) {
-            setList(data);
+            setList(data)
         }
     }
 
@@ -63,4 +63,4 @@ const SystemsGameList: React.FC = () => {
     );
 }
 
-export default SystemsGameList;
+export default SystemsGameList

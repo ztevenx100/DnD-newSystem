@@ -1,9 +1,9 @@
-import React from 'react';
+import React from 'react'
 
 import { Card, CardBody } from "@nextui-org/react"
-import "@unocss/reset/tailwind.css";
-import "uno.css";
-import "./ErrorPage.css";
+import "@unocss/reset/tailwind.css"
+import "uno.css"
+import "./ErrorPage.css"
 
 
 const ErrorPage: React.FC = () => {
@@ -25,4 +25,4 @@ const ErrorPage: React.FC = () => {
     );
 }
 
-export default ErrorPage;
+export default ErrorPage

@@ -25,7 +25,6 @@ const FormCardCheckbox: React.FC<CardWithCheckboxesProps> = ({ id, label, checkb
       onSelectedValuesChange(selectedValues.filter(item => item !== value));
     }
   };
-  {/* peer relative appearance-none w-5 h-5 border border-blue-gray-200 cursor-pointer transition-all before:content[''] before:block before:bg-blue-gray-500 before:w-12 before:h-12 before:absolute before:top-2/4 before:left-2/4 before:-translate-y-2/4 before:-translate-x-2/4 before:opacity-0 before:transition-opacity checked:bg-red-500 checked:border-red-500 checked:before:bg-red-500 hover:before:opacity-0 form-checkbox*/}
 
   return (
     <>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink } from "react-router-dom";
-import { Tooltip } from "@material-tailwind/react";
+import {Tooltip} from "@nextui-org/tooltip";
 
 import  SvgHome from '@Icons/SvgHome';
 import  SvgPerson from '@Icons/SvgPerson';
@@ -15,9 +15,9 @@ const Navbar: React.FC = () => {
       <nav className="navbar ml-2">
         <menu>
           {/* MapWorld */}
-          <Tooltip className="bg-dark text-light px-2 py-1" placement="right" content={"Mapamundi"} >
+          {/* <Tooltip className="bg-dark text-light px-2 py-1" placement="right" content={"Mapamundi"} >
             <li><NavLink className={({ isActive }) => isActive ? 'active' : ''} to="/WorldMap" ><SvgMap width="30" height="30" fill='#fff' stroke='#fff' /></NavLink></li>
-          </Tooltip>
+          </Tooltip> */}
           {/* Home */}
           <Tooltip className="bg-dark text-light px-2 py-1" placement="right" content={"Inicio"} >
             <li><NavLink className={({ isActive }) => isActive ? 'active' : ''} to="/" ><SvgHome width="30" height="30" fill='none' stroke='#fff' /></NavLink></li>

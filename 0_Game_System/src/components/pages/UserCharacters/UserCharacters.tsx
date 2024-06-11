@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import dbConnection from '@database/dbConnection'
 import { getUrlCharacter } from '@database/dbStorage'
 
-import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, IconButton } from "@material-tailwind/react"
+import { Card, CardBody, Listbox, ListboxItem, Avatar, Chip } from "@nextui-org/react";
 import "@unocss/reset/tailwind.css"
 import "uno.css"
 import "./UserCharacters.css"
@@ -52,7 +52,7 @@ const UserCharacters: React.FC = () => {
             );
 
             setList(data);
-            console.log("getList - data: " , data);
+            //console.log("getList - data: " , data);
         }
     }
 
@@ -89,22 +89,49 @@ const UserCharacters: React.FC = () => {
                 <header className='bg-white shadow-lg rounded py-2 grid items-center'>
                     <h1 className='title-list'>Listado de personajes</h1>
                 </header>
-                {/* 
-                    <div className="relative flex flex-col bg-clip-border rounded-xl bg-white text-gray-700 shadow-md w-full" /> 
-                    <div className="flex flex-col gap-1 min-w-[240px] p-2 font-sans text-base font-normal text-blue-gray-700" /> 
-                    <div className="flex items-center w-full p-3 rounded-lg text-start leading-tight transition-all hover:bg-blue-gray-50 hover:bg-opacity-80 focus:bg-blue-gray-50 focus:bg-opacity-80 active:bg-blue-gray-50 active:bg-opacity-80 hover:text-blue-gray-900 focus:text-blue-gray-900 active:text-blue-gray-900 outline-none" /> 
-                    <div className="inline-block relative object-cover object-center !rounded-full w-12 h-12 rounded-lg" /> 
-                    <div className="block antialiased tracking-normal font-sans text-base font-semibold leading-relaxed text-blue-gray-900" /> 
-                    <div className="block antialiased font-sans text-sm leading-normal text-gray-700 font-normal" /> 
-                    <div className="grid place-items-center ml-auto justify-self-end" /> 
-                    <div className="relative grid items-center font-sans font-bold uppercase whitespace-nowrap select-none bg-gray-900/10 text-gray-900 py-1.5 px-3 text-xs rounded-lg" />
-                    <div className="relative align-middle select-none font-sans font-medium text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none w-10 max-w-[40px] h-10 max-h-[40px] rounded-lg text-xs text-gray-900 hover:bg-gray-900/10 active:bg-gray-900/20 btn-delete-object" /> 
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform" />
-                */}
-                <Card className="w-full px-10 py-5 row-span-6" placeholder=''>
-                    <List placeholder = ''>
+                <Card className="w-full px-10 py-5 row-span-6" >
+                    <CardBody>
+                    <Listbox variant="flat" className='' aria-label='Listado de personajes' onAction={(key) => navigate('/CharacterSheet/'+key)}>
                         {list.map((elem) => (
-                            <ListItem key={elem.pus_id} ripple={false} className='character-item flex' placeholder=''>
+                            <ListboxItem
+                                key={`${elem.usu_usuario.usu_id}/${elem.pus_id}`}
+                                description={elem.sju_sistema_juego.sju_nombre}
+                                className='character-item flex'
+                                textValue={"0"}
+                                >
+                                <header className='flex gap-2 items-center px-2'>
+                                    <Avatar alt={elem.pus_nombre} className="flex-shrink-0" size="sm" src={elem.url_character_image} />
+                                    <h1 color="dark-3" className='block antialiased tracking-normal font-sans text-2xl leading-snug text-blue-gray-900 font-black mb-1' >
+                                        {elem.pus_nombre}
+                                    </h1>
+                                    <Chip>
+                                        {elem.pus_nivel}
+                                    </Chip>
+                                </header>
+                                <footer className=''>
+                                    <p className='w-full'>
+                                        {elem.pus_descripcion}
+                                    </p>
+                                </footer>
+                            </ListboxItem>
+                        ))}
+                    </Listbox>
+                    </CardBody>
+                </Card>
+            </section>
+            <aside className='panel-save'>
+                <button className='btn-save-character' onClick={() => handleOpenCharacter()} >
+                    <SvgAddCharacter className='icon' width={40} height={40} />
+                </button>
+            </aside>
+        </>
+    );
+}
+
+export default UserCharacters;
+
+
+                            {/* <Listm key={elem.pus_id} ripple={false} className='character-item flex' placeholder=''>
                                 <Link to={`/CharacterSheet/${elem.usu_usuario.usu_id}/${elem.pus_id}`} className='flex flex-1'>
                                     <ListItemPrefix className='image-space' placeholder=''>
                                         <Avatar variant="circular" alt={"character Image"} src={elem.url_character_image} placeholder = ''/>
@@ -127,23 +154,9 @@ const UserCharacters: React.FC = () => {
                                         variant="ghost"
                                         size="md"
                                         className="rounded-lg lbl-level"
-                                    />
+                                        />
                                     <IconButton variant="text" className="btn-delete-object " onClick={() => handleDeleteCharacter(elem.pus_id)} placeholder=''>
                                         <SvgDeleteItem width={30} fill='var(--required-color)'/>
                                     </IconButton>
                                 </ListItemSuffix>
-                            </ListItem>
-                        ))}
-                    </List>
-                </Card>
-            </section>
-            <aside className='panel-save'>
-                <button className='btn-save-character' onClick={() => handleOpenCharacter()} >
-                    <SvgAddCharacter className='icon' width={40} height={40} />
-                </button>
-            </aside>
-        </>
-    );
-}
-
-export default UserCharacters;
+                            </ListItem>Ite */}

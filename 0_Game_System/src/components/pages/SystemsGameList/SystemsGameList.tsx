@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getDataQuerySju } from '@/components/database/dbTables'
 
 // Interfaces
 import { DBSistemaJuego } from '@interfaces/dbTypes'
 
-import { List, ListItem, Card, ListItemPrefix, Typography } from "@material-tailwind/react"
+import { Card, CardBody, Listbox, ListboxItem } from "@nextui-org/react";
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./SystemsGameList.css";
 
 const SystemsGameList: React.FC = () => {
     const [list, setList] = useState<DBSistemaJuego[]>([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         getList();
@@ -26,7 +27,6 @@ const SystemsGameList: React.FC = () => {
 
         if (data !== null) {
             setList(data);
-            //console.log("getList - data: " , data);
         }
     }
 
@@ -36,26 +36,27 @@ const SystemsGameList: React.FC = () => {
                 <header className='bg-white shadow-lg rounded py-2 grid items-center'>
                     <h1 className='title-list'>Listado de sistemas de juego</h1>
                 </header>
-                <Card className="w-full px-10 py-5 row-span-6" placeholder=''>
-                    <List placeholder = ''>
-                        {list.map((elem, index) => (
-                            <ListItem key={index} placeholder='' ripple={false} className='character-item flex'>
-                                <Link to={`/SystemGameElement/${elem.sju_id}`} className='flex flex-1'>
-                                    <ListItemPrefix className='image-space item-prefix rounded-lg' placeholder=''>
-                                        {index}
-                                    </ListItemPrefix>
-                                    <div className='px-2'>
-                                        <Typography variant="h4" color="blue-gray" className='font-black mb-1' placeholder=''>
-                                            {elem.sju_nombre}
-                                        </Typography>
-                                        <Typography variant="small" color="gray" className="font-normal mb-1 " placeholder=''>
-                                            {elem.sju_descripcion}
-                                        </Typography>
-                                    </div>
-                                </Link>
-                            </ListItem>
-                        ))}
-                    </List>
+                <Card className="w-full px-10 py-5 row-span-6" >
+                    <CardBody>
+                        <div className="w-full max-w-full border-small px-1 py-2 rounded-small border-default-200 dark:border-default-100">
+                            <Listbox variant="flat" className='character-item flex' aria-label='Listado de sistemas de juego' onAction={(key) => navigate('/SystemGameElement/'+key)}>
+                                {list.map((elem, index) => (
+                                    <ListboxItem
+                                        key={elem.sju_id}
+                                        description={elem.sju_descripcion}
+                                        textValue={""+index}
+                                    >
+                                        <header className='flex flex-1 px-2'>
+                                            <div className="grid place-items-center mr-4 image-space item-prefix rounded-lg">{index}</div>
+                                            <h1 color="dark-3" className='block antialiased tracking-normal font-sans text-2xl leading-snug text-blue-gray-900 font-black mb-1' >
+                                                {elem.sju_nombre}
+                                            </h1>
+                                        </header>
+                                    </ListboxItem>
+                                ))}
+                            </Listbox>
+                        </div>
+                    </CardBody>
                 </Card>
             </section>
         </>

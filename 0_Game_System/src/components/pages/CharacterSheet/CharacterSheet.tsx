@@ -146,8 +146,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    }, []);
 
    async function getUser() {
-      // const { data } = await dbConnection.from("usu_usuario").select('usu_id, usu_nombre')
-      //    .eq("usu_id",params.user);
       if (params.user == undefined || params.user == null) return
 
       const data = await Promise.resolve(
@@ -194,9 +192,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          setOptionsSkillClass(updatedOptionsSkillClass);
          setOptionsSkillExtra(updatedOptionsSkillExtra);
          setSkillsTypes(otherSkills);
-         //console.log('updatedOptionsSkillClass: ', updatedOptionsSkillClass);
-         //console.log('updatedOptionsSkillExtra: ', updatedOptionsSkillExtra);
-         //console.log('otherSkills: ', otherSkills);
       }
    }
    async function getGameSystemList() {
@@ -206,7 +201,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
             , { 'sju_estado': 'A' }
          )
       )
-      //console.log("getGameSystemList - data: ", data);
       if (data !== null) {
          const updatedSystemGameList = [];
          for (let i = 0; i < data.length; i++) {
@@ -224,7 +218,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
             , { 'pus_id': params.id }
          )
       )
-      //console.log('getCharacter ',data);
 
       if (data !== null) {
          const updatedCoins = [...coins];
@@ -316,8 +309,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
                updatedSkills[Number(numCampo)] = { id: elem.hpe_habilidad, value: numCampo,  name: acronym, description: '', ring: estadisticaBase };
             }
          });
-         //console.log('getSkills - updatedSkills', updatedSkills);
-         //console.log('getSkills - updatedFieldSkill', updatedFieldSkill);
          setSkillsAcquired(updatedSkills);
          setFieldSkill(updatedFieldSkill);
       }
@@ -344,7 +335,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          });
          setInvObjects(updatedInvObjects);
       }
-      //console.log('getInventory - updatedInvObjects', updatedInvObjects);
    }
    
    const optionsCharacterClass = [
@@ -450,6 +440,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       let option = optionsSkillClass.filter(skill => skill.value === currentSkill);
       setFieldSkill(prevItems => prevItems.map( item => item.field === 'skillClass' ? { ...item, id: option[0].value, skill: option[0].id||'' } : item ));
       setSelectedSkillValue(currentSkill);
+      
    };
    // Actualizar la habilidad extra del personaje
    const handleSelectExtraSkillChange = (currentSkill: string) => {
@@ -507,7 +498,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          cacheControl: '3600',
          upsert: true
       });
-      //console.log('handleCharacterImageFileChange: ', data);
       
       if(error) alert(alert);
       
@@ -661,9 +651,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          inv: invObjects,
       };
 
-      //console.log(skillsAcquired);
-      //console.log("fieldSkill: ",fieldSkill);
-      console.log(newCharacter);
       setDataCharacter(newCharacter);
       handleOpen();
    }
@@ -762,7 +749,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          
          if(data !== null){
             return data[0].pus_id;
-            //console.log('uploadInfoCharacter ', data[0].pus_id);
          } 
          
          if(error)return '';
@@ -795,7 +781,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    }
    async function uploadStats(isNewCharacter: boolean, character: string) {
       if(character === '') return;
-      //console.log('uploadStats ', inputsStatsData);
       
       if (!isNewCharacter) {
          for(const element of inputsStatsData) {
@@ -1172,13 +1157,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
             </button>
          </aside>
 
-         {/* 
-         <div className='grid place-items-center fixed w-screen h-screen bg-black bg-opacity-60 backdrop-blur-sm'/>
-         <div className='relative bg-white m-4 rounded-lg shadow-2xl text-blue-gray-500 antialiased font-sans text-base font-light leading-relaxed w-full md:w-5/6 lg:w-3/4 2xl:w-3/5 min-w-[90%] md:min-w-[83.333333%] lg:min-w-[75%] 2xl:min-w-[60%] max-w-[90%] md:max-w-[83.333333%] lg:max-w-[75%] 2xl:max-w-[60%] dialog'/>
-         <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg text-red-500 hover:bg-red-500/10 active:bg-red-500/30 mr-1'/>
-         <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-lg shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85]'/> 
-         <div className='h-[28rem] overflow-scroll'/> 
-         */}
          {/* Modal/Dialog */}
          <Dialog
             open={ open }

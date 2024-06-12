@@ -4,6 +4,8 @@
 */
 :root{
     --bg-btn-hover: #AAA8;
+    --chip-bg-color: #F2AF29;
+    --required-color: #E63462;
 }
 
 .title-list{
@@ -13,7 +15,16 @@
 }
 
 .lbl-level{
-    background-color: var(--bg-color-3);
+    background-color: var(--chip-bg-color);
+    transition-property: background-color;
+    transition-duration: .5s;
+    transition-timing-function: ease;
+    &.bg-default{
+        background-color: var(--chip-bg-color);
+    }
+    &:hover{
+        background-color: #fff;
+    }
 }
 
 .character-item{
@@ -36,6 +47,9 @@
     transition-duration: .5s;
     transition-timing-function: ease;
     z-index: 10;
+    &.bg-default{
+        background-color: transparent;
+    }
     &:hover{
         background-color: #FFFA;
     }

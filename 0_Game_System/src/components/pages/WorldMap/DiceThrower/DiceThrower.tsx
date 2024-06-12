@@ -1,30 +1,30 @@
 import React, {useState, ChangeEvent} from 'react';
 
-import { Popover, PopoverHandler, PopoverContent, Tooltip, Button, Dialog, DialogHeader, DialogBody, DialogFooter } from "@material-tailwind/react";
-import "@unocss/reset/tailwind.css";
-import "uno.css";
-import "./DiceThrower.css";
+//import { Popover, PopoverHandler, PopoverContent, Tooltip, Button, Dialog, DialogHeader, DialogBody, DialogFooter } from "@material-tailwind/react";
+import { Popover, PopoverTrigger, PopoverContent, Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from "@nextui-org/react"
+import "@unocss/reset/tailwind.css"
+import "uno.css"
+import "./DiceThrower.css"
 
 // Funciones
-import {validateNumeric} from '@utils/utilConversions';
-import {getRandomInt} from '@utils/utilOperations';
+import {validateNumeric} from '@utils/utilConversions'
+import {getRandomInt} from '@utils/utilOperations'
 
 // Images
-import SvgRollDice from '@Icons/SvgRollDice';
-import SvgDice04 from '@Icons/SvgDice04';
-import SvgDice06 from '@Icons/SvgDice06';
-import SvgDice08 from '@Icons/SvgDice08';
-import SvgDice20 from '@Icons/SvgDice20';
+import SvgRollDice from '@Icons/SvgRollDice'
+import SvgDice04 from '@Icons/SvgDice04'
+import SvgDice06 from '@Icons/SvgDice06'
+import SvgDice08 from '@Icons/SvgDice08'
+import SvgDice20 from '@Icons/SvgDice20'
 
 interface DiceThrowerProps{
     title: string;
 }
 
 const DiceThrower: React.FC<DiceThrowerProps> = ({title}) => {
-    const [open, setOpen] = useState<boolean>(false);
-    const [countDices, setCountDices] = useState<number[]>([0,0,0,0]);
-    const [dices, setDices] = useState<diceInfo[]>([]);
-    const handleOpen = () => setOpen(!open);
+    const [countDices, setCountDices] = useState<number[]>([0,0,0,0])
+    const [dices, setDices] = useState<diceInfo[]>([])
+    const {isOpen, onOpen, onOpenChange} = useDisclosure()
     
     interface diceInfo{
         id: string;
@@ -53,7 +53,7 @@ const DiceThrower: React.FC<DiceThrowerProps> = ({title}) => {
         }
         
         setDices(updatedDices);
-        handleOpen();
+        onOpen();
     }
 
     const handleCountDice = (index: number, value: string) => {
@@ -67,10 +67,10 @@ const DiceThrower: React.FC<DiceThrowerProps> = ({title}) => {
     return (
         <>
             <Popover placement='left-start'>
-                <PopoverHandler className='btn-dice-thrower-selector'>
+                <PopoverTrigger className='btn-dice-thrower-selector'>
                     <button type="button" ><SvgRollDice height={30} width={30} /></button>
-                </PopoverHandler>
-                <PopoverContent placeholder=''>
+                </PopoverTrigger>
+                <PopoverContent >
                     <aside className='panel-sounds p-0'>
                         <header className='border-b-1 border-black mb-4 text-center'>{title}</header>
                         <menu className='menu-selector'>
@@ -163,36 +163,37 @@ const DiceThrower: React.FC<DiceThrowerProps> = ({title}) => {
             </Popover>
             
          {/* Modal/Dialog */}
-         {/* <div className='relative bg-white m-4 rounded-lg shadow-2xl text-blue-gray-500 antialiased font-sans text-base font-light leading-relaxed w-full md:w-2/3 lg:w-2/4 2xl:w-1/3 min-w-[80%] md:min-w-[66.666667%] lg:min-w-[50%] 2xl:min-w-[33.333333%] max-w-[80%] md:max-w-[66.666667%] lg:max-w-[50%] 2xl:max-w-[33.333333%] dialogDice'></div> */}
-         <Dialog
-            open={ open }
+         <Modal
+            isOpen={ isOpen }
             size={"sm"}
-            handler={handleOpenModal}
+            onOpenChange={onOpenChange}
             className="dialogDice "
-            placeholder=''
         >
-            <DialogHeader placeholder='' >Dados lanzados</DialogHeader>
-            <DialogBody className='dialog-body grid grid-cols-3 gap-4' placeholder=''>
-                <article className='flex justify-between gap-1 col-span-3'>
-                {dices?.map((dice, index) => (
-                    <div key={index} className={dice.style} >
-                        <p>{dice.value}</p>
-                    </div>
-                ))}
-                </article>
-            </DialogBody>
-            <DialogFooter placeholder='' >
-               <Button
-                  variant='text'
-                  color='red'
-                  onClick={() => handleOpen()}
-                  className=''
-                  placeholder = ''
-               >
-                  <span>Cerrar</span>
-               </Button>
-            </DialogFooter>
-         </Dialog>
+            <ModalContent>
+                {(onClose) => (
+                <>
+                    <ModalHeader >Dados lanzados</ModalHeader>
+                    <ModalBody className='dialog-body grid grid-cols-3 gap-4' >
+                        <article className='flex justify-between gap-1 col-span-3'>
+                        {dices?.map((dice, index) => (
+                            <div key={index} className={dice.style} >
+                                <p>{dice.value}</p>
+                            </div>
+                        ))}
+                        </article>
+                    </ModalBody>
+                    <ModalFooter >
+                    <Button
+                            onPress={onClose}
+                        className=''
+                    >
+                        <span>Cerrar</span>
+                    </Button>
+                    </ModalFooter>
+                </>
+                )}
+            </ModalContent>
+         </Modal>
         </>
     );
 };

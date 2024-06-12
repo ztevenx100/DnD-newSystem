@@ -31,6 +31,7 @@
         flex-direction: row;
         flex-basis: 50%;
         flex-wrap: wrap;
+        justify-content: space-around;
         row-gap: 0.5rem;
         column-gap: 0.5rem;
         & .sounds-item{

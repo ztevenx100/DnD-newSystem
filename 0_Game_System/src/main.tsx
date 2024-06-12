@@ -1,15 +1,15 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
+
+import {NextUIProvider} from "@nextui-org/react";
 import 'virtual:uno.css'
 import './index.css'
 
-import { ThemeProvider } from "@material-tailwind/react";
-
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ThemeProvider>
+    <NextUIProvider>
       <App />
-    </ThemeProvider>
+    </NextUIProvider>
   </React.StrictMode>,
 )

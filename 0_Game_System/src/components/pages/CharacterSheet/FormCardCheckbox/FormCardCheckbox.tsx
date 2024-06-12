@@ -1,5 +1,6 @@
-import React, { ChangeEvent } from 'react';
-import { Checkbox, Card, List, ListItem, ListItemPrefix, Typography } from "@material-tailwind/react";
+import React, { ChangeEvent } from 'react'
+
+import { Card, CardBody } from "@nextui-org/react"
 
 interface CheckboxItem {
   id: string;
@@ -25,34 +26,27 @@ const FormCardCheckbox: React.FC<CardWithCheckboxesProps> = ({ id, label, checkb
       onSelectedValuesChange(selectedValues.filter(item => item !== value));
     }
   };
-  {/* peer relative appearance-none w-5 h-5 border border-blue-gray-200 cursor-pointer transition-all before:content[''] before:block before:bg-blue-gray-500 before:w-12 before:h-12 before:absolute before:top-2/4 before:left-2/4 before:-translate-y-2/4 before:-translate-x-2/4 before:opacity-0 before:transition-opacity checked:bg-red-500 checked:border-red-500 checked:before:bg-red-500 hover:before:opacity-0 form-checkbox*/}
 
   return (
     <>
 
       <label id={id} className="form-lbl-y col-start-1 row-start-14 md:row-start-8 col-span-2 md:col-span-5 bg-grey-lighter ">{label}</label>
-      <Card className="flex flex-row flex-wrap justify-around col-start-1 col-span-2 md:col-span-5 row-span-2 ml-2 mr-2 border-1 border-black rounded-t-none" placeholder = ''>
-
+      <Card className="flex flex-row flex-wrap justify-around col-start-1 col-span-2 md:col-span-5 row-span-2 ml-2 mr-2 border-1 border-black rounded-t-none" >
+        <CardBody className='flex-row min-w-10 p-2 gap-x-4'>
           {checkboxes.map((checkbox) => (
-          <List className="flex-row min-w-10 p-0" key={checkbox.id} placeholder = ''>
-          <ListItem className="p-0" placeholder = '' >
-              <label htmlFor={checkbox.id} className="flex w-full cursor-pointer items-center " >
-                  <ListItemPrefix className="mr-2" placeholder = ''>
-                      <Checkbox 
-                          id={checkbox.id}
-                          ripple={false}
-                          className="hover:before:opacity-0 form-checkbox"
-                          crossOrigin=""
-                          checked={selectedValues.includes(checkbox.value)}
-                          onChange={handleCheckboxChange}
-                          value={checkbox.value}
-                      />
-                  </ListItemPrefix>
-                  <Typography color="black" className="font-medium mr-2" placeholder = ''>{checkbox.name}</Typography>
+              <label htmlFor={checkbox.id} key={checkbox.id} className="flex w-full cursor-pointer items-center " >
+                <input 
+                  type='checkbox'
+                  id={checkbox.id}
+                  className="p-0 mr-2"
+                  value={checkbox.value}
+                  checked={selectedValues.includes(checkbox.value)}
+                  onChange={handleCheckboxChange}
+                />
+                {checkbox.name}
               </label>
-          </ListItem>
-          </List>
           ))}
+        </CardBody>
 
       </Card>
       

@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { getDataQuerySju } from '@database/dbTables';
+import React, { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
+import { getDataQuerySju } from '@database/dbTables'
+
+import { Card, CardBody } from "@nextui-org/react"
+import "@unocss/reset/tailwind.css"
+import "uno.css"
+import "./SystemGameElement.css"
 
 // Interfaces
-import { DBSistemaJuego } from '@interfaces/dbTypes';
-
-import { Card } from "@material-tailwind/react";
-import "@unocss/reset/tailwind.css";
-import "uno.css";
-import "./SystemGameElement.css";
+import { DBSistemaJuego } from '@interfaces/dbTypes'
 
 const SystemGameElement: React.FC = () => {
-    const [game, setGame] = useState<DBSistemaJuego>();
+    const [game, setGame] = useState<DBSistemaJuego>()
     // Cargue de informacion de base de datos
-    const params = useParams();
+    const params = useParams()
     
     useEffect(() => {
-        getGame();
+        getGame()
     }, []);
 
     async function getGame() {
@@ -29,7 +29,7 @@ const SystemGameElement: React.FC = () => {
             )
         )
         if (data !== null) {
-            setGame(data[0]);
+            setGame(data[0])
         }
     }
 
@@ -39,12 +39,16 @@ const SystemGameElement: React.FC = () => {
                 <header className='bg-white shadow-lg rounded py-2 grid items-center col-span-2'>
                     <h1 className='title-list'>{game?.sju_nombre}</h1>
                 </header>
-                <Card className="w-full px-10 py-5 row-span-2" placeholder=''>
-                    {game?.sju_descripcion}
+                <Card className="w-full px-10 py-5 row-span-2">
+                    <CardBody>
+                        <p>
+                            {game?.sju_descripcion}
+                        </p>
+                    </CardBody>
                 </Card>
             </section>
         </>
     );
 }
 
-export default SystemGameElement;
+export default SystemGameElement

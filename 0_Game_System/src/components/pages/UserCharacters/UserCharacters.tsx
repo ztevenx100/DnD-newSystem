@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import dbConnection from '@database/dbConnection'
 import { getUrlCharacter } from '@database/dbStorage'
 
-import { List, ListItem, Card, ListItemPrefix, Avatar, Typography, Chip, ListItemSuffix, IconButton } from "@material-tailwind/react"
-import "@unocss/reset/tailwind.css"
+import { Card, CardBody, Listbox, ListboxItem, Avatar, Chip, Button } from "@nextui-org/react"
 import "uno.css"
 import "./UserCharacters.css"
 
@@ -19,19 +18,19 @@ const UserCharacters: React.FC = () => {
     const [list, setList] = useState<DBPersonajesUsuario[]>([]);
     const [user, setUser] = useState('');
     const navigate = useNavigate();
-    const randomValueRefreshImage = Math.random().toString(36).substring(7);
+    const randomValueRefreshImage = Math.random().toString(36).substring(7)
 
     useEffect(() => {
         getUser().then((user) => {
-            getList(user);
+            getList(user)
         });
     }, []);
 
     async function getUser(): Promise<string> {
-        const user = '43c29fa1-d02c-4da5-90ea-51f451ed8952';
-        setUser(user);
-        //console.log('getUser: ', user);
-        return user;
+        const user = '43c29fa1-d02c-4da5-90ea-51f451ed8952'
+        setUser(user)
+        //console.log('getUser: ', user)
+        return user
     }
 
     async function getList(user:string) {
@@ -47,39 +46,39 @@ const UserCharacters: React.FC = () => {
 
             await Promise.all(
                 data.map(async (elem) => {
-                    elem.url_character_image = await getUrlImage(elem);
+                    elem.url_character_image = await getUrlImage(elem)
                 })
             );
 
             setList(data);
-            console.log("getList - data: " , data);
+            //console.log("getList - data: " , data);
         }
     }
 
     async function getUrlImage(character:DBPersonajesUsuario) {
-        const url = await getUrlCharacter(character.pus_usuario, character.pus_id);
+        const url = await getUrlCharacter(character.pus_usuario, character.pus_id)
         
-        return url + '?' + randomValueRefreshImage;
+        return url + '?' + randomValueRefreshImage
     }
 
     async function handleDeleteCharacter (id: string) {
-        if(!confirm('¿Seguro de que desea eliminar el personaje?')) return;
+        if(!confirm('¿Seguro de que desea eliminar el personaje?')) return
 
-        if(id === null || id === '') return;
+        if(id === null || id === '') return
         
         // Eliminar objeto db
         const { error } = await dbConnection
         .from('pus_personajes_usuario')
         .delete()
-        .eq('pus_id', id);
+        .eq('pus_id', id)
 
-        if(error) alert('Error eliminado personaje');
+        if(error) alert('Error eliminado personaje')
 
-        setList((prevObjects) => prevObjects.filter((obj) => obj.pus_id !== id));
+        setList((prevObjects) => prevObjects.filter((obj) => obj.pus_id !== id))
     };
 
     const handleOpenCharacter = () => {
-        navigate('/CharacterSheet/'+user);
+        navigate('/CharacterSheet/'+user)
     }
 
     return (
@@ -89,52 +88,45 @@ const UserCharacters: React.FC = () => {
                 <header className='bg-white shadow-lg rounded py-2 grid items-center'>
                     <h1 className='title-list'>Listado de personajes</h1>
                 </header>
-                {/* 
-                    <div className="relative flex flex-col bg-clip-border rounded-xl bg-white text-gray-700 shadow-md w-full" /> 
-                    <div className="flex flex-col gap-1 min-w-[240px] p-2 font-sans text-base font-normal text-blue-gray-700" /> 
-                    <div className="flex items-center w-full p-3 rounded-lg text-start leading-tight transition-all hover:bg-blue-gray-50 hover:bg-opacity-80 focus:bg-blue-gray-50 focus:bg-opacity-80 active:bg-blue-gray-50 active:bg-opacity-80 hover:text-blue-gray-900 focus:text-blue-gray-900 active:text-blue-gray-900 outline-none" /> 
-                    <div className="inline-block relative object-cover object-center !rounded-full w-12 h-12 rounded-lg" /> 
-                    <div className="block antialiased tracking-normal font-sans text-base font-semibold leading-relaxed text-blue-gray-900" /> 
-                    <div className="block antialiased font-sans text-sm leading-normal text-gray-700 font-normal" /> 
-                    <div className="grid place-items-center ml-auto justify-self-end" /> 
-                    <div className="relative grid items-center font-sans font-bold uppercase whitespace-nowrap select-none bg-gray-900/10 text-gray-900 py-1.5 px-3 text-xs rounded-lg" />
-                    <div className="relative align-middle select-none font-sans font-medium text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none w-10 max-w-[40px] h-10 max-h-[40px] rounded-lg text-xs text-gray-900 hover:bg-gray-900/10 active:bg-gray-900/20 btn-delete-object" /> 
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform" />
-                */}
-                <Card className="w-full px-10 py-5 row-span-6" placeholder=''>
-                    <List placeholder = ''>
+                <Card className="w-full px-10 py-5 row-span-6" >
+                    <CardBody>
+                    <Listbox variant="flat" className='' aria-label='Listado de personajes' onAction={(key) => navigate('/CharacterSheet/'+key)} >
                         {list.map((elem) => (
-                            <ListItem key={elem.pus_id} ripple={false} className='character-item flex' placeholder=''>
-                                <Link to={`/CharacterSheet/${elem.usu_usuario.usu_id}/${elem.pus_id}`} className='flex flex-1'>
-                                    <ListItemPrefix className='image-space' placeholder=''>
-                                        <Avatar variant="circular" alt={"character Image"} src={elem.url_character_image} placeholder = ''/>
-                                    </ListItemPrefix>
-                                    <div className='px-2'>
-                                        <Typography variant="h4" color="blue-gray" className='font-black mb-1' placeholder=''>
+                            <ListboxItem
+                                key={`${elem.usu_usuario.usu_id}/${elem.pus_id}`}
+                                description={elem.sju_sistema_juego.sju_nombre}
+                                className='character-item flex'
+                                textValue={"0"}
+                                classNames={{
+                                    description: '',
+                                    title: 'w-full whitespace-normal'
+                                }}
+                            >
+                                <header className='flex gap-2 items-center justify-between px-2'>
+                                    <div className='flex gap-2'>
+                                        <Avatar alt={elem.pus_nombre} className="flex-shrink-0" size="sm" src={elem.url_character_image} />
+                                        <h1 color="dark-3" className='block antialiased tracking-normal font-sans text-2xl leading-snug text-blue-gray-900 font-black mb-1' >
                                             {elem.pus_nombre}
-                                        </Typography>
-                                        <Typography variant="small" color="gray" className="font-normal mb-1 " placeholder=''>
-                                            {elem.pus_descripcion}
-                                        </Typography>
-                                        <Typography variant="h6" color="gray" className="font-semibold " placeholder=''>
-                                            {elem.sju_sistema_juego.sju_nombre}
-                                        </Typography>
+                                        </h1>
                                     </div>
-                                </Link>
-                                <ListItemSuffix className='flex gap-4' placeholder=''>
-                                    <Chip
-                                        value={elem.pus_nivel}
-                                        variant="ghost"
-                                        size="md"
-                                        className="rounded-lg lbl-level"
-                                    />
-                                    <IconButton variant="text" className="btn-delete-object " onClick={() => handleDeleteCharacter(elem.pus_id)} placeholder=''>
-                                        <SvgDeleteItem width={30} fill='var(--required-color)'/>
-                                    </IconButton>
-                                </ListItemSuffix>
-                            </ListItem>
+                                    <div className='flex items-center'>
+                                        <Chip radius="sm" classNames={{base: 'lbl-level'}}>
+                                            {elem.pus_nivel}
+                                        </Chip>
+                                        <Button isIconOnly className='btn-delete-object' aria-label="Like" onClick={() => handleDeleteCharacter(elem.pus_id)}>
+                                            <SvgDeleteItem width={30} fill='var(--required-color)'/>
+                                        </Button>
+                                    </div>
+                                </header>
+                                <footer className=' '>
+                                    <p className=' '>
+                                        {elem.pus_descripcion}
+                                    </p>
+                                </footer>
+                            </ListboxItem>
                         ))}
-                    </List>
+                    </Listbox>
+                    </CardBody>
                 </Card>
             </section>
             <aside className='panel-save'>
@@ -146,4 +138,4 @@ const UserCharacters: React.FC = () => {
     );
 }
 
-export default UserCharacters;
+export default UserCharacters

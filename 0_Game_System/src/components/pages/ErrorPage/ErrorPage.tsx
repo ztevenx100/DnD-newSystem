@@ -1,9 +1,9 @@
-import React from 'react';
+import React from 'react'
 
-import { Card } from "@material-tailwind/react";
-import "@unocss/reset/tailwind.css";
-import "uno.css";
-import "./ErrorPage.css";
+import { Card, CardBody } from "@nextui-org/react"
+import "@unocss/reset/tailwind.css"
+import "uno.css"
+import "./ErrorPage.css"
 
 
 const ErrorPage: React.FC = () => {
@@ -15,12 +15,14 @@ const ErrorPage: React.FC = () => {
             <header className='bg-white shadow-lg rounded py-2 grid items-center'>
                 <h1 className='title-list'>Pagina no encontrada</h1>
             </header>
-            <Card className="w-full px-10 py-5 row-span-6" placeholder=''>
-                <p></p>
+            <Card className="w-full px-10 py-5 row-span-6" >
+                <CardBody>
+                    <p></p>
+                </CardBody>
             </Card>
         </section>
         </>
     );
 }
 
-export default ErrorPage;
+export default ErrorPage

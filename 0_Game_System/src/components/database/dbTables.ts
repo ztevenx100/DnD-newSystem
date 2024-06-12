@@ -242,7 +242,7 @@ export const getDataQuery = async<T> (table: string, fields: string, where?: Whe
         if (where) {
             for (const [key, value] of Object.entries(where)) {
                 if ( Array.isArray(value) && value.every(item => typeof item === 'string')) {
-                    query = query.eq(key, value);
+                    query = query.in(key, value);
                 } else if ( typeof value === 'string' ) {
                     query = query.eq(key, value);
                 }

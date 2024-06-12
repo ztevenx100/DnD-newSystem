@@ -1,14 +1,13 @@
-import React, { useState, ChangeEvent, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
-import dbConnection from '@database/dbConnection';
-import { getUrlCharacter } from '@database/dbStorage';
-import { getDataQueryEpe, getDataQueryHad, getDataQueryHpe, getDataQueryInp, getDataQueryPus, getDataQuerySju, getDataQueryUsu } from '@database/dbTables';
+import React, { useState, ChangeEvent, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { v4 as uuidv4 } from 'uuid'
+import dbConnection from '@database/dbConnection'
+import { getUrlCharacter } from '@database/dbStorage'
+import { getDataQueryEpe, getDataQueryHad, getDataQueryHpe, getDataQueryInp, getDataQueryPus, getDataQuerySju, getDataQueryUsu } from '@database/dbTables'
 
-import { Button, Dialog, DialogHeader, DialogBody, DialogFooter, Tooltip } from "@material-tailwind/react";
-import "@unocss/reset/tailwind.css";
-import "uno.css";
-import "./CharacterSheet.css";
+import { Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from "@nextui-org/react"
+import "uno.css"
+import "./CharacterSheet.css"
 
 // Interfaces
 import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields, Option } from '@interfaces/typesCharacterSheet';
@@ -73,11 +72,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    // Listado del select skillTypeRing
    const [skillsTypes, setSkillsTypes] = useState<SkillTypes[]>([]);
 
-   const [open, setOpen] = useState<boolean>(false);
+   const {isOpen, onOpen, onOpenChange} = useDisclosure();
    const [loading, setLoading] = useState<boolean>(true);
    const [newRecord, setNewRecord] = useState<boolean>(true);
    const randomValueRefreshImage = Math.random().toString(36).substring(7);
-   const handleOpen = () => setOpen(!open);
    const navigate = useNavigate();
    const params = useParams();
 
@@ -146,8 +144,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    }, []);
 
    async function getUser() {
-      // const { data } = await dbConnection.from("usu_usuario").select('usu_id, usu_nombre')
-      //    .eq("usu_id",params.user);
       if (params.user == undefined || params.user == null) return
 
       const data = await Promise.resolve(
@@ -194,9 +190,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          setOptionsSkillClass(updatedOptionsSkillClass);
          setOptionsSkillExtra(updatedOptionsSkillExtra);
          setSkillsTypes(otherSkills);
-         //console.log('updatedOptionsSkillClass: ', updatedOptionsSkillClass);
-         //console.log('updatedOptionsSkillExtra: ', updatedOptionsSkillExtra);
-         //console.log('otherSkills: ', otherSkills);
       }
    }
    async function getGameSystemList() {
@@ -206,7 +199,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
             , { 'sju_estado': 'A' }
          )
       )
-      //console.log("getGameSystemList - data: ", data);
       if (data !== null) {
          const updatedSystemGameList = [];
          for (let i = 0; i < data.length; i++) {
@@ -224,7 +216,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
             , { 'pus_id': params.id }
          )
       )
-      //console.log('getCharacter ',data);
 
       if (data !== null) {
          const updatedCoins = [...coins];
@@ -316,8 +307,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
                updatedSkills[Number(numCampo)] = { id: elem.hpe_habilidad, value: numCampo,  name: acronym, description: '', ring: estadisticaBase };
             }
          });
-         //console.log('getSkills - updatedSkills', updatedSkills);
-         //console.log('getSkills - updatedFieldSkill', updatedFieldSkill);
          setSkillsAcquired(updatedSkills);
          setFieldSkill(updatedFieldSkill);
       }
@@ -344,7 +333,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          });
          setInvObjects(updatedInvObjects);
       }
-      //console.log('getInventory - updatedInvObjects', updatedInvObjects);
    }
    
    const optionsCharacterClass = [
@@ -450,6 +438,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       let option = optionsSkillClass.filter(skill => skill.value === currentSkill);
       setFieldSkill(prevItems => prevItems.map( item => item.field === 'skillClass' ? { ...item, id: option[0].value, skill: option[0].id||'' } : item ));
       setSelectedSkillValue(currentSkill);
+      
    };
    // Actualizar la habilidad extra del personaje
    const handleSelectExtraSkillChange = (currentSkill: string) => {
@@ -507,7 +496,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          cacheControl: '3600',
          upsert: true
       });
-      //console.log('handleCharacterImageFileChange: ', data);
       
       if(error) alert(alert);
       
@@ -661,11 +649,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          inv: invObjects,
       };
 
-      //console.log(skillsAcquired);
-      //console.log("fieldSkill: ",fieldSkill);
-      console.log(newCharacter);
       setDataCharacter(newCharacter);
-      handleOpen();
+      onOpen();
    }
 
    const randomRoll = () => {
@@ -730,7 +715,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       })
       
       document.documentElement.scrollTop = 0;
-      handleOpen();
+      onOpenChange();
       reloadPage(character);
    }
    
@@ -762,7 +747,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          
          if(data !== null){
             return data[0].pus_id;
-            //console.log('uploadInfoCharacter ', data[0].pus_id);
          } 
          
          if(error)return '';
@@ -795,7 +779,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    }
    async function uploadStats(isNewCharacter: boolean, character: string) {
       if(character === '') return;
-      //console.log('uploadStats ', inputsStatsData);
       
       if (!isNewCharacter) {
          for(const element of inputsStatsData) {
@@ -1172,114 +1155,112 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
             </button>
          </aside>
 
-         {/* 
-         <div className='grid place-items-center fixed w-screen h-screen bg-black bg-opacity-60 backdrop-blur-sm'/>
-         <div className='relative bg-white m-4 rounded-lg shadow-2xl text-blue-gray-500 antialiased font-sans text-base font-light leading-relaxed w-full md:w-5/6 lg:w-3/4 2xl:w-3/5 min-w-[90%] md:min-w-[83.333333%] lg:min-w-[75%] 2xl:min-w-[60%] max-w-[90%] md:max-w-[83.333333%] lg:max-w-[75%] 2xl:max-w-[60%] dialog'/>
-         <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg text-red-500 hover:bg-red-500/10 active:bg-red-500/30 mr-1'/>
-         <div className='align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-lg shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85]'/> 
-         <div className='h-[28rem] overflow-scroll'/> 
-         */}
          {/* Modal/Dialog */}
-         <Dialog
-            open={ open }
-            size={"lg"}
-            handler={handleOpenModal}
+         <Modal
+            id='modalSave'
+            isOpen={ isOpen }
+            size={"5xl"}
+            onOpenChange={onOpenChange}
             className="dialog "
-            placeholder=''
-            >
-            <DialogHeader  placeholder = '' >Resumen de hoja de personaje</DialogHeader>
-            <DialogBody className='dialog-body grid grid-cols-3 gap-4' placeholder = ''>
-               <ul className='dialog-card col-span-2 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
-                  <li className='col-span-2'><strong>Jugador: </strong>{dataCharacter?.player}</li>
-                  <li className='col-span-2'><strong>Personaje: </strong>{dataCharacter?.name}</li>
-                  <li><strong>Nivel: </strong>{dataCharacter?.level}</li>
-                  <li><strong>Clase: </strong>{getClassName(dataCharacter?.class)}</li>
-                  <li><strong>Raza: </strong>{getRaceName(dataCharacter?.race)}</li>
-                  <li><strong>Trabajo: </strong>{getJobName(dataCharacter?.job)}</li>
-                  <li className='col-span-2'><strong>Descripcion: </strong>{dataCharacter?.description}</li>
-                  <li className='col-span-2'><strong>Conocimientos: </strong>{getKnowledgeName(dataCharacter?.knowledge)}</li>
-               </ul>
-               <table className='dialog-table '>
-                  <thead>
-                     <tr><th colSpan={2}>Estadisticas</th></tr>
-                  </thead>
-                  <tbody>
-                     <tr>
-                        <td>Fuerza</td>
-                        <td>{(dataCharacter?.str[0].dice||0) + (dataCharacter?.str[0].class||0) + (dataCharacter?.str[0].level||0) }</td>
-                     </tr>
-                     <tr>
-                        <td>Inteligencia</td>
-                        <td>{(dataCharacter?.int[0].dice||0) + (dataCharacter?.int[0].class||0) + (dataCharacter?.int[0].level||0) }</td>
-                     </tr>
-                     <tr>
-                        <td>Destreza</td>
-                        <td>{(dataCharacter?.dex[0].dice||0) + (dataCharacter?.dex[0].class||0) + (dataCharacter?.dex[0].level||0) }</td>
-                     </tr>
-                     <tr>
-                        <td>Constitucion</td>
-                        <td>{(dataCharacter?.con[0].dice||0) + (dataCharacter?.con[0].class||0) + (dataCharacter?.con[0].level||0) }</td>
-                     </tr>
-                     <tr>
-                        <td>Percepcion</td>
-                        <td>{(dataCharacter?.per[0].dice||0) + (dataCharacter?.per[0].class||0) + (dataCharacter?.per[0].level||0) }</td>
-                     </tr>
-                     <tr>
-                        <td>Carisma</td>
-                        <td>{(dataCharacter?.cha[0].dice||0) + (dataCharacter?.cha[0].class||0) + (dataCharacter?.cha[0].level||0) }</td>
-                     </tr>
-                  </tbody>
-               </table>
-               <ul className='dialog-card grid grid-cols-1 gap-3 col-start-1 row-start-2 items-center '>
-                  <li className=''><strong>Alineacion: </strong>{dataCharacter?.alignment}</li>
-               </ul>
-               <ul className='dialog-card grid grid-cols-1 gap-3 col-start-1'>
-                  <li><strong>Habilidad principal: </strong>{getMainSkillName(dataCharacter?.mainSkill)}</li>
-                  <li><strong>Habilidad extra: </strong>{getExtraSkillName(dataCharacter?.extraSkill)}</li>
-                  {dataCharacter?.skills.map((elem) => (
-                     <li key={elem.value}><strong>Habilidad: </strong>{getSkillName(elem.name,elem.stat||'')}</li>
-                  ))}
-               </ul>
-               <ul className='dialog-card grid grid-cols-1 gap-3 col-start-2 row-start-2 items-center'>
-                  <li><strong>Arma principal: </strong>{dataCharacter?.mainWeapon}</li>
-               </ul>
-               <ul className='dialog-card grid grid-cols-1 gap-3 col-start-2'>
-                  <li><strong>Arma secundaria: </strong>{dataCharacter?.secondaryWeapon}</li>
-               </ul>
-               <ul className='dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 col-start-3 row-start-2'>
-                  <li className='md:col-span-2 lg:col-span-3'><strong>Dinero: </strong> </li>
-                  <li>Oro: {dataCharacter?.coinsInv[0]}</li>
-                  <li>Plata: {dataCharacter?.coinsInv[1]}</li>
-                  <li>Cobre: {dataCharacter?.coinsInv[2]}</li>
-               </ul>
-               <ul className='dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 col-start-3'>
-                  <li className='md:col-span-2 lg:col-span-3'>Inventario: </li>
-                  {dataCharacter?.inv.map((elem) => (
-                     <li key={elem.id}><strong>{elem.name}: </strong>{elem.count}</li>
-                  ))}
-               </ul>
-            </DialogBody>
-            <DialogFooter placeholder = '' >
-               <Button
-                  variant='text'
-                  color='red'
-                  onClick={() => handleOpen()}
-                  className='mr-1'
-                  placeholder = ''
-               >
-                  <span>Cancelar</span>
-               </Button>
-               <Button
-                  variant='gradient'
-                  className='btn-dialog-accept'
-                  onClick={() => saveData()}
-                  placeholder=''
-                  id='btnSaveData'
-               >
-                  <span>Guardar información</span>
-               </Button>
-            </DialogFooter>
-         </Dialog>
+            classNames={{
+               wrapper: 'my-0',
+               footer: 'px-2 py-2'
+            }}
+         >
+            <ModalContent>
+            {(onClose) => (
+               <>
+               <ModalHeader>Resumen de hoja de personaje</ModalHeader>
+               <ModalBody className='dialog-body grid grid-cols-3 gap-3'>
+                  <ul className='dialog-card col-span-2 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+                     <li className='col-span-2'><strong>Jugador: </strong>{dataCharacter?.player}</li>
+                     <li className='col-span-2'><strong>Personaje: </strong>{dataCharacter?.name}</li>
+                     <li><strong>Nivel: </strong>{dataCharacter?.level}</li>
+                     <li><strong>Clase: </strong>{getClassName(dataCharacter?.class)}</li>
+                     <li><strong>Raza: </strong>{getRaceName(dataCharacter?.race)}</li>
+                     <li><strong>Trabajo: </strong>{getJobName(dataCharacter?.job)}</li>
+                     <li className='col-span-2'><strong>Descripcion: </strong>{dataCharacter?.description}</li>
+                     <li className='col-span-2'><strong>Conocimientos: </strong>{getKnowledgeName(dataCharacter?.knowledge)}</li>
+                  </ul>
+                  <table className='dialog-table '>
+                     <thead>
+                        <tr><th colSpan={2}>Estadisticas</th></tr>
+                     </thead>
+                     <tbody>
+                        <tr>
+                           <td>Fuerza</td>
+                           <td>{(dataCharacter?.str[0].dice||0) + (dataCharacter?.str[0].class||0) + (dataCharacter?.str[0].level||0) }</td>
+                        </tr>
+                        <tr>
+                           <td>Inteligencia</td>
+                           <td>{(dataCharacter?.int[0].dice||0) + (dataCharacter?.int[0].class||0) + (dataCharacter?.int[0].level||0) }</td>
+                        </tr>
+                        <tr>
+                           <td>Destreza</td>
+                           <td>{(dataCharacter?.dex[0].dice||0) + (dataCharacter?.dex[0].class||0) + (dataCharacter?.dex[0].level||0) }</td>
+                        </tr>
+                        <tr>
+                           <td>Constitucion</td>
+                           <td>{(dataCharacter?.con[0].dice||0) + (dataCharacter?.con[0].class||0) + (dataCharacter?.con[0].level||0) }</td>
+                        </tr>
+                        <tr>
+                           <td>Percepcion</td>
+                           <td>{(dataCharacter?.per[0].dice||0) + (dataCharacter?.per[0].class||0) + (dataCharacter?.per[0].level||0) }</td>
+                        </tr>
+                        <tr>
+                           <td>Carisma</td>
+                           <td>{(dataCharacter?.cha[0].dice||0) + (dataCharacter?.cha[0].class||0) + (dataCharacter?.cha[0].level||0) }</td>
+                        </tr>
+                     </tbody>
+                  </table>
+                  <ul className='dialog-card grid grid-cols-1 gap-3 col-start-1 row-start-2 items-center '>
+                     <li className=''><strong>Alineacion: </strong>{dataCharacter?.alignment}</li>
+                  </ul>
+                  <ul className='dialog-card grid grid-cols-1 gap-3 col-start-1'>
+                     <li><strong>Habilidad principal: </strong>{getMainSkillName(dataCharacter?.mainSkill)}</li>
+                     <li><strong>Habilidad extra: </strong>{getExtraSkillName(dataCharacter?.extraSkill)}</li>
+                     {dataCharacter?.skills.map((elem) => (
+                        <li key={elem.value}><strong>Habilidad: </strong>{getSkillName(elem.name,elem.stat||'')}</li>
+                     ))}
+                  </ul>
+                  <ul className='dialog-card grid grid-cols-1 gap-3 col-start-2 row-start-2 items-center'>
+                     <li><strong>Arma principal: </strong>{dataCharacter?.mainWeapon}</li>
+                  </ul>
+                  <ul className='dialog-card grid grid-cols-1 gap-3 col-start-2'>
+                     <li><strong>Arma secundaria: </strong>{dataCharacter?.secondaryWeapon}</li>
+                  </ul>
+                  <ul className='dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 col-start-3 row-start-2'>
+                     <li className='md:col-span-2 lg:col-span-3'><strong>Dinero: </strong> </li>
+                     <li>Oro: {dataCharacter?.coinsInv[0]}</li>
+                     <li>Plata: {dataCharacter?.coinsInv[1]}</li>
+                     <li>Cobre: {dataCharacter?.coinsInv[2]}</li>
+                  </ul>
+                  <ul className='dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3 col-start-3'>
+                     <li className='md:col-span-2 lg:col-span-2'>Inventario: </li>
+                     {dataCharacter?.inv.map((elem) => (
+                        <li key={elem.id}><strong>{elem.name}: </strong>{elem.count}</li>
+                     ))}
+                  </ul>
+               </ModalBody>
+               <ModalFooter >
+                  <Button
+                     onPress={onClose}
+                     className='mr-1'
+                  >
+                     <span>Cancelar</span>
+                  </Button>
+                  <Button
+                     className='btn-dialog-accept'
+                     onClick={() => saveData()}
+                     id='btnSaveData'
+                  >
+                     <span>Guardar información</span>
+                  </Button>
+               </ModalFooter>
+               </>
+            )}
+            </ModalContent>
+         </Modal>
             
       </form>
       </>

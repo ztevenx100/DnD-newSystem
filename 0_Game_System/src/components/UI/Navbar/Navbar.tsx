@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink } from "react-router-dom";
-import { Tooltip } from "@material-tailwind/react";
+import {Tooltip} from "@nextui-org/tooltip";
 
 import  SvgHome from '@Icons/SvgHome';
 import  SvgPerson from '@Icons/SvgPerson';

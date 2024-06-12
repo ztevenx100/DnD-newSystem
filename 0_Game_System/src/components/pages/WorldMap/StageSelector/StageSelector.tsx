@@ -1,12 +1,12 @@
 import React from 'react';
 
-import { Popover, PopoverHandler, PopoverContent } from "@material-tailwind/react";
-import "./StageSelector.css";
+import { Popover, PopoverTrigger, PopoverContent } from "@nextui-org/react"
+import "./StageSelector.css"
 
 // Interfaces
-import { stageImageList } from '@interfaces/typesCharacterSheet';
+import { stageImageList } from '@interfaces/typesCharacterSheet'
 // Images
-import SvgChangeItem from '@Icons/SvgChangeItem';
+import SvgChangeItem from '@Icons/SvgChangeItem'
 
 interface StageSelectorProps{
     title: string;
@@ -19,10 +19,10 @@ const StageSelector: React.FC<StageSelectorProps> = ({title, imageList, onImageC
     return (
         <>
             <Popover placement='left-start'>
-                <PopoverHandler className='btn-stage-selector'>
+                <PopoverTrigger className='btn-stage-selector'>
                     <button type="button" ><SvgChangeItem height={30} width={30} /></button>
-                </PopoverHandler>
-                <PopoverContent placeholder=''>
+                </PopoverTrigger>
+                <PopoverContent >
                     <aside className='panel-stage p-0'>
                         <header className='border-b-1 border-black mb-4 text-center'>{title}</header>
                         <menu className='menu-selector'>
@@ -39,4 +39,4 @@ const StageSelector: React.FC<StageSelectorProps> = ({title, imageList, onImageC
     );
 };
 
-export default StageSelector;
+export default StageSelector

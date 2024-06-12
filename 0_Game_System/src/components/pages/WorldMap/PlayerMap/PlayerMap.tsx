@@ -6,8 +6,6 @@ import "./PlayerMap.css"
 
 // Images
 import SvgPlayerMap from '@UI/Icons/SvgPlayerMap'
-
-// Images
 import bgTab from '@img/webp/bg-tab.webp'
 
 interface PlayerMapProps{

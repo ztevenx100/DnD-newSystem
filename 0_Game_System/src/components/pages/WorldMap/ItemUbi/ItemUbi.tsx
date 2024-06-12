@@ -32,10 +32,27 @@ interface ItemUbiProps{
 
 const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
     const [isOpenUbi, setIsOpenUbi] = React.useState(false)
+    const [isOpenMainPnj, setIsOpenMainPnj] = React.useState(false)
+    const [isOpenMis, setIsOpenMis] = React.useState(false)
+    const [isOpenEne, setIsOpenEne] = React.useState(false)
+    const [isOpenPnj, setIsOpenPnj] = React.useState(false)
+    const [isOpenSub, setIsOpenSub] = React.useState(false)
     const randomValueRefreshImage = Math.random().toString(36).substring(7)
 
     const handleCloseUbi = () => {
-        setIsOpenUbi(false)
+        if (isOpenMainPnj) {
+            setIsOpenUbi(true)
+        } else if (isOpenMis) {
+            setIsOpenUbi(true)
+        } else if (isOpenEne) {
+            setIsOpenUbi(true)
+        } else if (isOpenPnj) {
+            setIsOpenUbi(true)
+        } else if (isOpenSub) {
+            setIsOpenUbi(true)
+        } else {
+            setIsOpenUbi(false)
+        }
         console.log('handleCloseUbi');
     }
 
@@ -88,7 +105,7 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
     return (
         <>
         {/*Location panel*/}
-            <Popover key={row + col} placement="bottom" offset={5}  isOpen={isOpenUbi} onOpenChange={(open) => setIsOpenUbi(open)} onClose={handleCloseUbi}>
+            <Popover key={row + col} placement="bottom" offset={5} isOpen={isOpenUbi} onOpenChange={(open) => setIsOpenUbi(open)} onClose={handleCloseUbi} >
                 <PopoverTrigger>
                     <div className='map-grid-col grid-cols-1 border-dashed border-white border-2 text-light'>
                         {getIcon('type' + item.ubi_ubicacion?.ubi_tipo, itemsTypeUbgSvg, 50, 50)}
@@ -106,8 +123,9 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
                         </header>
                         <menu className='py-0'>
                             <div className='flex justify-between py-1' >
+                                {/*PNJ main panel*/}
                                 {item.lista_pnj && item.lista_pnj.length > 0 && (
-                                    <Popover placement="right" offset={100}>
+                                    <Popover placement="right" offset={100} isOpen={isOpenMainPnj} onOpenChange={(open) => setIsOpenMainPnj(open)} >
                                         <PopoverTrigger>
                                             <button type="button" className='btn-card-ubi'><SvgPerson width={20} height={20} /></button>
                                         </PopoverTrigger>
@@ -152,8 +170,9 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
                                 )}
                             </div>
                             <div className='flex justify-between py-1' >
+                                {/*MIS panel*/}
                                 {item.lista_mision && item.lista_mision.length > 0 && (
-                                    <Popover placement="right" offset={100}>
+                                    <Popover placement="right" offset={100} isOpen={isOpenMis} onOpenChange={(open) => setIsOpenMis(open)} >
                                         <PopoverTrigger>
                                             <button type="button" className='btn-card-ubi'><SvgTaskList height={20} width={20} /></button>
                                         </PopoverTrigger>
@@ -183,8 +202,9 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
                                     </Popover>
                                     
                                 )}
+                                {/*ENE panel*/}
                                 {item.lista_enemigo && item.lista_enemigo.length > 0 && (
-                                    <Popover placement="right" offset={50}>
+                                    <Popover placement="right" offset={50} isOpen={isOpenEne} onOpenChange={(open) => setIsOpenEne(open)} >
                                         <PopoverTrigger>
                                             <button type="button" className='btn-card-ubi'><SvgEnemy height={20} width={20} /></button>
                                         </PopoverTrigger>
@@ -194,7 +214,10 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
                                                     <h6 className='text-black font-semibold '>Listado de enemigos</h6>
                                                 </header>
                                                 {item.lista_enemigo.map((enemy, index) => (
-                                                    <Tooltip key={index} className="bg-dark text-light px-2 py-1" placement="bottom" 
+                                                    <Tooltip 
+                                                        key={index} 
+                                                        className="bg-dark text-light px-2 py-1" 
+                                                        placement="bottom" 
                                                         content={ 
                                                             <div className="w-50 p-2">
                                                                 <p>Raza: {enemy.ene_raza}</p>
@@ -235,8 +258,9 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
                                         </PopoverContent>
                                     </Popover>
                                 )}
+                                {/*PNJ panel*/}
                                 {item.lista_pnj && item.lista_pnj.length > 1 && (
-                                    <Popover placement="right" offset={30}>
+                                    <Popover placement="right" offset={30} isOpen={isOpenPnj} onOpenChange={(open) => setIsOpenPnj(open)} >
                                         <PopoverTrigger>
                                             <button type="button" className='btn-card-ubi'><SvgGroup height={20} width={20} /></button>
                                         </PopoverTrigger>
@@ -246,7 +270,10 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
                                                     <h6 className='text-black font-semibold '>Listado de personajes</h6>
                                                 </header>
                                                 {item.lista_pnj.slice(1)?.map((character, index) => (
-                                                    <Tooltip key={index} className="bg-dark text-light px-2 py-1" placement="bottom" 
+                                                    <Tooltip 
+                                                        key={index} 
+                                                        className="bg-dark text-light px-2 py-1" 
+                                                        placement="bottom" 
                                                         content={ 
                                                             <div className="w-50 p-2">
                                                                 <p>Raza: {character.pnj_raza}</p>
@@ -290,7 +317,7 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
                             </div>
                             <div className='flex justify-between py-1' >
                                 {item.lista_sonidos && item.lista_sonidos.length > 0 && (
-                                    <Popover placement="right" offset={100}>
+                                    <Popover placement="right" offset={100} isOpen={isOpenSub} onOpenChange={(open) => setIsOpenSub(open)} >
                                         <PopoverTrigger>
                                             <button type="button" className='btn-card-ubi'><SvgSong height={20} width={20} /></button>
                                         </PopoverTrigger>

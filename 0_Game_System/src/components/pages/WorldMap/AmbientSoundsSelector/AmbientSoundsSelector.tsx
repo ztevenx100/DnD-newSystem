@@ -1,6 +1,7 @@
 import React, {useEffect, useState, ChangeEvent} from 'react'
 import { getUrlSound } from '@database/dbStorage'
 import { getDataQuerySub } from '@database/dbTables'
+import ReactPlayer from 'react-player/youtube';
 
 import { Popover, PopoverTrigger, PopoverContent, Tooltip } from "@nextui-org/react"
 import "./AmbientSoundsSelector.css"
@@ -27,6 +28,11 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
     const [currentAudioIndex, setCurrentAudioIndex] = useState<string>('');
     const [sound, setSound] = useState<HTMLAudioElement>();
     const [volumen, setVolumen] = useState<number>(1);
+    const [playing, setPlaying] = useState(false);
+  
+    const handlePlay = () => {
+      setPlaying(true);
+    };
 
     useEffect(() => {
         getList();
@@ -128,6 +134,18 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
                                     </button>
                                 </Tooltip>
                             ))}
+                            <button onClick={handlePlay}>
+                                Play Audio
+                            </button>
+                            <ReactPlayer
+                                url="https://www.youtube.com/watch?v=55NJzOSuKuY"
+                                playing={playing}
+                                controls={false}
+                                width="0"
+                                height="0"
+                                config={{
+                                }}
+                            />
                         </menu>
                     </aside>
                 </PopoverContent>

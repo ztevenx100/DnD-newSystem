@@ -1,16 +1,16 @@
 import React, {useEffect, useState, ChangeEvent} from 'react'
 import { getUrlSound } from '@database/dbStorage'
 import { getDataQuerySub } from '@database/dbTables'
-import ReactPlayer from 'react-player/youtube'
 
 import { Popover, PopoverTrigger, PopoverContent, Tooltip } from "@nextui-org/react"
 import "./AmbientSoundsSelector.css"
 
-import BtnReactPlayer from '@UI/Buttons/BtnReactPlayer';
-
 // Interfaces
 import { DBSonidoUbicacion } from '@interfaces/dbTypes'
 import { itemsSoundsSvg } from '@interfaces/iconInterface'
+
+// Components
+import BtnReactPlayer from '@UI/Buttons/BtnReactPlayer'
 
 // Funciones
 import {getIcon} from '@utils/utilIcons'
@@ -30,11 +30,6 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
     const [currentAudioIndex, setCurrentAudioIndex] = useState<string>('')
     const [sound, setSound] = useState<HTMLAudioElement>();
     const [volumen, setVolumen] = useState<number>(1)
-    const [playing, setPlaying] = useState(false)
-  
-    const handlePlay = () => {
-      setPlaying(true);
-    }
 
     useEffect(() => {
         getList();
@@ -43,8 +38,8 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
     async function getList() {
         const data =  await Promise.resolve( 
             getDataQuerySub(
-                'sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre) '
-                , { 'sub_tipo': 'G', 'sub_estado': 'A' }
+                'sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre, son_url) '
+                , { 'sub_tipo': ['G','GL'], 'sub_estado': 'A' }
             )
         )
         if (data !== null) {
@@ -55,8 +50,12 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
 
     async function getSounds(soundsList:DBSonidoUbicacion[]) {
         soundsList.map(async (sound) => {
-            const url:string = await Promise.resolve(getUrlSound(sound.sub_son))
-            sound.sub_sound_url = url ;
+            if (sound.sub_tipo === 'G') {
+                const url:string = await Promise.resolve(getUrlSound(sound.sub_son))
+                sound.sub_sound_url = url ;
+            } else if (sound.sub_tipo === 'GL') {
+                sound.sub_sound_url = sound.son_sonidos?.son_url ?? ''
+            }
         })
         //console.log('getSonuds - soundsList: ', soundsList);
     }
@@ -125,18 +124,21 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
                         </label>
                         <menu className='menu-selector'>
                             {list.map((elem, index) => (
-                                <Tooltip key={index} className="bg-dark text-light px-2 py-1" placement="top" content={ elem.son_sonidos?.son_nombre } >
-                                    <button 
-                                        type="button" 
-                                        key={elem.sub_icon} 
-                                        className={'sounds-item flex justify-center items-center ' + (buttonActive && currentAudioIndex === elem.sub_icon ? 'active':'')} 
-                                        onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}
-                                    >
-                                        {getIcon('type' + elem.sub_icon, itemsSoundsSvg)}
-                                    </button>
-                                </Tooltip>
+                                elem.sub_tipo === 'G' ? (
+                                    <Tooltip key={index} className="bg-dark text-light px-2 py-1" placement="top" content={ elem.son_sonidos?.son_nombre } >
+                                        <button 
+                                            type="button" 
+                                            key={elem.sub_icon} 
+                                            className={'sounds-item flex justify-center items-center ' + (buttonActive && currentAudioIndex === elem.sub_icon ? 'active':'')} 
+                                            onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}
+                                        >
+                                            {getIcon('type' + elem.sub_icon, itemsSoundsSvg)}
+                                        </button>
+                                    </Tooltip>
+                                ) : (
+                                    <BtnReactPlayer key={index} url={elem.sub_sound_url} icon={getIcon('type' + elem.sub_icon, itemsSoundsSvg)} />
+                                )
                             ))}
-                            <BtnReactPlayer url='https://www.youtube.com/watch?v=55NJzOSuKuY' />
                         </menu>
                     </aside>
                 </PopoverContent>

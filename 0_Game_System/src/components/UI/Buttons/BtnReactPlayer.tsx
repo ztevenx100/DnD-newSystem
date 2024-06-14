@@ -1,49 +1,60 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import ReactPlayer from 'react-player/youtube'
 
 import './BtnReactPlayer.css'
 
 interface BtnReactPlayerProps{
     url: string;
+    icon: React.ReactElement;
   }
 
 /**
- * Componente que genera un panel con varias opciones de sonido.
+ * Componente que genera un boton que reproduce musica de un link.
  * 
- * @component BtnMenuSound
- * @param {BtnMenuSoundProps} props - Las props del componente.
+ * @component BtnReactPlayer
+ * @param {BtnReactPlayerProps} props - Las props del componente.
  * @returns {JSX.Element} El componente renderizado.
  */
-const BtnReactPlayer: React.FC<BtnReactPlayerProps> = ({url}) => {
-    const [playing, setPlaying] = useState(false)
-    const [volume, setVolume] = useState(0.8)
-  
-    const handlePlay = () => {
-        setPlaying(prevPlaying => !prevPlaying);
-        handleVolumeChange('0.8')
-    };
+const BtnReactPlayer: React.FC<BtnReactPlayerProps> = ({url, icon}) => {
+  const [playing, setPlaying] = useState(false)
+  const [volume, setVolume] = useState(0.8)
+  const [buttonActive, setButtonActive] = useState<boolean>(false)
+  const audioRef = useRef<ReactPlayer>(null)
 
-    const handleVolumeChange = (vol: string) => {
-        setVolume(parseFloat(vol));
-    };
+  const handlePlay = () => {
+      setPlaying(prevPlaying => !prevPlaying);
+      setButtonActive(prevButtonActive => !prevButtonActive);
+      handleVolumeChange('0.8')
 
-    return (
-      <>
-        <button className='btn-sound' onClick={handlePlay}>
-            Play Audio
-        </button>
-        <ReactPlayer
-            url={url}
-            playing={playing}
-            volume={volume}
-            controls={false}
-            width="0"
-            height="0"
-            config={{
-            }}
-        />
-      </>
-    );
+      if(audioRef.current) audioRef.current.seekTo(0)
+  };
+
+  const handleVolumeChange = (vol: string) => {
+      setVolume(parseFloat(vol));
+  };
+
+  return (
+    <>
+      <button 
+        type="button" 
+        className={'btn-sound ' + (buttonActive ? 'active':'')} 
+        onClick={handlePlay}
+      >
+        {icon}
+      </button>
+      <ReactPlayer
+        ref={audioRef}
+        url={url}
+        playing={playing}
+        volume={volume}
+        controls={false}
+        width="0"
+        height="0"
+        config={{
+        }}
+      />
+    </>
+  );
 };
 
 export default BtnReactPlayer

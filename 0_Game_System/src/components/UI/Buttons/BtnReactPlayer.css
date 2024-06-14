@@ -17,5 +17,21 @@
     transition-property: background;
     transition-duration: .5s;
     transition-timing-function: ease;
+    display: flex;
+    justify-content: center;
+    & svg{
+        transition-property: transform;
+        transition-duration: .5s;
+        transition-timing-function: ease;
+    }
+    &:hover svg{
+        transform: scale(1.1);
+    }
+    &.active{
+        background: var(--bg-btn-active);
+        & svg{
+            transform: scale(1.1);
+        }
+    }
 
 }

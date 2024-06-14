@@ -120,6 +120,7 @@ export interface DBSonidoUbicacion{
   son_sonidos: {
     son_id: string;
     son_nombre: string;
+    son_url?: string;
   } | null;
   sub_sound_url: string;
   sub_tipo: string;

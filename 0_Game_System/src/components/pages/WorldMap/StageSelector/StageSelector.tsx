@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 import { Popover, PopoverTrigger, PopoverContent } from "@nextui-org/react"
 import "./StageSelector.css"

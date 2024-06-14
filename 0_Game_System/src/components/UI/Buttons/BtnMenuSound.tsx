@@ -7,6 +7,9 @@ import './BtnMenuSound.css'
 import { Components } from '@interfaces/typesCharacterSheet'
 import { DBSonidoUbicacion } from '@interfaces/dbTypes'
 
+// Components
+import BtnReactPlayer from '@UI/Buttons/BtnReactPlayer'
+
 // Funciones
 import {getIcon} from '@utils/utilIcons'
 
@@ -72,16 +75,20 @@ const BtnMenuSound: React.FC<BtnMenuSoundProps> = ({list, iconList}) => {
       <>
         <menu className='menu-sound-selector mt-2'>
             {list.map((elem, index) => (
-                <Tooltip key={index} className="bg-dark text-light px-2 py-1" placement="top" content={ elem.son_sonidos?.son_nombre } >
-                    <button 
-                        type="button" 
-                        key={elem.sub_icon} 
-                        className={'sounds-item flex justify-center items-center ' + (buttonActive && currentAudioIndex === elem.sub_icon ? 'active':'')} 
-                        onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}
-                    >
-                        {getIcon('type' + elem.sub_icon, iconList)}
-                    </button>
-                </Tooltip>
+                elem.sub_tipo === 'U' ? (
+                    <Tooltip key={index} className="bg-dark text-light px-2 py-1" placement="top" content={ elem.son_sonidos?.son_nombre } >
+                        <button 
+                            type="button" 
+                            key={elem.sub_icon} 
+                            className={'sounds-item flex justify-center items-center ' + (buttonActive && currentAudioIndex === elem.sub_icon ? 'active':'')} 
+                            onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}
+                        >
+                            {getIcon('type' + elem.sub_icon, iconList)}
+                        </button>
+                    </Tooltip>
+                ) : (
+                    <BtnReactPlayer key={index} url={elem.sub_sound_url} icon={getIcon('type' + elem.sub_icon, iconList)} />
+                )
             ))}
         </menu>
       </>

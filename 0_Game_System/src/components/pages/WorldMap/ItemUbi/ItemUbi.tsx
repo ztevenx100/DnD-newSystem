@@ -53,7 +53,6 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
         } else {
             setIsOpenUbi(false)
         }
-        console.log('handleCloseUbi');
     }
 
     const openNewWindowImageUbi = async(idUbi:string | undefined) => {

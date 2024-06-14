@@ -13,6 +13,7 @@ import SvgRain from '@Icons/SvgRain'
 import SvgRest from '@Icons/SvgRest'
 import SvgRuins from '@Icons/SvgRuins'
 import SvgSong from '@Icons/SvgSong'
+import SvgSpecial from '@Icons/SvgSpecial'
 import SvgStore from '@Icons/SvgStore'
 import SvgStorm from '@Icons/SvgStorm'
 import SvgTavern from '@Icons/SvgTavern'
@@ -20,6 +21,8 @@ import SvgTemple from '@Icons/SvgTemple'
 import SvgTreasure from '@Icons/SvgTreasure'
 import SvgWave from '@Icons/SvgWave'
 import SvgWind from '@Icons/SvgWind'
+import SvgBlacksmithing from '@Icons/SvgBlacksmithing'
+import SvgGuild from '@Icons/SvgGuild'
 
 export type ComponentIcon = {
     [key: string]: React.ComponentType<any>;
@@ -36,13 +39,16 @@ export const itemsSoundsSvg: ComponentIcon = {
     typeCO: SvgHeart,
     typeRU: SvgRuins,
     typeSO: SvgSong,
+    typeSP: SvgSpecial,
 }
-
+    
 export const itemsTypeUbgSvg: ComponentIcon = {
     typeARM: SvgArmory,
+    typeHER: SvgBlacksmithing,
     typeCAM: SvgCamp,
     typeCAV: SvgCave,
     typeCEM: SvgCemetery,
+    typeGRE: SvgGuild,
     typePIN: SvgInterest,
     typeNMO: SvgNest,
     typeZDE: SvgRest,

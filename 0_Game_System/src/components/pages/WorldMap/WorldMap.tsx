@@ -162,26 +162,31 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     const getSoundList = async(ubiId:string): Promise<DBSonidoUbicacion[]> => {
         let list: DBSonidoUbicacion[] = []
         
+        console.log('getSoundList', ubiId);
         if (ubiId == undefined || ubiId == null) return list
 
         const data =  await Promise.resolve( 
             getDataQuerySub(
-                'sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre) '
-                , { 'sub_tipo': 'U', 'sub_estado': 'A', 'sub_ubi': ubiId }
+                'sub_son, sub_tipo, sub_icon, son_sonidos(son_id, son_nombre, son_url)'
+                , { 'sub_tipo': ['U','UL'], 'sub_estado': 'A', 'sub_ubi': ubiId }
             )
         )
         if (data !== null) {
             await getSounds(data)
             list = data
         }
-        //console.log(list);
+        //console.log('getSoundList', list);
         return list
     }
 
     const getSounds = async(soundsList:DBSonidoUbicacion[]) => {
-        await soundsList.map(async (sound) => {
-            const url:string = await Promise.resolve(getUrlSound(sound.sub_son))
-            sound.sub_sound_url = url + '?' + randomValueRefreshImage
+        soundsList.map(async (sound) => {
+            if (sound.sub_tipo === 'U') {
+                const url:string = await Promise.resolve(getUrlSound(sound.sub_son))
+                sound.sub_sound_url = url + '?' + randomValueRefreshImage
+            } else if (sound.sub_tipo === 'UL') {
+                sound.sub_sound_url = sound.son_sonidos?.son_url ?? ''
+            }
         })
     }
 
@@ -296,17 +301,13 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                 <PlayerMap imageStage={imageStage} title={currentStage.esc_nombre} />
                 {geographicalMap.map((row, rowIndex) => (
                     <div key={rowIndex} className='map-grid-row grid-rows-1 grid grid-cols-11 '>
-                        {row.map((elem, colIndex) => {
-                            if (elem.mmu_id !== '') {
-                                return (
-                                    <ItemUbi item={elem} row={rowIndex} col={colIndex} />
-                                );
-                            } else {
-                                return (
-                                    <div key={rowIndex + colIndex} className='map-grid-col-empty grid-cols-1 border-dashed border-[#000c] border-1 text-light'></div>
-                                )
-                            }
-                        })}
+                        {row.map((elem, colIndex) => (
+                            (elem.mmu_id !== '') ? (
+                                <ItemUbi key={rowIndex + colIndex} item={elem} row={rowIndex} col={colIndex} />
+                            ) : (
+                                <div key={rowIndex + colIndex} className='map-grid-col-empty grid-cols-1 border-dashed border-[#000c] border-1 text-light'></div>
+                            )
+                        ))}
                     </div>
                 ))}
             </article>

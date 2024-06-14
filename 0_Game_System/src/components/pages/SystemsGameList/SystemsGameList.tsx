@@ -12,11 +12,11 @@ import "./SystemsGameList.css"
 
 const SystemsGameList: React.FC = () => {
     const [list, setList] = useState<DBSistemaJuego[]>([])
-    const navigate = useNavigate();
+    const navigate = useNavigate()
 
     useEffect(() => {
         getList();
-    }, []);
+    }, [])
 
     async function getList() {
         const data =  await Promise.resolve(

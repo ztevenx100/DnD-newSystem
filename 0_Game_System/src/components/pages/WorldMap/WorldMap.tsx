@@ -202,7 +202,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
 
         const data =  await Promise.resolve(
             getDataQueryPnj(
-                'pnj_id, pnj_nombre, pnj_raza, pnj_clase, pnj_trabajo, pnj_edad, pnj_tipo, pnj_str, pnj_int, pnj_dex, pnj_con, pnj_cha, pnj_per'
+                'pnj_id, pnj_nombre, pnj_raza, pnj_clase, pnj_trabajo, pnj_edad, pnj_tipo, pnj_str, pnj_int, pnj_dex, pnj_con, pnj_cha, pnj_per, pnj_vida'
                 , {'pnj_estado': 'A', 'pnj_ubi': ubiId}
                 , {'pnj_tipo': true}
             )
@@ -225,7 +225,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
 
         const data =  await Promise.resolve(
             getDataQueryEne(
-                'ene_id, ene_nombre, ene_raza, ene_clase, ene_trabajo, ene_edad, ene_tipo, ene_str, ene_int, ene_dex, ene_con, ene_cha, ene_per'
+                'ene_id, ene_nombre, ene_raza, ene_clase, ene_trabajo, ene_edad, ene_tipo, ene_str, ene_int, ene_dex, ene_con, ene_cha, ene_per, ene_vida'
                 , {'ene_estado': 'A', 'ene_ubi': ubiId}
                 , {'ene_tipo': true}
             )

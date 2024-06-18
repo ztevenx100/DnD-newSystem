@@ -40,7 +40,7 @@ interface WhereClause {
 }
 
 interface OrderByClause {
-    [key: string]: boolean;
+    [key: string]: boolean | { [key: string]: boolean };
 }
 
 /**
@@ -252,7 +252,13 @@ export const getDataQuery = async<T> (table: string, fields: string, where?: Whe
         if (orderBy) {
             //query = query.order(orderBy.field, { ascending: orderBy.ascending });
             for (const [key, value] of Object.entries(orderBy)) {
-                query = query.order(key, { ascending: value })
+                if ( typeof value === 'boolean' ) {
+                    query = query.order(key, { ascending: value })
+                } else {
+                    for (const [keyRef, valueRef] of Object.entries(value) ){
+                        query = query.order(key, { referencedTable: keyRef, ascending: valueRef })
+                    }
+                }
             }
         }
         

@@ -22,6 +22,7 @@ export interface DBPersonajesUsuario{
   pus_cantidad_plata: number;
   pus_cantidad_bronce: number;
   pus_puntos_suerte: number;
+  pus_vida: number;
   sju_sistema_juego: DBSistemaJuego | {
     sju_id: string;
     sju_nombre: string;
@@ -82,6 +83,7 @@ export interface DBEscenario{
   esc_id: string;
   esc_tipo: string;
   esc_nombre: string;
+  esc_orden: number;
 }
 
 export interface DBUbicacion{
@@ -98,6 +100,7 @@ export interface DBMapamundi{
     esc_id: string;
     esc_tipo: string;
     esc_nombre: string;
+    esc_orden: number;
   } | null;
   mmu_ubi: string;
   ubi_ubicacion: DBUbicacion | {
@@ -141,6 +144,7 @@ export interface DBPersonajeNoJugable{
   pnj_con: number;
   pnj_cha: number;
   pnj_per: number;
+  pnj_vida: number;
 }
 
 export interface DBEnemigo{
@@ -157,6 +161,7 @@ export interface DBEnemigo{
   ene_con: number;
   ene_cha: number;
   ene_per: number;
+  ene_vida: number;
 }
 
 export interface DBMision{

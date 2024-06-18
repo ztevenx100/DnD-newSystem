@@ -30,7 +30,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     
     const [geographicalMap, setGeographicalMap] = useState<DBMapamundi[][]>([])
     const [listItemsMap, setListItemsMap] = useState<DBMapamundi[]>([])
-    const [currentStage, setCurrentStage] = useState<DBEscenario>({esc_id:'', esc_tipo:'', esc_nombre:''})
+    const [currentStage, setCurrentStage] = useState<DBEscenario>({esc_id:'', esc_tipo:'', esc_nombre:'', esc_orden: 0})
     const [imageStage, setImagetStage] = useState<string>('')
     const [imageStageList, setImageStageList] = useState<stageImageList[]>([])
 
@@ -94,11 +94,12 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     const getMap = async(templateMap: DBMapamundi[][]) => {
         const data = await Promise.resolve(
             getDataQueryMmu(
-                'mmu_id, mmu_sju, mmu_esc, esc_escenario(esc_id, esc_tipo, esc_nombre), mmu_ubi, ubi_ubicacion(ubi_id, ubi_tipo, ubi_nombre),mmu_pos_x, mmu_pos_y'
+                'mmu_id, mmu_sju, mmu_esc, esc_escenario(esc_id, esc_tipo, esc_nombre, esc_orden), mmu_ubi, ubi_ubicacion(ubi_id, ubi_tipo, ubi_nombre),mmu_pos_x, mmu_pos_y'
                 , { 'mmu_sju': 'd127c085-469a-4627-8801-77dc7262d41b' }
-                , { 'mmu_pos_x': true, 'mmu_pos_y':true }
+                , { 'esc_orden': {'esc_escenario': true}, 'mmu_esc':true , 'mmu_pos_x': true, 'mmu_pos_y':true }
             )
         )
+        console.log('getMap - data: ',data)
   
         if (data !== null) {
             let stage:DBEscenario = data[0].esc_escenario as DBEscenario
@@ -162,7 +163,6 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     const getSoundList = async(ubiId:string): Promise<DBSonidoUbicacion[]> => {
         let list: DBSonidoUbicacion[] = []
         
-        console.log('getSoundList', ubiId);
         if (ubiId == undefined || ubiId == null) return list
 
         const data =  await Promise.resolve( 
@@ -202,7 +202,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
 
         const data =  await Promise.resolve(
             getDataQueryPnj(
-                'pnj_id, pnj_nombre, pnj_raza, pnj_clase, pnj_trabajo, pnj_edad, pnj_tipo, pnj_str, pnj_int, pnj_dex, pnj_con, pnj_cha, pnj_per'
+                'pnj_id, pnj_nombre, pnj_raza, pnj_clase, pnj_trabajo, pnj_edad, pnj_tipo, pnj_str, pnj_int, pnj_dex, pnj_con, pnj_cha, pnj_per, pnj_vida'
                 , {'pnj_estado': 'A', 'pnj_ubi': ubiId}
                 , {'pnj_tipo': true}
             )
@@ -225,7 +225,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
 
         const data =  await Promise.resolve(
             getDataQueryEne(
-                'ene_id, ene_nombre, ene_raza, ene_clase, ene_trabajo, ene_edad, ene_tipo, ene_str, ene_int, ene_dex, ene_con, ene_cha, ene_per'
+                'ene_id, ene_nombre, ene_raza, ene_clase, ene_trabajo, ene_edad, ene_tipo, ene_str, ene_int, ene_dex, ene_con, ene_cha, ene_per, ene_vida'
                 , {'ene_estado': 'A', 'ene_ubi': ubiId}
                 , {'ene_tipo': true}
             )

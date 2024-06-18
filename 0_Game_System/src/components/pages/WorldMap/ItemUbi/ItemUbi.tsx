@@ -22,6 +22,7 @@ import SvgSong from '@UI/Icons/SvgSong'
 import SvgEnemy from '@UI/Icons/SvgEnemy'
 import SvgGroup from '@UI/Icons/SvgGroup'
 import SvgTaskList from '@UI/Icons/SvgTaskList'
+import SvgHeart from '@Icons/SvgHeart';
 
 interface ItemUbiProps{
     item: DBMapamundi;
@@ -136,7 +137,7 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
                                                         <SvgLookImage width={20} height={20} />
                                                     </button>
                                                 </header>
-                                                <h6 className='text-center text-black font-bold'>{item.lista_pnj[0].pnj_nombre}</h6>
+                                                <h6 className='text-center text-black font-bold flex' ><SvgHeart width={20} fill='red' ></SvgHeart>{item.lista_pnj[0].pnj_nombre}</h6>
                                                 <p>Raza: {item.lista_pnj[0].pnj_raza}</p>
                                                 <p>Clase: {item.lista_pnj[0].pnj_clase}</p>
                                                 <p>Trabajo: {item.lista_pnj[0].pnj_trabajo}</p>
@@ -219,6 +220,7 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
                                                         placement="bottom" 
                                                         content={ 
                                                             <div className="w-50 p-2">
+                                                                <header className='flex' ><SvgHeart width={20} fill='red' ></SvgHeart>{enemy.ene_vida}</header>
                                                                 <p>Raza: {enemy.ene_raza}</p>
                                                                 <p>Clase: {enemy.ene_clase}</p>
                                                                 <p>Trabajo: {enemy.ene_trabajo}</p>
@@ -275,6 +277,7 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
                                                         placement="bottom" 
                                                         content={ 
                                                             <div className="w-50 p-2">
+                                                                <header className='flex' ><SvgHeart width={20} fill='red' ></SvgHeart>{character.pnj_vida}</header>
                                                                 <p>Raza: {character.pnj_raza}</p>
                                                                 <p>Clase: {character.pnj_clase}</p>
                                                                 <p>Trabajo: {character.pnj_trabajo}</p>

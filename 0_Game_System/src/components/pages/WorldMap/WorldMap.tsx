@@ -30,7 +30,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     
     const [geographicalMap, setGeographicalMap] = useState<DBMapamundi[][]>([])
     const [listItemsMap, setListItemsMap] = useState<DBMapamundi[]>([])
-    const [currentStage, setCurrentStage] = useState<DBEscenario>({esc_id:'', esc_tipo:'', esc_nombre:''})
+    const [currentStage, setCurrentStage] = useState<DBEscenario>({esc_id:'', esc_tipo:'', esc_nombre:'', esc_orden: 0})
     const [imageStage, setImagetStage] = useState<string>('')
     const [imageStageList, setImageStageList] = useState<stageImageList[]>([])
 
@@ -94,11 +94,12 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     const getMap = async(templateMap: DBMapamundi[][]) => {
         const data = await Promise.resolve(
             getDataQueryMmu(
-                'mmu_id, mmu_sju, mmu_esc, esc_escenario(esc_id, esc_tipo, esc_nombre), mmu_ubi, ubi_ubicacion(ubi_id, ubi_tipo, ubi_nombre),mmu_pos_x, mmu_pos_y'
+                'mmu_id, mmu_sju, mmu_esc, esc_escenario(esc_id, esc_tipo, esc_nombre, esc_orden), mmu_ubi, ubi_ubicacion(ubi_id, ubi_tipo, ubi_nombre),mmu_pos_x, mmu_pos_y'
                 , { 'mmu_sju': 'd127c085-469a-4627-8801-77dc7262d41b' }
-                , { 'mmu_pos_x': true, 'mmu_pos_y':true }
+                , { 'esc_orden': {'esc_escenario': true}, 'mmu_esc':true , 'mmu_pos_x': true, 'mmu_pos_y':true }
             )
         )
+        console.log('getMap - data: ',data)
   
         if (data !== null) {
             let stage:DBEscenario = data[0].esc_escenario as DBEscenario
@@ -162,7 +163,6 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     const getSoundList = async(ubiId:string): Promise<DBSonidoUbicacion[]> => {
         let list: DBSonidoUbicacion[] = []
         
-        console.log('getSoundList', ubiId);
         if (ubiId == undefined || ubiId == null) return list
 
         const data =  await Promise.resolve( 

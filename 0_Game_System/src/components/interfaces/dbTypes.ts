@@ -83,6 +83,7 @@ export interface DBEscenario{
   esc_id: string;
   esc_tipo: string;
   esc_nombre: string;
+  esc_orden: number;
 }
 
 export interface DBUbicacion{
@@ -99,6 +100,7 @@ export interface DBMapamundi{
     esc_id: string;
     esc_tipo: string;
     esc_nombre: string;
+    esc_orden: number;
   } | null;
   mmu_ubi: string;
   ubi_ubicacion: DBUbicacion | {

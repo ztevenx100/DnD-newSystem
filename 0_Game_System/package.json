@@ -1,7 +1,7 @@
 {
   "name": "0-game-system",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.5.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,16 +16,16 @@
   "author": "ztevenx100",
   "dependencies": {
     "@nextui-org/react": "^2.4.1",
-    "@supabase/supabase-js": "^2.43.4",
-    "@swc/core": "^1.5.28",
-    "@unocss/config": "^0.60.4",
-    "@unocss/vite": "^0.60.4",
-    "framer-motion": "^11.2.10",
+    "@supabase/supabase-js": "^2.44.3",
+    "@swc/core": "^1.6.13",
+    "@unocss/config": "^0.61.3",
+    "@unocss/vite": "^0.61.3",
+    "framer-motion": "^11.2.14",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-player": "^2.16.0",
-    "react-router": "^6.23.1",
-    "react-router-dom": "^6.23.1",
+    "react-router": "^6.24.1",
+    "react-router-dom": "^6.24.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
@@ -34,9 +34,9 @@
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.13.0",
     "@typescript-eslint/parser": "^7.13.0",
-    "@unocss/core": "^0.60.4",
-    "@unocss/preset-attributify": "^0.60.4",
-    "@unocss/preset-uno": "^0.60.4",
+    "@unocss/core": "^0.61.3",
+    "@unocss/preset-attributify": "^0.61.3",
+    "@unocss/preset-uno": "^0.61.3",
     "@vitejs/plugin-react-swc": "^3.7.0",
     "autoprefixer": "^10.4.19",
     "eslint": "^8.57.0",
@@ -44,9 +44,9 @@
     "eslint-plugin-react-refresh": "^0.4.7",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
-    "typescript": "^5.4.5",
-    "unocss": "^0.60.4",
-    "vite": "^5.2.13"
+    "typescript": "^5.5.3",
+    "unocss": "^0.61.3",
+    "vite": "^5.3.3"
   },
   "bugs": {
     "url": "https://github.com/ztevenx100/DnD-newSystem/issues"

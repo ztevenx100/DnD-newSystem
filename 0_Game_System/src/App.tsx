@@ -8,7 +8,7 @@ import Footer from '@UI/Footer/Footer';
 import BackgroundChanger from '@UI/Background/BackgroundChanger';
 import BtnBackToTop from '@UI/Buttons/BtnBackToTop';
 import Home from '@pages/Home';
-import CharacterSheet from '@pages/CharacterSheet/CharacterSheet';
+import CharacterSheet from '@/components/pages/UserCharacters/CharacterSheet/CharacterSheet';
 import UserCharacters from '@pages/UserCharacters/UserCharacters';
 import SystemsGameList from '@pages/SystemsGameList/SystemsGameList';
 import SystemGameElement from '@pages/SystemsGameList/SystemGameElement/SystemGameElement';

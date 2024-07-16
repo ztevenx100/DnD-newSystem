@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { getDataQuerySju } from '@database/dbTables'
+import { getDataQuerySju } from '@/components/services/database/dbTables'
 
 import { Card, CardBody } from "@nextui-org/react"
 import "@unocss/reset/tailwind.css"

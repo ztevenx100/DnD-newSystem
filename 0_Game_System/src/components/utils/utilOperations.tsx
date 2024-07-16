@@ -1,3 +1,7 @@
+/** 
+ * @filename: utilOperations.tsx
+ * @file: Maneja las funciones relacionadas con operaciones matematicas
+ */ 
 
 /**
  * Genera un número entero aleatorio entre dos valores (inclusive).

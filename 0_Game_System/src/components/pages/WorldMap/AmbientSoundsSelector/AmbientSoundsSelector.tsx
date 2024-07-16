@@ -1,6 +1,6 @@
 import React, {useEffect, useState, ChangeEvent} from 'react'
-import { getUrlSound } from '@database/dbStorage'
-import { getDataQuerySub } from '@database/dbTables'
+import { getUrlSound } from '@/components/services/database/dbStorage'
+import { getDataQuerySub } from '@/components/services/database/dbTables'
 
 import { Popover, PopoverTrigger, PopoverContent, Tooltip } from "@nextui-org/react"
 import "./AmbientSoundsSelector.css"

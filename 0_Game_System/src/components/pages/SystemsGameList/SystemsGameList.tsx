@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getDataQuerySju } from '@/components/database/dbTables'
+import { getDataQuerySju } from '@/components/services/database/dbTables'
 
 // Interfaces
 import { DBSistemaJuego } from '@interfaces/dbTypes'

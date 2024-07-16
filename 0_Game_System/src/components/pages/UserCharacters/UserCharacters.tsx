@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import dbConnection from '@database/dbConnection'
-import { getUrlCharacter } from '@database/dbStorage'
+import dbConnection from '@/components/services/database/dbConnection'
+import { getUrlCharacter } from '@/components/services/database/dbStorage'
 
 import { Card, CardBody, Listbox, ListboxItem, Avatar, Chip, Button } from "@nextui-org/react"
 import "uno.css"
@@ -12,7 +12,7 @@ import { DBPersonajesUsuario } from '@interfaces/dbTypes'
 // Images
 import SvgAddCharacter from '@Icons/SvgAddCharacter'
 import SvgDeleteItem from '@Icons/SvgDeleteItem'
-import { getDataQueryPus } from '@/components/database/dbTables'
+import { getDataQueryPus } from '@/components/services/database/dbTables'
 
 const UserCharacters: React.FC = () => {
     const [list, setList] = useState<DBPersonajesUsuario[]>([]);

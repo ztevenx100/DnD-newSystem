@@ -1,5 +1,5 @@
 // @filename: storage.ts
-import dbConnection, {bucketName} from '@/components/services/database/dbConnection'
+import dbConnection, {bucketName} from '@/services/database/dbConnection'
 
 const SEPARATOR_PATH:string = '/'
 const FOLDER_ENEMYS:string = 'enemigos'

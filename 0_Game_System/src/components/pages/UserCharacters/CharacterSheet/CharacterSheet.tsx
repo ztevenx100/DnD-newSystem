@@ -1,9 +1,9 @@
 import React, { useState, ChangeEvent, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid'
-import dbConnection from '@/components/services/database/dbConnection'
-import { getUrlCharacter } from '@/components/services/database/dbStorage'
-import { getDataQueryEpe, getDataQueryHad, getDataQueryHpe, getDataQueryInp, getDataQueryPus, getDataQuerySju, getDataQueryUsu } from '@/components/services/database/dbTables'
+import dbConnection from '@/services/database/dbConnection'
+import { getUrlCharacter } from '@/services/database/dbStorage'
+import { getDataQueryEpe, getDataQueryHad, getDataQueryHpe, getDataQueryInp, getDataQueryPus, getDataQuerySju, getDataQueryUsu } from '@/services/database/dbTables'
 
 import { Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from "@nextui-org/react"
 import "uno.css"

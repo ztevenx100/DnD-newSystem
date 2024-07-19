@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { getDataQueryMmu, getDataQuerySub, getDataQueryPnj, getDataQueryEne, getDataQueryMis } from '@/components/services/database/dbTables'
-import { getUrlStage, getUrlSound } from '@/components/services/database/dbStorage'
+import { getDataQueryMmu, getDataQuerySub, getDataQueryPnj, getDataQueryEne, getDataQueryMis } from '@database/dbTables'
+import { getUrlStage, getUrlSound } from '@database/dbStorage'
 
 import "@unocss/reset/tailwind.css"
 import "uno.css"

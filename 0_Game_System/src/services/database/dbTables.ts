@@ -1,5 +1,5 @@
 // @filename: tables.ts
-import dbConnection from '@/components/services/database/dbConnection'
+import dbConnection from '@/services/database/dbConnection'
 
 
 // Interfaces

@@ -1,36 +1,35 @@
-import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import dbConnection from '@/components/services/database/dbConnection'
-import { getUrlCharacter } from '@/components/services/database/dbStorage'
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import dbConnection from '@/services/database/dbConnection';
+import { getUrlCharacter } from '@/services/database/dbStorage';
 
-import { Card, CardBody, Listbox, ListboxItem, Avatar, Chip, Button } from "@nextui-org/react"
-import "uno.css"
-import "./UserCharacters.css"
+import { Card, CardBody, Listbox, ListboxItem, Avatar, Chip, Button } from "@nextui-org/react";
+import "uno.css";
+import "./UserCharacters.css";
 
+import { getDataQueryPus } from '@database/dbTables';
 // Interfaces
 import { DBPersonajesUsuario } from '@interfaces/dbTypes'
 // Images
-import SvgAddCharacter from '@Icons/SvgAddCharacter'
-import SvgDeleteItem from '@Icons/SvgDeleteItem'
-import { getDataQueryPus } from '@/components/services/database/dbTables'
+import SvgAddCharacter from '@Icons/SvgAddCharacter';
+import SvgDeleteItem from '@Icons/SvgDeleteItem';
 
 const UserCharacters: React.FC = () => {
     const [list, setList] = useState<DBPersonajesUsuario[]>([]);
     const [user, setUser] = useState('');
     const navigate = useNavigate();
-    const randomValueRefreshImage = Math.random().toString(36).substring(7)
+    const randomValueRefreshImage = Math.random().toString(36).substring(7);
 
     useEffect(() => {
         getUser().then((user) => {
-            getList(user)
+            getList(user);
         });
     }, []);
 
     async function getUser(): Promise<string> {
-        const user = '43c29fa1-d02c-4da5-90ea-51f451ed8952'
-        setUser(user)
-        //console.log('getUser: ', user)
-        return user
+        const user = '43c29fa1-d02c-4da5-90ea-51f451ed8952';
+        setUser(user);
+        return user;
     }
 
     async function getList(user:string) {
@@ -41,7 +40,7 @@ const UserCharacters: React.FC = () => {
                 'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, usu_usuario(usu_id, usu_nombre), sju_sistema_juego(sju_id, sju_nombre)'
                 , {'pus_usuario': user}
             )
-        )
+        );
         if (data !== null) {
 
             await Promise.all(
@@ -56,29 +55,29 @@ const UserCharacters: React.FC = () => {
     }
 
     async function getUrlImage(character:DBPersonajesUsuario) {
-        const url = await getUrlCharacter(character.pus_usuario, character.pus_id)
+        const url = await getUrlCharacter(character.pus_usuario, character.pus_id);
         
-        return url + '?' + randomValueRefreshImage
+        return url + '?' + randomValueRefreshImage;
     }
 
     async function handleDeleteCharacter (id: string) {
-        if(!confirm('¿Seguro de que desea eliminar el personaje?')) return
+        if(!confirm('¿Seguro de que desea eliminar el personaje?')) return;
 
-        if(id === null || id === '') return
+        if(id === null || id === '') return;
         
         // Eliminar objeto db
         const { error } = await dbConnection
         .from('pus_personajes_usuario')
         .delete()
-        .eq('pus_id', id)
+        .eq('pus_id', id);
 
-        if(error) alert('Error eliminado personaje')
+        if(error) alert('Error eliminado personaje');
 
-        setList((prevObjects) => prevObjects.filter((obj) => obj.pus_id !== id))
+        setList((prevObjects) => prevObjects.filter((obj) => obj.pus_id !== id));
     };
 
     const handleOpenCharacter = () => {
-        navigate('/CharacterSheet/'+user)
+        navigate('/CharacterSheet/'+user);
     }
 
     return (

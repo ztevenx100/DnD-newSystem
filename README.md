@@ -5,6 +5,7 @@ Pagina web para una partida de D&amp;D
 > Tecnologias
 - material-tailwind/react: 2.1.9
 - react: 18.2.64
+- react-player: 2.16.0
 - supabase/supabase-js: 2.39.7
 - typescript: 5.4.2
 - unocss: 0.58.5

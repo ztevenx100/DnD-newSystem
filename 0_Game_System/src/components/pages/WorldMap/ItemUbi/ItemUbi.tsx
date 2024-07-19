@@ -1,6 +1,6 @@
 import React from 'react';
-import dbConnection from '@/components/services/database/dbConnection'
-import { getUrlLocation, getUrlNpc, getUrlEnemy } from '@/components/services/database/dbStorage'
+import dbConnection from '@database/dbConnection'
+import { getUrlLocation, getUrlNpc, getUrlEnemy } from '@database/dbStorage'
 
 import { Popover, PopoverTrigger, PopoverContent, Tooltip } from "@nextui-org/react"
 import "./ItemUbi.css"

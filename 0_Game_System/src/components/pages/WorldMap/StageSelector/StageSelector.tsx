@@ -1,12 +1,12 @@
 import React from 'react'
 
-import { Popover, PopoverTrigger, PopoverContent } from "@nextui-org/react"
-import "./StageSelector.css"
+import { Popover, PopoverTrigger, PopoverContent } from '@nextui-org/react';
+import "./StageSelector.css";
 
 // Interfaces
-import { stageImageList } from '@interfaces/typesCharacterSheet'
+import { stageImageList } from '@interfaces/typesCharacterSheet';
 // Images
-import SvgChangeItem from '@Icons/SvgChangeItem'
+import SvgChangeItem from '@Icons/SvgChangeItem';
 
 interface StageSelectorProps{
     title: string;
@@ -39,4 +39,4 @@ const StageSelector: React.FC<StageSelectorProps> = ({title, imageList, onImageC
     );
 };
 
-export default StageSelector
+export default StageSelector;

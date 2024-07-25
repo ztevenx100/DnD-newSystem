@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import dbConnection from '@/services/database/dbConnection';
-import { getUrlCharacter } from '@/services/database/dbStorage';
+import { getUrlCharacter } from '@database/dbStorage';
 
 import { Card, CardBody, Listbox, ListboxItem, Avatar, Chip, Button } from "@nextui-org/react";
 import "uno.css";
 import "./UserCharacters.css";
 
-import { getDataQueryPus } from '@database/dbTables';
+import { listPus, deletePus } from '@services/UserCharactersServices';
+
 // Interfaces
-import { DBPersonajesUsuario } from '@interfaces/dbTypes'
+import { DBPersonajesUsuario } from '@interfaces/dbTypes';
+
 // Images
 import SvgAddCharacter from '@Icons/SvgAddCharacter';
 import SvgDeleteItem from '@Icons/SvgDeleteItem';
@@ -35,17 +36,12 @@ const UserCharacters: React.FC = () => {
     async function getList(user:string) {
         if(user === '' || user === null) return;
         
-        const data = await Promise.resolve(
-            getDataQueryPus(
-                'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, usu_usuario(usu_id, usu_nombre), sju_sistema_juego(sju_id, sju_nombre)'
-                , {'pus_usuario': user}
-            )
-        );
-        if (data !== null) {
+        const data:DBPersonajesUsuario[] = await listPus(user);
 
+        if (data !== null) {
             await Promise.all(
                 data.map(async (elem) => {
-                    elem.url_character_image = await getUrlImage(elem)
+                    elem.url_character_image = await getUrlImage(elem);
                 })
             );
 
@@ -66,18 +62,13 @@ const UserCharacters: React.FC = () => {
         if(id === null || id === '') return;
         
         // Eliminar objeto db
-        const { error } = await dbConnection
-        .from('pus_personajes_usuario')
-        .delete()
-        .eq('pus_id', id);
-
-        if(error) alert('Error eliminado personaje');
+        deletePus(id);
 
         setList((prevObjects) => prevObjects.filter((obj) => obj.pus_id !== id));
     };
 
     const handleOpenCharacter = () => {
-        navigate('/CharacterSheet/'+user);
+        navigate('/CharacterSheet/' + user);
     }
 
     return (

@@ -1,6 +1,5 @@
 // @filename: tables.ts
-import dbConnection from '@/services/database/dbConnection'
-
+import dbConnection from '@/services/database/dbConnection';
 
 // Interfaces
 import { 
@@ -17,23 +16,23 @@ import {
     DBHabilidad, 
     DBEstadisticaPersonaje, 
     DBInventarioPersonaje 
-} from '@interfaces/dbTypes'
+} from '@interfaces/dbTypes';
 
-const TABLE_ENE:string = 'ene_enemigo'
-const TABLE_EPE:string = 'epe_estadistica_personaje'
-const TABLE_ESC:string = 'esc_escenario'
-const TABLE_HAD:string = 'hab_habilidad'
-const TABLE_HPE:string = 'hpe_habilidad_personaje'
-const TABLE_INP:string = 'inp_inventario_personaje'
-const TABLE_MIS:string = 'mis_mision'
-const TABLE_MMU:string = 'mmu_mapamundi'
-const TABLE_PNJ:string = 'pnj_personaje_no_jugable'
-const TABLE_PUS:string = 'pus_personajes_usuario'
-const TABLE_SJU:string = 'sju_sistema_juego'
-const TABLE_SON:string = 'son_sonidos'
-const TABLE_SUB:string = 'sub_sonido_ubicacion'
-const TABLE_UBI:string = 'ubi_ubicacion'
-const TABLE_USU:string = 'usu_usuario'
+const TABLE_ENE:string = 'ene_enemigo';
+const TABLE_EPE:string = 'epe_estadistica_personaje';
+const TABLE_ESC:string = 'esc_escenario';
+const TABLE_HAD:string = 'hab_habilidad';
+const TABLE_HPE:string = 'hpe_habilidad_personaje';
+const TABLE_INP:string = 'inp_inventario_personaje';
+const TABLE_MIS:string = 'mis_mision';
+const TABLE_MMU:string = 'mmu_mapamundi';
+const TABLE_PNJ:string = 'pnj_personaje_no_jugable';
+const TABLE_PUS:string = 'pus_personajes_usuario';
+const TABLE_SJU:string = 'sju_sistema_juego';
+const TABLE_SON:string = 'son_sonidos';
+const TABLE_SUB:string = 'sub_sonido_ubicacion';
+const TABLE_UBI:string = 'ubi_ubicacion';
+const TABLE_USU:string = 'usu_usuario';
 
 interface WhereClause {
     [key: string]: string | string[];
@@ -52,7 +51,7 @@ interface OrderByClause {
  * @returns {DBEnemigo[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryEne = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery<DBEnemigo>(TABLE_ENE, fields, where, orderBy)
+    return getDataQuery<DBEnemigo>(TABLE_ENE, fields, where, orderBy);
 }
 
 /**
@@ -64,7 +63,7 @@ export const getDataQueryEne = async (fields: string, where?: WhereClause, order
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryEpe = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, fields, where, orderBy)
+    return getDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, fields, where, orderBy);
 }
 
 /**
@@ -76,7 +75,7 @@ export const getDataQueryEpe = async (fields: string, where?: WhereClause, order
  * @returns {DBEscenario[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryEsc = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery<DBEscenario>(TABLE_ESC, fields, where, orderBy)
+    return getDataQuery<DBEscenario>(TABLE_ESC, fields, where, orderBy);
 }
 
 /**
@@ -88,7 +87,7 @@ export const getDataQueryEsc = async (fields: string, where?: WhereClause, order
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryHad = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery<DBHabilidad>(TABLE_HAD, fields, where, orderBy)
+    return getDataQuery<DBHabilidad>(TABLE_HAD, fields, where, orderBy);
 }
 
 /**
@@ -100,7 +99,7 @@ export const getDataQueryHad = async (fields: string, where?: WhereClause, order
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryHpe = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery<DBHabilidadPersonaje>(TABLE_HPE, fields, where, orderBy)
+    return getDataQuery<DBHabilidadPersonaje>(TABLE_HPE, fields, where, orderBy);
 }
 
 /**
@@ -112,7 +111,7 @@ export const getDataQueryHpe = async (fields: string, where?: WhereClause, order
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryInp = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery<DBInventarioPersonaje>(TABLE_INP, fields, where, orderBy)
+    return getDataQuery<DBInventarioPersonaje>(TABLE_INP, fields, where, orderBy);
 }
 
 /**
@@ -124,7 +123,7 @@ export const getDataQueryInp = async (fields: string, where?: WhereClause, order
  * @returns {DBMision[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryMis = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery<DBMision>(TABLE_MIS, fields, where, orderBy)
+    return getDataQuery<DBMision>(TABLE_MIS, fields, where, orderBy);
 }
 
 /**
@@ -136,7 +135,7 @@ export const getDataQueryMis = async (fields: string, where?: WhereClause, order
  * @returns {DBMapamundi[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryMmu = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery<DBMapamundi>(TABLE_MMU, fields, where, orderBy)
+    return getDataQuery<DBMapamundi>(TABLE_MMU, fields, where, orderBy);
 }
 
 /**
@@ -148,7 +147,7 @@ export const getDataQueryMmu = async (fields: string, where?: WhereClause, order
  * @returns {DBPersonajeNoJugable[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryPnj = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery<DBPersonajeNoJugable>(TABLE_PNJ, fields, where, orderBy)
+    return getDataQuery<DBPersonajeNoJugable>(TABLE_PNJ, fields, where, orderBy);
 }
 
 /**
@@ -160,7 +159,7 @@ export const getDataQueryPnj = async (fields: string, where?: WhereClause, order
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryPus = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery<DBPersonajesUsuario>(TABLE_PUS, fields, where, orderBy)
+    return getDataQuery<DBPersonajesUsuario>(TABLE_PUS, fields, where, orderBy);
 }
 
 /**
@@ -172,7 +171,7 @@ export const getDataQueryPus = async (fields: string, where?: WhereClause, order
  * @returns {DBSistemaJuego[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQuerySju = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery<DBSistemaJuego>(TABLE_SJU, fields, where, orderBy)
+    return getDataQuery<DBSistemaJuego>(TABLE_SJU, fields, where, orderBy);
 }
 
 /**
@@ -184,7 +183,7 @@ export const getDataQuerySju = async (fields: string, where?: WhereClause, order
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQuerySon = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery(TABLE_SON, fields, where, orderBy)
+    return getDataQuery(TABLE_SON, fields, where, orderBy);
 }
 
 /**
@@ -196,7 +195,7 @@ export const getDataQuerySon = async (fields: string, where?: WhereClause, order
  * @returns {DBSonidoUbicacion[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQuerySub = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery<DBSonidoUbicacion>(TABLE_SUB, fields, where, orderBy)
+    return getDataQuery<DBSonidoUbicacion>(TABLE_SUB, fields, where, orderBy);
 }
 
 /**
@@ -208,7 +207,7 @@ export const getDataQuerySub = async (fields: string, where?: WhereClause, order
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryUbi = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery(TABLE_UBI, fields, where, orderBy)
+    return getDataQuery(TABLE_UBI, fields, where, orderBy);
 }
 
 /**
@@ -220,7 +219,7 @@ export const getDataQueryUbi = async (fields: string, where?: WhereClause, order
  * @returns {DBUsuario[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryUsu = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery<DBUsuario>(TABLE_USU, fields, where, orderBy)
+    return getDataQuery<DBUsuario>(TABLE_USU, fields, where, orderBy);
 }
 
 /**
@@ -237,7 +236,7 @@ export const getDataQuery = async<T> (table: string, fields: string, where?: Whe
     try {
         let query = dbConnection
         .from(table)
-        .select(fields)
+        .select(fields);
     
         if (where) {
             for (const [key, value] of Object.entries(where)) {
@@ -253,23 +252,65 @@ export const getDataQuery = async<T> (table: string, fields: string, where?: Whe
             //query = query.order(orderBy.field, { ascending: orderBy.ascending });
             for (const [key, value] of Object.entries(orderBy)) {
                 if ( typeof value === 'boolean' ) {
-                    query = query.order(key, { ascending: value })
+                    query = query.order(key, { ascending: value });
                 } else {
                     for (const [keyRef, valueRef] of Object.entries(value) ){
-                        query = query.order(key, { referencedTable: keyRef, ascending: valueRef })
+                        query = query.order(key, { referencedTable: keyRef, ascending: valueRef });
                     }
                 }
             }
         }
         
-        const { data, error } = await query.returns<T[]>()
+        const { data, error } = await query.returns<T[]>();
 
-        if (error) throw error
+        if (error) throw error;
         
-        return data as T[]
+        return data as T[];
     } catch (error) {
         console.error('Error executing select:', error);
         throw error;
     }
 
+}
+
+// -----
+
+/**
+ *  Funcion para eliminar los datos para la tabla de personajes por usuario.
+ * 
+ * @param {WhereClause} [where] - where de la base de datos (opcional).
+ */
+export const deleteDataQueryPus = async (where?: WhereClause) => {
+    deleteDataQuery(TABLE_PUS, where);
+}
+
+/**
+ * Funcion para eliminar los datos de base de datos.
+ * 
+ * @param {string} table - tabla de la base de datos.
+ * @param {WhereClause} where - where de la base de datos.
+ */
+export const deleteDataQuery = async (table: string, where?: WhereClause):Promise<void> => {
+    try {
+        let query = dbConnection
+        .from(table)
+        .delete();
+
+        if (where) {
+            for (const [key, value] of Object.entries(where)) {
+                if (Array.isArray(value) && value.every(item => typeof item === 'string')) {
+                    query = query.in(key, value);
+                } else if (typeof value === 'string') {
+                    query = query.eq(key, value);
+                }
+            }
+        }
+        
+        const { error } = await query;
+
+        if (error) throw error;
+    } catch (error) {
+        console.error('Error executing delete:', error);
+        throw error;
+    }
 }

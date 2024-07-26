@@ -10,10 +10,10 @@ import { DBPersonajesUsuario } from '@interfaces/dbTypes';
 /**
  * Busca el listado de personajes por usuario.
  * 
- * @param {string} value - El usuario .
+ * @param {string} user - El usuario para consultar el listado.
  * @returns {DBPersonajesUsuario[]} Retorna un listado de personajes por usuario.
  */
-export const listPus = async(user: string): Promise<DBPersonajesUsuario[]> => {
+export const getlistCharacters = async(user: string): Promise<DBPersonajesUsuario[]> => {
     let data:DBPersonajesUsuario[] = [];
     try {
         data = await getDataQueryPus(
@@ -25,9 +25,14 @@ export const listPus = async(user: string): Promise<DBPersonajesUsuario[]> => {
     }
 
     return data;
-}
+};
 
-export const deletePus = async (id: string): Promise<void> => {
+/**
+ * Eliminar personajes por id.
+ * 
+ * @param {string} id - El id del personaje.
+ */
+export const deleteCharacter = async (id: string): Promise<void> => {
     
     try {
         deleteDataQueryPus({'pus_id': id});

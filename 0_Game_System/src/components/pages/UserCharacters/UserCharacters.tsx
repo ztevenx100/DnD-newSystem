@@ -6,7 +6,7 @@ import { Card, CardBody, Listbox, ListboxItem, Avatar, Chip, Button } from "@nex
 import "uno.css";
 import "./UserCharacters.css";
 
-import { listPus, deletePus } from '@services/UserCharactersServices';
+import { getlistCharacters, deleteCharacter } from '@services/UserCharactersServices';
 
 // Interfaces
 import { DBPersonajesUsuario } from '@interfaces/dbTypes';
@@ -36,7 +36,7 @@ const UserCharacters: React.FC = () => {
     async function getList(user:string) {
         if(user === '' || user === null) return;
         
-        const data:DBPersonajesUsuario[] = await listPus(user);
+        const data:DBPersonajesUsuario[] = await getlistCharacters(user);
 
         if (data !== null) {
             await Promise.all(
@@ -62,7 +62,7 @@ const UserCharacters: React.FC = () => {
         if(id === null || id === '') return;
         
         // Eliminar objeto db
-        deletePus(id);
+        await deleteCharacter(id);
 
         setList((prevObjects) => prevObjects.filter((obj) => obj.pus_id !== id));
     };
@@ -80,7 +80,13 @@ const UserCharacters: React.FC = () => {
                 </header>
                 <Card className="w-full px-10 py-5 row-span-6" >
                     <CardBody>
-                    <Listbox variant="flat" className='' aria-label='Listado de personajes' onAction={(key) => navigate('/CharacterSheet/'+key)} >
+                    <Listbox 
+                        variant="flat" 
+                        className='' 
+                        classNames={{list: 'gap-y-2'}} 
+                        aria-label='Listado de personajes' 
+                        onAction={(key) => navigate('/CharacterSheet/' + key)} 
+                    >
                         {list.map((elem) => (
                             <ListboxItem
                                 key={`${elem.usu_usuario.usu_id}/${elem.pus_id}`}
@@ -92,10 +98,10 @@ const UserCharacters: React.FC = () => {
                                     title: 'w-full whitespace-normal'
                                 }}
                             >
-                                <header className='flex gap-2 items-center justify-between px-2'>
+                                <header className='flex gap-2 items-center justify-between mb-2'>
                                     <div className='flex gap-2'>
                                         <Avatar alt={elem.pus_nombre} className="flex-shrink-0" size="sm" src={elem.url_character_image} />
-                                        <h1 color="dark-3" className='block antialiased tracking-normal font-sans text-2xl leading-snug text-blue-gray-900 font-black mb-1' >
+                                        <h1 color="dark-3" className='block antialiased tracking-normal text-2xl leading-snug text-blue-gray-900 font-black mb-1' >
                                             {elem.pus_nombre}
                                         </h1>
                                     </div>
@@ -109,7 +115,7 @@ const UserCharacters: React.FC = () => {
                                     </div>
                                 </header>
                                 <footer className=' '>
-                                    <p className=' '>
+                                    <p>
                                         {elem.pus_descripcion}
                                     </p>
                                 </footer>

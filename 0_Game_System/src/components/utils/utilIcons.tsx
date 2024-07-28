@@ -1,3 +1,8 @@
+/** 
+ * @filename: utilIcons.tsx
+ * @file: Maneja las funciones relacionadas con el manejo de iconos
+ */ 
+
 import React from 'react';
 
 // Images

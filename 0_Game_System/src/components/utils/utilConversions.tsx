@@ -1,4 +1,7 @@
-//import React from 'react';
+/** 
+ * @filename: utilConversions.tsx
+ * @file: Maneja las funciones relacionadas con conversiones de variables
+ */ 
 
 /**
  * Convierte una variable string a un number, en caso de no ser asi retorna un valor por defecto.

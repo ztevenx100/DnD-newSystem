@@ -1,52 +1,47 @@
-import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import dbConnection from '@database/dbConnection'
-import { getUrlCharacter } from '@database/dbStorage'
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getUrlCharacter } from '@database/dbStorage';
 
-import { Card, CardBody, Listbox, ListboxItem, Avatar, Chip, Button } from "@nextui-org/react"
-import "uno.css"
-import "./UserCharacters.css"
+import { Card, CardBody, Listbox, ListboxItem, Avatar, Chip, Button } from "@nextui-org/react";
+import "uno.css";
+import "./UserCharacters.css";
+
+import { getlistCharacters, deleteCharacter } from '@services/UserCharactersServices';
 
 // Interfaces
-import { DBPersonajesUsuario } from '@interfaces/dbTypes'
+import { DBPersonajesUsuario } from '@interfaces/dbTypes';
+
 // Images
-import SvgAddCharacter from '@Icons/SvgAddCharacter'
-import SvgDeleteItem from '@Icons/SvgDeleteItem'
-import { getDataQueryPus } from '@/components/database/dbTables'
+import SvgAddCharacter from '@Icons/SvgAddCharacter';
+import SvgDeleteItem from '@Icons/SvgDeleteItem';
 
 const UserCharacters: React.FC = () => {
     const [list, setList] = useState<DBPersonajesUsuario[]>([]);
     const [user, setUser] = useState('');
     const navigate = useNavigate();
-    const randomValueRefreshImage = Math.random().toString(36).substring(7)
+    const randomValueRefreshImage = Math.random().toString(36).substring(7);
 
     useEffect(() => {
         getUser().then((user) => {
-            getList(user)
+            getList(user);
         });
     }, []);
 
     async function getUser(): Promise<string> {
-        const user = '43c29fa1-d02c-4da5-90ea-51f451ed8952'
-        setUser(user)
-        //console.log('getUser: ', user)
-        return user
+        const user = '43c29fa1-d02c-4da5-90ea-51f451ed8952';
+        setUser(user);
+        return user;
     }
 
     async function getList(user:string) {
         if(user === '' || user === null) return;
         
-        const data = await Promise.resolve(
-            getDataQueryPus(
-                'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, usu_usuario(usu_id, usu_nombre), sju_sistema_juego(sju_id, sju_nombre)'
-                , {'pus_usuario': user}
-            )
-        )
-        if (data !== null) {
+        const data:DBPersonajesUsuario[] = await getlistCharacters(user);
 
+        if (data !== null) {
             await Promise.all(
                 data.map(async (elem) => {
-                    elem.url_character_image = await getUrlImage(elem)
+                    elem.url_character_image = await getUrlImage(elem);
                 })
             );
 
@@ -56,29 +51,24 @@ const UserCharacters: React.FC = () => {
     }
 
     async function getUrlImage(character:DBPersonajesUsuario) {
-        const url = await getUrlCharacter(character.pus_usuario, character.pus_id)
+        const url = await getUrlCharacter(character.pus_usuario, character.pus_id);
         
-        return url + '?' + randomValueRefreshImage
+        return url + '?' + randomValueRefreshImage;
     }
 
     async function handleDeleteCharacter (id: string) {
-        if(!confirm('¿Seguro de que desea eliminar el personaje?')) return
+        if(!confirm('¿Seguro de que desea eliminar el personaje?')) return;
 
-        if(id === null || id === '') return
+        if(id === null || id === '') return;
         
         // Eliminar objeto db
-        const { error } = await dbConnection
-        .from('pus_personajes_usuario')
-        .delete()
-        .eq('pus_id', id)
+        await deleteCharacter(id);
 
-        if(error) alert('Error eliminado personaje')
-
-        setList((prevObjects) => prevObjects.filter((obj) => obj.pus_id !== id))
+        setList((prevObjects) => prevObjects.filter((obj) => obj.pus_id !== id));
     };
 
     const handleOpenCharacter = () => {
-        navigate('/CharacterSheet/'+user)
+        navigate('/CharacterSheet/' + user);
     }
 
     return (
@@ -90,7 +80,13 @@ const UserCharacters: React.FC = () => {
                 </header>
                 <Card className="w-full px-10 py-5 row-span-6" >
                     <CardBody>
-                    <Listbox variant="flat" className='' aria-label='Listado de personajes' onAction={(key) => navigate('/CharacterSheet/'+key)} >
+                    <Listbox 
+                        variant="flat" 
+                        className='' 
+                        classNames={{list: 'gap-y-2'}} 
+                        aria-label='Listado de personajes' 
+                        onAction={(key) => navigate('/CharacterSheet/' + key)} 
+                    >
                         {list.map((elem) => (
                             <ListboxItem
                                 key={`${elem.usu_usuario.usu_id}/${elem.pus_id}`}
@@ -102,10 +98,10 @@ const UserCharacters: React.FC = () => {
                                     title: 'w-full whitespace-normal'
                                 }}
                             >
-                                <header className='flex gap-2 items-center justify-between px-2'>
+                                <header className='flex gap-2 items-center justify-between mb-2'>
                                     <div className='flex gap-2'>
                                         <Avatar alt={elem.pus_nombre} className="flex-shrink-0" size="sm" src={elem.url_character_image} />
-                                        <h1 color="dark-3" className='block antialiased tracking-normal font-sans text-2xl leading-snug text-blue-gray-900 font-black mb-1' >
+                                        <h1 color="dark-3" className='block antialiased tracking-normal text-2xl leading-snug text-blue-gray-900 font-black mb-1' >
                                             {elem.pus_nombre}
                                         </h1>
                                     </div>
@@ -119,7 +115,7 @@ const UserCharacters: React.FC = () => {
                                     </div>
                                 </header>
                                 <footer className=' '>
-                                    <p className=' '>
+                                    <p>
                                         {elem.pus_descripcion}
                                     </p>
                                 </footer>

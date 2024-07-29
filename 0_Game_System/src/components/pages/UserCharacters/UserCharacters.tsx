@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUrlCharacter } from '@database/dbStorage';
 
 import { Card, CardBody, Listbox, ListboxItem, Avatar, Chip, Button } from "@nextui-org/react";
-import "uno.css";
-import "./UserCharacters.css";
 
 import { getlistCharacters, deleteCharacter } from '@services/UserCharactersServices';
 
@@ -14,6 +12,7 @@ import { DBPersonajesUsuario } from '@interfaces/dbTypes';
 // Images
 import SvgAddCharacter from '@Icons/SvgAddCharacter';
 import SvgDeleteItem from '@Icons/SvgDeleteItem';
+import ListUserCharacter from './ListUserCharacter/ListUserCharacter';
 
 const UserCharacters: React.FC = () => {
     const [list, setList] = useState<DBPersonajesUsuario[]>([]);
@@ -80,6 +79,9 @@ const UserCharacters: React.FC = () => {
                 </header>
                 <Card className="w-full px-10 py-5 row-span-6" >
                     <CardBody>
+                        <Suspense>
+                            <ListUserCharacter listCharacters={list} />
+                        </Suspense>
                     <Listbox 
                         variant="flat" 
                         className='' 
@@ -134,4 +136,4 @@ const UserCharacters: React.FC = () => {
     );
 }
 
-export default UserCharacters
+export default UserCharacters;

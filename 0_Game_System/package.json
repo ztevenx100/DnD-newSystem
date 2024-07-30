@@ -22,6 +22,7 @@
     "@unocss/vite": "^0.61.3",
     "framer-motion": "^11.2.14",
     "react": "^18.3.1",
+    "react-content-loader": "^7.0.2",
     "react-dom": "^18.3.1",
     "react-player": "^2.16.0",
     "react-router": "^6.24.1",

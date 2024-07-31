@@ -1,32 +1,34 @@
-import React, { useState, ChangeEvent, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { v4 as uuidv4 } from 'uuid'
-import dbConnection from '@/services/database/dbConnection'
-import { getUrlCharacter } from '@/services/database/dbStorage'
-import { getDataQueryEpe, getDataQueryHad, getDataQueryHpe, getDataQueryInp, getDataQueryPus, getDataQuerySju, getDataQueryUsu } from '@/services/database/dbTables'
+import React, { useState, ChangeEvent, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
+import dbConnection from '@/services/database/dbConnection';
+import { getUrlCharacter } from '@/services/database/dbStorage';
+import { getCharacter, getGameSystem, getListEpe, getListHad, getListHpe, getListInp, getUser } from '@/services/UserCharactersServices';
 
-import { Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from "@nextui-org/react"
-import "uno.css"
-import "./CharacterSheet.css"
+import { Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
+import './CharacterSheet.css';
+
+// Components
+import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer';
+import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox';
+import FormInputStats from './FormInputStats/FormInputStats';
+import FormInputSkillsRing from './FormInputSkillsRing/FormInputSkillsRing';
+import FormImageFile from './FormImageFile/FormImageFile';
 
 // Interfaces
-import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields, Option } from '@interfaces/typesCharacterSheet'
-import { DBSistemaJuego } from '@interfaces/dbTypes';
-// Components
-import FormSelectInfoPlayer from './FormSelectInfoPlayer/FormSelectInfoPlayer'
-import FormCardCheckbox from './FormCardCheckbox/FormCardCheckbox'
-import FormInputStats from './FormInputStats/FormInputStats'
-import FormInputSkillsRing from './FormInputSkillsRing/FormInputSkillsRing'
-import FormImageFile from './FormImageFile/FormImageFile'
+import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields, Option } from '@interfaces/typesCharacterSheet';
+import { DBHabilidad, DBPersonajesUsuario, DBSistemaJuego, DBUsuario } from '@interfaces/dbTypes';
+
 // Funciones
-import {validateNumeric} from '@utils/utilConversions'
+import {validateNumeric} from '@utils/utilConversions';
+
 // Images
-import mainBackground from '@img/webp/bg-home-02.webp'
-import ScreenLoader from '@UI/ScreenLoader/ScreenLoader'
-import SvgCharacter from '@Icons/SvgCharacter'
-import SvgSaveCharacter from '@Icons/SvgSaveCharacter'
-import SvgD4Roll from '@Icons/SvgD4Roll'
-import SvgDeleteItem from '@Icons/SvgDeleteItem'
+import mainBackground from '@img/webp/bg-home-02.webp';
+import ScreenLoader from '@UI/ScreenLoader/ScreenLoader';
+import SvgCharacter from '@Icons/SvgCharacter';
+import SvgSaveCharacter from '@Icons/SvgSaveCharacter';
+import SvgD4Roll from '@Icons/SvgD4Roll';
+import SvgDeleteItem from '@Icons/SvgDeleteItem';
 
 interface CharacterSheetProps {
    changeBackground: (newBackground: string) => void;
@@ -35,48 +37,48 @@ interface CharacterSheetProps {
 const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => {
 
    // Varibles - estados
-   const [playerName, setPlayerName] = useState<string>('')
-   const [characterName, setCharacterName] = useState<string>('')
-   const [characterLevel,setCharacterLevel] = useState(1)
-   const [characterDescription, setCharacterDescription] = useState<string>('')
-   const [characterImage, setCharacterImage] = useState<string | undefined>(undefined)
-   const [selectedClassValue, setSelectedClassValue] = useState<string>('')
-   const [selectedRaceValue, setSelectedRaceValue] = useState<string>('')
-   const [selectedJobValue, setSelectedJobValue] = useState<string>('')
-   const [selectedCheckValues, setSelectedCheckValues] = useState<string[]>([])
+   const [playerName, setPlayerName] = useState<string>('');
+   const [characterName, setCharacterName] = useState<string>('');
+   const [characterLevel,setCharacterLevel] = useState(1);
+   const [characterDescription, setCharacterDescription] = useState<string>('');
+   const [characterImage, setCharacterImage] = useState<string | undefined>(undefined);
+   const [selectedClassValue, setSelectedClassValue] = useState<string>('');
+   const [selectedRaceValue, setSelectedRaceValue] = useState<string>('');
+   const [selectedJobValue, setSelectedJobValue] = useState<string>('');
+   const [selectedCheckValues, setSelectedCheckValues] = useState<string[]>([]);
    
    // Definir el estado para las habilidades
-   const [mainWeapon, setMainWeapon] = useState<string>('')
-   const [secondaryWeapon, setSecondaryWeapon] = useState<string>('')
-   const [alignmentValue, setAlignmentValue] = useState<string>('')
-   const [selectedSkillValue, setSelectedSkillValue] = useState<string>('')
-   const [selectedExtraSkillValue, setSelectedExtraSkillValue] = useState<string>('')
-   const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([{id:'', value:'0', name:'', description: '', ring:''},{id:'', value:'1',name:'', description: '', ring:''},{id:'', value:'2', name:'', description: '', ring:''}])
-   const [coins,setCoins] = useState<number[]>([0,3,0])
-   const [luckyPoints,setLuckyPoints] = useState<number>(1)
-   const [lifePoints,setLifePoints] = useState<number>(1)
+   const [mainWeapon, setMainWeapon] = useState<string>('');
+   const [secondaryWeapon, setSecondaryWeapon] = useState<string>('');
+   const [alignmentValue, setAlignmentValue] = useState<string>('');
+   const [selectedSkillValue, setSelectedSkillValue] = useState<string>('');
+   const [selectedExtraSkillValue, setSelectedExtraSkillValue] = useState<string>('');
+   const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([{id:'', value:'0', name:'', description: '', ring:''},{id:'', value:'1',name:'', description: '', ring:''},{id:'', value:'2', name:'', description: '', ring:''}]);
+   const [coins,setCoins] = useState<number[]>([0,3,0]);
+   const [luckyPoints,setLuckyPoints] = useState<number>(1);
+   const [lifePoints,setLifePoints] = useState<number>(1);
    
-   const [invObjects, setInvObjects] = useState<InventoryObject[]>([])
-   const [systemGame, setSystemGame] = useState<DBSistemaJuego>({sju_id: '', sju_nombre: ''})
-   const [skillsRingList, setSkillsRingList] = useState<SkillTypes[]> ([{id:'0', skills: []},{id:'1', skills: []},{id:'2', skills: []}])
-   const [fieldSkill, setFieldSkill] = useState<SkillFields[]> ([{id:'',skill:'',field:'skillClass'},{id:'',skill:'',field:'skillExtra'}])
-   const [newObjectName, setNewObjectName] = useState<string>('')
-   const [newObjectDescription, setNewObjectDescription] = useState<string>('')
-   const [newObjectCount, setNewObjectCount] = useState<number>(1)
-   const [SystemGameList, setSystemGameList] = useState<Option[]>([])
-   const [deleteItems, setDeleteItems] = useState<String[]>([])
+   const [invObjects, setInvObjects] = useState<InventoryObject[]>([]);
+   const [systemGame, setSystemGame] = useState<DBSistemaJuego>({sju_id: '', sju_nombre: ''});
+   const [skillsRingList, setSkillsRingList] = useState<SkillTypes[]> ([{id:'0', skills: []},{id:'1', skills: []},{id:'2', skills: []}]);
+   const [fieldSkill, setFieldSkill] = useState<SkillFields[]> ([{id:'',skill:'',field:'skillClass'},{id:'',skill:'',field:'skillExtra'}]);
+   const [newObjectName, setNewObjectName] = useState<string>('');
+   const [newObjectDescription, setNewObjectDescription] = useState<string>('');
+   const [newObjectCount, setNewObjectCount] = useState<number>(1);
+   const [SystemGameList, setSystemGameList] = useState<Option[]>([]);
+   const [deleteItems, setDeleteItems] = useState<String[]>([]);
 
    // Listado del select skillClass
-   const [optionsSkillClass, setOptionsSkillClass] = useState<Option[]>([])
+   const [optionsSkillClass, setOptionsSkillClass] = useState<Option[]>([]);
    // Listado del select skillExtra
-   const [optionsSkillExtra, setOptionsSkillExtra] = useState<Option[]>([])
+   const [optionsSkillExtra, setOptionsSkillExtra] = useState<Option[]>([]);
    // Listado del select skillTypeRing
-   const [skillsTypes, setSkillsTypes] = useState<SkillTypes[]>([])
+   const [skillsTypes, setSkillsTypes] = useState<SkillTypes[]>([]);
 
-   const {isOpen, onOpen, onOpenChange} = useDisclosure()
-   const [loading, setLoading] = useState<boolean>(true)
-   const [newRecord, setNewRecord] = useState<boolean>(true)
-   const randomValueRefreshImage = Math.random().toString(36).substring(7)
+   const {isOpen, onOpen, onOpenChange} = useDisclosure();
+   const [loading, setLoading] = useState<boolean>(true);
+   const [newRecord, setNewRecord] = useState<boolean>(true);
+   const randomValueRefreshImage = Math.random().toString(36).substring(7);
    const navigate = useNavigate();
    const params = useParams();
 
@@ -106,11 +108,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       coinsInv: number[];
       inv: InventoryObject[];
    }
-   const [dataCharacter, setDataCharacter] = useState<DataCharacter>()
+   const [dataCharacter, setDataCharacter] = useState<DataCharacter>();
 
 
    useEffect(() => {
-      getSkills()
+      getSkills();
     }, [skillsTypes]);
 
    useEffect(() => {
@@ -118,20 +120,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       
       const loadInfo = async () => {
          document.documentElement.scrollTop = 0;
-         if(params.user === null || params.user ===  undefined){
-            navigate('/UserCharacters')
-         }
-         if(params.id === null || params.id ===  undefined){
-            setNewRecord(true)
-         } else {
-            setNewRecord(false)
-         }
+
+         if(params.user === null || params.user ===  undefined)navigate('/UserCharacters');
          
-         await getUser()
-         await getListSkill()
-         await getGameSystemList()
-         await getCharacter()
-         await getCharacterImage()
+         setNewRecord((params.id === null || params.id ===  undefined));
+         
+         await getInfoUser();
+         await getListSkill();
+         await getGameSystemList();
+         await getInfoCharacter();
+         await getCharacterImage();
          
          Promise.all ([
             getStats(),
@@ -144,30 +142,19 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       loadInfo();
    }, []);
 
-   async function getUser() {
-      if (params.user == undefined || params.user == null) return
+   async function getInfoUser() {
+      if (params.user == undefined || params.user == null) return;
 
-      const data = await Promise.resolve(
-         getDataQueryUsu(
-            'usu_id, usu_nombre'
-            , { 'usu_id': params.user }
-         )
-      )
-      //console.log('getUser ',data);
+      const data:DBUsuario[] = await getUser(params.user);
 
       if (data !== null) {
-         const nombre = data[0].usu_nombre
-         setPlayerName(nombre)
+         const nombre = data[0].usu_nombre;
+         setPlayerName(nombre);
       }
    }
+
    async function getListSkill() {
-      const data = await Promise.resolve(
-         getDataQueryHad(
-            'hab_id, hab_nombre, had_estadistica_base, hab_siglas, hab_tipo'
-            , { 'hab_tipo': ['C','E','R'] }
-            , { 'hab_tipo': true, 'had_estadistica_base': true }
-         )
-      )
+      const data:DBHabilidad[] = await getListHad();
 
       if (data !== null){
          const updatedOptionsSkillClass = [];
@@ -176,47 +163,39 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          
          for (let i = 0; i < data.length; i++) {
             if (data[i].hab_tipo === 'C'){
-               updatedOptionsSkillClass.push({id: data[i].hab_id, value: data[i].hab_siglas, name: data[i].hab_nombre})
+               updatedOptionsSkillClass.push({id: data[i].hab_id, value: data[i].hab_siglas, name: data[i].hab_nombre});
             } else if (data[i].hab_tipo === 'E'){
-               updatedOptionsSkillExtra.push({id: data[i].hab_id, value: data[i].hab_siglas, name: data[i].hab_nombre})
+               updatedOptionsSkillExtra.push({id: data[i].hab_id, value: data[i].hab_siglas, name: data[i].hab_nombre});
             } else if (data[i].hab_tipo === 'R'){
-               let countSkill: number = otherSkills.filter(option => option.id === data[i].had_estadistica_base).length
+               let countSkill: number = otherSkills.filter(option => option.id === data[i].had_estadistica_base).length;
                if (countSkill === 0) {
-                  otherSkills.push({id: data[i].had_estadistica_base, skills: [{id: data[i].hab_id, value: data[i].hab_siglas, name: data[i].hab_nombre}]})
+                  otherSkills.push({id: data[i].had_estadistica_base, skills: [{id: data[i].hab_id, value: data[i].hab_siglas, name: data[i].hab_nombre}]});
                } else {
-                  otherSkills.find(option => option.id === data[i].had_estadistica_base)?.skills.push({id: data[i].hab_id, value: data[i].hab_siglas, name: data[i].hab_nombre})
+                  otherSkills.find(option => option.id === data[i].had_estadistica_base)?.skills.push({id: data[i].hab_id, value: data[i].hab_siglas, name: data[i].hab_nombre});
                }
             }
          }
-         setOptionsSkillClass(updatedOptionsSkillClass)
-         setOptionsSkillExtra(updatedOptionsSkillExtra)
-         setSkillsTypes(otherSkills)
+         setOptionsSkillClass(updatedOptionsSkillClass);
+         setOptionsSkillExtra(updatedOptionsSkillExtra);
+         setSkillsTypes(otherSkills);
       }
    }
+
    async function getGameSystemList() {
-      const data = await Promise.resolve(
-         getDataQuerySju(
-            'sju_id, sju_nombre'
-            , { 'sju_estado': 'A' }
-         )
-      )
+      const data:DBSistemaJuego[] = await getGameSystem();
       if (data !== null) {
-         const updatedSystemGameList = []
+         const updatedSystemGameList = [];
          for (let i = 0; i < data.length; i++) {
-            updatedSystemGameList.push({value:data[0].sju_id,name:data[0].sju_nombre})
+            updatedSystemGameList.push({value:data[0].sju_id,name:data[0].sju_nombre});
          }
-         setSystemGameList(updatedSystemGameList)
+         setSystemGameList(updatedSystemGameList);
       }
-  }
-   async function getCharacter() {
+   }
+
+   async function getInfoCharacter() {
       if(params.id === null || params.id ===  undefined) return
       
-      const data = await Promise.resolve(
-         getDataQueryPus(
-            'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria,pus_cantidad_oro,pus_cantidad_plata,pus_cantidad_bronce, pus_puntos_suerte, pus_vida, sju_sistema_juego(sju_id,sju_nombre)'
-            , { 'pus_id': params.id }
-         )
-      )
+      const data:DBPersonajesUsuario[] = await getCharacter( params.id );
 
       if (data !== null) {
          const updatedCoins = [...coins]
@@ -243,24 +222,20 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          setLifePoints(data[0].pus_vida)
       }
    }
-   async function getCharacterImage() {
-      if(params.user === null || params.user ===  undefined) return
-      if(params.id === null || params.id ===  undefined) return
-      
-      const url = await getUrlCharacter(params.user, params.id)
 
-      setCharacterImage(url + '?' + randomValueRefreshImage)
+   async function getCharacterImage() {
+      if(params.user === null || params.user ===  undefined) return;
+      if(params.id === null || params.id ===  undefined) return;
+      
+      const url = await getUrlCharacter(params.user, params.id);
+
+      setCharacterImage(url + '?' + randomValueRefreshImage);
    }
 
    async function getStats() {
       if(params.id === null || params.id === undefined) return
 
-      const data = await Promise.resolve(
-         getDataQueryEpe(
-            'epe_personaje, epe_sigla, epe_nombre, epe_num_dado, epe_num_clase, epe_num_nivel'
-            , { 'epe_personaje': params.id }
-         )
-      )
+      const data = await getListEpe( params.id );
 
       if (data !== null) {
          const updatedInputsStatsData = [...inputsStatsData];
@@ -273,16 +248,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       }
 
    }
+
    async function getSkills() {
       if(params.id === null || params.id === undefined) return
       
-      const data = await Promise.resolve(
-         getDataQueryHpe(
-            'hpe_habilidad, hpe_campo, hpe_alineacion, hab_habilidad(hab_id, hab_nombre, had_estadistica_base, hab_siglas)'
-            , { 'hpe_personaje': params.id }
-            , { 'hpe_campo': true }
-         )
-      )
+      const data = await getListHpe( params.id );
       
       if (data !== null) {
          let acronym: string = '';
@@ -313,6 +283,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          setFieldSkill(updatedFieldSkill)
       }
    }
+
    async function getInventory() {
       const updatedInvObjects = [...invObjects];
       
@@ -322,12 +293,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          return;
       }
       
-      const data = await Promise.resolve(
-         getDataQueryInp(
-            'inp_id, inp_nombre, inp_descripcion, inp_cantidad'
-            , { 'inp_personaje': params.id }
-         )
-      )
+      const data = await getListInp( params.id );
 
       if (data !== null) {
          data.forEach(elem => {
@@ -390,7 +356,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       { id: 'CRE', name: 'Creación', stat:'PER' },
       { id: 'SUP', name: 'Soporte', stat:'CHA' },
    ]
-
    const listWearpons = [
       'Arco corto',
       'Arco largo',
@@ -422,25 +387,30 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       let level = validateNumeric(newLevel,1)
       setCharacterLevel(level)
    };
+
    // Actualizar los puntos de suerte del personaje
    const handleChangeLuckyPoints = (newPoints: string) => {
       let value = validateNumeric(newPoints,1)
       setLuckyPoints(value)
    };
+
    // Actualizar los puntos de suerte del personaje
    const handleChangeLifePoints = (newPoints: string) => {
       let level = validateNumeric(newPoints,1)
       setLifePoints(level)
    };
+
    // Manejar el cambio en la selección
    const handleSelectRaceChange = (value: string) => {
       setSelectedRaceValue(value)
    };
+
    // Actualizar el systema de juego
    const handleSystemGameChange = (currentSystem: string) => {
       let option = SystemGameList.filter(elem => elem.value === currentSystem)
       setSystemGame({sju_id: option[0].value, sju_nombre: option[0].name})
    };
+
    // Actualizar la habilidad principal del personaje
    const handleSelectSkillChange = (currentSkill: string) => {
       let option = optionsSkillClass.filter(skill => skill.value === currentSkill)
@@ -448,6 +418,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       setSelectedSkillValue(currentSkill)
       
    };
+
    // Actualizar la habilidad extra del personaje
    const handleSelectExtraSkillChange = (currentSkill: string) => {
       let option = optionsSkillExtra.filter(skill => skill.value === currentSkill)
@@ -460,15 +431,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    };
    
    const updStatsPoints = (selectedClass : string, selectedJob : string): void =>{
-      const updatedInputsStatsData = [...inputsStatsData]
-      const extraPoints = optionsCharacterJob.find(option => option.value === selectedJob)?.extraPoint || ''
+      const updatedInputsStatsData = [...inputsStatsData];
+      const extraPoints = optionsCharacterJob.find(option => option.value === selectedJob)?.extraPoint || '';
 
-      updatedInputsStatsData[0].valueClass = ( selectedClass === 'WAR' ? 2 : 0 ) + ( extraPoints.includes('STR') ? 1 : 0 )
-      updatedInputsStatsData[1].valueClass = ( selectedClass === 'MAG' ? 2 : 0 ) + ( extraPoints.includes('INT') ? 1 : 0 )
-      updatedInputsStatsData[2].valueClass = ( selectedClass === 'SCO' ? 2 : 0 ) + ( extraPoints.includes('DEX') ? 1 : 0 )
-      updatedInputsStatsData[3].valueClass = ( selectedClass === 'MED' ? 2 : 0 ) + ( extraPoints.includes('CON') ? 1 : 0 )
-      updatedInputsStatsData[4].valueClass = ( selectedClass === 'RES' ? 2 : 0 ) + ( extraPoints.includes('PER') ? 1 : 0 )
-      updatedInputsStatsData[5].valueClass = ( selectedClass === 'ACT' ? 2 : 0 ) + ( extraPoints.includes('CHA') ? 1 : 0 )
+      updatedInputsStatsData[0].valueClass = ( selectedClass === 'WAR' ? 2 : 0 ) + ( extraPoints.includes('STR') ? 1 : 0 );
+      updatedInputsStatsData[1].valueClass = ( selectedClass === 'MAG' ? 2 : 0 ) + ( extraPoints.includes('INT') ? 1 : 0 );
+      updatedInputsStatsData[2].valueClass = ( selectedClass === 'SCO' ? 2 : 0 ) + ( extraPoints.includes('DEX') ? 1 : 0 );
+      updatedInputsStatsData[3].valueClass = ( selectedClass === 'MED' ? 2 : 0 ) + ( extraPoints.includes('CON') ? 1 : 0 );
+      updatedInputsStatsData[4].valueClass = ( selectedClass === 'RES' ? 2 : 0 ) + ( extraPoints.includes('PER') ? 1 : 0 );
+      updatedInputsStatsData[5].valueClass = ( selectedClass === 'ACT' ? 2 : 0 ) + ( extraPoints.includes('CHA') ? 1 : 0 );
       
       setInputsStatsData(updatedInputsStatsData);
    };
@@ -477,16 +448,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       setSelectedClassValue(value);
       
       // selectedCheckValues - Usar el método find para obtener el objeto con el valor específico
-      const selectedOption = optionsCharacterClass.find(option => option.value === value)
-      setSelectedCheckValues((selectedOption)?[selectedOption.work]:[])
+      const selectedOption = optionsCharacterClass.find(option => option.value === value);
+      setSelectedCheckValues((selectedOption)?[selectedOption.work]:[]);
       
       // inputsStatsData - Poner todos los valores de valueClass en cero
       setAllValueClassesToZero();
-      updStatsPoints(value, selectedJobValue)
+      updStatsPoints(value, selectedJobValue);
       
       // skillClass - Llenar el valor de la habilidad principal
-      setSelectedSkillValue("S" + selectedOption?.mainStat)
-      handleSelectSkillChange("S" + selectedOption?.mainStat)
+      setSelectedSkillValue("S" + selectedOption?.mainStat);
+      handleSelectSkillChange("S" + selectedOption?.mainStat);
    };
 
    // Manejar el cambio en la selección characterJob
@@ -505,13 +476,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          upsert: true
       });
       
-      if(error) alert(error)
+      if(error) alert(error);
       
-      if(data) setCharacterImage(value)
+      if(data) setCharacterImage(value);
    };
 
    const handleSelectedCheckValuesChange = (newValues: string[]) => {
-      setSelectedCheckValues(newValues)
+      setSelectedCheckValues(newValues);
     }
 
    const handleStatsInputChange = (newInputStats: InputStats) => {

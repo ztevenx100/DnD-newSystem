@@ -16,14 +16,14 @@ interface ListUserCharacterProps {
     user: string;
 }
 
-const ListUserCharacter: React.FC<ListUserCharacterProps> = ({user }) => {
+const ListUserCharacter: React.FC<ListUserCharacterProps> = ({ user }) => {
     const navigate = useNavigate();
     const [list, setList] = useState<DBPersonajesUsuario[]>([]);
     const randomValueRefreshImage = Math.random().toString(36).substring(7);
 
     useEffect(() => {
         const fetchData = async () => {
-            getList(user);
+            await getList(user);
         }
         
         fetchData();

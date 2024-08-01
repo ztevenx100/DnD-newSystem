@@ -273,7 +273,7 @@ export const getDataQuery = async<T> (table: string, fields: string, where?: Whe
 
 }
 
-// -----
+// -- DELETE
 
 /**
  *  Funcion para eliminar los datos para la tabla de personajes por usuario.
@@ -314,3 +314,38 @@ export const deleteDataQuery = async (table: string, where?: WhereClause):Promis
         throw error;
     }
 }
+
+// -- INSERT
+
+/**
+ * Adicionar los datos obtenidos de la consulta a la tabla de personajes por usuario.
+ * 
+ * @param {DBPersonajesUsuario} data - datos del personaje.
+ * @returns {any} datos obtenidos de la consulta a base de datos.
+ */
+export const insertDataPus = async ( data: DBPersonajesUsuario ) => {
+    return insertDataQuery<DBPersonajesUsuario>(TABLE_PUS, data);
+}
+
+/**
+ * Inserta datos de una tabla.
+ * 
+ * @param {string} table - El nombre de la tabla.
+ * @param {object} data - Los datos a insertar.
+ * @returns {Promise<T>} - La fila insertada.
+ */
+export const insertDataQuery = async <T>(table: string, data: object): Promise<T> => {
+    try {
+        const { data: insertedData, error } = await dbConnection
+        .from(table)
+        .insert(data)
+        .single();
+  
+        if (error) throw error;
+        
+        return insertedData as T;
+    } catch (error) {
+        console.error('Error executing insert:', error);
+        throw error;
+    }
+};

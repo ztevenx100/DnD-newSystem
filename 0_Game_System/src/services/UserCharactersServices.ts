@@ -113,7 +113,9 @@ export const getCharacter = async(id: string): Promise<DBPersonajesUsuario[]> =>
     let data:DBPersonajesUsuario[] = [];
     try {
         data = await getDataQueryPus(
-            'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria,pus_cantidad_oro,pus_cantidad_plata,pus_cantidad_bronce, pus_puntos_suerte, pus_vida, sju_sistema_juego(sju_id,sju_nombre)'
+            'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria'
+            + ',pus_cantidad_oro, pus_cantidad_plata, pus_cantidad_bronce, pus_puntos_suerte, pus_vida, pus_alineacion,'
+            + ' sju_sistema_juego(sju_id,sju_nombre)'
             , { 'pus_id': id }
          );
     } catch (error) {

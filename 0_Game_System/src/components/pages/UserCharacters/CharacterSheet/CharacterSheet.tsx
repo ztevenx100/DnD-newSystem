@@ -679,22 +679,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    };
 
    async function uploadInfoCharacter(newRecord: boolean) {
+      if(!character) return;
+      
       if (!newRecord) {
-
-         if(!character) return;
-
-         const data:DBPersonajesUsuario = await insertDataPus(character);
-         
-         if(data !== null){
-            return data.pus_id;
-         } 
-         
-      } else {
          const { data, error } = await dbConnection
          .from('pus_personajes_usuario')
-         .insert({ 
-            pus_usuario: params.user,
-            pus_id: dataCharacter?.id,
+         .update({
             pus_nombre: dataCharacter?.name,
             pus_clase: dataCharacter?.class,
             pus_raza: dataCharacter?.race,
@@ -707,15 +697,24 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
             pus_cantidad_oro: dataCharacter?.coinsInv[0],
             pus_cantidad_plata: dataCharacter?.coinsInv[1],
             pus_cantidad_bronce: dataCharacter?.coinsInv[2],
-            pus_sistema_juego: systemGame.sju_id,
-            pus_puntos_suerte: character!.pus_puntos_suerte,
-            pus_vida: character!.pus_vida,
-            pus_alineacion: character!.pus_alineacion,
+            pus_puntos_suerte: dataCharacter?.luckyPoints,
          })
+         .eq("pus_id",params.id)
          .select();
-         if(data !== null) return data[0].pus_id;
          
+         if(data !== null){
+            return data[0].pus_id;
+         } 
+
          if(error)return '';
+         
+      } else {
+
+         const data:DBPersonajesUsuario = await insertDataPus(character);
+
+         if(data !== null) return data.pus_id;
+         
+         //if(error)return '';
       }
    };
 

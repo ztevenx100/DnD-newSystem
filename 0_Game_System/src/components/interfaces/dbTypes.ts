@@ -31,6 +31,36 @@ export interface DBPersonajesUsuario{
   url_character_image?: string;
 }
 
+export const initialPersonajesUsuario = {
+  pus_id: '',
+  pus_usuario: '',
+  pus_nombre: '',
+  pus_nivel: 1,
+  pus_clase: '',
+  pus_raza: '',
+  pus_trabajo: '',
+  pus_descripcion: '',
+  pus_conocimientos: '',
+  usu_usuario: {
+    usu_id: '',
+    usu_nombre: '',
+    usu_email: ''
+  },
+  pus_arma_principal: '',
+  pus_arma_secundaria: '',
+  pus_cantidad_oro: 0,
+  pus_cantidad_plata: 0,
+  pus_cantidad_bronce: 0,
+  pus_puntos_suerte: 0,
+  pus_vida: 0,
+  pus_alineacion: '',
+  sju_sistema_juego: {
+    sju_id: '',
+    sju_nombre: ''
+  },
+  url_character_image: undefined
+};
+
 export interface DBHabilidad{
   hab_id: string;
   hab_nombre: string;

@@ -17,7 +17,7 @@ import FormImageFile from './FormImageFile/FormImageFile';
 
 // Interfaces
 import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields, Option } from '@interfaces/typesCharacterSheet';
-import { DBHabilidad, DBPersonajesUsuario, DBSistemaJuego, DBUsuario } from '@interfaces/dbTypes';
+import { DBHabilidad, DBPersonajesUsuario, DBSistemaJuego, DBUsuario, initialPersonajesUsuario } from '@interfaces/dbTypes';
 
 // Funciones
 import {validateNumeric} from '@utils/utilConversions';
@@ -29,6 +29,7 @@ import SvgCharacter from '@Icons/SvgCharacter';
 import SvgSaveCharacter from '@Icons/SvgSaveCharacter';
 import SvgD4Roll from '@Icons/SvgD4Roll';
 import SvgDeleteItem from '@Icons/SvgDeleteItem';
+import { insertDataPus } from '@/services/database/dbTables';
 
 interface CharacterSheetProps {
    changeBackground: (newBackground: string) => void;
@@ -38,15 +39,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
 
    // Varibles - estados
    const [playerName, setPlayerName] = useState<string>('');
-   const [characterName, setCharacterName] = useState<string>('');
-   const [characterLevel,setCharacterLevel] = useState(1);
-   const [characterDescription, setCharacterDescription] = useState<string>('');
    const [characterImage, setCharacterImage] = useState<string | undefined>(undefined);
-   const [selectedCheckValues, setSelectedCheckValues] = useState<string[]>([]);
    
    // Definir el estado para las habilidades
-   const [mainWeapon, setMainWeapon] = useState<string>('');
-   const [secondaryWeapon, setSecondaryWeapon] = useState<string>('');
    const [selectedSkillValue, setSelectedSkillValue] = useState<string>('');
    const [selectedExtraSkillValue, setSelectedExtraSkillValue] = useState<string>('');
    const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([{id:'', value:'0', name:'', description: '', ring:''},{id:'', value:'1',name:'', description: '', ring:''},{id:'', value:'2', name:'', description: '', ring:''}]);
@@ -73,7 +68,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    const [loading, setLoading] = useState<boolean>(true);
    const [newRecord, setNewRecord] = useState<boolean>(true);
    const randomValueRefreshImage = Math.random().toString(36).substring(7);
-   const [character, setCharacter] = useState<DBPersonajesUsuario>();
+   const [character, setCharacter] = useState<DBPersonajesUsuario>(initialPersonajesUsuario);
    const navigate = useNavigate();
    const params = useParams();
 
@@ -187,24 +182,17 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    };
 
    async function getInfoCharacter() {
-      if(params.id === null || params.id ===  undefined) return;
+      if(params.id === null || params.id ===  undefined){
+         setCharacter(initialPersonajesUsuario);
+         return;
+      } 
       
       const data:DBPersonajesUsuario[] = await getCharacter( params.id );
 
       if (data !== null) {
-         console.log(data[0]);
-         
          setCharacter(data[0]);
 
          const updatedCoins = [...coins]
-         setCharacterName(data[0].pus_nombre)
-         setCharacterLevel(data[0].pus_nivel)
-         setCharacterDescription(data[0].pus_descripcion);
-         let knowledge:string[] = data[0]?.pus_conocimientos.split(',') ?? []
-         setSelectedCheckValues(knowledge)
-
-         setMainWeapon(data[0].pus_arma_principal)
-         setSecondaryWeapon(data[0].pus_arma_secundaria)
          updatedCoins[0] = data[0].pus_cantidad_oro
          updatedCoins[1] = data[0].pus_cantidad_plata
          updatedCoins[2] = data[0].pus_cantidad_bronce
@@ -387,24 +375,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       
    };*/
 
-   // Actualizar el nivel del personaje
-   // const handleChangeCharacterLevel = (newLevel: string) => {
-   //    let level = validateNumeric(newLevel,1);
-   //    setCharacterLevel(level);
-   // };
-
-   // Actualizar los puntos de suerte del personaje
-   // const handleChangeLuckyPoints = (newPoints: string) => {
-   //    let value = validateNumeric(newPoints,1);
-   //    setLuckyPoints(value);
-   // };
-
-   // Actualizar los puntos de suerte del personaje
-   // const handleChangeLifePoints = (newPoints: string) => {
-   //    let level = validateNumeric(newPoints,1);
-   //    setLifePoints(level);
-   // };
-
    // Manejar el cambio en la selección
    const handleSelectRaceChange = (value: string) => {
       setCharacter( prevState => ({...prevState!, ["pus_raza"]: value}) );
@@ -451,13 +421,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    
    const handleCharacterClassChange = (value: string) => {
       setCharacter( prevState => ({...prevState!, ["pus_clase"]: value}) );
-      console.log(character);
       
       // selectedCheckValues - Usar el método find para obtener el objeto con el valor específico
       const selectedOption = optionsCharacterClass.find(option => option.value === value);
-      setSelectedCheckValues((selectedOption)?[selectedOption.work]:[]);
+      setCharacter( prevState => ({...prevState!, ["pus_conocimientos"]: (selectedOption)?selectedOption.work:''}) );
       
-      // inputsStatsData - Poner todos los valores de valueClass en cero
+      // inputsStatsData - Poner todos los valores de valueClass en cero      
       setAllValueClassesToZero();
       updStatsPoints(value, character!.pus_trabajo);
       
@@ -484,7 +453,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    };
 
    const handleSelectedCheckValuesChange = (newValues: string[]) => {
-      setSelectedCheckValues(newValues);
       setCharacter( prevState => ({...prevState!, ["pus_conocimientos"]: newValues.join(',')}) );
    };
 
@@ -606,22 +574,22 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       const newCharacter: DataCharacter = {
          id: uuidv4(),
          player: playerName,
-         name: characterName,
+         name: character!.pus_nombre,
          class: character!.pus_clase,
          race: character!.pus_raza,
          job: character!.pus_trabajo,
-         level: characterLevel,
+         level: character!.pus_nivel,
          luckyPoints: character!.pus_puntos_suerte,
-         description: characterDescription,
-         knowledge: selectedCheckValues,
+         description: character!.pus_descripcion,
+         knowledge: character!.pus_conocimientos.split(','),
          str: [{ dice: inputsStatsData[0].valueDice, class: inputsStatsData[0].valueClass, level: inputsStatsData[0].valueLevel }],
          int: [{ dice: inputsStatsData[1].valueDice, class: inputsStatsData[1].valueClass, level: inputsStatsData[1].valueLevel }],
          dex: [{ dice: inputsStatsData[2].valueDice, class: inputsStatsData[2].valueClass, level: inputsStatsData[2].valueLevel }],
          con: [{ dice: inputsStatsData[3].valueDice, class: inputsStatsData[3].valueClass, level: inputsStatsData[3].valueLevel }],
          per: [{ dice: inputsStatsData[4].valueDice, class: inputsStatsData[4].valueClass, level: inputsStatsData[4].valueLevel }],
          cha: [{ dice: inputsStatsData[5].valueDice, class: inputsStatsData[5].valueClass, level: inputsStatsData[5].valueLevel }],
-         mainWeapon: mainWeapon,
-         secondaryWeapon: secondaryWeapon,
+         mainWeapon: character!.pus_arma_principal,
+         secondaryWeapon: character!.pus_arma_secundaria,
          alignment: character!.pus_alineacion,
          mainSkill: selectedSkillValue,
          extraSkill: selectedExtraSkillValue,
@@ -635,7 +603,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    };
 
    const randomRoll = () => {
-      if (characterLevel > 1) return;
+      if (character!.pus_nivel > 1) return;
 
       const updatedInputsStatsData = [...inputsStatsData];
       let randomNumber = Math.floor(Math.random() * 4) + 1;
@@ -712,33 +680,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
 
    async function uploadInfoCharacter(newRecord: boolean) {
       if (!newRecord) {
-         const { data, error } = await dbConnection
-         .from('pus_personajes_usuario')
-         .update({
-            pus_nombre: dataCharacter?.name,
-            pus_clase: dataCharacter?.class,
-            pus_raza: dataCharacter?.race,
-            pus_trabajo: dataCharacter?.job,
-            pus_nivel: dataCharacter?.level,
-            pus_descripcion: dataCharacter?.description,
-            pus_conocimientos: dataCharacter?.knowledge.join(),
-            pus_arma_principal: dataCharacter?.mainWeapon,
-            pus_arma_secundaria: dataCharacter?.secondaryWeapon,
-            pus_cantidad_oro: dataCharacter?.coinsInv[0],
-            pus_cantidad_plata: dataCharacter?.coinsInv[1],
-            pus_cantidad_bronce: dataCharacter?.coinsInv[2],
-            pus_puntos_suerte: character!.pus_puntos_suerte,
-            pus_vida: character!.pus_vida,
-            pus_alineacion: character!.pus_alineacion,
-         })
-         .eq("pus_id",params.id)
-         .select();
+
+         if(!character) return;
+
+         const data:DBPersonajesUsuario = await insertDataPus(character);
          
          if(data !== null){
-            return data[0].pus_id;
+            return data.pus_id;
          } 
          
-         if(error)return '';
       } else {
          const { data, error } = await dbConnection
          .from('pus_personajes_usuario')
@@ -977,7 +927,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
                required
             />
             
-            <FormCardCheckbox id="characterKnowledge" label="Conocimientos" checkboxes={checkboxesData} selectedValues={selectedCheckValues} onSelectedValuesChange={handleSelectedCheckValuesChange} />
+            <FormCardCheckbox id="characterKnowledge" label="Conocimientos" checkboxes={checkboxesData} selectedValues={(character?.pus_conocimientos||'').split(',')} onSelectedValuesChange={handleSelectedCheckValuesChange} />
          </fieldset>
 
          {/* Estadisticas del personaje */}
@@ -1036,7 +986,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
                className="form-input mr-2 focus:border-black focus:shadow"
                list='wearpons'
                value={character?.pus_arma_secundaria || ''}
-               onChange={ (e) => setCharacter( prevState => ({...prevState!, ["pus_descripcion"]: e.target.value}) ) }
+               onChange={ (e) => setCharacter( prevState => ({...prevState!, ["pus_arma_secundaria"]: e.target.value}) ) }
             />
 
             <FormSelectInfoPlayer id="skillClass" label="Habilidad innata" options={optionsSkillClass} selectedValue={selectedSkillValue} onSelectChange={handleSelectSkillChange} ></FormSelectInfoPlayer>
@@ -1047,7 +997,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          {/* Habilidades */}
          <fieldset className="fieldset-form skills-player col-span-1 row-span-2 col-start-1 md:col-start-2 bg-white shadow-lg rounded">
             <legend>Habilidades</legend>
-            { characterLevel >= 3 ? (
+            { character!.pus_nivel >= 3 ? (
                <>
                   <label htmlFor="alignment" className="form-lbl mt-2 ">Alineación</label>
                   <select 
@@ -1063,11 +1013,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
                   <label className="form-lbl-skills ml-2 mb-0 ">Nivel</label>
                   <label className="form-lbl-skills mr-2 mb-0 ">Anillo de poder</label>
 
-                  <FormInputSkillsRing id={'0'} level={characterLevel} levelEvaluated={3} ringTypes={optionsRingTypes} skillList={skillsRingList[0]} values={skillsAcquired[0]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
+                  <FormInputSkillsRing id={'0'} level={character!.pus_nivel} levelEvaluated={3} ringTypes={optionsRingTypes} skillList={skillsRingList[0]} values={skillsAcquired[0]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
 
-                  <FormInputSkillsRing id={'1'} level={characterLevel} levelEvaluated={6} ringTypes={optionsRingTypes} skillList={skillsRingList[1]} values={skillsAcquired[1]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
+                  <FormInputSkillsRing id={'1'} level={character!.pus_nivel} levelEvaluated={6} ringTypes={optionsRingTypes} skillList={skillsRingList[1]} values={skillsAcquired[1]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
 
-                  <FormInputSkillsRing id={'2'} level={characterLevel} levelEvaluated={9} ringTypes={optionsRingTypes} skillList={skillsRingList[2]} values={skillsAcquired[2]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
+                  <FormInputSkillsRing id={'2'} level={character!.pus_nivel} levelEvaluated={9} ringTypes={optionsRingTypes} skillList={skillsRingList[2]} values={skillsAcquired[2]} onSelectChange={handleSelectedRingSkillChange} onSelectTypeChange={handleSelectedTypeRingSkillChange} />
                </>
             ) : (<></>)}
          </fieldset>

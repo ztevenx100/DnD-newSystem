@@ -50,7 +50,7 @@ interface OrderByClause {
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {DBEnemigo[]} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryEne = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+export const getDataQueryEne = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBEnemigo[]>  => {
     return getDataQuery<DBEnemigo>(TABLE_ENE, fields, where, orderBy);
 }
 
@@ -62,7 +62,7 @@ export const getDataQueryEne = async (fields: string, where?: WhereClause, order
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryEpe = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+export const getDataQueryEpe = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBEstadisticaPersonaje[]>  => {
     return getDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, fields, where, orderBy);
 }
 
@@ -74,7 +74,7 @@ export const getDataQueryEpe = async (fields: string, where?: WhereClause, order
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos.
  * @returns {DBEscenario[]} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryEsc = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+export const getDataQueryEsc = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBEscenario[]>  => {
     return getDataQuery<DBEscenario>(TABLE_ESC, fields, where, orderBy);
 }
 
@@ -86,7 +86,7 @@ export const getDataQueryEsc = async (fields: string, where?: WhereClause, order
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryHad = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+export const getDataQueryHad = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBHabilidad[]>  => {
     return getDataQuery<DBHabilidad>(TABLE_HAD, fields, where, orderBy);
 }
 
@@ -98,7 +98,7 @@ export const getDataQueryHad = async (fields: string, where?: WhereClause, order
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryHpe = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+export const getDataQueryHpe = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBHabilidadPersonaje[]>  => {
     return getDataQuery<DBHabilidadPersonaje>(TABLE_HPE, fields, where, orderBy);
 }
 
@@ -110,7 +110,7 @@ export const getDataQueryHpe = async (fields: string, where?: WhereClause, order
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryInp = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+export const getDataQueryInp = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBInventarioPersonaje[]>  => {
     return getDataQuery<DBInventarioPersonaje>(TABLE_INP, fields, where, orderBy);
 }
 
@@ -122,7 +122,7 @@ export const getDataQueryInp = async (fields: string, where?: WhereClause, order
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {DBMision[]} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryMis = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+export const getDataQueryMis = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBMision[]>  => {
     return getDataQuery<DBMision>(TABLE_MIS, fields, where, orderBy);
 }
 
@@ -134,7 +134,7 @@ export const getDataQueryMis = async (fields: string, where?: WhereClause, order
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {DBMapamundi[]} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryMmu = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+export const getDataQueryMmu = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBMapamundi[]>  => {
     return getDataQuery<DBMapamundi>(TABLE_MMU, fields, where, orderBy);
 }
 
@@ -146,7 +146,7 @@ export const getDataQueryMmu = async (fields: string, where?: WhereClause, order
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {DBPersonajeNoJugable[]} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryPnj = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+export const getDataQueryPnj = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBPersonajeNoJugable[]>  => {
     return getDataQuery<DBPersonajeNoJugable>(TABLE_PNJ, fields, where, orderBy);
 }
 
@@ -158,7 +158,7 @@ export const getDataQueryPnj = async (fields: string, where?: WhereClause, order
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryPus = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+export const getDataQueryPus = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBPersonajesUsuario[]>  => {
     return getDataQuery<DBPersonajesUsuario>(TABLE_PUS, fields, where, orderBy);
 }
 
@@ -170,7 +170,7 @@ export const getDataQueryPus = async (fields: string, where?: WhereClause, order
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {DBSistemaJuego[]} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQuerySju = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+export const getDataQuerySju = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBSistemaJuego[]>  => {
     return getDataQuery<DBSistemaJuego>(TABLE_SJU, fields, where, orderBy);
 }
 
@@ -194,7 +194,7 @@ export const getDataQuerySon = async (fields: string, where?: WhereClause, order
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {DBSonidoUbicacion[]} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQuerySub = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+export const getDataQuerySub = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBSonidoUbicacion[]>  => {
     return getDataQuery<DBSonidoUbicacion>(TABLE_SUB, fields, where, orderBy);
 }
 
@@ -218,7 +218,7 @@ export const getDataQueryUbi = async (fields: string, where?: WhereClause, order
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {DBUsuario[]} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryUsu = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
+export const getDataQueryUsu = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBUsuario[]>  => {
     return getDataQuery<DBUsuario>(TABLE_USU, fields, where, orderBy);
 }
 
@@ -323,8 +323,10 @@ export const deleteDataQuery = async (table: string, where?: WhereClause):Promis
  * @param {DBPersonajesUsuario} data - datos del personaje.
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
-export const insertDataPus = async ( data: DBPersonajesUsuario ) => {
-    return insertDataQuery<DBPersonajesUsuario>(TABLE_PUS, data);
+export const insertDataPus = async ( data: DBPersonajesUsuario ): Promise<DBPersonajesUsuario[]> => {
+    // quitar los Join
+    const { sju_sistema_juego, usu_usuario, ...dataWithoutJoin } = data;
+    return insertDataQuery<DBPersonajesUsuario>(TABLE_PUS, dataWithoutJoin);
 }
 
 /**
@@ -334,18 +336,67 @@ export const insertDataPus = async ( data: DBPersonajesUsuario ) => {
  * @param {object} data - Los datos a insertar.
  * @returns {Promise<T>} - La fila insertada.
  */
-export const insertDataQuery = async <T>(table: string, data: object): Promise<T> => {
+export const insertDataQuery = async <T>(table: string, data: object): Promise<T[]> => {
     try {
         const { data: insertedData, error } = await dbConnection
         .from(table)
         .insert(data)
-        .single();
+        .select();
   
         if (error) throw error;
         
-        return insertedData as T;
+        return insertedData as T[];
     } catch (error) {
         console.error('Error executing insert:', error);
         throw error;
     }
 };
+
+// -- UPDATE
+
+/**
+ * Adicionar los datos obtenidos de la consulta a la tabla de personajes por usuario.
+ * 
+ * @param {DBPersonajesUsuario} data - datos del personaje.
+ * @returns {any} datos obtenidos de la consulta a base de datos.
+ */
+export const updateDataPus = async ( data: DBPersonajesUsuario, where?: WhereClause ): Promise<DBPersonajesUsuario> => {
+    // quitar los Join
+    const { sju_sistema_juego, ...dataWithoutJoin } = data;
+    return await updateDataQuery<DBPersonajesUsuario>(TABLE_PUS, dataWithoutJoin, where);
+}
+
+/**
+ * Actualiza datos en una tabla.
+ * 
+ * @param {string} table - El nombre de la tabla.
+ * @param {object} data - Los datos a actualizar.
+ * @param {WhereClause} where - Cláusula WHERE para especificar qué filas actualizar.
+ * @returns {Promise<T>} - La fila actualizada.
+ */
+export const updateDataQuery = async <T>(table: string, data: object, where?: WhereClause): Promise<T> => {
+    try {
+      let query = dbConnection
+        .from(table)
+        .update(data);
+  
+      if (where) {
+        for (const [key, value] of Object.entries(where)) {
+          if (Array.isArray(value) && value.every(item => typeof item === 'string')) {
+            query = query.in(key, value);
+          } else if (typeof value === 'string') {
+            query = query.eq(key, value);
+          }
+        }
+      }
+      
+      const { data: updatedData, error } = await query.single();
+  
+      if (error) throw error;
+      
+      return updatedData as T;
+    } catch (error) {
+      console.error('Error executing update:', error);
+      throw error;
+    }
+  };

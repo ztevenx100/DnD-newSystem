@@ -182,7 +182,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    };
 
    async function getInfoCharacter() {
+      const user = params.user || '';
+      
       if(params.id === null || params.id ===  undefined){
+         initialPersonajesUsuario.pus_id = uuidv4();
+         initialPersonajesUsuario.pus_usuario = user;
          setCharacter(initialPersonajesUsuario);
          return;
       } 
@@ -190,17 +194,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       const data:DBPersonajesUsuario[] = await getCharacter( params.id );
 
       if (data !== null) {
+         data[0].pus_usuario = user;
          setCharacter(data[0]);
 
-         const updatedCoins = [...coins]
-         updatedCoins[0] = data[0].pus_cantidad_oro
-         updatedCoins[1] = data[0].pus_cantidad_plata
-         updatedCoins[2] = data[0].pus_cantidad_bronce
-         setCoins(updatedCoins)
          let updateSystemGame = systemGame
          updateSystemGame.sju_id = data[0].sju_sistema_juego.sju_id
          updateSystemGame.sju_nombre = data[0].sju_sistema_juego.sju_nombre
-         setSystemGame(updateSystemGame)
+         setSystemGame(updateSystemGame);
       }
    };
 
@@ -381,8 +381,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    };
 
    // Actualizar el systema de juego
-   const handleSystemGameChange = (currentSystem: string) => {
+   const handleSystemGameChange = (currentSystem: string = '') => {
+      if(!currentSystem) return;
       let option = SystemGameList.filter(elem => elem.value === currentSystem);
+      setCharacter( prevState => ({...prevState!, ["pus_sistema_juego"]: currentSystem}) );
       setSystemGame({sju_id: option[0].value, sju_nombre: option[0].name});
    };
 
@@ -572,8 +574,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       }
 
       const newCharacter: DataCharacter = {
-         id: uuidv4(),
-         player: playerName,
+         id: character!.pus_id,
+         player: character!.pus_usuario,
          name: character!.pus_nombre,
          class: character!.pus_clase,
          race: character!.pus_raza,
@@ -659,23 +661,24 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    };
 
    async function saveData() {
-      let character:string = await uploadInfoCharacter(newRecord);
-      //console.log('saveData ', character);
+      const ID_CHARACTER:string = await uploadInfoCharacter(newRecord);
+      //console.log('saveData', ID_CHARACTER);
+      
       Promise.all ([
-         uploadStats(newRecord, character),
-         uploadSkill(character),
-         uploadInventory(character),
+         uploadStats(newRecord, ID_CHARACTER),
+         uploadSkill(ID_CHARACTER),
+         uploadInventory(ID_CHARACTER),
       ]).finally(() => {
          setNewRecord(false);
       })
       
       document.documentElement.scrollTop = 0;
       onOpenChange();
-      reloadPage(character);
+      reloadPage(ID_CHARACTER);
    };
    
-   const reloadPage = (character: string) => {
-      navigate('/CharacterSheet/'+params.user+'/'+character);
+   const reloadPage = (characterId: string) => {
+      navigate('/CharacterSheet/'+params.user+'/'+characterId);
    };
 
    async function uploadInfoCharacter(newRecord: boolean) {
@@ -709,17 +712,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          if(error)return '';
          
       } else {
-
-         const data:DBPersonajesUsuario = await insertDataPus(character);
-
-         if(data !== null) return data.pus_id;
+         const data:DBPersonajesUsuario[] = await insertDataPus(character);
+         
+         if(data[0] !== null) return data[0].pus_id;
          
          //if(error)return '';
       }
    };
 
-   async function uploadStats(isNewCharacter: boolean, character: string) {
-      if(character === '') return;
+   async function uploadStats(isNewCharacter: boolean, characterId: string) {
+      if(characterId === '') return;
       
       if (!isNewCharacter) {
          for(const element of inputsStatsData) {
@@ -741,7 +743,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          for(const element of inputsStatsData) {
             saveStats.push({
                epe_usuario: params.user,
-               epe_personaje: character,
+               epe_personaje: characterId,
                epe_sigla: element?.id,
                epe_nombre: element?.label,
                epe_num_dado: element?.valueDice,
@@ -758,21 +760,21 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       }
    };
 
-   async function uploadSkill(character: string) {
-      if(character === '') return;
+   async function uploadSkill(characterId: string) {
+      if(characterId === '') return;
 
       let saveSkill = [];
       saveSkill.push({
          hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillClass')[0].skill,
          hpe_usuario: params.user, 
-         hpe_personaje: character,
+         hpe_personaje: characterId,
          hpe_campo: 'skillClass',
          hpe_alineacion: null,
       });
       saveSkill.push({
          hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillExtra')[0].skill,
          hpe_usuario: params.user, 
-         hpe_personaje: character,
+         hpe_personaje: characterId,
          hpe_campo: 'skillExtra',
          hpe_alineacion: null,
       });
@@ -782,7 +784,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          saveSkill.push({
             hpe_habilidad: skillsAcquired[index].id,
             hpe_usuario: params.user, 
-            hpe_personaje: character,
+            hpe_personaje: characterId,
             hpe_campo: 'skillRing'+skillsAcquired[index].value,
             hpe_alineacion: null,
          });
@@ -797,15 +799,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       if(error) alert('Skill not upload.');
    };
 
-   async function uploadInventory(character: string) {
-      if(character === '') return;
+   async function uploadInventory(characterId: string) {
+      if(characterId === '') return;
 
       let saveItems = [];
 
       for(let index = 0; index < invObjects.length; index++) {
          saveItems.push({
             inp_usuario: params.user, 
-            inp_personaje: character,
+            inp_personaje: characterId,
             inp_id: invObjects[index].id, 
             inp_nombre: invObjects[index].name, 
             inp_descripcion: invObjects[index].description, 

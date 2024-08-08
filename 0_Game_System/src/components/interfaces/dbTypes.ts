@@ -5,9 +5,15 @@ export interface DBUsuario{
   usu_nombre: string;
 }
 
+export interface DBUsuario{
+  usu_id: string;
+  usu_nombre: string;
+}
+
 export interface DBPersonajesUsuario{
   pus_id: string;
   pus_usuario: string;
+  usu_usuario: DBUsuario | null;
   pus_nombre: string;
   pus_nivel: number;
   pus_clase: string;
@@ -15,7 +21,6 @@ export interface DBPersonajesUsuario{
   pus_trabajo: string;
   pus_descripcion: string;
   pus_conocimientos: string;
-  usu_usuario: DBUsuario;
   pus_arma_principal: string;
   pus_arma_secundaria: string;
   pus_cantidad_oro: number;
@@ -24,16 +29,15 @@ export interface DBPersonajesUsuario{
   pus_puntos_suerte: number;
   pus_vida: number;
   pus_alineacion: string;
-  sju_sistema_juego: DBSistemaJuego | {
-    sju_id: string;
-    sju_nombre: string;
-  };
+  pus_sistema_juego: string | null;
+  sju_sistema_juego: DBSistemaJuego;
   url_character_image?: string;
 }
 
 export const initialPersonajesUsuario = {
   pus_id: '',
   pus_usuario: '',
+  usu_usuario: null,
   pus_nombre: '',
   pus_nivel: 1,
   pus_clase: '',
@@ -41,11 +45,6 @@ export const initialPersonajesUsuario = {
   pus_trabajo: '',
   pus_descripcion: '',
   pus_conocimientos: '',
-  usu_usuario: {
-    usu_id: '',
-    usu_nombre: '',
-    usu_email: ''
-  },
   pus_arma_principal: '',
   pus_arma_secundaria: '',
   pus_cantidad_oro: 0,
@@ -54,6 +53,7 @@ export const initialPersonajesUsuario = {
   pus_puntos_suerte: 0,
   pus_vida: 0,
   pus_alineacion: '',
+  pus_sistema_juego: null,
   sju_sistema_juego: {
     sju_id: '',
     sju_nombre: ''

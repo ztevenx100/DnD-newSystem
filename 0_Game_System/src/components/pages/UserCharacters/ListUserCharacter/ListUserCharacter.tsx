@@ -74,7 +74,7 @@ const ListUserCharacter: React.FC<ListUserCharacterProps> = ({ user }) => {
             >
                 {list.map((elem) => (
                     <ListboxItem
-                        key={`${elem.usu_usuario.usu_id}/${elem.pus_id}`}
+                        key={`${elem.usu_usuario?.usu_id}/${elem.pus_id}`}
                         description={elem.sju_sistema_juego.sju_nombre}
                         className='character-item '
                         textValue={'0'}

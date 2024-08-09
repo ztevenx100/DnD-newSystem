@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import dbConnection from '@/services/database/dbConnection';
 import { addStorageCharacter, getUrlCharacter } from '@/services/database/dbStorage';
-import { getCharacter, getGameSystem, getListEpe, getListHad, getListHpe, getListInp, getUser } from '@/services/UserCharactersServices';
+import { getCharacter, getGameSystem, getListEpe, getListHad, getListHpe, getListInp, getUser, updatePus } from '@services/UserCharactersServices';
 
 import { Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
 import './CharacterSheet.css';
@@ -661,9 +661,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    };
 
    async function saveData() {
-      const ID_CHARACTER:string = await uploadInfoCharacter(newRecord);
+      const ID_CHARACTER:string = await uploadInfoCharacter(newRecord) || '';
       //console.log('saveData', ID_CHARACTER);
-      
+
       Promise.all ([
          uploadStats(newRecord, ID_CHARACTER),
          uploadSkill(ID_CHARACTER),
@@ -683,38 +683,20 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
 
    async function uploadInfoCharacter(newRecord: boolean) {
       if(!character) return;
+
+      let data:DBPersonajesUsuario;
       
       if (!newRecord) {
-         const { data, error } = await dbConnection
-         .from('pus_personajes_usuario')
-         .update({
-            pus_nombre: dataCharacter?.name,
-            pus_clase: dataCharacter?.class,
-            pus_raza: dataCharacter?.race,
-            pus_trabajo: dataCharacter?.job,
-            pus_nivel: dataCharacter?.level,
-            pus_descripcion: dataCharacter?.description,
-            pus_conocimientos: dataCharacter?.knowledge.join(),
-            pus_arma_principal: dataCharacter?.mainWeapon,
-            pus_arma_secundaria: dataCharacter?.secondaryWeapon,
-            pus_cantidad_oro: dataCharacter?.coinsInv[0],
-            pus_cantidad_plata: dataCharacter?.coinsInv[1],
-            pus_cantidad_bronce: dataCharacter?.coinsInv[2],
-            pus_puntos_suerte: dataCharacter?.luckyPoints,
-         })
-         .eq("pus_id",params.id)
-         .select();
+         data = await updatePus(character, character.pus_id);
          
-         if(data !== null){
-            return data[0].pus_id;
-         } 
+         if(data !== null) return data.pus_id;
 
-         if(error)return '';
+         //if(error)return '';
          
       } else {
-         const data:DBPersonajesUsuario[] = await insertDataPus(character);
+         data = await insertDataPus(character);
          
-         if(data[0] !== null) return data[0].pus_id;
+         if(data !== null) return data.pus_id;
          
          //if(error)return '';
       }

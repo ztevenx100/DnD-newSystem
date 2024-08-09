@@ -323,7 +323,7 @@ export const deleteDataQuery = async (table: string, where?: WhereClause):Promis
  * @param {DBPersonajesUsuario} data - datos del personaje.
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
-export const insertDataPus = async ( data: DBPersonajesUsuario ): Promise<DBPersonajesUsuario[]> => {
+export const insertDataPus = async ( data: DBPersonajesUsuario ): Promise<DBPersonajesUsuario> => {
     // quitar los Join
     const { sju_sistema_juego, usu_usuario, ...dataWithoutJoin } = data;
     return insertDataQuery<DBPersonajesUsuario>(TABLE_PUS, dataWithoutJoin);
@@ -336,16 +336,16 @@ export const insertDataPus = async ( data: DBPersonajesUsuario ): Promise<DBPers
  * @param {object} data - Los datos a insertar.
  * @returns {Promise<T>} - La fila insertada.
  */
-export const insertDataQuery = async <T>(table: string, data: object): Promise<T[]> => {
+export const insertDataQuery = async <T>(table: string, data: object): Promise<T> => {
     try {
         const { data: insertedData, error } = await dbConnection
         .from(table)
         .insert(data)
-        .select();
+        .maybeSingle();
   
         if (error) throw error;
         
-        return insertedData as T[];
+        return insertedData as T;
     } catch (error) {
         console.error('Error executing insert:', error);
         throw error;
@@ -362,7 +362,7 @@ export const insertDataQuery = async <T>(table: string, data: object): Promise<T
  */
 export const updateDataPus = async ( data: DBPersonajesUsuario, where?: WhereClause ): Promise<DBPersonajesUsuario> => {
     // quitar los Join
-    const { sju_sistema_juego, ...dataWithoutJoin } = data;
+    const { sju_sistema_juego, usu_usuario, ...dataWithoutJoin } = data;
     return await updateDataQuery<DBPersonajesUsuario>(TABLE_PUS, dataWithoutJoin, where);
 }
 
@@ -376,27 +376,27 @@ export const updateDataPus = async ( data: DBPersonajesUsuario, where?: WhereCla
  */
 export const updateDataQuery = async <T>(table: string, data: object, where?: WhereClause): Promise<T> => {
     try {
-      let query = dbConnection
+        let query = dbConnection
         .from(table)
         .update(data);
-  
-      if (where) {
+
+        if (where) {
         for (const [key, value] of Object.entries(where)) {
-          if (Array.isArray(value) && value.every(item => typeof item === 'string')) {
+            if (Array.isArray(value) && value.every(item => typeof item === 'string')) {
             query = query.in(key, value);
-          } else if (typeof value === 'string') {
+            } else if (typeof value === 'string') {
             query = query.eq(key, value);
-          }
+            }
         }
-      }
-      
-      const { data: updatedData, error } = await query.single();
-  
-      if (error) throw error;
-      
-      return updatedData as T;
+        }
+        
+        const { data: updatedData, error } = await query.maybeSingle();
+
+        if (error) throw error;
+        
+        return updatedData as T;
     } catch (error) {
-      console.error('Error executing update:', error);
-      throw error;
+        console.error('Error executing update:', error);
+        throw error;
     }
-  };
+};

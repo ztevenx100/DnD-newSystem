@@ -3,9 +3,9 @@
  * @file: Maneja las funciones relacionadas con el listado de personajes por usuario
  */ 
 
-import { getDataQueryPus, deleteDataQueryPus, getDataQueryUsu, getDataQueryHad, getDataQuerySju, getDataQueryEpe, getDataQueryHpe, getDataQueryInp } from '@database/dbTables';
+import { getDataQueryPus, deleteDataQueryPus, getDataQueryUsu, getDataQueryHad, getDataQuerySju, getDataQueryEpe, getDataQueryHpe, getDataQueryInp, updateDataPus } from '@database/dbTables';
 // Interfaces
-import { DBEstadisticaPersonaje, DBHabilidad, DBHabilidadPersonaje, DBInventarioPersonaje, DBPersonajesUsuario, DBSistemaJuego, DBUsuario } from '@interfaces/dbTypes';
+import { DBEstadisticaPersonaje, DBHabilidad, DBHabilidadPersonaje, DBInventarioPersonaje, DBPersonajesUsuario, DBSistemaJuego, DBUsuario, initialPersonajesUsuario } from '@interfaces/dbTypes';
 
 /**
  * Busca el listado de personajes por usuario.
@@ -181,6 +181,26 @@ export const getListInp = async(id: string): Promise<DBInventarioPersonaje[]> =>
          );
     } catch (error) {
         data = [];
+    }
+
+    return data;
+};
+
+/**
+ * Busca listado de inventario por personaje.
+ * 
+ * @param {string} id - El id del personaje.
+ * @returns {DBPersonajesUsuario[]} Retorna el listado de inventario del personaje.
+ */
+export const updatePus = async( dataPus: DBPersonajesUsuario, id: string ): Promise<DBPersonajesUsuario> => {
+    let data:DBPersonajesUsuario;
+    try {
+        data = await updateDataPus(
+            dataPus
+            , { 'pus_id': id }
+         );
+    } catch (error) {
+        data = initialPersonajesUsuario;
     }
 
     return data;

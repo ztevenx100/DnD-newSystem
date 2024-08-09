@@ -1,5 +1,5 @@
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 
 import homeBackground from '@img/webp/bg-home-01.webp';
 
@@ -70,7 +70,9 @@ const App: React.FC = () => {
     <>
       <BackgroundChanger initialBackground={background} >
         <main className='container mx-auto bg-main' >
+          <Suspense>
             <RouterProvider router={router} />
+          </Suspense>
         </main>
         <BtnBackToTop/>
         <Footer />

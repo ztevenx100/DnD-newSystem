@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import dbConnection from '@/services/database/dbConnection';
 import { addStorageCharacter, getUrlCharacter } from '@/services/database/dbStorage';
-import { getCharacter, getGameSystem, getListEpe, getListHad, getListHpe, getListInp, getUser, updatePus } from '@services/UserCharactersServices';
+import { getCharacter, getGameSystem, getListEpe, getListHad, getListHpe, getListInp, getUser, updateEpe, updatePus } from '@services/UserCharactersServices';
 
 import { Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
 import './CharacterSheet.css';
@@ -17,7 +17,7 @@ import FormImageFile from './FormImageFile/FormImageFile';
 
 // Interfaces
 import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields, Option } from '@interfaces/typesCharacterSheet';
-import { DBHabilidad, DBPersonajesUsuario, DBSistemaJuego, DBUsuario, initialPersonajesUsuario } from '@interfaces/dbTypes';
+import { DBEstadisticaPersonaje, DBHabilidad, DBPersonajesUsuario, DBSistemaJuego, DBUsuario, initialPersonajesUsuario } from '@interfaces/dbTypes';
 
 // Funciones
 import {validateNumeric} from '@utils/utilConversions';
@@ -29,7 +29,7 @@ import SvgCharacter from '@Icons/SvgCharacter';
 import SvgSaveCharacter from '@Icons/SvgSaveCharacter';
 import SvgD4Roll from '@Icons/SvgD4Roll';
 import SvgDeleteItem from '@Icons/SvgDeleteItem';
-import { insertDataPus } from '@/services/database/dbTables';
+import { insertDataEpe, insertDataPus } from '@/services/database/dbTables';
 
 interface CharacterSheetProps {
    changeBackground: (newBackground: string) => void;
@@ -662,7 +662,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
 
    async function saveData() {
       const ID_CHARACTER:string = await uploadInfoCharacter(newRecord) || '';
-      //console.log('saveData', ID_CHARACTER);
+      console.log('saveData', ID_CHARACTER);
 
       Promise.all ([
          uploadStats(newRecord, ID_CHARACTER),
@@ -687,7 +687,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       let data:DBPersonajesUsuario;
       
       if (!newRecord) {
-         data = await updatePus(character, character.pus_id);
+         data = await updatePus(character);
+
+         console.log('uploadInfoCharacter - dat:',data.pus_id);
+         
          
          if(data !== null) return data.pus_id;
 
@@ -703,11 +706,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    };
 
    async function uploadStats(isNewCharacter: boolean, characterId: string) {
+      console.log(characterId);
+      
       if(characterId === '') return;
       
       if (!isNewCharacter) {
          for(const element of inputsStatsData) {
-            const { error } = await dbConnection
+            /*const { error } = await dbConnection
             .from('epe_estadistica_personaje')
             .update({ 
                epe_nombre: element?.label,
@@ -717,14 +722,26 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
             })
             .eq("epe_personaje",params.id)
             .eq("epe_sigla",element.id)
-            .select();
-            if(error) alert('Stat not upload.');
+            .select();*/
+
+            const record: DBEstadisticaPersonaje = {
+               epe_usuario: params.user || '',
+               epe_personaje: characterId,
+               epe_sigla: element?.id,
+               epe_nombre: element?.label,
+               epe_num_dado: element?.valueDice,
+               epe_num_clase: element?.valueClass,
+               epe_num_nivel: element?.valueLevel,
+            };
+            updateEpe(record);
+
+            //if(error) alert('Stat not upload.');
          }
       } else {
-         let saveStats = [];
+         let saveStats:DBEstadisticaPersonaje[] = [];
          for(const element of inputsStatsData) {
             saveStats.push({
-               epe_usuario: params.user,
+               epe_usuario: params.user || '',
                epe_personaje: characterId,
                epe_sigla: element?.id,
                epe_nombre: element?.label,
@@ -733,12 +750,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
                epe_num_nivel: element?.valueLevel,
             });
          }
-         const { error } = await dbConnection
+         /*const { error } = await dbConnection
          .from('epe_estadistica_personaje')
          .insert(saveStats)
-         .select();
+         .select();*/
+
+         const data = insertDataEpe(saveStats);
+
+         console.log('uploadStats - data', data);
          
-         if(error) alert('Stat not upload.');
+         //if(error) alert('Stat not upload.');
       }
    };
 
@@ -1038,7 +1059,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
                onChange={(e: ChangeEvent<HTMLInputElement>) => handleCoinsChange(2, e.target.value)}
             />
 
-            <label htmlFor="objectInput" className="form-lbl mb-1 col-span-3 bg-grey-lighter ">Bolsa</label>
+            <label className="form-lbl mb-1 col-span-3 bg-grey-lighter ">Bolsa</label>
             {/* Listado de objetos */}
             {invObjects.map((elem) => (
                <Tooltip className="bg-dark text-light px-2 py-1" key={"object"+elem.id} placement="left" content={ elem.description } >

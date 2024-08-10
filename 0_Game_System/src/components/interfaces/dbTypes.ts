@@ -90,6 +90,7 @@ export interface DBHabilidadPersonaje{
 
 export interface DBEstadisticaPersonaje{
   epe_personaje: string;
+  epe_usuario: string;
   epe_sigla: string;
   epe_nombre: string;
   epe_num_dado: number;

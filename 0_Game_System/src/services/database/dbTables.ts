@@ -318,10 +318,20 @@ export const deleteDataQuery = async (table: string, where?: WhereClause):Promis
 // -- INSERT
 
 /**
+ * Adicionar los datos obtenidos de la consulta a la tabla de estadisticas por personajes.
+ * 
+ * @param {DBEstadisticaPersonaje} data - estadisticas del personaje.
+ * @returns {Promise<DBEstadisticaPersonaje>} datos obtenidos de la consulta a base de datos.
+ */
+export const insertDataEpe = async ( data: DBEstadisticaPersonaje | DBEstadisticaPersonaje[] ): Promise<DBEstadisticaPersonaje> => {
+    return insertDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, data);
+}
+
+/**
  * Adicionar los datos obtenidos de la consulta a la tabla de personajes por usuario.
  * 
  * @param {DBPersonajesUsuario} data - datos del personaje.
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @returns {Promise<DBPersonajesUsuario>} datos obtenidos de la consulta a base de datos.
  */
 export const insertDataPus = async ( data: DBPersonajesUsuario ): Promise<DBPersonajesUsuario> => {
     // quitar los Join
@@ -336,7 +346,7 @@ export const insertDataPus = async ( data: DBPersonajesUsuario ): Promise<DBPers
  * @param {object} data - Los datos a insertar.
  * @returns {Promise<T>} - La fila insertada.
  */
-export const insertDataQuery = async <T>(table: string, data: object): Promise<T> => {
+export const insertDataQuery = async <T>(table: string, data: object | object[]): Promise<T> => {
     try {
         const { data: insertedData, error } = await dbConnection
         .from(table)
@@ -358,7 +368,17 @@ export const insertDataQuery = async <T>(table: string, data: object): Promise<T
  * Adicionar los datos obtenidos de la consulta a la tabla de personajes por usuario.
  * 
  * @param {DBPersonajesUsuario} data - datos del personaje.
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @returns {Promise<DBEstadisticaPersonaje>} datos obtenidos de la consulta a base de datos.
+ */
+export const updateDataEpe = async ( data: DBEstadisticaPersonaje, where?: WhereClause ): Promise<DBEstadisticaPersonaje> => {
+    return await updateDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, data, where);
+}
+
+/**
+ * Adicionar los datos obtenidos de la consulta a la tabla de personajes por usuario.
+ * 
+ * @param {DBPersonajesUsuario} data - datos del personaje.
+ * @returns {Promise<DBPersonajesUsuario>} datos obtenidos de la consulta a base de datos.
  */
 export const updateDataPus = async ( data: DBPersonajesUsuario, where?: WhereClause ): Promise<DBPersonajesUsuario> => {
     // quitar los Join

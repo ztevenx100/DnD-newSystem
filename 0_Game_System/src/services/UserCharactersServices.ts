@@ -3,7 +3,7 @@
  * @file: Maneja las funciones relacionadas con el listado de personajes por usuario
  */ 
 
-import { getDataQueryPus, deleteDataQueryPus, getDataQueryUsu, getDataQueryHad, getDataQuerySju, getDataQueryEpe, getDataQueryHpe, getDataQueryInp, updateDataPus } from '@database/dbTables';
+import { getDataQueryPus, deleteDataQueryPus, getDataQueryUsu, getDataQueryHad, getDataQuerySju, getDataQueryEpe, getDataQueryHpe, getDataQueryInp, updateDataPus, updateDataEpe } from '@database/dbTables';
 // Interfaces
 import { DBEstadisticaPersonaje, DBHabilidad, DBHabilidadPersonaje, DBInventarioPersonaje, DBPersonajesUsuario, DBSistemaJuego, DBUsuario, initialPersonajesUsuario } from '@interfaces/dbTypes';
 
@@ -186,18 +186,40 @@ export const getListInp = async(id: string): Promise<DBInventarioPersonaje[]> =>
     return data;
 };
 
+// Update
+
 /**
- * Busca listado de inventario por personaje.
+ * Actualizar las estadisticas del personaje.
  * 
- * @param {string} id - El id del personaje.
- * @returns {DBPersonajesUsuario[]} Retorna el listado de inventario del personaje.
+ * @param {DBEstadisticaPersonaje} dataEpe - El datos de las estadisticas del personaje.
+ * @returns {DBEstadisticaPersonaje} Retorna las estadisticas del personaje.
  */
-export const updatePus = async( dataPus: DBPersonajesUsuario, id: string ): Promise<DBPersonajesUsuario> => {
+export const updateEpe = async( dataEpe: DBEstadisticaPersonaje): Promise<DBEstadisticaPersonaje> => {
+    let data:DBEstadisticaPersonaje;
+    try {
+        data = await updateDataEpe(
+            dataEpe
+            , { 'epe_personaje': dataEpe.epe_personaje, 'epe_sigla': dataEpe.epe_sigla }
+        );
+        return data;
+    } catch (error) {
+        console.error('Error updating Epe:', error);
+        throw error;
+    }
+};
+
+/**
+ * Actualizar personaje.
+ * 
+ * @param {DBPersonajesUsuario} dataPus - El datos del personaje.
+ * @returns {DBPersonajesUsuario[]} Retorna el personaje actualizado.
+ */
+export const updatePus = async( dataPus: DBPersonajesUsuario ): Promise<DBPersonajesUsuario> => {
     let data:DBPersonajesUsuario;
     try {
         data = await updateDataPus(
             dataPus
-            , { 'pus_id': id }
+            , { 'pus_id': dataPus.pus_id }
          );
     } catch (error) {
         data = initialPersonajesUsuario;

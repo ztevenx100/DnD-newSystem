@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import dbConnection from '@/services/database/dbConnection';
 import { addStorageCharacter, getUrlCharacter } from '@/services/database/dbStorage';
-import { getCharacter, getGameSystem, getListEpe, getListHad, getListHpe, getListInp, getUser, updateEpe, updatePus } from '@services/UserCharactersServices';
+import { getCharacter, getGameSystem, getListEpe, getListHad, getListHpe, getListInp, getUser, insertPus, updateEpe, updatePus } from '@services/UserCharactersServices';
+import { insertDataEpe } from '@/services/database/dbTables';
 
 import { Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
 import './CharacterSheet.css';
@@ -29,7 +30,6 @@ import SvgCharacter from '@Icons/SvgCharacter';
 import SvgSaveCharacter from '@Icons/SvgSaveCharacter';
 import SvgD4Roll from '@Icons/SvgD4Roll';
 import SvgDeleteItem from '@Icons/SvgDeleteItem';
-import { insertDataEpe, insertDataPus } from '@/services/database/dbTables';
 
 interface CharacterSheetProps {
    changeBackground: (newBackground: string) => void;
@@ -661,8 +661,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
    };
 
    async function saveData() {
-      const ID_CHARACTER:string = await uploadInfoCharacter(newRecord) || '';
-      console.log('saveData', ID_CHARACTER);
+      const ID_CHARACTER:string =  await Promise.resolve( uploadInfoCharacter(newRecord) ) || '';
+      console.log('saveData: ', ID_CHARACTER);
 
       Promise.all ([
          uploadStats(newRecord, ID_CHARACTER),
@@ -688,8 +688,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       
       if (!newRecord) {
          data = await updatePus(character);
-
-         console.log('uploadInfoCharacter - dat:',data.pus_id);
          
          
          if(data !== null) return data.pus_id;
@@ -697,7 +695,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          //if(error)return '';
          
       } else {
-         data = await insertDataPus(character);
+         data = await insertPus(character);
          
          if(data !== null) return data.pus_id;
          

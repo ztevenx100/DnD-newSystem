@@ -3,7 +3,7 @@
  * @file: Maneja las funciones relacionadas con el listado de personajes por usuario
  */ 
 
-import { getDataQueryPus, deleteDataQueryPus, getDataQueryUsu, getDataQueryHad, getDataQuerySju, getDataQueryEpe, getDataQueryHpe, getDataQueryInp, updateDataPus, updateDataEpe } from '@database/dbTables';
+import { getDataQueryPus, deleteDataQueryPus, getDataQueryUsu, getDataQueryHad, getDataQuerySju, getDataQueryEpe, getDataQueryHpe, getDataQueryInp, updateDataPus, updateDataEpe, insertDataPus } from '@database/dbTables';
 // Interfaces
 import { DBEstadisticaPersonaje, DBHabilidad, DBHabilidadPersonaje, DBInventarioPersonaje, DBPersonajesUsuario, DBSistemaJuego, DBUsuario, initialPersonajesUsuario } from '@interfaces/dbTypes';
 
@@ -186,6 +186,30 @@ export const getListInp = async(id: string): Promise<DBInventarioPersonaje[]> =>
     return data;
 };
 
+// Insert
+
+/**
+ * Adicionar personaje.
+ * 
+ * @param {DBPersonajesUsuario} dataPus - El datos del personaje.
+ * @returns {DBPersonajesUsuario[]} Retorna el personaje adicionado.
+ */
+export const insertPus = async( dataPus: DBPersonajesUsuario ): Promise<DBPersonajesUsuario> => {
+    let data:DBPersonajesUsuario = initialPersonajesUsuario;
+    try {
+        const dataInserted:DBPersonajesUsuario[] = await insertDataPus(
+            dataPus
+        );
+
+        if (dataInserted) data = dataInserted[0];
+
+        return data;
+    } catch (error) {
+        console.error('Error inserting Pus:', error);
+        throw error;
+    }
+};
+
 // Update
 
 /**
@@ -197,10 +221,13 @@ export const getListInp = async(id: string): Promise<DBInventarioPersonaje[]> =>
 export const updateEpe = async( dataEpe: DBEstadisticaPersonaje): Promise<DBEstadisticaPersonaje> => {
     let data:DBEstadisticaPersonaje;
     try {
-        data = await updateDataEpe(
+        const dataUpdated:DBEstadisticaPersonaje[] =  await updateDataEpe(
             dataEpe
             , { 'epe_personaje': dataEpe.epe_personaje, 'epe_sigla': dataEpe.epe_sigla }
         );
+        
+        data = dataUpdated[0];
+        
         return data;
     } catch (error) {
         console.error('Error updating Epe:', error);
@@ -215,16 +242,19 @@ export const updateEpe = async( dataEpe: DBEstadisticaPersonaje): Promise<DBEsta
  * @returns {DBPersonajesUsuario[]} Retorna el personaje actualizado.
  */
 export const updatePus = async( dataPus: DBPersonajesUsuario ): Promise<DBPersonajesUsuario> => {
-    let data:DBPersonajesUsuario;
+    let data:DBPersonajesUsuario = initialPersonajesUsuario;
     try {
-        data = await updateDataPus(
+        const dataUpdated:DBPersonajesUsuario[] = await updateDataPus(
             dataPus
             , { 'pus_id': dataPus.pus_id }
-         );
-    } catch (error) {
-        data = initialPersonajesUsuario;
-    }
+        );
 
-    return data;
+        if (dataUpdated) data = dataUpdated[0];
+
+        return data;
+    } catch (error) {
+        console.error('Error updating Pus:', error);
+        throw error;
+    }
 };
 

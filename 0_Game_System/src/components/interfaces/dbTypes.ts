@@ -73,7 +73,7 @@ export interface DBHabilidadPersonaje{
   hpe_usuario: string;
   hpe_personaje: string;
   hpe_habilidad: string;
-  hpe_alineacion: string;
+  hpe_alineacion: string | null;
   hpe_campo: string;
   hab_habilidad: {
     hab_id: string;

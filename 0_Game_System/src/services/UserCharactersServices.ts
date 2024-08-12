@@ -210,7 +210,7 @@ export const insertPus = async( dataPus: DBPersonajesUsuario ): Promise<DBPerson
     }
 };
 
-// Update
+// UPDATE
 
 /**
  * Actualizar las estadisticas del personaje.
@@ -257,4 +257,6 @@ export const updatePus = async( dataPus: DBPersonajesUsuario ): Promise<DBPerson
         throw error;
     }
 };
+
+// UPSERT
 

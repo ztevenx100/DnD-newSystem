@@ -2,9 +2,9 @@ import React, { useState, ChangeEvent, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import dbConnection from '@/services/database/dbConnection';
-import { addStorageCharacter, getUrlCharacter } from '@/services/database/dbStorage';
+import { addStorageCharacter, getUrlCharacter } from '@services/database/dbStorage';
 import { getCharacter, getGameSystem, getListEpe, getListHad, getListHpe, getListInp, getUser, insertPus, updateEpe, updatePus } from '@services/UserCharactersServices';
-import { insertDataEpe } from '@/services/database/dbTables';
+import { insertDataEpe, upsertDataHpe } from '@services/database/dbTables';
 
 import { Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
 import './CharacterSheet.css';
@@ -18,7 +18,7 @@ import FormImageFile from './FormImageFile/FormImageFile';
 
 // Interfaces
 import { InputStats, SkillTypes, SkillsAcquired, InventoryObject,SkillFields, Option } from '@interfaces/typesCharacterSheet';
-import { DBEstadisticaPersonaje, DBHabilidad, DBPersonajesUsuario, DBSistemaJuego, DBUsuario, initialPersonajesUsuario } from '@interfaces/dbTypes';
+import { DBEstadisticaPersonaje, DBHabilidad, DBHabilidadPersonaje, DBPersonajesUsuario, DBSistemaJuego, DBUsuario, initialPersonajesUsuario } from '@interfaces/dbTypes';
 
 // Funciones
 import {validateNumeric} from '@utils/utilConversions';
@@ -197,9 +197,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          data[0].pus_usuario = user;
          setCharacter(data[0]);
 
-         let updateSystemGame = systemGame
-         updateSystemGame.sju_id = data[0].sju_sistema_juego.sju_id
-         updateSystemGame.sju_nombre = data[0].sju_sistema_juego.sju_nombre
+         let updateSystemGame = systemGame;
+         updateSystemGame.sju_id = data[0].sju_sistema_juego.sju_id;
+         updateSystemGame.sju_nombre = data[0].sju_sistema_juego.sju_nombre;
          setSystemGame(updateSystemGame);
       }
    };
@@ -495,7 +495,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
          updatedSkills[existingSkillIndex] = { id, value, name, description, ring, stat };
          
          setSkillsAcquired(updatedSkills);
-         //console.log('handleSelectedRingSkillChange - updatedSkills', updatedSkills);
       } else {
          setSkillsAcquired(prevSkills => [...prevSkills, { id, value, name, description, ring, stat }]);
       }
@@ -689,39 +688,19 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
       if (!newRecord) {
          data = await updatePus(character);
          
-         
          if(data !== null) return data.pus_id;
-
-         //if(error)return '';
-         
       } else {
          data = await insertPus(character);
          
          if(data !== null) return data.pus_id;
-         
-         //if(error)return '';
       }
    };
 
    async function uploadStats(isNewCharacter: boolean, characterId: string) {
-      console.log(characterId);
-      
       if(characterId === '') return;
       
       if (!isNewCharacter) {
          for(const element of inputsStatsData) {
-            /*const { error } = await dbConnection
-            .from('epe_estadistica_personaje')
-            .update({ 
-               epe_nombre: element?.label,
-               epe_num_dado: element?.valueDice,
-               epe_num_clase: element?.valueClass,
-               epe_num_nivel: element?.valueLevel,
-            })
-            .eq("epe_personaje",params.id)
-            .eq("epe_sigla",element.id)
-            .select();*/
-
             const record: DBEstadisticaPersonaje = {
                epe_usuario: params.user || '',
                epe_personaje: characterId,
@@ -732,8 +711,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
                epe_num_nivel: element?.valueLevel,
             };
             updateEpe(record);
-
-            //if(error) alert('Stat not upload.');
          }
       } else {
          let saveStats:DBEstadisticaPersonaje[] = [];
@@ -748,56 +725,51 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
                epe_num_nivel: element?.valueLevel,
             });
          }
-         /*const { error } = await dbConnection
-         .from('epe_estadistica_personaje')
-         .insert(saveStats)
-         .select();*/
-
-         const data = insertDataEpe(saveStats);
-
-         console.log('uploadStats - data', data);
-         
-         //if(error) alert('Stat not upload.');
+         insertDataEpe(saveStats);
       }
    };
 
    async function uploadSkill(characterId: string) {
       if(characterId === '') return;
 
-      let saveSkill = [];
+      let saveSkill:DBHabilidadPersonaje[] = [];
       saveSkill.push({
          hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillClass')[0].skill,
-         hpe_usuario: params.user, 
+         hpe_usuario: params.user || '', 
          hpe_personaje: characterId,
          hpe_campo: 'skillClass',
          hpe_alineacion: null,
+         hab_habilidad: null,
       });
       saveSkill.push({
          hpe_habilidad: fieldSkill.filter(skill => skill.field === 'skillExtra')[0].skill,
-         hpe_usuario: params.user, 
+         hpe_usuario: params.user || '', 
          hpe_personaje: characterId,
          hpe_campo: 'skillExtra',
          hpe_alineacion: null,
+         hab_habilidad: null,
       });
       
       for(let index = 0; index < skillsAcquired.length; index++) {
          if(skillsAcquired[index].id === '') continue;
          saveSkill.push({
             hpe_habilidad: skillsAcquired[index].id,
-            hpe_usuario: params.user, 
+            hpe_usuario: params.user || '', 
             hpe_personaje: characterId,
             hpe_campo: 'skillRing'+skillsAcquired[index].value,
             hpe_alineacion: null,
+            hab_habilidad: null,
          });
       }
       //console.log('saveSkill ', saveSkill);
       
-      const { error } = await dbConnection
+      /*const { error } = await dbConnection
       .from('hpe_habilidad_personaje')
       .upsert(saveSkill)
       .select();
 
-      if(error) alert('Skill not upload.');
+      if(error) alert('Skill not upload.');*/
+      upsertDataHpe(saveSkill);
    };
 
    async function uploadInventory(characterId: string) {

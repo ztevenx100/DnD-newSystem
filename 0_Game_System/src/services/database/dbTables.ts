@@ -1,5 +1,5 @@
 // @filename: tables.ts
-import dbConnection from '@/services/database/dbConnection';
+import dbConnection from '@services/database/dbConnection';
 
 // Interfaces
 import { 
@@ -321,17 +321,27 @@ export const deleteDataQuery = async (table: string, where?: WhereClause):Promis
  * Adicionar los datos obtenidos de la consulta a la tabla de estadisticas por personajes.
  * 
  * @param {DBEstadisticaPersonaje} data - estadisticas del personaje.
- * @returns {Promise<DBEstadisticaPersonaje>} datos obtenidos de la consulta a base de datos.
+ * @returns {Promise<DBEstadisticaPersonaje>} datos obtenidos de la adicion a base de datos.
  */
 export const insertDataEpe = async ( data: DBEstadisticaPersonaje | DBEstadisticaPersonaje[] ): Promise<DBEstadisticaPersonaje[]> => {
     return insertDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, data);
 }
 
 /**
+ * Adicionar los datos obtenidos de la consulta a la tabla de habilidades por personajes.
+ * 
+ * @param {DBHabilidadPersonaje} data - Habilidades del personaje.
+ * @returns {Promise<DBHabilidadPersonaje>} datos obtenidos de la adicion a base de datos.
+ */
+export const insertDataHpe = async ( data: DBHabilidadPersonaje | DBHabilidadPersonaje[] ): Promise<DBHabilidadPersonaje[]> => {
+    return insertDataQuery<DBHabilidadPersonaje>(TABLE_HPE, data);
+}
+
+/**
  * Adicionar los datos obtenidos de la consulta a la tabla de personajes por usuario.
  * 
  * @param {DBPersonajesUsuario} data - datos del personaje.
- * @returns {Promise<DBPersonajesUsuario>} datos obtenidos de la consulta a base de datos.
+ * @returns {Promise<DBPersonajesUsuario>} datos obtenidos de la adicion a base de datos.
  */
 export const insertDataPus = async ( data: DBPersonajesUsuario ): Promise<DBPersonajesUsuario[]> => {
     // quitar los Join
@@ -344,7 +354,7 @@ export const insertDataPus = async ( data: DBPersonajesUsuario ): Promise<DBPers
  * 
  * @param {string} table - El nombre de la tabla.
  * @param {object} data - Los datos a insertar.
- * @returns {Promise<T>} - La fila insertada.
+ * @returns {Promise<T>} - La filas insertadas.
  */
 export const insertDataQuery = async <T>(table: string, data: object | object[]): Promise<T[]> => {
     try {
@@ -368,20 +378,30 @@ export const insertDataQuery = async <T>(table: string, data: object | object[])
 // -- UPDATE
 
 /**
- * Adicionar los datos obtenidos de la consulta a la tabla de personajes por usuario.
+ * Actualizar los datos en la tabla de estadisticas por personajes.
  * 
  * @param {DBPersonajesUsuario} data - datos del personaje.
- * @returns {Promise<DBEstadisticaPersonaje>} datos obtenidos de la consulta a base de datos.
+ * @returns {Promise<DBEstadisticaPersonaje>} datos obtenidos de la actualizacion a base de datos.
  */
 export const updateDataEpe = async ( data: DBEstadisticaPersonaje, where?: WhereClause ): Promise<DBEstadisticaPersonaje[]> => {
     return await updateDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, data, where);
 }
 
 /**
- * Adicionar los datos obtenidos de la consulta a la tabla de personajes por usuario.
+ * Actualizar los datos en la tabla de habilidades por personajes.
  * 
  * @param {DBPersonajesUsuario} data - datos del personaje.
- * @returns {Promise<DBPersonajesUsuario[]>} datos obtenidos de la consulta a base de datos.
+ * @returns {Promise<DBHabilidadPersonaje>} datos obtenidos de la actualizacion a base de datos.
+ */
+export const updateDataHpe = async ( data: DBHabilidadPersonaje, where?: WhereClause ): Promise<DBHabilidadPersonaje[]> => {
+    return await updateDataQuery<DBHabilidadPersonaje>(TABLE_EPE, data, where);
+}
+
+/**
+ * Actualizar los datos obtenidos de la consulta a la tabla de personajes por usuario.
+ * 
+ * @param {DBPersonajesUsuario} data - datos del personaje.
+ * @returns {Promise<DBPersonajesUsuario[]>} datos obtenidos de la actualizacion a base de datos.
  */
 export const updateDataPus = async ( data: DBPersonajesUsuario, where?: WhereClause ): Promise<DBPersonajesUsuario[]> => {
     // quitar los Join
@@ -395,7 +415,7 @@ export const updateDataPus = async ( data: DBPersonajesUsuario, where?: WhereCla
  * @param {string} table - El nombre de la tabla.
  * @param {object} data - Los datos a actualizar.
  * @param {WhereClause} where - Cláusula WHERE para especificar qué filas actualizar.
- * @returns {Promise<T>} - La fila actualizada.
+ * @returns {Promise<T>} - La filas actualizadas.
  */
 export const updateDataQuery = async <T>(table: string, data: object, where?: WhereClause): Promise<T[]> => {
     try {
@@ -420,6 +440,53 @@ export const updateDataQuery = async <T>(table: string, data: object, where?: Wh
         return updatedData as T[];
     } catch (error) {
         console.error('Error executing update:', error);
+        throw error;
+    }
+};
+
+
+// UPSERT
+
+/**
+ * Adicionar/Actualizar los datos obtenidos de la consulta a la tabla de habilidades por personajes.
+ * 
+ * @param {DBHabilidadPersonaje} data - Habilidades del personaje.
+ * @returns {Promise<DBHabilidadPersonaje>} datos obtenidos de la adicion a base de datos.
+ */
+export const upsertDataHpe = async ( data: DBHabilidadPersonaje | DBHabilidadPersonaje[] ): Promise<DBHabilidadPersonaje[]> => {
+    if (Array.isArray(data)) {
+        // quitar los Join
+        const dataWithoutJoinArray = data.map(({ hab_habilidad, ...rest }) => rest);
+        return upsertDataQuery<DBHabilidadPersonaje>(TABLE_HPE, dataWithoutJoinArray);
+    } else {
+        // Si `data` es un solo objeto, quitar los joins directamente
+        const { hab_habilidad, ...dataWithoutJoin } = data;
+        return upsertDataQuery<DBHabilidadPersonaje>(TABLE_HPE, dataWithoutJoin);
+    }
+}
+
+/**
+ * Inserta/Actualiza datos de una tabla.
+ * 
+ * @param {string} table - El nombre de la tabla.
+ * @param {object} data - Los datos a insertar.
+ * @returns {Promise<T>} - La filas insertadas.
+ */
+export const upsertDataQuery = async <T>(table: string, data: object | object[]): Promise<T[]> => {
+    try {
+        const { data: upsertedData, error } = await Promise.resolve( dbConnection
+            .from(table)
+            .upsert(data)
+            .select()
+        );
+  
+        if (error) throw error;
+
+        console.log('data: ', upsertedData);
+        
+        return upsertedData as T[];
+    } catch (error) {
+        console.error('Error executing upsert:', error);
         throw error;
     }
 };

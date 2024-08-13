@@ -27,6 +27,12 @@ const App: React.FC = () => {
     setBackground(newBackground);
   };
 
+  function getUser() {
+    // const user = '43c29fa1-d02c-4da5-90ea-51f451ed8951';
+    
+    return '43c29fa1-d02c-4da5-90ea-51f451ed8952';
+}
+
   const router = createBrowserRouter([
     {
       path: "/",
@@ -41,7 +47,7 @@ const App: React.FC = () => {
         {
           id: "UserCharacters",
           path: "/UserCharacters",
-          element: <UserCharacters />,
+          element: <UserCharacters user={getUser()}/>,
         },
         {
           id: "SystemsGameList",

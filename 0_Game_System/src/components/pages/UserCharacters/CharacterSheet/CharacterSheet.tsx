@@ -1,24 +1,23 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
 import { useParams, useNavigate, useLoaderData } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
-import dbConnection from "@/services/database/dbConnection";
 import {
   addStorageCharacter,
   getUrlCharacter,
 } from "@services/database/dbStorage";
 import {
+  deleteItemInventory,
   getCharacter,
   getGameSystem,
   getListEpe,
   getListHad,
   getListHpe,
   getListInp,
-  getUser,
   insertPus,
   updateEpe,
   updatePus,
 } from "@services/UserCharactersServices";
-import { insertDataEpe, upsertDataHpe } from "@services/database/dbTables";
+import { insertDataEpe, upsertDataHpe, upsertDataInp } from "@services/database/dbTables";
 
 import {
   Tooltip,
@@ -52,6 +51,7 @@ import {
   DBEstadisticaPersonaje,
   DBHabilidad,
   DBHabilidadPersonaje,
+  DBInventarioPersonaje,
   DBPersonajesUsuario,
   DBSistemaJuego,
   DBUsuario,
@@ -114,7 +114,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const [newObjectDescription, setNewObjectDescription] = useState<string>("");
   const [newObjectCount, setNewObjectCount] = useState<number>(1);
   const [SystemGameList, setSystemGameList] = useState<Option[]>([]);
-  const [deleteItems, setDeleteItems] = useState<String[]>([]);
+  const [deleteItems, setDeleteItems] = useState<string[]>([]);
 
   // Listado del select skillClass
   const [optionsSkillClass, setOptionsSkillClass] = useState<Option[]>([]);
@@ -926,9 +926,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   };
 
   async function saveData() {
-    const ID_CHARACTER: string =
-      (await Promise.resolve(uploadInfoCharacter(newRecord))) || "";
-    console.log("saveData: ", ID_CHARACTER);
+    const ID_CHARACTER: string = (await Promise.resolve(uploadInfoCharacter(newRecord))) || '';
 
     Promise.all([
       uploadStats(newRecord, ID_CHARACTER),
@@ -944,7 +942,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   }
 
   const reloadPage = (characterId: string) => {
-    navigate("/CharacterSheet/" + user.usu_id + "/" + characterId);
+    navigate("/CharacterSheet/" + characterId);
   };
 
   async function uploadInfoCharacter(newRecord: boolean) {
@@ -1032,21 +1030,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         hab_habilidad: null,
       });
     }
-    //console.log('saveSkill ', saveSkill);
-
-    /*const { error } = await dbConnection
-      .from('hpe_habilidad_personaje')
-      .upsert(saveSkill)
-      .select();
-
-      if(error) alert('Skill not upload.');*/
+    
     upsertDataHpe(saveSkill);
   }
 
   async function uploadInventory(characterId: string) {
-    if (characterId === "") return;
+    if (characterId === '') return;
 
-    let saveItems = [];
+    let saveItems:DBInventarioPersonaje[] = [];
 
     for (let index = 0; index < invObjects.length; index++) {
       saveItems.push({
@@ -1058,21 +1049,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         inp_cantidad: invObjects[index].count,
       });
     }
-
-    const { error } = await dbConnection
-      .from("inp_inventario_personaje")
-      .upsert(saveItems)
-      .select();
-
-    if (error) alert("Items not upload.");
+    
+    upsertDataInp(saveItems);
 
     // Eliminar objeto db
-    const { error: deleteError } = await dbConnection
-      .from("inp_inventario_personaje")
-      .delete()
-      .in("inp_id", deleteItems);
-
-    if (deleteError) alert("Error eliminado items del inventario");
+    deleteItemInventory(deleteItems);
   }
 
   return (

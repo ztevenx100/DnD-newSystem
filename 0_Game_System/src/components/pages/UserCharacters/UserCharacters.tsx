@@ -15,8 +15,6 @@ const UserCharacters = () => {
   const navigate = useNavigate();
   const user: DBUsuario = useLoaderData() as DBUsuario;
 
-  console.log({ user });
-
   const handleOpenCharacter = () => {
     navigate("/CharacterSheet/" + user);
   };
@@ -24,7 +22,7 @@ const UserCharacters = () => {
   return (
     <>
       <section className="min-h-screen grid grid-cols-1 grid-rows-6 gap-x-0 gap-y-4 py-4 mb-3">
-        <header className="bg-white shadow-lg rounded py-2 grid items-center flex justify-center">
+        <header className="bg-white shadow-lg rounded py-2 grid items-center justify-center">
           <h1 className="text-xl font-bold uppercase">Listado de personajes</h1>
         </header>
         <Card className="w-full px-10 py-5 row-span-6 relative">

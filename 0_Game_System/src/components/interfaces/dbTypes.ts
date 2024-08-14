@@ -99,6 +99,7 @@ export interface DBEstadisticaPersonaje{
 }
 export interface DBInventarioPersonaje{
   inp_id: string;
+  inp_usuario: string;
   inp_personaje: string;
   inp_nombre: string;
   inp_descripcion: string;

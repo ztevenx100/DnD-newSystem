@@ -280,6 +280,15 @@ export const getDataQuery = async<T> (table: string, fields: string, where?: Whe
  * 
  * @param {WhereClause} [where] - where de la base de datos (opcional).
  */
+export const deleteDataQueryInp = async (where?: WhereClause) => {
+    deleteDataQuery(TABLE_INP, where);
+}
+
+/**
+ *  Funcion para eliminar los datos para la tabla de personajes por usuario.
+ * 
+ * @param {WhereClause} [where] - where de la base de datos (opcional).
+ */
 export const deleteDataQueryPus = async (where?: WhereClause) => {
     deleteDataQuery(TABLE_PUS, where);
 }
@@ -464,6 +473,22 @@ export const upsertDataHpe = async ( data: DBHabilidadPersonaje | DBHabilidadPer
         return upsertDataQuery<DBHabilidadPersonaje>(TABLE_HPE, dataWithoutJoin);
     }
 }
+
+/**
+ * Adicionar/Actualizar los datos obtenidos de la consulta a la tabla de habilidades por personajes.
+ * 
+ * @param {DBInventarioPersonaje} data - Habilidades del personaje.
+ * @returns {Promise<DBInventarioPersonaje>} datos obtenidos de la adicion a base de datos.
+ */
+export const upsertDataInp = async ( data: DBInventarioPersonaje | DBInventarioPersonaje[] ): Promise<DBInventarioPersonaje[]> => {
+    if (Array.isArray(data)) {
+        return upsertDataQuery<DBInventarioPersonaje>(TABLE_INP, data);
+    } else {
+        return upsertDataQuery<DBInventarioPersonaje>(TABLE_INP, data);
+    }
+}
+
+
 
 /**
  * Inserta/Actualiza datos de una tabla.

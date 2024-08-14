@@ -2,7 +2,7 @@ import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./App.css";
 
-import React, { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useState } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import { DBUsuario } from "@/components/interfaces/dbTypes";
@@ -18,21 +18,21 @@ import BackgroundChanger from "@UI/Background/BackgroundChanger";
 import BtnBackToTop from "@UI/Buttons/BtnBackToTop";
 import Footer from "@UI/Footer/Footer";
 import Navbar from "@UI/Navbar/Navbar";
+import { getUser } from "./services/UserCharactersServices";
 
-function getUser(): Promise<DBUsuario> {
-  // const user = '43c29fa1-d02c-4da5-90ea-51f451ed8951';
-
+async function getUserSession(): Promise<DBUsuario> {
   // return '43c29fa1-d02c-4da5-90ea-51f451ed8952';
-
-  return Promise.resolve({
+  /*return Promise.resolve({
     usu_id: "43c29fa1-d02c-4da5-90ea-51f451ed8952",
     usu_nombre: "Pablo",
-  });
+  })*/
+	const user:DBUsuario[] = await Promise.resolve( getUser("43c29fa1-d02c-4da5-90ea-51f451ed8952") );
+
+	return user[0];
 }
 
 const userLoader = async () => {
-  const user = await getUser();
-
+  const user = await getUserSession();
   return user;
 };
 

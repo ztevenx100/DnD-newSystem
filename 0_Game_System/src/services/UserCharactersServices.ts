@@ -3,7 +3,7 @@
  * @file: Maneja las funciones relacionadas con el listado de personajes por usuario
  */ 
 
-import { getDataQueryPus, deleteDataQueryPus, getDataQueryUsu, getDataQueryHad, getDataQuerySju, getDataQueryEpe, getDataQueryHpe, getDataQueryInp, updateDataPus, updateDataEpe, insertDataPus } from '@database/dbTables';
+import { getDataQueryPus, deleteDataQueryPus, getDataQueryUsu, getDataQueryHad, getDataQuerySju, getDataQueryEpe, getDataQueryHpe, getDataQueryInp, updateDataPus, updateDataEpe, insertDataPus, deleteDataQueryInp } from '@database/dbTables';
 // Interfaces
 import { DBEstadisticaPersonaje, DBHabilidad, DBHabilidadPersonaje, DBInventarioPersonaje, DBPersonajesUsuario, DBSistemaJuego, DBUsuario, initialPersonajesUsuario } from '@interfaces/dbTypes';
 
@@ -26,23 +26,6 @@ export const getlistCharacters = async(user: string): Promise<DBPersonajesUsuari
 
     return data;
 };
-
-/**
- * Eliminar personajes por id.
- * 
- * @param {string} id - El id del personaje.
- */
-export const deleteCharacter = async (id: string): Promise<void> => {
-    
-    try {
-        deleteDataQueryPus({'pus_id': id});
-    } catch (error) {
-        console.log(error);
-    }
-
-};
-
-// Character sheet
 
 /**
  * Busca informacion del usuario.
@@ -186,7 +169,40 @@ export const getListInp = async(id: string): Promise<DBInventarioPersonaje[]> =>
     return data;
 };
 
-// Insert
+// DELETE
+
+
+/**
+ * Eliminar personajes por id.
+ * 
+ * @param {string} id - El id del personaje.
+ */
+export const deleteCharacter = async (id: string): Promise<void> => {
+    
+    try {
+        deleteDataQueryPus({'pus_id': id});
+    } catch (error) {
+        console.error(error);
+    }
+
+};
+
+/**
+ * Eliminar items por personaje.
+ * 
+ * @param {string} id - El id del personaje.
+ */
+export const deleteItemInventory = async (items: string[]): Promise<void> => {
+    
+    try {
+        deleteDataQueryInp({'inp_id': items});
+    } catch (error) {
+        console.error(error);
+    }
+
+};
+
+// INSERT
 
 /**
  * Adicionar personaje.
@@ -257,6 +273,3 @@ export const updatePus = async( dataPus: DBPersonajesUsuario ): Promise<DBPerson
         throw error;
     }
 };
-
-// UPSERT
-

@@ -1,25 +1,42 @@
-import {createBrowserRouter, RouterProvider} from "react-router-dom";
-import React, { useState } from 'react';
-
-import homeBackground from '@img/webp/bg-home-01.webp';
-
-import Navbar from '@UI/Navbar/Navbar';
-import Footer from '@UI/Footer/Footer';
-import BackgroundChanger from '@UI/Background/BackgroundChanger';
-import BtnBackToTop from '@UI/Buttons/BtnBackToTop';
-import Home from '@pages/Home';
-import CharacterSheet from '@/components/pages/UserCharacters/CharacterSheet/CharacterSheet';
-import UserCharacters from '@pages/UserCharacters/UserCharacters';
-import SystemsGameList from '@pages/SystemsGameList/SystemsGameList';
-import SystemGameElement from '@pages/SystemsGameList/SystemGameElement/SystemGameElement';
-import WorldMap from '@pages/WorldMap/WorldMap';
-import ErrorPage from '@pages/ErrorPage/ErrorPage';
-
 import "@unocss/reset/tailwind.css";
 import "uno.css";
-import './App.css';
+import "./App.css";
 
-const App: React.FC = () => {
+import { Suspense, useState } from "react";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+import { DBUsuario } from "@/components/interfaces/dbTypes";
+import CharacterSheet from "@/components/pages/UserCharacters/CharacterSheet/CharacterSheet";
+import homeBackground from "@img/webp/bg-home-01.webp";
+import ErrorPage from "@pages/ErrorPage/ErrorPage";
+import Home from "@pages/Home";
+import SystemGameElement from "@pages/SystemsGameList/SystemGameElement/SystemGameElement";
+import SystemsGameList from "@pages/SystemsGameList/SystemsGameList";
+import UserCharacters from "@pages/UserCharacters/UserCharacters";
+import WorldMap from "@pages/WorldMap/WorldMap";
+import BackgroundChanger from "@UI/Background/BackgroundChanger";
+import BtnBackToTop from "@UI/Buttons/BtnBackToTop";
+import Footer from "@UI/Footer/Footer";
+import Navbar from "@UI/Navbar/Navbar";
+import { getUser } from "./services/UserCharactersServices";
+
+async function getUserSession(): Promise<DBUsuario> {
+  // return '43c29fa1-d02c-4da5-90ea-51f451ed8952';
+  /*return Promise.resolve({
+    usu_id: "43c29fa1-d02c-4da5-90ea-51f451ed8952",
+    usu_nombre: "Pablo",
+  })*/
+	const user:DBUsuario[] = await Promise.resolve( getUser("43c29fa1-d02c-4da5-90ea-51f451ed8952") );
+
+	return user[0];
+}
+
+const userLoader = async () => {
+  const user = await getUserSession();
+  return user;
+};
+
+const App = () => {
   // const [count, setCount] = useState(0)
   const [background, setBackground] = useState(homeBackground);
 
@@ -31,17 +48,22 @@ const App: React.FC = () => {
     {
       path: "/",
       element: <Navbar />,
-      children:[
-        { index: true, element: <Home changeBackground={changeBackground} /> },
+      children: [
+        {
+          index: true,
+          element: <Home changeBackground={changeBackground} />,
+        },
         {
           id: "CharacterSheet",
-          path: "/CharacterSheet/:user/:id?",
+          path: "/CharacterSheet/:id?",
           element: <CharacterSheet changeBackground={changeBackground} />,
+          loader: userLoader,
         },
         {
           id: "UserCharacters",
           path: "/UserCharacters",
           element: <UserCharacters />,
+          loader: userLoader,
         },
         {
           id: "SystemsGameList",
@@ -60,23 +82,25 @@ const App: React.FC = () => {
         },
         {
           path: "*",
-          element: <ErrorPage/>,
-        }
-      ]
+          element: <ErrorPage />,
+        },
+      ],
     },
   ]);
 
   return (
     <>
-      <BackgroundChanger initialBackground={background} >
-        <main className='container mx-auto bg-main' >
+      <BackgroundChanger initialBackground={background}>
+        <main className="container mx-auto bg-main">
+          <Suspense>
             <RouterProvider router={router} />
+          </Suspense>
         </main>
-        <BtnBackToTop/>
+        <BtnBackToTop />
         <Footer />
       </BackgroundChanger>
     </>
-  )
-}
+  );
+};
 
 export default App;

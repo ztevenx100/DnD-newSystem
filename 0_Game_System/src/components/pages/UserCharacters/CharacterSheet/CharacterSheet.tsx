@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, useEffect } from "react";
+import React, { useState, ChangeEvent, useEffect, useMemo } from "react";
 import { useParams, useNavigate, useLoaderData } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -17,7 +17,11 @@ import {
   updateEpe,
   updatePus,
 } from "@services/UserCharactersServices";
-import { insertDataEpe, upsertDataHpe, upsertDataInp } from "@services/database/dbTables";
+import {
+  insertDataEpe,
+  upsertDataHpe,
+  upsertDataInp,
+} from "@services/database/dbTables";
 
 import {
   Tooltip,
@@ -69,16 +73,42 @@ import SvgSaveCharacter from "@Icons/SvgSaveCharacter";
 import SvgD4Roll from "@Icons/SvgD4Roll";
 import SvgDeleteItem from "@Icons/SvgDeleteItem";
 
+import { useForm } from "react-hook-form";
+
 interface CharacterSheetProps {
   changeBackground: (newBackground: string) => void;
+}
+
+interface CharacterForm {
+  userName: string;
+  name: string;
 }
 
 const CharacterSheet: React.FC<CharacterSheetProps> = ({
   changeBackground,
 }) => {
+  const { user, character: initialCharacter } = useLoaderData() as {
+    user: DBUsuario;
+    character?: DBPersonajesUsuario;
+  };
 
-  const user = useLoaderData() as DBUsuario;
-  
+  const defaultValues = useMemo(() => {
+    return initialCharacter
+      ? {
+          userName: user.usu_nombre,
+          name: initialCharacter.pus_nombre,
+        }
+      : undefined;
+  }, [initialCharacter, user]);
+
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = useForm<CharacterForm>({
+    defaultValues: defaultValues,
+  });
+
   // Varibles - estados
   const [playerName, setPlayerName] = useState<string>("");
   const [characterImage, setCharacterImage] = useState<string | undefined>(
@@ -926,7 +956,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   };
 
   async function saveData() {
-    const ID_CHARACTER: string = (await Promise.resolve(uploadInfoCharacter(newRecord))) || '';
+    const ID_CHARACTER: string =
+      (await Promise.resolve(uploadInfoCharacter(newRecord))) || "";
 
     Promise.all([
       uploadStats(newRecord, ID_CHARACTER),
@@ -1030,14 +1061,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         hab_habilidad: null,
       });
     }
-    
+
     upsertDataHpe(saveSkill);
   }
 
   async function uploadInventory(characterId: string) {
-    if (characterId === '') return;
+    if (characterId === "") return;
 
-    let saveItems:DBInventarioPersonaje[] = [];
+    let saveItems: DBInventarioPersonaje[] = [];
 
     for (let index = 0; index < invObjects.length; index++) {
       saveItems.push({
@@ -1049,7 +1080,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         inp_cantidad: invObjects[index].count,
       });
     }
-    
+
     upsertDataInp(saveItems);
 
     // Eliminar objeto db
@@ -1070,60 +1101,44 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               {systemGame.sju_nombre}
             </h1>
           ) : (
-            <>
-              <FormSelectInfoPlayer
-                id="systemGame"
-                label="Sistema de juego"
-                options={SystemGameList}
-                selectedValue={systemGame.sju_id}
-                onSelectChange={handleSystemGameChange}
-              ></FormSelectInfoPlayer>
-            </>
+            <FormSelectInfoPlayer
+              id="systemGame"
+              label="Sistema de juego"
+              options={SystemGameList}
+              selectedValue={systemGame.sju_id}
+              onSelectChange={handleSystemGameChange}
+            />
           )}
         </fieldset>
         {/* Informacion del jugador */}
         <fieldset className="fieldset-form info-player col-span-2 md:col-span-2 lg:col-span-3 bg-white shadow-lg rounded">
           <legend>
-            <SvgCharacter width={20} height={20} className={"inline"} />{" "}
-            Informacion del jugador{" "}
+            <SvgCharacter width={20} height={20} className={"inline"} />
+            Informacion del jugador
           </legend>
 
           <label
-            htmlFor="player"
+            htmlFor="userName"
             className="form-lbl col-start-1 bg-grey-lighter "
           >
             Jugador
           </label>
           <input
-            type="text"
-            id="player"
+            {...register("userName", { required: true })}
             placeholder="Nombre del jugador"
             className="form-input col-start-2 col-end-3 col-span-1 mr-2 focus:border-black focus:shadow"
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
-            required
             readOnly
           />
           <label
-            htmlFor="character"
+            htmlFor="name"
             className="form-lbl col-start-1 bg-grey-lighter "
           >
             Personaje
           </label>
           <input
-            type="text"
-            id="character"
+            {...register("name", { required: true, maxLength: 50 })}
             placeholder="Nombre del personaje"
             className="form-input col-start-2 mr-2 focus:border-black focus:shadow"
-            value={character?.pus_nombre || ""}
-            maxLength={50}
-            onChange={(e) =>
-              setCharacter((prevState) => ({
-                ...prevState!,
-                ["pus_nombre"]: e.target.value,
-              }))
-            }
-            required
           />
 
           <FormSelectInfoPlayer
@@ -1132,7 +1147,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             options={optionsCharacterClass}
             selectedValue={character?.pus_clase || ""}
             onSelectChange={handleCharacterClassChange}
-          ></FormSelectInfoPlayer>
+          />
 
           <FormSelectInfoPlayer
             id="characterRace"

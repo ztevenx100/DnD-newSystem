@@ -82,6 +82,8 @@ interface CharacterSheetProps {
 interface CharacterForm {
   userName: string;
   name: string;
+  level: number;
+  luckyPoints: number;
 }
 
 const CharacterSheet: React.FC<CharacterSheetProps> = ({
@@ -97,6 +99,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       ? {
           userName: user.usu_nombre,
           name: initialCharacter.pus_nombre,
+          level: initialCharacter.pus_nivel,
+          luckyPoints: initialCharacter.pus_puntos_suerte,
         }
       : undefined;
   }, [initialCharacter, user]);
@@ -1166,50 +1170,28 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           ></FormSelectInfoPlayer>
 
           <label
-            htmlFor="characterLevel"
+            htmlFor="level"
             className="form-lbl-y col-start-1 md:col-start-3 col-span-1 row-start-2 md:row-start-1 bg-grey-lighter "
           >
             Nivel
           </label>
           <input
-            type="text"
-            id="characterLevel"
+            {...register("level", { required: true, maxLength: 2, min:1, max:10 })}
+            id="level"
             placeholder="Nivel"
-            min="1"
-            max="10"
             className="form-input-y numeric-input col-start-1 md:col-start-3 col-span-1 row-start-3 md:row-start-2 row-span-3 md:row-span-4 focus:border-black focus:shadow"
-            value={character?.pus_nivel || 1}
-            maxLength={2}
-            onChange={(e) =>
-              setCharacter((prevState) => ({
-                ...prevState!,
-                ["pus_nivel"]: validateNumeric(e.target.value),
-              }))
-            }
-            required
-          />
+            />
           <label
             htmlFor="luckyPoints"
             className="form-lbl-y col-start-2 md:col-start-4 col-span-1 row-start-2 md:row-start-1 bg-grey-lighter "
-          >
+            >
             Puntos de suerte
           </label>
           <input
-            type="text"
+            {...register("luckyPoints", { required: true, maxLength: 2, min:1, max:10 })}
             id="luckyPoints"
             placeholder="Puntos de suerte"
-            min="1"
-            max="10"
             className="form-input-y numeric-input col-start-2 md:col-start-4 col-span-1 row-start-3 md:row-start-2 row-span-1 md:row-span-1 focus:border-black focus:shadow"
-            value={character?.pus_puntos_suerte || 1}
-            maxLength={2}
-            onChange={(e) =>
-              setCharacter((prevState) => ({
-                ...prevState!,
-                ["pus_puntos_suerte"]: validateNumeric(e.target.value),
-              }))
-            }
-            required
           />
           <label
             htmlFor="lifePoints"

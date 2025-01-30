@@ -1,5 +1,5 @@
 # DnD-newSystem
-Pagina web para una partida de D&amp;D
+Pagina web con tematica y para uso del juego o partidas de D&amp;D
 
 >[!IMPORTANT]
 > Tecnologias

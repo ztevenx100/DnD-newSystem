@@ -1,6 +1,8 @@
 # DnD-newSystem
 Pagina web con tematica y para uso del juego o partidas de D&amp;D
 
+![image](https://github.com/user-attachments/assets/7c416bd1-3baf-4f5b-bbee-ca3b1eccecaf)
+
 >[!IMPORTANT]
 > Tecnologias
 - nextui-org/react: 2.4.6

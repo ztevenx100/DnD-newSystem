@@ -5,7 +5,10 @@ import "./App.css";
 import { Suspense, useState } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import { DBUsuario } from "@/components/interfaces/dbTypes";
+import {
+  DBPersonajesUsuario,
+  DBUsuario,
+} from "@/components/interfaces/dbTypes";
 import CharacterSheet from "@/components/pages/UserCharacters/CharacterSheet/CharacterSheet";
 import homeBackground from "@img/webp/bg-home-01.webp";
 import ErrorPage from "@pages/ErrorPage/ErrorPage";
@@ -18,17 +21,14 @@ import BackgroundChanger from "@UI/Background/BackgroundChanger";
 import BtnBackToTop from "@UI/Buttons/BtnBackToTop";
 import Footer from "@UI/Footer/Footer";
 import Navbar from "@UI/Navbar/Navbar";
-import { getUser } from "./services/UserCharactersServices";
+import { getCharacter, getUser } from "./services/UserCharactersServices";
 
 async function getUserSession(): Promise<DBUsuario> {
-  // return '43c29fa1-d02c-4da5-90ea-51f451ed8952';
-  /*return Promise.resolve({
-    usu_id: "43c29fa1-d02c-4da5-90ea-51f451ed8952",
-    usu_nombre: "Pablo",
-  })*/
-	const user:DBUsuario[] = await Promise.resolve( getUser("43c29fa1-d02c-4da5-90ea-51f451ed8952") );
+  const user: DBUsuario[] = await Promise.resolve(
+    getUser("43c29fa1-d02c-4da5-90ea-51f451ed8952")
+  );
 
-	return user[0];
+  return user[0];
 }
 
 const userLoader = async () => {
@@ -36,8 +36,17 @@ const userLoader = async () => {
   return user;
 };
 
+const userAndCharacterLoader = async ({ params }: any) => {
+  const user = await getUserSession();
+
+  const characters: DBPersonajesUsuario[] = await getCharacter(params.id);
+  return {
+    user,
+    character: Boolean(characters?.length) ? characters[0] : undefined,
+  };
+};
+
 const App = () => {
-  // const [count, setCount] = useState(0)
   const [background, setBackground] = useState(homeBackground);
 
   const changeBackground = (newBackground: string) => {
@@ -54,10 +63,16 @@ const App = () => {
           element: <Home changeBackground={changeBackground} />,
         },
         {
-          id: "CharacterSheet",
-          path: "/CharacterSheet/:id?",
+          id: "CreateCharacter",
+          path: "/CharacterSheet",
           element: <CharacterSheet changeBackground={changeBackground} />,
           loader: userLoader,
+        },
+        {
+          id: "EditCharacter",
+          path: "/CharacterSheet/:id",
+          element: <CharacterSheet changeBackground={changeBackground} />,
+          loader: userAndCharacterLoader,
         },
         {
           id: "UserCharacters",

@@ -1,6 +1,8 @@
-import React, { useState, ChangeEvent, useEffect, useMemo } from "react";
+import React, { useState, ChangeEvent, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, useLoaderData } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
+import { useForm } from "react-hook-form";
+
 import {
   addStorageCharacter,
   getUrlCharacter,
@@ -11,7 +13,6 @@ import {
   getGameSystem,
   getListEpe,
   getListHad,
-  getListHpe,
   getListInp,
   insertPus,
   updateEpe,
@@ -73,7 +74,6 @@ import SvgSaveCharacter from "@Icons/SvgSaveCharacter";
 import SvgD4Roll from "@Icons/SvgD4Roll";
 import SvgDeleteItem from "@Icons/SvgDeleteItem";
 
-import { useForm } from "react-hook-form";
 
 interface CharacterSheetProps {
   changeBackground: (newBackground: string) => void;
@@ -82,8 +82,16 @@ interface CharacterSheetProps {
 interface CharacterForm {
   userName: string;
   name: string;
+  class: string;
   level: number;
   luckyPoints: number;
+  lifePoints: number;
+  mainWeapon: string;
+  secondaryWeapon: string;
+  goldCoins: number;
+  silverCoins: number;
+  bronzeCoins: number;
+  characterDescription: string;
 }
 
 const CharacterSheet: React.FC<CharacterSheetProps> = ({
@@ -99,22 +107,27 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       ? {
           userName: user.usu_nombre,
           name: initialCharacter.pus_nombre,
+          class: initialCharacter.pus_clase,
           level: initialCharacter.pus_nivel,
           luckyPoints: initialCharacter.pus_puntos_suerte,
+          lifePoints: initialCharacter.pus_vida,
+          mainWeapon: initialCharacter.pus_arma_principal,
+          secondaryWeapon: initialCharacter.pus_arma_secundaria,
+          goldCoins: initialCharacter.pus_cantidad_oro,
+          silverCoins: initialCharacter.pus_cantidad_plata,
+          bronzeCoins: initialCharacter.pus_cantidad_bronce,
+          characterDescription: initialCharacter.pus_descripcion,
         }
       : undefined;
   }, [initialCharacter, user]);
 
   const {
-    handleSubmit,
     register,
-    formState: { errors },
   } = useForm<CharacterForm>({
     defaultValues: defaultValues,
   });
 
   // Varibles - estados
-  const [playerName, setPlayerName] = useState<string>("");
   const [characterImage, setCharacterImage] = useState<string | undefined>(
     undefined
   );
@@ -195,13 +208,117 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   }
   const [dataCharacter, setDataCharacter] = useState<DataCharacter>();
 
-  useEffect(() => {
-    getSkills();
-  }, [skillsTypes]);
+  const getInventory = useCallback(async () => {
+    const updatedInvObjects = [...invObjects];
+
+    if (updatedInvObjects.length !== 0) return;
+
+    if (params.id === null || params.id === undefined) {
+      updatedInvObjects.push({
+        id: uuidv4(),
+        name: "Gema",
+        description: "Articulo del elegido",
+        count: 1,
+        readOnly: true,
+      });
+      setInvObjects(updatedInvObjects);
+      return;
+    }
+
+    const data = await getListInp(params.id);
+
+    if (data !== null) {
+      data.forEach((elem) => {
+        updatedInvObjects.push({
+          id: elem.inp_id,
+          name: elem.inp_nombre,
+          description: elem.inp_descripcion,
+          count: elem.inp_cantidad,
+          readOnly: false,
+        });
+      });
+      setInvObjects(updatedInvObjects);
+    }
+  }, [invObjects, params.id]);
+
+  const handleSelectedRingSkillChange = useCallback((
+    id: string,
+    value: string
+  ) => {
+    setSkillsAcquired((prevItems) =>
+      prevItems.map((item) =>
+        item.value === id
+          ? { ...item, name: value }
+          : item
+      )
+    );
+  }, []);
+
+  const handleSelectedTypeRingSkillChange = useCallback(async (
+    id: string,
+    type: string
+  ) => {
+    const updatedSetSkillsRingList = [...skillsRingList];
+    updatedSetSkillsRingList[Number(id)].skills =
+      (skillsTypes.find((option) => option.id === type) || {}).skills || [];
+    setSkillsRingList(updatedSetSkillsRingList);
+  }, [skillsRingList, skillsTypes]);
+
+  const getSkills = useCallback(async () => {
+    if (!params.id) return;
+
+    const data = await getListHad();
+
+    if (data !== null) {
+      const updatedSkills = [...skillsAcquired];
+      const updatedFieldSkill = [...fieldSkill];
+
+      data.forEach((elem) => {
+        const siglas = elem.hab_siglas;
+        if (elem.hab_tipo === "C") {
+          setSelectedSkillValue(siglas);
+          updatedFieldSkill.filter(
+            (skill) => skill.field === "skillClass"
+          )[0].id = siglas;
+          updatedFieldSkill.filter(
+            (skill) => skill.field === "skillClass"
+          )[0].skill = elem.hab_id;
+        } else if (elem.hab_tipo === "E") {
+          setSelectedExtraSkillValue(siglas);
+          updatedFieldSkill.filter(
+            (skill) => skill.field === "skillExtra"
+          )[0].id = siglas;
+          updatedFieldSkill.filter(
+            (skill) => skill.field === "skillExtra"
+          )[0].skill = elem.hab_id;
+        } else if (elem.hab_tipo === "R") {
+          const estadisticaBase = elem.had_estadistica_base;
+
+          const selectTypeRing = document.getElementById(
+            "skillTypeRing" + estadisticaBase
+          ) as HTMLSelectElement;
+          if (selectTypeRing) {
+            selectTypeRing.value = estadisticaBase;
+          }
+
+          handleSelectedTypeRingSkillChange(estadisticaBase, estadisticaBase);
+          updatedSkills[Number(estadisticaBase)] = {
+            id: elem.hab_id,
+            value: estadisticaBase,
+            name: siglas,
+            description: "",
+            ring: estadisticaBase,
+          };
+        }
+      });
+      setSkillsAcquired(updatedSkills);
+      setFieldSkill(updatedFieldSkill);
+    }
+  }, [params.id, skillsAcquired, fieldSkill, handleSelectedTypeRingSkillChange]);
 
   useEffect(() => {
-    setPlayerName(user.usu_nombre);
-  }, [user]);
+    getSkills();
+  }, [getSkills, skillsTypes]);
 
   useEffect(() => {
     changeBackground(mainBackground);
@@ -222,7 +339,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     };
 
     loadInfo();
-  }, []);
+  }, [changeBackground, getCharacterImage, getInfoCharacter, getInventory, getStats, params.id]);
 
   async function getListSkill() {
     const data: DBHabilidad[] = await getListHad();
@@ -246,7 +363,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             name: data[i].hab_nombre,
           });
         } else if (data[i].hab_tipo === "R") {
-          let countSkill: number = otherSkills.filter(
+          const countSkill = otherSkills.filter(
             (option) => option.id === data[i].had_estadistica_base
           ).length;
           if (countSkill === 0) {
@@ -307,7 +424,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       data[0].pus_usuario = userId;
       setCharacter(data[0]);
 
-      let updateSystemGame = systemGame;
+      const updateSystemGame = systemGame;
       updateSystemGame.sju_id = data[0].sju_sistema_juego.sju_id;
       updateSystemGame.sju_nombre = data[0].sju_sistema_juego.sju_nombre;
       setSystemGame(updateSystemGame);
@@ -338,95 +455,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     }
   }
 
-  async function getSkills() {
-    if (params.id === null || params.id === undefined) return;
-
-    const data = await getListHpe(params.id);
-
-    if (data !== null) {
-      let acronym: string = "";
-      const updatedSkills = [...skillsAcquired];
-      const updatedFieldSkill = [...fieldSkill];
-      data.forEach((elem) => {
-        acronym =
-          (Array.isArray(elem.hab_habilidad)
-            ? elem.hab_habilidad[0]?.hab_siglas
-            : elem.hab_habilidad?.hab_siglas) ?? "";
-        if (elem.hpe_campo === "skillClass") {
-          setSelectedSkillValue(acronym);
-          updatedFieldSkill.filter(
-            (skill) => skill.field === "skillClass"
-          )[0].id = acronym;
-          updatedFieldSkill.filter(
-            (skill) => skill.field === "skillClass"
-          )[0].skill = elem.hpe_habilidad;
-        } else if (elem.hpe_campo === "skillExtra") {
-          setSelectedExtraSkillValue(acronym);
-          updatedFieldSkill.filter(
-            (skill) => skill.field === "skillExtra"
-          )[0].id = acronym;
-          updatedFieldSkill.filter(
-            (skill) => skill.field === "skillExtra"
-          )[0].skill = elem.hpe_habilidad;
-        } else if (elem.hpe_campo.includes("skillRing")) {
-          const numCampo: string = elem.hpe_campo.replace("skillRing", "");
-          let estadisticaBase: string =
-            (Array.isArray(elem.hab_habilidad)
-              ? elem.hab_habilidad[0]?.had_estadistica_base
-              : elem.hab_habilidad?.had_estadistica_base) ?? "";
-
-          const selectTypeRing = document.getElementById(
-            "skillTypeRing" + numCampo
-          ) as HTMLSelectElement;
-          selectTypeRing.value = estadisticaBase;
-
-          handleSelectedTypeRingSkillChange(numCampo, estadisticaBase);
-          updatedSkills[Number(numCampo)] = {
-            id: elem.hpe_habilidad,
-            value: numCampo,
-            name: acronym,
-            description: "",
-            ring: estadisticaBase,
-          };
-        }
-      });
-      setSkillsAcquired(updatedSkills);
-      setFieldSkill(updatedFieldSkill);
-    }
-  }
-
-  async function getInventory() {
-    const updatedInvObjects = [...invObjects];
-
-    if (updatedInvObjects.length !== 0) return;
-
-    if (params.id === null || params.id === undefined) {
-      updatedInvObjects.push({
-        id: uuidv4(),
-        name: "Gema",
-        description: "Articulo del elegido",
-        count: 1,
-        readOnly: true,
-      });
-      setInvObjects(updatedInvObjects);
-      return;
-    }
-
-    const data = await getListInp(params.id);
-
-    if (data !== null) {
-      data.forEach((elem) => {
-        updatedInvObjects.push({
-          id: elem.inp_id,
-          name: elem.inp_nombre,
-          description: elem.inp_descripcion,
-          count: elem.inp_cantidad,
-          readOnly: false,
-        });
-      });
-      setInvObjects(updatedInvObjects);
-    }
-  }
+  useEffect(() => {
+    getInventory();
+  }, [getInventory]);
 
   const optionsCharacterClass = [
     { value: "WAR", name: "Guerrero", work: "FOR", mainStat: "STR" },
@@ -575,17 +606,20 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   // Actualizar el systema de juego
   const handleSystemGameChange = (currentSystem: string = "") => {
     if (!currentSystem) return;
-    let option = SystemGameList.filter((elem) => elem.value === currentSystem);
+    const option = SystemGameList.filter((elem) => elem.value === currentSystem);
+    const updateSystemGame = systemGame;
+    updateSystemGame.sju_id = option[0].value;
+    updateSystemGame.sju_nombre = option[0].name;
+    setSystemGame(updateSystemGame);
     setCharacter((prevState) => ({
       ...prevState!,
       ["pus_sistema_juego"]: currentSystem,
     }));
-    setSystemGame({ sju_id: option[0].value, sju_nombre: option[0].name });
   };
 
   // Actualizar la habilidad principal del personaje
   const handleSelectSkillChange = (currentSkill: string) => {
-    let option = optionsSkillClass.filter(
+    const option = optionsSkillClass.filter(
       (skill) => skill.value === currentSkill
     );
     setFieldSkill((prevItems) =>
@@ -600,7 +634,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
   // Actualizar la habilidad extra del personaje
   const handleSelectExtraSkillChange = (currentSkill: string) => {
-    let option = optionsSkillExtra.filter(
+    const option = optionsSkillExtra.filter(
       (skill) => skill.value === currentSkill
     );
     setFieldSkill((prevItems) =>
@@ -714,54 +748,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     }
   };
 
-  const handleSelectedTypeRingSkillChange = async (
-    id: string,
-    type: string
-  ) => {
-    const updatedSetSkillsRingList = [...skillsRingList];
-    updatedSetSkillsRingList[Number(id)].skills =
-      (skillsTypes.find((option) => option.id === type) || {}).skills || [];
-    setSkillsRingList(updatedSetSkillsRingList);
-  };
-
-  const handleSelectedRingSkillChange = async (
-    value: string,
-    ring: string,
-    name: string,
-    stat: string
-  ) => {
-    const description = "";
-    const existingSkillIndex = skillsAcquired.findIndex(
-      (elem) => elem.value === value
-    );
-    const id: string =
-      skillsTypes
-        .find((item) => item.id === ring)
-        ?.skills.find((item) => item.value === stat)?.id || "";
-    //console.log(' handleSelectedRingSkillChange: ', existingSkillIndex, '- ring:', ring, '- id:', id, '- value:', value, '- skillsTypes:', skillsTypes);
-
-    if (existingSkillIndex !== -1) {
-      const updatedSkills = [...skillsAcquired];
-      updatedSkills[existingSkillIndex] = {
-        id,
-        value,
-        name,
-        description,
-        ring,
-        stat,
-      };
-
-      setSkillsAcquired(updatedSkills);
-    } else {
-      setSkillsAcquired((prevSkills) => [
-        ...prevSkills,
-        { id, value, name, description, ring, stat },
-      ]);
-    }
-  };
-
   const handleCoinsChange = (index: number, value: string) => {
-    let numericValue = validateNumeric(value);
+    const numericValue = validateNumeric(value);
     const updatedCoins = [...coins];
     updatedCoins[index] = numericValue;
     setCoins(updatedCoins);
@@ -796,7 +784,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   }
 
   const handleEditCount = (id: string, newCount: string) => {
-    let numericValue = validateNumeric(newCount, 1);
+    const numericValue = validateNumeric(newCount, 1);
     setInvObjects((prevObjects) =>
       prevObjects.map((obj) =>
         obj.id === id ? { ...obj, count: numericValue } : obj
@@ -805,17 +793,17 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   };
 
   const handleNewCount = (value: string) => {
-    let numericValue = validateNumeric(value, 1);
+    const numericValue = validateNumeric(value, 1);
     setNewObjectCount(numericValue);
   };
 
   const handleOpenModal = () => {
     // Obtener todos los elementos con el atributo required
-    let requiredElements = Array.from(
+    const requiredElements = Array.from(
       document.querySelectorAll("[required]")
     ) as HTMLInputElement[];
     let hayCamposVacios = false;
-    let fieldsRequired: string[] = [];
+    const fieldsRequired: string[] = [];
 
     // Iterar sobre los elementos y verificar si están vacíos
     for (let i = 0; i < requiredElements.length; i++) {
@@ -1013,7 +1001,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         updateEpe(record);
       }
     } else {
-      let saveStats: DBEstadisticaPersonaje[] = [];
+      const saveStats: DBEstadisticaPersonaje[] = [];
       for (const element of inputsStatsData) {
         saveStats.push({
           epe_usuario: user.usu_id || "",
@@ -1032,7 +1020,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   async function uploadSkill(characterId: string) {
     if (characterId === "") return;
 
-    let saveSkill: DBHabilidadPersonaje[] = [];
+    const saveSkill: DBHabilidadPersonaje[] = [];
     saveSkill.push({
       hpe_habilidad: fieldSkill.filter(
         (skill) => skill.field === "skillClass"
@@ -1072,8 +1060,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   async function uploadInventory(characterId: string) {
     if (characterId === "") return;
 
-    let saveItems: DBInventarioPersonaje[] = [];
-
+    const saveItems: DBInventarioPersonaje[] = [];
     for (let index = 0; index < invObjects.length; index++) {
       saveItems.push({
         inp_usuario: user.usu_id,
@@ -1177,7 +1164,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           </label>
           <input
             {...register("level", { required: true, maxLength: 2, min:1, max:10 })}
-            id="level"
             placeholder="Nivel"
             className="form-input-y numeric-input col-start-1 md:col-start-3 col-span-1 row-start-3 md:row-start-2 row-span-3 md:row-span-4 focus:border-black focus:shadow"
             />
@@ -1189,32 +1175,19 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           </label>
           <input
             {...register("luckyPoints", { required: true, maxLength: 2, min:1, max:10 })}
-            id="luckyPoints"
             placeholder="Puntos de suerte"
             className="form-input-y numeric-input col-start-2 md:col-start-4 col-span-1 row-start-3 md:row-start-2 row-span-1 md:row-span-1 focus:border-black focus:shadow"
           />
           <label
             htmlFor="lifePoints"
             className="form-lbl-y col-start-2 md:col-start-4 col-span-1 row-start-4 md:row-start-3 bg-grey-lighter "
-          >
+            >
             Vida
           </label>
           <input
-            type="text"
-            id="lifePoints"
+            {...register("lifePoints", { required: true, maxLength: 2, min:1, max:10 })}
             placeholder="Puntos de vida"
-            min="1"
-            max="10"
             className="form-input-y numeric-input col-start-2 md:col-start-4 col-span-1 row-start-5 md:row-start-4 row-span-1 md:row-span-2 focus:border-black focus:shadow"
-            value={character?.pus_vida || 1}
-            maxLength={2}
-            onChange={(e) =>
-              setCharacter((prevState) => ({
-                ...prevState!,
-                ["pus_vida"]: validateNumeric(e.target.value),
-              }))
-            }
-            required
           />
           <label
             htmlFor="characterImage"
@@ -1237,19 +1210,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             Descripción
           </label>
           <textarea
-            id="characterDescription"
-            name="characterDescription"
+            {...register("characterDescription", { required: true, maxLength: 500 })}
             placeholder="Descripcion del personaje"
             className="form-input-y col-start-1 md:col-start-1 col-span-5 row-start-15 md:row-start-7 row-span-1 focus:border-black focus:shadow"
-            value={character?.pus_descripcion || ""}
-            maxLength={500}
-            onChange={(e) =>
-              setCharacter((prevState) => ({
-                ...prevState!,
-                ["pus_descripcion"]: e.target.value,
-              }))
-            }
-            required
           />
 
           <FormCardCheckbox
@@ -1325,21 +1288,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             Arma principal
           </label>
           <input
-            type="text"
-            id="mainWeapon"
+            {...register("mainWeapon", { required: true })}
             placeholder="Arma principal"
             className="form-input mr-2 focus:border-black focus:shadow"
-            list="wearpons"
-            value={character?.pus_arma_principal || ""}
-            onChange={(e) =>
-              setCharacter((prevState) => ({
-                ...prevState!,
-                ["pus_arma_principal"]: e.target.value,
-              }))
-            }
-            required
+            list="wearons"
           />
-          <datalist id="wearpons">
+          <datalist id="wearons">
             {listWearpons?.map((elem, index) => (
               <option key={index} value={elem}>
                 {elem}
@@ -1353,18 +1307,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             Arma secundaria
           </label>
           <input
-            type="text"
-            id="secondaryWeapon"
+            {...register("secondaryWeapon", { required: true })}
             placeholder="Arma secondaria"
             className="form-input mr-2 focus:border-black focus:shadow"
-            list="wearpons"
-            value={character?.pus_arma_secundaria || ""}
-            onChange={(e) =>
-              setCharacter((prevState) => ({
-                ...prevState!,
-                ["pus_arma_secundaria"]: e.target.value,
-              }))
-            }
+            list="wearons"
           />
 
           <FormSelectInfoPlayer
@@ -1474,34 +1420,25 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             Bronce
           </label>
           <input
-            type="text"
-            id="goldCoins"
+            {...register("goldCoins", { required: true, maxLength: 3 })}
             placeholder="Oro"
             className="form-input ml-2 col-span-1 focus:border-black focus:shadow"
-            value={coins[0]}
-            maxLength={3}
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               handleCoinsChange(0, e.target.value)
             }
           />
           <input
-            type="text"
-            id="silverCoins"
+            {...register("silverCoins", { required: true, maxLength: 3 })}
             placeholder="Plata"
             className="form-input col-span-1 focus:border-black focus:shadow"
-            value={coins[1]}
-            maxLength={3}
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               handleCoinsChange(1, e.target.value)
             }
           />
           <input
-            type="text"
-            id="bronzeCoins"
+            {...register("bronzeCoins", { required: true, maxLength: 3 })}
             placeholder="Bronce"
             className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
-            value={coins[2]}
-            maxLength={3}
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               handleCoinsChange(2, e.target.value)
             }

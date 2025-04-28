@@ -1,8 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import UnoCSS from 'unocss/vite'
-import path from "path";
-
+import path from "path"
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -12,6 +11,11 @@ export default defineConfig({
     }),
     react()
   ],
+  envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
+  define: {
+    'process.env.NEXT_PUBLIC_SUPABASE_URL': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_URL),
+    'process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src/"),

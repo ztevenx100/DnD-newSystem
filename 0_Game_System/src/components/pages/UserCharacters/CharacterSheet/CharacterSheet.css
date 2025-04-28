@@ -464,7 +464,7 @@ body{
     min-width: 80px;
     display: flex;
     align-items: center;
-    justify-content: end;
+    justify-content: flex-end;
     margin-right: 0.5rem;
     & .btn-roll{
         fill: var(--bg-color-btn-dice);

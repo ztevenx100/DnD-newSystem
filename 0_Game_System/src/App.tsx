@@ -4,6 +4,7 @@ import "./App.css";
 
 import { Suspense, useState } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { NextUIProvider } from "@nextui-org/react";
 
 import {
   DBPersonajesUsuario,
@@ -104,9 +105,9 @@ const App = () => {
   ]);
 
   return (
-    <>
+    <NextUIProvider>
       <BackgroundChanger initialBackground={background}>
-        <main className="container mx-auto bg-main">
+        <main className="container mx-auto bg-main light">
           <Suspense>
             <RouterProvider router={router} />
           </Suspense>
@@ -114,7 +115,7 @@ const App = () => {
         <BtnBackToTop />
         <Footer />
       </BackgroundChanger>
-    </>
+    </NextUIProvider>
   );
 };
 

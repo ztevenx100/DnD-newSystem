@@ -1,15 +1,12 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
-
-import {NextUIProvider} from "@nextui-org/react";
 import 'virtual:uno.css'
+import './fonts.css'  // Import the fonts
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <NextUIProvider>
-      <App />
-    </NextUIProvider>
+    <App />
   </React.StrictMode>,
 )

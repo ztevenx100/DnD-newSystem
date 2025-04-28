@@ -57,8 +57,8 @@ npm install
 cp .env.example .env
 
 # Configurar variables de Supabase
-VITE_SUPABASE_URL=your-supabase-url
-VITE_SUPABASE_ANON_KEY=your-supabase-key
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-key
 ```
 
 3. **Desarrollo**

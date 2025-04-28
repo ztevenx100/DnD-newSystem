@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink } from "react-router-dom";
-import {Tooltip} from "@nextui-org/tooltip";
+import { Tooltip } from "@nextui-org/react";
 
 import  SvgHome from '@Icons/SvgHome';
 import  SvgPerson from '@Icons/SvgPerson';

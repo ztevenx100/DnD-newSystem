@@ -3,99 +3,131 @@
     Author     : Steven
 */
 :root{
-    --bg-btn-hover: #AAA8;
+    --bg-btn-hover: rgba(170, 170, 170, 0.1);
     --chip-bg-color: #F2AF29;
     --required-color: #E63462;
 }
 
-.title-list{
-    font-weight: 700;
-    text-align: center;
-    font-size: 20px;
-}
-
 .character-item{
-    display: flex;
-    border-left: 5px solid;
-    border-color: var(--bg-btn-hover);
-    transition-property: background-color, border-color;
-    transition-duration: .5s;
-    transition-timing-function: ease;
+    position: relative;
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-left: 5px solid var(--chip-bg-color);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    height: 100%;
+    transition: all 0.3s ease;
+    min-height: 180px;
 
     &:hover{
-        background-color: var(--bg-btn-hover);
-        border-color: var(--chip-bg-color);
+        transform: translateY(-4px);
+        border-color: var(--required-color);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        background-color: white;
     }
 
     & header {
         & img{
-            filter: grayscale(80%);
-            transition-property: filter;
+            filter: grayscale(70%);
+            transition: all 0.3s ease;
+            border-radius: 1rem;
+            object-fit: cover;
+            border: 3px solid transparent;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
     }
 
     &:hover header {
         & img{
             filter: grayscale(0%);
+            border-color: var(--chip-bg-color);
+            transform: scale(1.05) rotate(-5deg);
+        }
+    }
+
+    & .character-info {
+        & h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2D3748;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+        
+        & p {
+            color: #4A5568;
+            font-size: 1rem;
+            line-height: 1.5;
         }
     }
 
     & .btn-delete-object{
-        padding: 0 0.25rem;
-        max-width: 40px;
-        transition-property: background-color;
-        transition-duration: .5s;
-        transition-timing-function: ease;
-        z-index: 10;
-        &.bg-default{
-            background-color: transparent;
-        }
+        padding: 0.625rem;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+        background: transparent;
+        opacity: 0.7;
+        
         &:hover{
-            background-color: #FFFA;
+            background-color: rgba(230, 52, 98, 0.1);
+            opacity: 1;
+            transform: scale(1.1) rotate(8deg);
         }
     }
     
     & .lbl-level{
         background-color: var(--chip-bg-color);
-        transition-property: background-color;
-        transition-duration: .5s;
-        transition-timing-function: ease;
-        &.bg-default{
-            background-color: var(--chip-bg-color);
-        }
+        padding: 0.375rem 1rem;
+        border-radius: 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        
         &:hover{
-            background-color: #fff;
+            background-color: var(--required-color);
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
     }
 }
 
-.image-space{
-    min-width: 50px;
-}
-
-
-.form-lbl{
+.btn-add-character {
     display: flex;
     align-items: center;
-    padding: 0.5rem 0.25rem;
-    margin-left: 0.5rem;
-    background: #e5e7eb;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-width: 1px;
-    border-color: rgb(0 0 0 / var(--un-border-opacity));
-    border-top-left-radius: 0.5rem;
-    border-bottom-left-radius: 0.5rem; 
-    line-height: 1.5rem;
-    font-size: 1rem;
-}
-.form-input{
-    padding: 0.5rem 0.75rem;
-    margin-top: 0.5rem;
-    border-radius: 0.5rem;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0; 
-    line-height: 1.5rem;
-    border-width: 1px;
-    border-color: rgb(0 0 0 / var(--un-border-opacity));
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--chip-bg-color);
+    color: white;
+    border-radius: 1rem;
+    font-weight: 600;
+    font-size: 1.125rem;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+        background-color: white;
+        color: var(--chip-bg-color);
+        border-color: var(--chip-bg-color);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(242, 175, 41, 0.2);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+
+    & .icon {
+        transition: transform 0.3s ease;
+    }
+
+    &:hover .icon {
+        transform: rotate(90deg);
+    }
+
+    & span {
+        padding-top: 0.125rem;
+    }
 }

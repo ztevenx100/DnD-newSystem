@@ -21,25 +21,31 @@ const UserCharacters = () => {
 
   return (
     <>
-      <section className="min-h-screen grid grid-cols-1 grid-rows-6 gap-x-0 gap-y-4 py-4 mb-3">
-        <header className="bg-white shadow-lg rounded py-2 grid items-center justify-center">
-          <h1 className="text-xl font-bold uppercase">Listado de personajes</h1>
-        </header>
-        <Card className="w-full px-10 py-5 row-span-6 relative">
-          <CardBody>
-            <Suspense fallback={<ListUserCharacterSkeleton />}>
-              <ListUserCharacter user={user} />
-            </Suspense>
-            <div className="rounded-xl aspect-square max-w-fit p-4 flex justify-center items-center bg-neutral-200 absolute bottom-4 right-0 shadow-sm shadow-neutral-500 m-4">
-              <button
-                className="btn-save-character"
-                onClick={handleOpenCharacter}
-              >
-                <SvgAddCharacter className="icon" width={40} height={40} />
-              </button>
-            </div>
-          </CardBody>
-        </Card>
+      <section className="min-h-screen w-full px-4 py-8 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="max-w-[1400px] mx-auto">
+          <header className="bg-white shadow-lg rounded-lg py-6 mb-8">
+            <h1 className="text-3xl font-bold uppercase text-center text-gray-800">
+              Listado de personajes
+            </h1>
+          </header>
+          <Card className="bg-white/80 backdrop-blur-sm shadow-xl">
+            <CardBody className="p-6 md:p-8">
+              <div className="flex justify-end mb-6">
+                <button
+                  className="btn-add-character"
+                  onClick={handleOpenCharacter}
+                  title="Añadir nuevo personaje"
+                >
+                  <SvgAddCharacter className="icon" width={32} height={32} />
+                  <span>Nuevo Personaje</span>
+                </button>
+              </div>
+              <Suspense fallback={<ListUserCharacterSkeleton />}>
+                <ListUserCharacter user={user} />
+              </Suspense>
+            </CardBody>
+          </Card>
+        </div>
       </section>
     </>
   );

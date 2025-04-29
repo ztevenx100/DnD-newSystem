@@ -66,54 +66,63 @@ const ListUserCharacter: React.FC<ListUserCharacterProps> = ({ user }) => {
     <>
       <Listbox
         variant="flat"
-        className=""
-        classNames={{ list: "gap-y-2" }}
+        className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+        classNames={{
+          base: "max-w-full",
+          list: "p-0 grid grid-cols-1 lg:grid-cols-2 gap-4"
+        }}
         aria-label="Listado de personajes"
         onAction={(key) => navigate("/CharacterSheet/" + key)}
       >
         {list.map((elem) => (
           <ListboxItem
             key={elem.pus_id}
-            description={elem.sju_sistema_juego.sju_nombre}
-            className="character-item "
-            textValue={"0"}
-            classNames={{
-              description: "",
-              title: "w-full whitespace-normal",
-            }}
+            className="character-item h-full"
+            textValue={elem.pus_nombre}
           >
-            <header className="flex gap-2 items-center justify-between mb-2">
-              <div className="flex gap-2">
-                <Avatar
-                  alt={elem.pus_nombre}
-                  className="flex-shrink-0"
-                  size="sm"
-                  src={elem.url_character_image}
-                />
-                <h1
-                  color="dark-3"
-                  className="block antialiased tracking-normal text-2xl leading-snug text-blue-gray-900 font-black mb-1"
-                >
-                  {elem.pus_nombre}
-                </h1>
+            <div className="flex flex-col w-full h-full">
+              <div className="flex items-start space-x-4">
+                <header className="flex-shrink-0">
+                  <Avatar
+                    alt={elem.pus_nombre}
+                    className="w-20 h-20"
+                    size="lg"
+                    src={elem.url_character_image}
+                  />
+                </header>
+                <div className="character-info flex-1 min-w-0">
+                  <h3 className="text-xl font-semibold text-gray-800 truncate">{elem.pus_nombre}</h3>
+                  <p className="text-base text-gray-600 mb-2">{elem.sju_sistema_juego.sju_nombre}</p>
+                  {elem.pus_descripcion && (
+                    <p className="text-sm text-gray-500 line-clamp-2">{elem.pus_descripcion}</p>
+                  )}
+                </div>
+                <div className="flex flex-col items-end space-y-2">
+                  <Chip 
+                    size="lg"
+                    radius="full" 
+                    classNames={{ 
+                      base: "lbl-level",
+                      content: "font-semibold text-base"
+                    }}
+                  >
+                    Nivel {elem.pus_nivel}
+                  </Chip>
+                  <Button
+                    isIconOnly
+                    className="btn-delete-object"
+                    aria-label="Eliminar personaje"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleDeleteCharacter(elem.pus_id);
+                    }}
+                  >
+                    <SvgDeleteItem width={24} fill="var(--required-color)" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center">
-                <Chip radius="sm" classNames={{ base: "lbl-level" }}>
-                  {elem.pus_nivel}
-                </Chip>
-                <Button
-                  isIconOnly
-                  className="btn-delete-object"
-                  aria-label="Like"
-                  onClick={() => handleDeleteCharacter(elem.pus_id)}
-                >
-                  <SvgDeleteItem width={30} fill="var(--required-color)" />
-                </Button>
-              </div>
-            </header>
-            <footer className=" ">
-              <p>{elem.pus_descripcion}</p>
-            </footer>
+            </div>
           </ListboxItem>
         ))}
       </Listbox>

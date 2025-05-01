@@ -1,28 +1,9 @@
-import React, { useState, ChangeEvent, useEffect, useMemo, useCallback } from "react";
+import React, { useEffect, useMemo, ChangeEvent, useState } from "react";
 import { useParams, useNavigate, useLoaderData } from "react-router-dom";
-import { v4 as uuidv4 } from "uuid";
 import { useForm } from "react-hook-form";
-
-import {
-  addStorageCharacter,
-  getUrlCharacter,
-} from "@services/database/dbStorage";
-import {
-  deleteItemInventory,
-  getCharacter,
-  getGameSystem,
-  getListEpe,
-  getListHad,
-  getListInp,
-  insertPus,
-  updateEpe,
-  updatePus,
-} from "@services/UserCharactersServices";
-import {
-  insertDataEpe,
-  upsertDataHpe,
-  upsertDataInp,
-} from "@services/database/dbTables";
+import "@unocss/reset/tailwind.css";
+import "uno.css";
+import "./CharacterSheet.css";
 
 import {
   Tooltip,
@@ -34,7 +15,14 @@ import {
   Button,
   useDisclosure,
 } from "@nextui-org/react";
-import "./CharacterSheet.css";
+
+// Core types
+import { DBPersonajesUsuario, DBUsuario } from "@core/types";
+import { CharacterClassOption, CharacterRaceOption, CharacterJobOption } from './types';
+import { InputStats, DataCharacter, InventoryObject, SystemGame } from './models';
+
+// Hooks
+import { useCharacter } from '@features/characters/hooks';
 
 // Components
 import FormSelectInfoPlayer from "./FormSelectInfoPlayer/FormSelectInfoPlayer";
@@ -42,38 +30,23 @@ import FormCardCheckbox from "./FormCardCheckbox/FormCardCheckbox";
 import FormInputStats from "./FormInputStats/FormInputStats";
 import FormInputSkillsRing from "./FormInputSkillsRing/FormInputSkillsRing";
 import FormImageFile from "./FormImageFile/FormImageFile";
-
-// Interfaces
-import {
-  InputStats,
-  SkillTypes,
-  SkillsAcquired,
-  InventoryObject,
-  SkillFields,
-  Option,
-} from "@interfaces/typesCharacterSheet";
-import {
-  DBEstadisticaPersonaje,
-  DBHabilidad,
-  DBHabilidadPersonaje,
-  DBInventarioPersonaje,
-  DBPersonajesUsuario,
-  DBSistemaJuego,
-  DBUsuario,
-  initialPersonajesUsuario,
-} from "@interfaces/dbTypes";
-
-// Funciones
-import { validateNumeric } from "@utils/utilConversions";
-
-// Images
-import mainBackground from "@img/webp/bg-home-02.webp";
 import ScreenLoader from "@UI/ScreenLoader/ScreenLoader";
+
+// Utils
+import { getClassName, getRaceName, getJobName, getKnowledgeName, getMainSkillName, getExtraSkillName, getSkillName } from './utils';
+
+// Constants
+import { CHARACTER_CLASSES, CHARACTER_RACES, CHARACTER_JOBS, CHARACTER_KNOWLEDGE, RING_TYPES } from './constants';
+
+// Icons
 import SvgCharacter from "@Icons/SvgCharacter";
 import SvgSaveCharacter from "@Icons/SvgSaveCharacter";
 import SvgD4Roll from "@Icons/SvgD4Roll";
 import SvgDeleteItem from "@Icons/SvgDeleteItem";
+import { v4 as uuidv4 } from 'uuid';
 
+// Images
+import mainBackground from "@img/webp/bg-home-02.webp";
 
 interface CharacterSheetProps {
   changeBackground: (newBackground: string) => void;
@@ -94,13 +67,40 @@ interface CharacterForm {
   characterDescription: string;
 }
 
-const CharacterSheet: React.FC<CharacterSheetProps> = ({
-  changeBackground,
-}) => {
+const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => {
   const { user, character: initialCharacter } = useLoaderData() as {
     user: DBUsuario;
     character?: DBPersonajesUsuario;
   };
+  const params = useParams();
+  const navigate = useNavigate();
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
+  // Initialize character hook
+  const {
+    character,
+    statsData,
+    skillsAcquired,
+    skillsRingList,
+    inventory,
+    coins,
+    deleteItems,
+    systemGame,
+    loading,
+    newRecord,
+    characterImage,
+    setCharacter,
+    setStatsData,
+    setSkillsAcquired,
+    setSkillsRingList,
+    setInventory,
+    setCoins,
+    setDeleteItems,
+    setSystemGame,
+    initialize,
+    saveCharacter,
+    uploadCharacterImage
+  } = useCharacter(params.id, user?.usu_id);
 
   const defaultValues = useMemo(() => {
     return initialCharacter
@@ -121,620 +121,54 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       : undefined;
   }, [initialCharacter, user]);
 
-  const {
-    register,
-  } = useForm<CharacterForm>({
-    defaultValues: defaultValues,
-  });
+  const { register } = useForm<CharacterForm>({ defaultValues });
 
-  // Varibles - estados
-  const [characterImage, setCharacterImage] = useState<string | undefined>(
-    undefined
-  );
-
-  // Definir el estado para las habilidades
-  const [selectedSkillValue, setSelectedSkillValue] = useState<string>("");
-  const [selectedExtraSkillValue, setSelectedExtraSkillValue] =
-    useState<string>("");
-  const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([
-    { id: "", value: "0", name: "", description: "", ring: "" },
-    { id: "", value: "1", name: "", description: "", ring: "" },
-    { id: "", value: "2", name: "", description: "", ring: "" },
-  ]);
-  const [coins, setCoins] = useState<number[]>([0, 3, 0]);
-
-  const [invObjects, setInvObjects] = useState<InventoryObject[]>([]);
-  const [systemGame, setSystemGame] = useState<DBSistemaJuego>({
-    sju_id: "",
-    sju_nombre: "",
-  });
-  const [skillsRingList, setSkillsRingList] = useState<SkillTypes[]>([
-    { id: "0", skills: [] },
-    { id: "1", skills: [] },
-    { id: "2", skills: [] },
-  ]);
-  const [fieldSkill, setFieldSkill] = useState<SkillFields[]>([
-    { id: "", skill: "", field: "skillClass" },
-    { id: "", skill: "", field: "skillExtra" },
-  ]);
-  const [newObjectName, setNewObjectName] = useState<string>("");
-  const [newObjectDescription, setNewObjectDescription] = useState<string>("");
-  const [newObjectCount, setNewObjectCount] = useState<number>(1);
-  const [SystemGameList, setSystemGameList] = useState<Option[]>([]);
-  const [deleteItems, setDeleteItems] = useState<string[]>([]);
-
-  // Listado del select skillClass
-  const [optionsSkillClass, setOptionsSkillClass] = useState<Option[]>([]);
-  // Listado del select skillExtra
-  const [optionsSkillExtra, setOptionsSkillExtra] = useState<Option[]>([]);
-  // Listado del select skillTypeRing
-  const [skillsTypes, setSkillsTypes] = useState<SkillTypes[]>([]);
-
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [loading, setLoading] = useState<boolean>(true);
-  const [newRecord, setNewRecord] = useState<boolean>(true);
-  const randomValueRefreshImage = Math.random().toString(36).substring(7);
-  const [character, setCharacter] = useState<DBPersonajesUsuario>(
-    initialPersonajesUsuario
-  );
-  const navigate = useNavigate();
-  const params = useParams();
-
-  interface DataCharacter {
-    id: string;
-    player: string;
-    name: string;
-    class: string;
-    race: string;
-    job: string;
-    level: number;
-    luckyPoints: number;
-    description: string;
-    knowledge: string[];
-    str: [{ dice: number; class: number; level: number }];
-    int: [{ dice: number; class: number; level: number }];
-    dex: [{ dice: number; class: number; level: number }];
-    con: [{ dice: number; class: number; level: number }];
-    per: [{ dice: number; class: number; level: number }];
-    cha: [{ dice: number; class: number; level: number }];
-    mainWeapon: string;
-    secondaryWeapon: string;
-    alignment: string;
-    mainSkill: string;
-    extraSkill: string;
-    skills: SkillsAcquired[];
-    coinsInv: number[];
-    inv: InventoryObject[];
-  }
-  const [dataCharacter, setDataCharacter] = useState<DataCharacter>();
-
-  const getInventory = useCallback(async () => {
-    const updatedInvObjects = [...invObjects];
-
-    if (updatedInvObjects.length !== 0) return;
-
-    if (params.id === null || params.id === undefined) {
-      updatedInvObjects.push({
-        id: uuidv4(),
-        name: "Gema",
-        description: "Articulo del elegido",
-        count: 1,
-        readOnly: true,
-      });
-      setInvObjects(updatedInvObjects);
-      return;
-    }
-
-    const data = await getListInp(params.id);
-
-    if (data !== null) {
-      data.forEach((elem) => {
-        updatedInvObjects.push({
-          id: elem.inp_id,
-          name: elem.inp_nombre,
-          description: elem.inp_descripcion,
-          count: elem.inp_cantidad,
-          readOnly: false,
-        });
-      });
-      setInvObjects(updatedInvObjects);
-    }
-  }, [invObjects, params.id]);
-
-  const handleSelectedRingSkillChange = useCallback((
-    id: string,
-    value: string
-  ) => {
-    setSkillsAcquired((prevItems) =>
-      prevItems.map((item) =>
-        item.value === id
-          ? { ...item, name: value }
-          : item
-      )
-    );
-  }, []);
-
-  const handleSelectedTypeRingSkillChange = useCallback(async (
-    id: string,
-    type: string
-  ) => {
-    const updatedSetSkillsRingList = [...skillsRingList];
-    updatedSetSkillsRingList[Number(id)].skills =
-      (skillsTypes.find((option) => option.id === type) || {}).skills || [];
-    setSkillsRingList(updatedSetSkillsRingList);
-  }, [skillsRingList, skillsTypes]);
-
-  const getSkills = useCallback(async () => {
-    if (!params.id) return;
-
-    const data = await getListHad();
-
-    if (data !== null) {
-      const updatedSkills = [...skillsAcquired];
-      const updatedFieldSkill = [...fieldSkill];
-
-      data.forEach((elem) => {
-        const siglas = elem.hab_siglas;
-        if (elem.hab_tipo === "C") {
-          setSelectedSkillValue(siglas);
-          updatedFieldSkill.filter(
-            (skill) => skill.field === "skillClass"
-          )[0].id = siglas;
-          updatedFieldSkill.filter(
-            (skill) => skill.field === "skillClass"
-          )[0].skill = elem.hab_id;
-        } else if (elem.hab_tipo === "E") {
-          setSelectedExtraSkillValue(siglas);
-          updatedFieldSkill.filter(
-            (skill) => skill.field === "skillExtra"
-          )[0].id = siglas;
-          updatedFieldSkill.filter(
-            (skill) => skill.field === "skillExtra"
-          )[0].skill = elem.hab_id;
-        } else if (elem.hab_tipo === "R") {
-          const estadisticaBase = elem.had_estadistica_base;
-
-          const selectTypeRing = document.getElementById(
-            "skillTypeRing" + estadisticaBase
-          ) as HTMLSelectElement;
-          if (selectTypeRing) {
-            selectTypeRing.value = estadisticaBase;
-          }
-
-          handleSelectedTypeRingSkillChange(estadisticaBase, estadisticaBase);
-          updatedSkills[Number(estadisticaBase)] = {
-            id: elem.hab_id,
-            value: estadisticaBase,
-            name: siglas,
-            description: "",
-            ring: estadisticaBase,
-          };
-        }
-      });
-      setSkillsAcquired(updatedSkills);
-      setFieldSkill(updatedFieldSkill);
-    }
-  }, [params.id, skillsAcquired, fieldSkill, handleSelectedTypeRingSkillChange]);
-
-  useEffect(() => {
-    getSkills();
-  }, [getSkills, skillsTypes]);
-
+  // Effects
   useEffect(() => {
     changeBackground(mainBackground);
+    initialize();
+  }, [changeBackground, initialize]);
 
-    const loadInfo = async () => {
-      document.documentElement.scrollTop = 0;
-
-      setNewRecord(params.id === null || params.id === undefined);
-
-      await getListSkill();
-      await getGameSystemList();
-      await getInfoCharacter();
-      await getCharacterImage();
-
-      Promise.all([getStats(), getInventory()]).finally(() => {
-        setLoading(false);
-      });
-    };
-
-    loadInfo();
-  }, [changeBackground, getCharacterImage, getInfoCharacter, getInventory, getStats, params.id]);
-
-  async function getListSkill() {
-    const data: DBHabilidad[] = await getListHad();
-
-    if (data !== null) {
-      const updatedOptionsSkillClass = [];
-      const updatedOptionsSkillExtra = [];
-      const otherSkills: SkillTypes[] = [];
-
-      for (let i = 0; i < data.length; i++) {
-        if (data[i].hab_tipo === "C") {
-          updatedOptionsSkillClass.push({
-            id: data[i].hab_id,
-            value: data[i].hab_siglas,
-            name: data[i].hab_nombre,
-          });
-        } else if (data[i].hab_tipo === "E") {
-          updatedOptionsSkillExtra.push({
-            id: data[i].hab_id,
-            value: data[i].hab_siglas,
-            name: data[i].hab_nombre,
-          });
-        } else if (data[i].hab_tipo === "R") {
-          const countSkill = otherSkills.filter(
-            (option) => option.id === data[i].had_estadistica_base
-          ).length;
-          if (countSkill === 0) {
-            otherSkills.push({
-              id: data[i].had_estadistica_base,
-              skills: [
-                {
-                  id: data[i].hab_id,
-                  value: data[i].hab_siglas,
-                  name: data[i].hab_nombre,
-                },
-              ],
-            });
-          } else {
-            otherSkills
-              .find((option) => option.id === data[i].had_estadistica_base)
-              ?.skills.push({
-                id: data[i].hab_id,
-                value: data[i].hab_siglas,
-                name: data[i].hab_nombre,
-              });
-          }
-        }
-      }
-      setOptionsSkillClass(updatedOptionsSkillClass);
-      setOptionsSkillExtra(updatedOptionsSkillExtra);
-      setSkillsTypes(otherSkills);
-    }
-  }
-
-  async function getGameSystemList() {
-    const data: DBSistemaJuego[] = await getGameSystem();
-    if (data !== null) {
-      const updatedSystemGameList = [];
-      for (let i = 0; i < data.length; i++) {
-        updatedSystemGameList.push({
-          value: data[0].sju_id,
-          name: data[0].sju_nombre,
-        });
-      }
-      setSystemGameList(updatedSystemGameList);
-    }
-  }
-
-  async function getInfoCharacter() {
-    const userId = user.usu_id;
-
-    if (params.id === null || params.id === undefined) {
-      initialPersonajesUsuario.pus_id = uuidv4();
-      initialPersonajesUsuario.pus_usuario = userId;
-      setCharacter(initialPersonajesUsuario);
-      return;
-    }
-
-    const data: DBPersonajesUsuario[] = await getCharacter(params.id);
-
-    if (data !== null) {
-      data[0].pus_usuario = userId;
-      setCharacter(data[0]);
-
-      const updateSystemGame = systemGame;
-      updateSystemGame.sju_id = data[0].sju_sistema_juego.sju_id;
-      updateSystemGame.sju_nombre = data[0].sju_sistema_juego.sju_nombre;
-      setSystemGame(updateSystemGame);
-    }
-  }
-
-  async function getCharacterImage() {
-    if (!user || !params.id) return;
-
-    const url = await getUrlCharacter(user.usu_id, params.id);
-
-    setCharacterImage(url + "?" + randomValueRefreshImage);
-  }
-
-  async function getStats() {
-    if (params.id === null || params.id === undefined) return;
-
-    const data = await getListEpe(params.id);
-
-    if (data !== null) {
-      const updatedInputsStatsData = [...inputsStatsData];
-      for (let i = 0; i < data.length; i++) {
-        updatedInputsStatsData[i].valueDice = data[i].epe_num_dado;
-        updatedInputsStatsData[i].valueClass = data[i].epe_num_clase;
-        updatedInputsStatsData[i].valueLevel = data[i].epe_num_nivel;
-      }
-      setInputsStatsData(updatedInputsStatsData);
-    }
-  }
-
-  useEffect(() => {
-    getInventory();
-  }, [getInventory]);
-
-  const optionsCharacterClass = [
-    { value: "WAR", name: "Guerrero", work: "FOR", mainStat: "STR" },
-    { value: "MAG", name: "Mago", work: "ARC", mainStat: "INT" },
-    { value: "SCO", name: "Explorador", work: "NSC", mainStat: "DEX" },
-    { value: "MED", name: "Médico", work: "BOT", mainStat: "CON" },
-    { value: "RES", name: "Investigador", work: "ALC", mainStat: "PER" },
-    { value: "ACT", name: "Actor", work: "PSY", mainStat: "CHA" },
-  ];
-  const optionsCharacterRace = [
-    { value: "HUM", name: "Humano" },
-    { value: "ELF", name: "Elfo" },
-    { value: "DWA", name: "Enano" },
-    { value: "AAS", name: "Aasimars" },
-    { value: "TIE", name: "Tieflings" },
-  ];
-  const optionsCharacterJob = [
-    { value: "HUN", name: "Cazador", extraPoint: "DEX,PER" },
-    { value: "BLA", name: "Herrero", extraPoint: "STR,DEX" },
-    { value: "ART", name: "Artista", extraPoint: "INT,CHA" },
-    { value: "SAG", name: "Sabio", extraPoint: "INT,PER" },
-    { value: "PRI", name: "Sacerdote", extraPoint: "CON,CHA" },
-    { value: "STR", name: "Estratega", extraPoint: "INT,CON" },
-  ];
-  const checkboxesData = [
-    { id: "KHIS", name: "Historia", value: "HIS" },
-    { id: "KALC", name: "Alquimia", value: "ALC" },
-    { id: "KBOT", name: "Botánica", value: "BOT" },
-    { id: "KOCC", name: "Ocultismo", value: "OCC" },
-    { id: "KCRY", name: "Criptozoología", value: "CRY" },
-    { id: "KFOR", name: "Fortaleza", value: "FOR" },
-    { id: "KMED", name: "Medium", value: "MED" },
-    { id: "KACO", name: "Control Animal", value: "ACO" },
-    { id: "KARC", name: "Arcano", value: "ARC" },
-    { id: "KPSY", name: "Psicología", value: "PSY" },
-    { id: "KNSC", name: "Ciencias Naturales", value: "NSC" },
-    { id: "KAPP", name: "Tasación", value: "APP" },
-  ];
-  const [inputsStatsData, setInputsStatsData] = useState<InputStats[]>([
-    {
-      id: "STR",
-      label: "Fuerza",
-      description:
-        "Su capacidad física excepcional lo distingue como un héroe. Este individuo supera los desafíos con determinación, llevando a cabo hazañas que van más allá de los límites convencionales",
-      valueDice: 0,
-      valueClass: 0,
-      valueLevel: 0,
-    },
-    {
-      id: "INT",
-      label: "Inteligencia",
-      description:
-        "Su capacidad para absorber conocimiento, procesar información y forjar juicios fundamentados. Este individuo enfrenta cada desafío con resolución, una destreza mental que va más allá de la normal",
-      valueDice: 0,
-      valueClass: 0,
-      valueLevel: 0,
-    },
-    {
-      id: "DEX",
-      label: "Destreza",
-      description:
-        "Su capacidad se manifiesta con maestría en diversas actividades, como agilidad, equilibrio, elasticidad, fuerza y coordinación. Este individuo enfrentando desafíos demostrando agilidad en cualquier tarea, se erige como un sello distintivo en todas las actividades emprendidas.",
-      valueDice: 0,
-      valueClass: 0,
-      valueLevel: 0,
-    },
-    {
-      id: "CON",
-      label: "Constitucion",
-      description:
-        "La estructura física, o constitución corporal, se define como el conjunto de características que conforman el cuerpo y que establecen las limitaciones y posibilidades individuales. A través de esta constitución, se revelan las distintivas fortalezas y potenciales, dando forma a las habilidades y oportunidades que definen la singularidad de cada individuo.",
-      valueDice: 0,
-      valueClass: 0,
-      valueLevel: 0,
-    },
-    {
-      id: "PER",
-      label: "Percepcion",
-      description:
-        "Su capacidad para interpretar las sensaciones recibidas a través de los sentidos, dando lugar a una impresión, ya sea consciente o inconsciente, de la realidad física del entorno. Se erige como el faro que guía al héroe a través del tejido de la realidad, revelando sus misterios y desafíos con una claridad incomparable.",
-      valueDice: 0,
-      valueClass: 0,
-      valueLevel: 0,
-    },
-    {
-      id: "CHA",
-      label: "Carisma",
-      description:
-        "Su capacidad se manifiesta como la capacidad natural para cautivar a los demás a través de su presencia, su palabra y su encantadora personalidad. Se convierte en la fuerza que une a las personas, dejando una huella indeleble en cada interacción y dejando una impresión imborrable en quienes se cruzan su camino.",
-      valueDice: 0,
-      valueClass: 0,
-      valueLevel: 0,
-    },
-  ]);
-  const optionsRingTypes = [
-    { id: "STR", name: "Fuerza", stat: "STR" },
-    { id: "INT", name: "Inteligencia", stat: "INT" },
-    { id: "DEX", name: "Destreza", stat: "DEX" },
-    { id: "HEA", name: "Sanidad", stat: "CON" },
-    { id: "CRE", name: "Creación", stat: "PER" },
-    { id: "SUP", name: "Soporte", stat: "CHA" },
-  ];
-  const listWearpons = [
-    "Arco corto",
-    "Arco largo",
-    "Baculo",
-    "Ballesta",
-    "Bastón",
-    "Cuchillo de combate",
-    "Daga",
-    "Espada corta",
-    "Espada larga",
-    "Glaive",
-    "Hacha de mano",
-    "Hacha grande",
-    "Katana",
-    "Kunai",
-    "Lanza",
-    "Mancuernas",
-    "Martillo de guerra",
-    "Pico de curvo",
-    "Pike",
-    "Sable",
-    "Sai",
-    "Shuriken",
-    "Tomfas",
-  ];
-
-  /*const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const { name, value } = e.target;
-      
-      setCharacter(
-         prevState => ({
-            ...prevState!,
-            [name]: value
-         })
-      );
-      
-   };*/
-
-  // Manejar el cambio en la selección
-  const handleSelectRaceChange = (value: string) => {
-    setCharacter((prevState) => ({ ...prevState!, ["pus_raza"]: value }));
-  };
-
-  // Actualizar el systema de juego
-  const handleSystemGameChange = (currentSystem: string = "") => {
-    if (!currentSystem) return;
-    const option = SystemGameList.filter((elem) => elem.value === currentSystem);
-    const updateSystemGame = systemGame;
-    updateSystemGame.sju_id = option[0].value;
-    updateSystemGame.sju_nombre = option[0].name;
-    setSystemGame(updateSystemGame);
-    setCharacter((prevState) => ({
-      ...prevState!,
-      ["pus_sistema_juego"]: currentSystem,
-    }));
-  };
-
-  // Actualizar la habilidad principal del personaje
-  const handleSelectSkillChange = (currentSkill: string) => {
-    const option = optionsSkillClass.filter(
-      (skill) => skill.value === currentSkill
-    );
-    setFieldSkill((prevItems) =>
-      prevItems.map((item) =>
-        item.field === "skillClass"
-          ? { ...item, id: option[0].value, skill: option[0].id || "" }
-          : item
-      )
-    );
-    setSelectedSkillValue(currentSkill);
-  };
-
-  // Actualizar la habilidad extra del personaje
-  const handleSelectExtraSkillChange = (currentSkill: string) => {
-    const option = optionsSkillExtra.filter(
-      (skill) => skill.value === currentSkill
-    );
-    setFieldSkill((prevItems) =>
-      prevItems.map((item) =>
-        item.field === "skillExtra"
-          ? { ...item, id: option[0].value, skill: option[0].id || "" }
-          : item
-      )
-    );
-    setSelectedExtraSkillValue(currentSkill);
-  };
-
-  const setAllValueClassesToZero = () => {
-    setInputsStatsData((prevItems) =>
-      prevItems.map((item) => ({ ...item, valueClass: 0 }))
-    );
-  };
-
-  const updStatsPoints = (selectedClass: string, selectedJob: string): void => {
-    const updatedInputsStatsData = [...inputsStatsData];
-    const extraPoints =
-      optionsCharacterJob.find((option) => option.value === selectedJob)
-        ?.extraPoint || "";
-
-    updatedInputsStatsData[0].valueClass =
-      (selectedClass === "WAR" ? 2 : 0) + (extraPoints.includes("STR") ? 1 : 0);
-    updatedInputsStatsData[1].valueClass =
-      (selectedClass === "MAG" ? 2 : 0) + (extraPoints.includes("INT") ? 1 : 0);
-    updatedInputsStatsData[2].valueClass =
-      (selectedClass === "SCO" ? 2 : 0) + (extraPoints.includes("DEX") ? 1 : 0);
-    updatedInputsStatsData[3].valueClass =
-      (selectedClass === "MED" ? 2 : 0) + (extraPoints.includes("CON") ? 1 : 0);
-    updatedInputsStatsData[4].valueClass =
-      (selectedClass === "RES" ? 2 : 0) + (extraPoints.includes("PER") ? 1 : 0);
-    updatedInputsStatsData[5].valueClass =
-      (selectedClass === "ACT" ? 2 : 0) + (extraPoints.includes("CHA") ? 1 : 0);
-
-    setInputsStatsData(updatedInputsStatsData);
-  };
-
+  // Event Handlers
   const handleCharacterClassChange = (value: string) => {
-    setCharacter((prevState) => ({ ...prevState!, ["pus_clase"]: value }));
+    setCharacter(prev => ({ ...prev, pus_clase: value }));
+    const selectedOption = CHARACTER_CLASSES.find(option => option.value === value);
+    if (selectedOption) {
+      setCharacter(prev => ({ ...prev, pus_conocimientos: selectedOption.work }));
+    }
 
-    // selectedCheckValues - Usar el método find para obtener el objeto con el valor específico
-    const selectedOption = optionsCharacterClass.find(
-      (option) => option.value === value
-    );
-    setCharacter((prevState) => ({
-      ...prevState!,
-      ["pus_conocimientos"]: selectedOption ? selectedOption.work : "",
-    }));
-
-    // inputsStatsData - Poner todos los valores de valueClass en cero
-    setAllValueClassesToZero();
-    updStatsPoints(value, character!.pus_trabajo);
-
-    // skillClass - Llenar el valor de la habilidad principal
-    setSelectedSkillValue("S" + selectedOption?.mainStat);
-    handleSelectSkillChange("S" + selectedOption?.mainStat);
+    // Reset and update stats points based on new class
+    const updatedStats = statsData.map(stat => ({ ...stat, valueClass: 0 }));
+    setStatsData(updatedStats);
+    updateStatsPoints(value, character.pus_trabajo);
   };
 
-  // Manejar el cambio en la selección characterJob
   const handleCharacterJobSelectChange = (value: string) => {
-    setCharacter((prevState) => ({ ...prevState!, ["pus_trabajo"]: value }));
-    updStatsPoints(character!.pus_clase, value);
+    setCharacter(prev => ({ ...prev, pus_trabajo: value }));
+    updateStatsPoints(character.pus_clase, value);
   };
 
-  // Manejar el cambio de la URL de la imagen en characterImage
   const handleCharacterImageFileChange = async (value: string, file: File) => {
-    if (!user || !params.id) return;
-
-    const { path, error } = await addStorageCharacter(
-      user.usu_id,
-      params.id,
-      file
-    );
-
-    if (error) alert(error);
-
-    if (path) setCharacterImage(value);
+    const result = await uploadCharacterImage(file);
+    if (!result?.error) {
+      setCharacterImage(value);
+    }
   };
 
   const handleSelectedCheckValuesChange = (newValues: string[]) => {
-    setCharacter((prevState) => ({
-      ...prevState!,
-      ["pus_conocimientos"]: newValues.join(","),
-    }));
+    setCharacter(prev => ({ ...prev, pus_conocimientos: newValues.join(",") }));
   };
 
   const handleStatsInputChange = (newInputStats: InputStats) => {
-    setInputsStatsData((prevItems) =>
-      prevItems.map((item) =>
-        item.id === newInputStats.id ? { ...item, item: newInputStats } : item
+    setStatsData(prevItems =>
+      prevItems.map(item =>
+        item.id === newInputStats.id ? { ...item, ...newInputStats } : item
       )
     );
   };
 
   const handleAlignmentChange = (value: string) => {
-    setCharacter((prevState) => ({ ...prevState!, ["pus_alineacion"]: value }));
-
+    setCharacter(prev => ({ ...prev, pus_alineacion: value }));
     const formElement = document.getElementById("form-sheet");
     if (value === "O") {
       formElement?.classList.add("orden");
@@ -755,328 +189,71 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     setCoins(updatedCoins);
   };
 
-  const handleAddObject = () => {
-    if (!newObjectName || newObjectName === "") {
+  const handleAddObject = (name: string, description: string, count: number) => {
+    if (!name) {
       alert("Por favor digitar este campo");
       document.getElementById("objectName")?.focus();
       return;
     }
 
-    const newObject: InventoryObject = {
+    const newObject = {
       id: uuidv4(),
-      name: newObjectName,
-      description: newObjectDescription || "Descripción del nuevo objeto",
-      count: newObjectCount,
+      name,
+      description: description || "Descripción del nuevo objeto",
+      count,
       readOnly: false,
     };
 
-    setInvObjects((prev) => [...prev, newObject]);
-    setNewObjectName("");
-    setNewObjectDescription("");
-    setNewObjectCount(1);
+    setInventory(prev => [...prev, newObject]);
   };
 
-  async function handleDeleteObject(id: string) {
-    setInvObjects((prevObjects) => prevObjects.filter((obj) => obj.id !== id));
-    const updatedDeleteItems = [...deleteItems];
-    updatedDeleteItems.push(id);
-    setDeleteItems(updatedDeleteItems);
-  }
+  const handleDeleteObject = (id: string) => {
+    setInventory(prev => prev.filter(obj => obj.id !== id));
+    setDeleteItems(prev => [...prev, id]);
+  };
 
   const handleEditCount = (id: string, newCount: string) => {
     const numericValue = validateNumeric(newCount, 1);
-    setInvObjects((prevObjects) =>
-      prevObjects.map((obj) =>
+    setInventory(prevObjects =>
+      prevObjects.map(obj =>
         obj.id === id ? { ...obj, count: numericValue } : obj
       )
     );
   };
 
-  const handleNewCount = (value: string) => {
-    const numericValue = validateNumeric(value, 1);
-    setNewObjectCount(numericValue);
-  };
-
-  const handleOpenModal = () => {
-    // Obtener todos los elementos con el atributo required
-    const requiredElements = Array.from(
-      document.querySelectorAll("[required]")
-    ) as HTMLInputElement[];
-    let hayCamposVacios = false;
-    const fieldsRequired: string[] = [];
-
-    // Iterar sobre los elementos y verificar si están vacíos
-    for (let i = 0; i < requiredElements.length; i++) {
-      if (requiredElements[i].value.trim() === "") {
-        hayCamposVacios = true;
-        requiredElements[i].classList.add("required-input");
-        fieldsRequired.push(requiredElements[i].id);
-      } else {
-        requiredElements[i].classList.remove("required-input");
-      }
+  const handleSaveCharacter = async () => {
+    const characterId = await saveCharacter();
+    if (characterId) {
+      document.documentElement.scrollTop = 0;
+      navigate("/CharacterSheet/" + characterId);
     }
-
-    // Si hay campos vacíos, no enviar el formulario
-    if (hayCamposVacios) {
-      alert("Por favor, digite todos los campos obligatorios.");
-      return;
-    }
-
-    const newCharacter: DataCharacter = {
-      id: character!.pus_id,
-      player: character!.pus_usuario,
-      name: character!.pus_nombre,
-      class: character!.pus_clase,
-      race: character!.pus_raza,
-      job: character!.pus_trabajo,
-      level: character!.pus_nivel,
-      luckyPoints: character!.pus_puntos_suerte,
-      description: character!.pus_descripcion,
-      knowledge: character!.pus_conocimientos.split(","),
-      str: [
-        {
-          dice: inputsStatsData[0].valueDice,
-          class: inputsStatsData[0].valueClass,
-          level: inputsStatsData[0].valueLevel,
-        },
-      ],
-      int: [
-        {
-          dice: inputsStatsData[1].valueDice,
-          class: inputsStatsData[1].valueClass,
-          level: inputsStatsData[1].valueLevel,
-        },
-      ],
-      dex: [
-        {
-          dice: inputsStatsData[2].valueDice,
-          class: inputsStatsData[2].valueClass,
-          level: inputsStatsData[2].valueLevel,
-        },
-      ],
-      con: [
-        {
-          dice: inputsStatsData[3].valueDice,
-          class: inputsStatsData[3].valueClass,
-          level: inputsStatsData[3].valueLevel,
-        },
-      ],
-      per: [
-        {
-          dice: inputsStatsData[4].valueDice,
-          class: inputsStatsData[4].valueClass,
-          level: inputsStatsData[4].valueLevel,
-        },
-      ],
-      cha: [
-        {
-          dice: inputsStatsData[5].valueDice,
-          class: inputsStatsData[5].valueClass,
-          level: inputsStatsData[5].valueLevel,
-        },
-      ],
-      mainWeapon: character!.pus_arma_principal,
-      secondaryWeapon: character!.pus_arma_secundaria,
-      alignment: character!.pus_alineacion,
-      mainSkill: selectedSkillValue,
-      extraSkill: selectedExtraSkillValue,
-      skills: skillsAcquired,
-      coinsInv: coins,
-      inv: invObjects,
-    };
-
-    setDataCharacter(newCharacter);
-    onOpen();
   };
 
-  const randomRoll = () => {
-    if (character!.pus_nivel > 1) return;
-
-    const updatedInputsStatsData = [...inputsStatsData];
-    let randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[0].valueDice = randomNumber;
-    randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[1].valueDice = randomNumber;
-    randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[2].valueDice = randomNumber;
-    randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[3].valueDice = randomNumber;
-    randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[4].valueDice = randomNumber;
-    randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[5].valueDice = randomNumber;
-
-    setInputsStatsData(updatedInputsStatsData);
-    return;
+  // Helper Methods
+  const validateNumeric = (value: string, min: number = 0): number => {
+    const num = parseInt(value);
+    return isNaN(num) ? min : Math.max(min, num);
   };
 
-  const getClassName = (id: string | undefined): string | undefined => {
-    return optionsCharacterClass.find((elem) => elem.value === id)?.name;
-  };
-
-  const getRaceName = (id: string | undefined): string | undefined => {
-    return optionsCharacterRace.find((elem) => elem.value === id)?.name;
-  };
-
-  const getJobName = (id: string | undefined): string | undefined => {
-    return optionsCharacterJob.find((elem) => elem.value === id)?.name;
-  };
-
-  const getKnowledgeName = (ids: string[] | undefined): string | undefined => {
-    let names = "";
-    if (ids === undefined) return names;
-    ids.forEach((know) => {
-      names += checkboxesData.find((elem) => elem.value === know)?.name + ", ";
+  const updateStatsPoints = (selectedClass: string, selectedJob: string): void => {
+    const extraPoints = CHARACTER_JOBS.find(option => option.value === selectedJob)?.extraPoint || "";
+    const updatedStats = statsData.map(stat => {
+      const isMainStat = 
+        (stat.id === "STR" && selectedClass === "WAR") ||
+        (stat.id === "INT" && selectedClass === "MAG") ||
+        (stat.id === "DEX" && selectedClass === "SCO") ||
+        (stat.id === "CON" && selectedClass === "MED") ||
+        (stat.id === "PER" && selectedClass === "RES") ||
+        (stat.id === "CHA" && selectedClass === "ACT");
+      
+      return {
+        ...stat,
+        valueClass: (isMainStat ? 2 : 0) + (extraPoints.includes(stat.id) ? 1 : 0)
+      };
     });
-    names = names.length > 2 ? names.substring(0, names.length - 2) : names;
-
-    return names;
+    
+    setStatsData(updatedStats);
   };
-
-  const getMainSkillName = (id: string | undefined): string | undefined => {
-    return optionsSkillClass.find((elem) => elem.value === id)?.name;
-  };
-
-  const getExtraSkillName = (id: string | undefined): string | undefined => {
-    return optionsSkillExtra.find((elem) => elem.value === id)?.name;
-  };
-
-  const getSkillName = (id: string, stat: string): string | undefined => {
-    return skillsTypes
-      .find((skill) => skill.id === stat)
-      ?.skills.find((ele) => ele.value === id)?.name;
-  };
-
-  async function saveData() {
-    const ID_CHARACTER: string =
-      (await Promise.resolve(uploadInfoCharacter(newRecord))) || "";
-
-    Promise.all([
-      uploadStats(newRecord, ID_CHARACTER),
-      uploadSkill(ID_CHARACTER),
-      uploadInventory(ID_CHARACTER),
-    ]).finally(() => {
-      setNewRecord(false);
-    });
-
-    document.documentElement.scrollTop = 0;
-    onOpenChange();
-    reloadPage(ID_CHARACTER);
-  }
-
-  const reloadPage = (characterId: string) => {
-    navigate("/CharacterSheet/" + characterId);
-  };
-
-  async function uploadInfoCharacter(newRecord: boolean) {
-    if (!character) return;
-
-    let data: DBPersonajesUsuario;
-
-    if (!newRecord) {
-      data = await updatePus(character);
-
-      if (data !== null) return data.pus_id;
-    } else {
-      data = await insertPus(character);
-
-      if (data !== null) return data.pus_id;
-    }
-  }
-
-  async function uploadStats(isNewCharacter: boolean, characterId: string) {
-    if (characterId === "") return;
-
-    if (!isNewCharacter) {
-      for (const element of inputsStatsData) {
-        const record: DBEstadisticaPersonaje = {
-          epe_usuario: user.usu_id || "",
-          epe_personaje: characterId,
-          epe_sigla: element?.id,
-          epe_nombre: element?.label,
-          epe_num_dado: element?.valueDice,
-          epe_num_clase: element?.valueClass,
-          epe_num_nivel: element?.valueLevel,
-        };
-        updateEpe(record);
-      }
-    } else {
-      const saveStats: DBEstadisticaPersonaje[] = [];
-      for (const element of inputsStatsData) {
-        saveStats.push({
-          epe_usuario: user.usu_id || "",
-          epe_personaje: characterId,
-          epe_sigla: element?.id,
-          epe_nombre: element?.label,
-          epe_num_dado: element?.valueDice,
-          epe_num_clase: element?.valueClass,
-          epe_num_nivel: element?.valueLevel,
-        });
-      }
-      insertDataEpe(saveStats);
-    }
-  }
-
-  async function uploadSkill(characterId: string) {
-    if (characterId === "") return;
-
-    const saveSkill: DBHabilidadPersonaje[] = [];
-    saveSkill.push({
-      hpe_habilidad: fieldSkill.filter(
-        (skill) => skill.field === "skillClass"
-      )[0].skill,
-      hpe_usuario: user.usu_id || "",
-      hpe_personaje: characterId,
-      hpe_campo: "skillClass",
-      hpe_alineacion: null,
-      hab_habilidad: null,
-    });
-    saveSkill.push({
-      hpe_habilidad: fieldSkill.filter(
-        (skill) => skill.field === "skillExtra"
-      )[0].skill,
-      hpe_usuario: user.usu_id || "",
-      hpe_personaje: characterId,
-      hpe_campo: "skillExtra",
-      hpe_alineacion: null,
-      hab_habilidad: null,
-    });
-
-    for (let index = 0; index < skillsAcquired.length; index++) {
-      if (skillsAcquired[index].id === "") continue;
-      saveSkill.push({
-        hpe_habilidad: skillsAcquired[index].id,
-        hpe_usuario: user.usu_id || "",
-        hpe_personaje: characterId,
-        hpe_campo: "skillRing" + skillsAcquired[index].value,
-        hpe_alineacion: null,
-        hab_habilidad: null,
-      });
-    }
-
-    upsertDataHpe(saveSkill);
-  }
-
-  async function uploadInventory(characterId: string) {
-    if (characterId === "") return;
-
-    const saveItems: DBInventarioPersonaje[] = [];
-    for (let index = 0; index < invObjects.length; index++) {
-      saveItems.push({
-        inp_usuario: user.usu_id,
-        inp_personaje: characterId,
-        inp_id: invObjects[index].id,
-        inp_nombre: invObjects[index].name,
-        inp_descripcion: invObjects[index].description,
-        inp_cantidad: invObjects[index].count,
-      });
-    }
-
-    upsertDataInp(saveItems);
-
-    // Eliminar objeto db
-    deleteItemInventory(deleteItems);
-  }
 
   return (
     <>
@@ -1697,7 +874,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                   </Button>
                   <Button
                     className="btn-dialog-accept"
-                    onClick={() => saveData()}
+                    onClick={() => handleSaveCharacter()}
                     id="btnSaveData"
                   >
                     <span>Guardar información</span>

@@ -1,0 +1,108 @@
+/* Form Base Styles */
+.fieldset-form {
+  @apply p-4 relative border border-gray-200 rounded-lg;
+}
+
+.fieldset-form legend {
+  @apply px-2 font-semibold text-gray-700;
+}
+
+.form-lbl {
+  @apply block text-sm font-medium text-gray-700 mb-1;
+}
+
+.form-input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500;
+}
+
+/* Stats Component */
+.stats-player .stat-row {
+  @apply grid grid-cols-4 gap-2 mb-4;
+}
+
+.stats-main {
+  @apply w-full text-center px-2 py-1 border border-blue-500 rounded-md;
+}
+
+.stats-sub {
+  @apply w-full text-center px-2 py-1 border border-gray-300 rounded-md;
+}
+
+.stats-sub-end {
+  @apply w-full text-center px-2 py-1 border border-gray-300 rounded-md;
+}
+
+/* Inventory Component */
+.inventory-player .coins-section {
+  @apply mb-6;
+}
+
+.form-lbl-coins {
+  @apply text-xs font-medium text-gray-600;
+}
+
+.form-input-count {
+  @apply w-16 text-center px-2 py-1 border border-gray-300 rounded-md ml-2;
+}
+
+.object-item {
+  @apply flex items-center justify-between p-2 mb-2 bg-gray-50 rounded-md;
+}
+
+.btn-add-object {
+  @apply w-full px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors;
+}
+
+.btn-delete-object {
+  @apply p-1 text-red-500 hover:text-red-700 transition-colors;
+}
+
+/* Skills Component */
+.skills-player .alignment-section {
+  @apply mb-6;
+}
+
+.form-lbl-skills {
+  @apply text-sm font-medium text-gray-700;
+}
+
+.skill-row {
+  @apply grid grid-cols-2 gap-4 mb-4;
+}
+
+/* Profile Component */
+.info-player .basic-info {
+  @apply grid grid-cols-1 md:grid-cols-4 gap-4;
+}
+
+.character-image {
+  @apply w-full h-48 object-cover rounded-lg shadow-md;
+}
+
+.knowledge-grid {
+  @apply grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2;
+}
+
+/* Weapons Component */
+.initial-armament .weapon-input {
+  @apply mb-4;
+}
+
+.skills-select {
+  @apply w-full;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .basic-info {
+    @apply grid-cols-1;
+  }
+  
+  .knowledge-grid {
+    @apply grid-cols-2;
+  }
+  
+  .skill-row {
+    @apply grid-cols-1;
+  }
+}

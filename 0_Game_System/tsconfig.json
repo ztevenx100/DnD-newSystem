@@ -32,6 +32,8 @@
       "@UI*": ["./src/components/UI/*"],
       "@Icons*": ["./src/components/UI/Icons/*"],
       "@utils*": ["./src/components/utils/*"],
+      "@core*": ["./src/core/*"],
+      "@features*": ["./src/features/*"]
     }
   },
   "include": ["src"],

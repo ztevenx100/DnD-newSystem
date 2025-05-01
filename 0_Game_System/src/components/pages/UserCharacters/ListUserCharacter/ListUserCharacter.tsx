@@ -1,44 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { Listbox, ListboxItem, Avatar, Chip, Button } from "@nextui-org/react";
 
-import {
-  deleteCharacter,
-  getlistCharacters,
-} from "@services/UserCharactersServices";
-import { getUrlCharacter } from "@services/database/dbStorage";
+// Services
+import { characterService } from "@features/characters";
 
-// Interfaces
-import { DBPersonajesUsuario, DBUsuario } from "@interfaces/dbTypes";
+// Types
+import { DBPersonajesUsuario, DBUsuario } from "@core/types";
 
-// Images
+// Icons
 import SvgDeleteItem from "@Icons/SvgDeleteItem";
 
 interface ListUserCharacterProps {
   user: DBUsuario;
-}
-
-async function getUrlImage(character: DBPersonajesUsuario) {
-  const url = await getUrlCharacter(character.pus_usuario, character.pus_id);
-
-  return url + "?" + Math.random().toString(36).substring(7);
-}
-
-async function getList(user: string) {
-  if (user === "" || user === null) return;
-
-  const data: DBPersonajesUsuario[] = await getlistCharacters(user);
-
-  if (data !== null && data.length > 0) {
-    await Promise.all(
-      data.map(async (elem) => {
-        elem.url_character_image = await getUrlImage(elem);
-      })
-    );
-
-    return data;
-  }
 }
 
 const ListUserCharacter: React.FC<ListUserCharacterProps> = ({ user }) => {
@@ -46,20 +20,20 @@ const ListUserCharacter: React.FC<ListUserCharacterProps> = ({ user }) => {
   const [list, setList] = useState<DBPersonajesUsuario[]>([]);
 
   useEffect(() => {
-    getList(user.usu_id).then((listData) => {
-      setList(listData ?? []);
-    });
-  }, [user]);
+    const loadCharacters = async () => {
+      if (!user.usu_id) return;
+      const listData = await characterService.getCharactersList(user.usu_id);
+      setList(listData);
+    };
+
+    loadCharacters();
+  }, [user.usu_id]);
 
   async function handleDeleteCharacter(id: string) {
-    if (!confirm("¿Seguro de que desea eliminar el personaje?")) return;
-
-    if (id === null || id === "") return;
-
-    // Eliminar objeto db
-    await deleteCharacter(id);
-
-    setList((prevObjects) => prevObjects.filter((obj) => obj.pus_id !== id));
+    if (!window.confirm("¿Está seguro de eliminar este personaje?")) return;
+    
+    await characterService.deleteCharacter(id);
+    setList(prevList => prevList.filter(elem => elem.pus_id !== id));
   }
 
   return (
@@ -91,17 +65,23 @@ const ListUserCharacter: React.FC<ListUserCharacterProps> = ({ user }) => {
                   />
                 </header>
                 <div className="character-info flex-1 min-w-0">
-                  <h3 className="text-xl font-semibold text-gray-800 truncate">{elem.pus_nombre}</h3>
-                  <p className="text-base text-gray-600 mb-2">{elem.sju_sistema_juego.sju_nombre}</p>
+                  <h3 className="text-xl font-semibold text-gray-800 truncate">
+                    {elem.pus_nombre}
+                  </h3>
+                  <p className="text-base text-gray-600 mb-2">
+                    {elem.sju_sistema_juego.sju_nombre}
+                  </p>
                   {elem.pus_descripcion && (
-                    <p className="text-sm text-gray-500 line-clamp-2">{elem.pus_descripcion}</p>
+                    <p className="text-sm text-gray-500 line-clamp-2">
+                      {elem.pus_descripcion}
+                    </p>
                   )}
                 </div>
                 <div className="flex flex-col items-end space-y-2">
-                  <Chip 
+                  <Chip
                     size="lg"
-                    radius="full" 
-                    classNames={{ 
+                    radius="full"
+                    classNames={{
                       base: "lbl-level",
                       content: "font-semibold text-base"
                     }}

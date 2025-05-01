@@ -29,6 +29,7 @@ export default defineConfig({
       "@database": `${path.resolve(__dirname, "./src/services/database/")}`,
       "@interfaces": `${path.resolve(__dirname, "./src/components/interfaces/")}`,
       "@utils": `${path.resolve(__dirname, "./src/components/utils/")}`,
+      "@features": `${path.resolve(__dirname, "./src/features/")}`,
     },
   },
 })

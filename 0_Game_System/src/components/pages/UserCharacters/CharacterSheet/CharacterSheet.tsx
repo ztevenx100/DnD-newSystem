@@ -79,6 +79,17 @@ const optionsCharacterJob: CharacterJobOption[] = CHARACTER_JOBS.map(job => ({ v
 const checkboxesData = CHARACTER_KNOWLEDGE.map(knowledge => ({ id: knowledge.value, value: knowledge.value, name: knowledge.name }));
 const optionsRingTypes: RingTypeOption[] = RING_TYPES.map(ring => ({ id: ring.id, name: ring.name, stat: ring.stat })); // Ensure all needed fields are mapped
 
+const weaponsList = [
+  "Espada",
+  "Hacha",
+  "Arco",
+  "Daga",
+  "Maza",
+  "Lanza",
+  "Escudo",
+  "Ballesta"
+];
+
 const CharacterSheet = ({ changeBackground }: CharacterSheetProps) => {
   const { user, character: initialCharacter } = useLoaderData() as {
     user: DBUsuario;
@@ -88,7 +99,7 @@ const CharacterSheet = ({ changeBackground }: CharacterSheetProps) => {
   const navigate = useNavigate();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [characterImage, setCharacterImage] = useState<string>("");
-  const [dataCharacter, setDataCharacter] = useState<DataCharacter | null>(null);
+  const [dataCharacter] = useState<DataCharacter | null>(null);
 
   // Initialize character hook
   const {
@@ -280,12 +291,10 @@ const CharacterSheet = ({ changeBackground }: CharacterSheetProps) => {
     }
   };
 
-  const handleCharacterImageFileChange = (value: string, file: File) => {
+  const handleCharacterImageFileChange = (_value: string, file: File) => {
     if (file && character) {
-      // Eliminamos el segundo argumento ya que uploadCharacterImage solo espera el archivo
       uploadCharacterImage(file)
         .then(result => {
-          // Verificamos si hay un URL en el resultado y lo asignamos a characterImage
           if (!result.error && result.url) {
             setCharacterImage(result.url);
           } else {
@@ -338,12 +347,11 @@ const CharacterSheet = ({ changeBackground }: CharacterSheetProps) => {
   const [newObjectCount, setNewObjectCount] = useState("1");
   const [newObjectDescription, setNewObjectDescription] = useState("");
   const [invObjects, setInvObjects] = useState<InventoryObject[]>([]);
-  const [listWearpons, setListWearpons] = useState<string[]>([]);
-  const [optionsSkillClass, setOptionsSkillClass] = useState<any[]>([]);
-  const [optionsSkillExtra, setOptionsSkillExtra] = useState<any[]>([]);
+  const [optionsSkillClass] = useState<any[]>([]);
+  const [optionsSkillExtra] = useState<any[]>([]);
   const [selectedSkillValue, setSelectedSkillValue] = useState("");
   const [selectedExtraSkillValue, setSelectedExtraSkillValue] = useState("");
-  const [inputsStatsData, setInputsStatsData] = useState<any[]>([]);
+  const [inputsStatsData] = useState<any[]>([]);
 
   const handleNewCount = (value: string) => {
     setNewObjectCount(value);
@@ -646,9 +654,9 @@ const CharacterSheet = ({ changeBackground }: CharacterSheetProps) => {
             list="wearons"
           />
           <datalist id="wearons">
-            {listWearpons?.map((elem, index) => (
-              <option key={index} value={elem}>
-                {elem}
+            {weaponsList.map((weapon, index) => (
+              <option key={index} value={weapon}>
+                {weapon}
               </option>
             ))}
           </datalist>
@@ -676,7 +684,7 @@ const CharacterSheet = ({ changeBackground }: CharacterSheetProps) => {
           <FormSelectInfoPlayer
             id="skillExtra"
             label="Habilidad extra"
-            options={optionsSkillExtra} // Assuming optionsSkillExtra is defined elsewhere or needs similar treatment
+            options={optionsSkillExtra}
             selectedValue={selectedExtraSkillValue}
             onSelectChange={handleSelectExtraSkillChange}
           ></FormSelectInfoPlayer>

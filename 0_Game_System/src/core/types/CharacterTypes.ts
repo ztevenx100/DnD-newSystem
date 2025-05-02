@@ -3,6 +3,7 @@ import { InputStats, InventoryObject } from '../../components/pages/UserCharacte
 export interface DBPersonajesUsuario {
     pus_id: string;
     pus_usuario: string;
+    usu_usuario?: { usu_id: string; usu_nombre: string };
     pus_nombre: string;
     pus_nivel: number;
     pus_clase: string;
@@ -19,10 +20,12 @@ export interface DBPersonajesUsuario {
     pus_vida: number;
     pus_alineacion: string;
     pus_sistema_juego: string | null;
+    sju_sistema_juego?: { sju_id: string; sju_nombre: string };
     url_character_image?: string;
     stats?: InputStats[];
     skills?: any[];
     skillsRing?: any[];
     inventory?: InventoryObject[];
     systemGame?: { sju_id: string; sju_nombre: string };
+    deleteItems?: string[];
 }

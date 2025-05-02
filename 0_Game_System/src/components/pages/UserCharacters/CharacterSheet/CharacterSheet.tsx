@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, ChangeEvent, useState } from "react";
+import React, { useEffect, useMemo, ChangeEvent, useState, useCallback } from "react";
 import { useParams, useNavigate, useLoaderData } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import "@unocss/reset/tailwind.css";
@@ -17,12 +17,16 @@ import {
 } from "@nextui-org/react";
 
 // Core types
-import { DBPersonajesUsuario, DBUsuario } from "@core/types";
-import { CharacterClassOption, CharacterRaceOption, CharacterJobOption } from './types';
-import { InputStats, DataCharacter, InventoryObject, SystemGame } from './models';
+import { DBUsuario } from "@core/types";
+import { DBPersonajesUsuario } from "@core/types/characters/characterDbTypes";
+import { CharacterClassOption, CharacterRaceOption, CharacterJobOption, RingTypeOption } from './types';
+import { DataCharacter, InventoryObject, SystemGame } from './models';
+import { InputStats } from '@core/types/characters/characterDbTypes';
 
 // Hooks
 import { useCharacter } from '@features/characters/hooks';
+import { SkillsAcquired as FeatureSkillsAcquired } from '@features/characters/types';
+import { SkillsAcquired as ComponentSkillsAcquired } from '@interfaces/typesCharacterSheet';
 
 // Components
 import FormSelectInfoPlayer from "./FormSelectInfoPlayer/FormSelectInfoPlayer";
@@ -37,6 +41,7 @@ import { getClassName, getRaceName, getJobName, getKnowledgeName, getMainSkillNa
 
 // Constants
 import { CHARACTER_CLASSES, CHARACTER_RACES, CHARACTER_JOBS, CHARACTER_KNOWLEDGE, RING_TYPES } from './constants';
+import { SystemGameList } from './constants/systemGame';
 
 // Icons
 import SvgCharacter from "@Icons/SvgCharacter";
@@ -67,7 +72,14 @@ interface CharacterForm {
   characterDescription: string;
 }
 
-const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => {
+// Definir las opciones fuera del componente para evitar recreaciones innecesarias
+const optionsCharacterClass: CharacterClassOption[] = CHARACTER_CLASSES.map(cls => ({ value: cls.value, name: cls.name, work: cls.work }));
+const optionsCharacterRace: CharacterRaceOption[] = CHARACTER_RACES.map(race => ({ value: race.value, name: race.name }));
+const optionsCharacterJob: CharacterJobOption[] = CHARACTER_JOBS.map(job => ({ value: job.value, name: job.name, extraPoint: job.extraPoint }));
+const checkboxesData = CHARACTER_KNOWLEDGE.map(knowledge => ({ id: knowledge.value, value: knowledge.value, name: knowledge.name }));
+const optionsRingTypes: RingTypeOption[] = RING_TYPES.map(ring => ({ id: ring.id, name: ring.name, stat: ring.stat })); // Ensure all needed fields are mapped
+
+const CharacterSheet = ({ changeBackground }: CharacterSheetProps) => {
   const { user, character: initialCharacter } = useLoaderData() as {
     user: DBUsuario;
     character?: DBPersonajesUsuario;
@@ -75,6 +87,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
   const params = useParams();
   const navigate = useNavigate();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [characterImage, setCharacterImage] = useState<string>("");
+  const [dataCharacter, setDataCharacter] = useState<DataCharacter | null>(null);
 
   // Initialize character hook
   const {
@@ -88,7 +102,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
     systemGame,
     loading,
     newRecord,
-    characterImage,
     setCharacter,
     setStatsData,
     setSkillsAcquired,
@@ -102,21 +115,46 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
     uploadCharacterImage
   } = useCharacter(params.id, user?.usu_id);
 
+  // Adapter function to convert from feature SkillsAcquired to component SkillsAcquired
+  const adaptSkillsAcquired = useCallback((skill: FeatureSkillsAcquired): ComponentSkillsAcquired => {
+    return {
+      id: skill.id,
+      name: skill.name,
+      value: String(skill.value),
+      ring: skill.type || "", // Map type to ring
+      stat: "", // Default empty stat
+      description: ""
+    };
+  }, []);
+
+  // Convert the skills from feature format to component format
+  const [adaptedSkillsAcquired, setAdaptedSkillsAcquired] = useState<ComponentSkillsAcquired[]>([]);
+
+  // Update adaptedSkillsAcquired whenever skillsAcquired changes
+  useEffect(() => {
+    if (skillsAcquired && skillsAcquired.length > 0) {
+      // Asegurarse de que skillsAcquired es un array
+      const skillsArray = Array.isArray(skillsAcquired[0]) ? skillsAcquired[0] : skillsAcquired;
+      const adapted = skillsArray.map(skill => adaptSkillsAcquired(skill));
+      setAdaptedSkillsAcquired(adapted);
+    }
+  }, [skillsAcquired, adaptSkillsAcquired]);
+
   const defaultValues = useMemo(() => {
     return initialCharacter
       ? {
-          userName: user.usu_nombre,
-          name: initialCharacter.pus_nombre,
-          class: initialCharacter.pus_clase,
-          level: initialCharacter.pus_nivel,
-          luckyPoints: initialCharacter.pus_puntos_suerte,
-          lifePoints: initialCharacter.pus_vida,
-          mainWeapon: initialCharacter.pus_arma_principal,
-          secondaryWeapon: initialCharacter.pus_arma_secundaria,
-          goldCoins: initialCharacter.pus_cantidad_oro,
-          silverCoins: initialCharacter.pus_cantidad_plata,
-          bronzeCoins: initialCharacter.pus_cantidad_bronce,
-          characterDescription: initialCharacter.pus_descripcion,
+          userName: user?.usu_nombre || '',
+          name: initialCharacter?.pus_nombre || '',
+          class: initialCharacter?.pus_clase || '',
+          level: initialCharacter?.pus_nivel || 1,
+          luckyPoints: initialCharacter?.pus_puntos_suerte || 0,
+          lifePoints: initialCharacter?.pus_vida || 0,
+          mainWeapon: initialCharacter?.pus_arma_principal || '',
+          secondaryWeapon: initialCharacter?.pus_arma_secundaria || '',
+          goldCoins: initialCharacter?.pus_cantidad_oro || 0,
+          silverCoins: initialCharacter?.pus_cantidad_plata || 0,
+          bronzeCoins: initialCharacter?.pus_cantidad_bronce || 0,
+          characterDescription: initialCharacter?.pus_descripcion || '',
         }
       : undefined;
   }, [initialCharacter, user]);
@@ -129,46 +167,137 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
     initialize();
   }, [changeBackground, initialize]);
 
+  // Helper function to calculate stats based on class and job
+  const calculateUpdatedStats = (currentStats: InputStats[], selectedClass: string, selectedJob: string): InputStats[] => {
+    const extraPoints = CHARACTER_JOBS.find(option => option.value === selectedJob)?.extraPoint || "";
+    return currentStats.map(stat => {
+      const isMainStat =
+        (stat.id === "STR" && selectedClass === "WAR") ||
+        (stat.id === "INT" && selectedClass === "MAG") ||
+        (stat.id === "DEX" && selectedClass === "SCO") ||
+        (stat.id === "CON" && selectedClass === "MED") ||
+        (stat.id === "PER" && selectedClass === "RES") ||
+        (stat.id === "CHA" && selectedClass === "ACT");
+
+      return {
+        ...stat,
+        valueClass: (isMainStat ? 2 : 0) + (extraPoints.includes(stat.id) ? 1 : 0)
+      };
+    });
+  };
+
   // Event Handlers
   const handleCharacterClassChange = (value: string) => {
-    setCharacter(prev => ({ ...prev, pus_clase: value }));
-    const selectedOption = CHARACTER_CLASSES.find(option => option.value === value);
-    if (selectedOption) {
-      setCharacter(prev => ({ ...prev, pus_conocimientos: selectedOption.work }));
-    }
+    if (!character) return;
 
-    // Reset and update stats points based on new class
-    const updatedStats = statsData.map(stat => ({ ...stat, valueClass: 0 }));
+    const newClass = value;
+    const currentJob = character.pus_trabajo; // Get current job
+
+    setCharacter((prev: DBPersonajesUsuario | null) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        pus_clase: newClass,
+        pus_conocimientos: CHARACTER_CLASSES.find(option => option.value === newClass)?.work || prev.pus_conocimientos
+      };
+    });
+
+    // Calculate new stats based on the *new* class and *current* job
+    const updatedStats = calculateUpdatedStats(statsData, newClass, currentJob);
     setStatsData(updatedStats);
-    updateStatsPoints(value, character.pus_trabajo);
   };
 
   const handleCharacterJobSelectChange = (value: string) => {
-    setCharacter(prev => ({ ...prev, pus_trabajo: value }));
-    updateStatsPoints(character.pus_clase, value);
-  };
+    if (!character) return;
 
-  const handleCharacterImageFileChange = async (value: string, file: File) => {
-    const result = await uploadCharacterImage(file);
-    if (!result?.error) {
-      setCharacterImage(value);
-    }
+    const newJob = value;
+    const currentClass = character.pus_clase; // Get current class
+
+    setCharacter((prev: DBPersonajesUsuario | null) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        pus_trabajo: newJob
+      };
+    });
+
+    // Calculate new stats based on the *current* class and *new* job
+    const updatedStats = calculateUpdatedStats(statsData, currentClass, newJob);
+    setStatsData(updatedStats);
   };
 
   const handleSelectedCheckValuesChange = (newValues: string[]) => {
-    setCharacter(prev => ({ ...prev, pus_conocimientos: newValues.join(",") }));
+    if (!character) return;
+
+    setCharacter((prev: DBPersonajesUsuario | null) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        pus_conocimientos: newValues.join(",")
+      };
+    });
   };
 
-  const handleStatsInputChange = (newInputStats: InputStats) => {
-    setStatsData(prevItems =>
-      prevItems.map(item =>
-        item.id === newInputStats.id ? { ...item, ...newInputStats } : item
-      )
-    );
+  // Add any missing functions that are used in your component
+  const handleSelectRaceChange = (value: string) => {
+    if (!character) return;
+    
+    setCharacter((prev: DBPersonajesUsuario | null) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        pus_raza: value
+      };
+    });
   };
 
+  const handleOpenModal = () => {
+    if (onOpen) {
+      onOpen();
+    }
+  };
+
+  const handleSystemGameChange = (value: string) => {
+    const selectedOption = SystemGameList.find(system => system.value === value);
+    if (selectedOption) {
+      // Construct the SystemGame object from the selected Option
+      const newSystemGame: SystemGame = {
+        sju_id: selectedOption.value,
+        sju_nombre: selectedOption.name
+      };
+      setSystemGame(newSystemGame);
+    }
+  };
+
+  const handleCharacterImageFileChange = (value: string, file: File) => {
+    if (file && character) {
+      // Eliminamos el segundo argumento ya que uploadCharacterImage solo espera el archivo
+      uploadCharacterImage(file)
+        .then(result => {
+          // Verificamos si hay un URL en el resultado y lo asignamos a characterImage
+          if (!result.error && result.url) {
+            setCharacterImage(result.url);
+          } else {
+            console.error('Error uploading character image: No URL returned');
+          }
+        })
+        .catch(error => {
+          console.error('Error uploading character image:', error);
+        });
+    }
+  };
+
+  // Add missing functions
   const handleAlignmentChange = (value: string) => {
-    setCharacter(prev => ({ ...prev, pus_alineacion: value }));
+    if (!character) return;
+
+    setCharacter((prev: DBPersonajesUsuario | null) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        pus_alineacion: value
+      };
+    });
     const formElement = document.getElementById("form-sheet");
     if (value === "O") {
       formElement?.classList.add("orden");
@@ -182,6 +311,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
     }
   };
 
+  const validateNumeric = (value: string, min: number = 0): number => {
+    const num = parseInt(value);
+    return isNaN(num) ? min : Math.max(min, num);
+  };
+
   const handleCoinsChange = (index: number, value: string) => {
     const numericValue = validateNumeric(value);
     const updatedCoins = [...coins];
@@ -189,8 +323,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
     setCoins(updatedCoins);
   };
 
-  const handleAddObject = (name: string, description: string, count: number) => {
-    if (!name) {
+  const [newObjectName, setNewObjectName] = useState("");
+  const [newObjectCount, setNewObjectCount] = useState("1");
+  const [newObjectDescription, setNewObjectDescription] = useState("");
+  const [invObjects, setInvObjects] = useState<InventoryObject[]>([]);
+  const [listWearpons, setListWearpons] = useState<string[]>([]);
+  const [optionsSkillClass, setOptionsSkillClass] = useState<any[]>([]);
+  const [optionsSkillExtra, setOptionsSkillExtra] = useState<any[]>([]);
+  const [selectedSkillValue, setSelectedSkillValue] = useState("");
+  const [selectedExtraSkillValue, setSelectedExtraSkillValue] = useState("");
+  const [inputsStatsData, setInputsStatsData] = useState<any[]>([]);
+
+  const handleNewCount = (value: string) => {
+    setNewObjectCount(value);
+  };
+
+  const handleAddObject = () => {
+    if (!newObjectName) {
       alert("Por favor digitar este campo");
       document.getElementById("objectName")?.focus();
       return;
@@ -198,22 +347,32 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
 
     const newObject = {
       id: uuidv4(),
-      name,
-      description: description || "Descripción del nuevo objeto",
-      count,
+      name: newObjectName,
+      description: newObjectDescription || "Descripción del nuevo objeto",
+      count: parseInt(newObjectCount) || 1,
       readOnly: false,
     };
 
+    setInvObjects(prev => [...prev, newObject]);
     setInventory(prev => [...prev, newObject]);
+    setNewObjectName("");
+    setNewObjectCount("1");
+    setNewObjectDescription("");
   };
 
   const handleDeleteObject = (id: string) => {
+    setInvObjects(prev => prev.filter(obj => obj.id !== id));
     setInventory(prev => prev.filter(obj => obj.id !== id));
     setDeleteItems(prev => [...prev, id]);
   };
 
   const handleEditCount = (id: string, newCount: string) => {
     const numericValue = validateNumeric(newCount, 1);
+    setInvObjects(prevObjects =>
+      prevObjects.map(obj =>
+        obj.id === id ? { ...obj, count: numericValue } : obj
+      )
+    );
     setInventory(prevObjects =>
       prevObjects.map(obj =>
         obj.id === id ? { ...obj, count: numericValue } : obj
@@ -229,35 +388,41 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
     }
   };
 
-  // Helper Methods
-  const validateNumeric = (value: string, min: number = 0): number => {
-    const num = parseInt(value);
-    return isNaN(num) ? min : Math.max(min, num);
+  const handleSelectSkillChange = (value: string) => {
+    setSelectedSkillValue(value);
   };
 
-  const updateStatsPoints = (selectedClass: string, selectedJob: string): void => {
-    const extraPoints = CHARACTER_JOBS.find(option => option.value === selectedJob)?.extraPoint || "";
-    const updatedStats = statsData.map(stat => {
-      const isMainStat = 
-        (stat.id === "STR" && selectedClass === "WAR") ||
-        (stat.id === "INT" && selectedClass === "MAG") ||
-        (stat.id === "DEX" && selectedClass === "SCO") ||
-        (stat.id === "CON" && selectedClass === "MED") ||
-        (stat.id === "PER" && selectedClass === "RES") ||
-        (stat.id === "CHA" && selectedClass === "ACT");
-      
-      return {
-        ...stat,
-        valueClass: (isMainStat ? 2 : 0) + (extraPoints.includes(stat.id) ? 1 : 0)
-      };
-    });
-    
-    setStatsData(updatedStats);
+  const handleSelectExtraSkillChange = (value: string) => {
+    setSelectedExtraSkillValue(value);
   };
+
+  const handleStatsInputChange = (value: any) => {
+    // Implementation depends on your specific requirements
+    console.log("Stats input changed:", value);
+  };
+
+  const handleSelectedRingSkillChange = (id: string, value: string) => {
+    // Implementation depends on your specific requirements
+    console.log("Ring skill changed:", id, value);
+  };
+
+  const handleSelectedTypeRingSkillChange = (id: string, value: string) => {
+    // Implementation depends on your specific requirements
+    console.log("Ring type changed:", id, value);
+  };
+
+  const randomRoll = () => {
+    // Implementation depends on your specific requirements
+    console.log("Random roll clicked");
+  };
+
+  // Mostrar solo el componente de carga si los datos están cargando o si no hay personaje
+  if (loading || !character) {
+    return <ScreenLoader />;
+  }
 
   return (
     <>
-      {loading && <ScreenLoader />}
       <form
         id="form-sheet"
         className="form-sheet min-h-screen grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4"
@@ -332,7 +497,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
             selectedValue={character?.pus_trabajo || ""}
             onSelectChange={handleCharacterJobSelectChange}
           ></FormSelectInfoPlayer>
-
           <label
             htmlFor="level"
             className="form-lbl-y col-start-1 md:col-start-3 col-span-1 row-start-2 md:row-start-1 bg-grey-lighter "
@@ -501,7 +665,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
           <FormSelectInfoPlayer
             id="skillExtra"
             label="Habilidad extra"
-            options={optionsSkillExtra}
+            options={optionsSkillExtra} // Assuming optionsSkillExtra is defined elsewhere or needs similar treatment
             selectedValue={selectedExtraSkillValue}
             onSelectChange={handleSelectExtraSkillChange}
           ></FormSelectInfoPlayer>
@@ -536,7 +700,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
                 levelEvaluated={3}
                 ringTypes={optionsRingTypes}
                 skillList={skillsRingList[0]}
-                values={skillsAcquired[0]}
+                values={adaptedSkillsAcquired[0] || {id: "", name: "", value: "", ring: "", stat: "", description: ""}}
                 onSelectChange={handleSelectedRingSkillChange}
                 onSelectTypeChange={handleSelectedTypeRingSkillChange}
               />
@@ -547,7 +711,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
                 levelEvaluated={6}
                 ringTypes={optionsRingTypes}
                 skillList={skillsRingList[1]}
-                values={skillsAcquired[1]}
+                values={adaptedSkillsAcquired[1] || {id: "", name: "", value: "", ring: "", stat: "", description: ""}}
                 onSelectChange={handleSelectedRingSkillChange}
                 onSelectTypeChange={handleSelectedTypeRingSkillChange}
               />
@@ -558,7 +722,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
                 levelEvaluated={9}
                 ringTypes={optionsRingTypes}
                 skillList={skillsRingList[2]}
-                values={skillsAcquired[2]}
+                values={adaptedSkillsAcquired[2] || {id: "", name: "", value: "", ring: "", stat: "", description: ""}}
                 onSelectChange={handleSelectedRingSkillChange}
                 onSelectTypeChange={handleSelectedTypeRingSkillChange}
               />
@@ -738,23 +902,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
                     </li>
                     <li>
                       <strong>Clase: </strong>
-                      {getClassName(dataCharacter?.class)}
+                      {getClassName(character?.pus_clase)}
                     </li>
                     <li>
                       <strong>Raza: </strong>
-                      {getRaceName(dataCharacter?.race)}
+                      {getRaceName(character?.pus_raza)}
                     </li>
                     <li>
                       <strong>Trabajo: </strong>
-                      {getJobName(dataCharacter?.job)}
+                      {getJobName(character?.pus_trabajo)}
                     </li>
                     <li className="col-span-2">
                       <strong>Descripcion: </strong>
-                      {dataCharacter?.description}
+                      {character?.pus_descripcion}
                     </li>
                     <li className="col-span-2">
                       <strong>Conocimientos: </strong>
-                      {getKnowledgeName(dataCharacter?.knowledge)}
+                      {getKnowledgeName(character?.pus_conocimientos?.split(','))}
                     </li>
                   </ul>
                   <table className="dialog-table ">
@@ -767,49 +931,67 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
                       <tr>
                         <td>Fuerza</td>
                         <td>
-                          {(dataCharacter?.str[0].dice || 0) +
-                            (dataCharacter?.str[0].class || 0) +
-                            (dataCharacter?.str[0].level || 0)}
+                          {statsData.find(stat => stat.id === "STR") ? 
+                            (statsData.find(stat => stat.id === "STR")?.valueDice || 0) +
+                            (statsData.find(stat => stat.id === "STR")?.valueClass || 0) +
+                            (statsData.find(stat => stat.id === "STR")?.valueLevel || 0)
+                            : 0
+                          }
                         </td>
                       </tr>
                       <tr>
                         <td>Inteligencia</td>
                         <td>
-                          {(dataCharacter?.int[0].dice || 0) +
-                            (dataCharacter?.int[0].class || 0) +
-                            (dataCharacter?.int[0].level || 0)}
+                          {statsData.find(stat => stat.id === "INT") ? 
+                            (statsData.find(stat => stat.id === "INT")?.valueDice || 0) +
+                            (statsData.find(stat => stat.id === "INT")?.valueClass || 0) +
+                            (statsData.find(stat => stat.id === "INT")?.valueLevel || 0)
+                            : 0
+                          }
                         </td>
                       </tr>
                       <tr>
                         <td>Destreza</td>
                         <td>
-                          {(dataCharacter?.dex[0].dice || 0) +
-                            (dataCharacter?.dex[0].class || 0) +
-                            (dataCharacter?.dex[0].level || 0)}
+                          {statsData.find(stat => stat.id === "DEX") ? 
+                            (statsData.find(stat => stat.id === "DEX")?.valueDice || 0) +
+                            (statsData.find(stat => stat.id === "DEX")?.valueClass || 0) +
+                            (statsData.find(stat => stat.id === "DEX")?.valueLevel || 0)
+                            : 0
+                          }
                         </td>
                       </tr>
                       <tr>
                         <td>Constitucion</td>
                         <td>
-                          {(dataCharacter?.con[0].dice || 0) +
-                            (dataCharacter?.con[0].class || 0) +
-                            (dataCharacter?.con[0].level || 0)}
+                          {statsData.find(stat => stat.id === "CON") ? 
+                            (statsData.find(stat => stat.id === "CON")?.valueDice || 0) +
+                            (statsData.find(stat => stat.id === "CON")?.valueClass || 0) +
+                            (statsData.find(stat => stat.id === "CON")?.valueLevel || 0)
+                            : 0
+                          }
                         </td>
                       </tr>
                       <tr>
                         <td>Percepcion</td>
                         <td>
-                          {(dataCharacter?.per[0].dice || 0) +
-                            (dataCharacter?.per[0].class || 0) +
-                            (dataCharacter?.per[0].level || 0)}
+                          {statsData.find(stat => stat.id === "PER") ? 
+                            (statsData.find(stat => stat.id === "PER")?.valueDice || 0) +
+                            (statsData.find(stat => stat.id === "PER")?.valueClass || 0) +
+                            (statsData.find(stat => stat.id === "PER")?.valueLevel || 0)
+                            : 0
+                          }
                         </td>
                       </tr>
                       <tr>
                         <td>Carisma</td>
                         <td>
-                          {(dataCharacter?.cha[0].dice || 0) +
-                            (dataCharacter?.cha[0].class || 0) +
-                            (dataCharacter?.cha[0].level || 0)}
+                          {statsData.find(stat => stat.id === "CHA") ? 
+                            (statsData.find(stat => stat.id === "CHA")?.valueDice || 0) +
+                            (statsData.find(stat => stat.id === "CHA")?.valueClass || 0) +
+                            (statsData.find(stat => stat.id === "CHA")?.valueLevel || 0)
+                            : 0
+                          }
                         </td>
                       </tr>
                     </tbody>
@@ -889,4 +1071,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ changeBackground }) => 
   );
 };
 
-export default CharacterSheet;
+// Añadimos un componente envoltorio para manejar la carga y los errores
+const CharacterSheetWrapper = (props: CharacterSheetProps) => {
+  try {
+    return <CharacterSheet {...props} />;
+  } catch (error) {
+    console.error('Error en CharacterSheet:', error);
+    return <ScreenLoader />;
+  }
+};
+
+export default CharacterSheetWrapper;

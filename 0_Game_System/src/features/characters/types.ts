@@ -6,6 +6,8 @@ import {
   DBInventarioPersonaje 
 } from "@core/types/characters/characterDbTypes";
 
+export type { DBSistemaJuego };
+
 export interface SkillsRing {
   id: string;
   nombre: string;
@@ -80,13 +82,11 @@ export interface SkillsRing {
   level: number;
 }
 
-export interface InventoryObject {
-    id: string;
-    name: string;
-    description: string;
-    count: number;
-    readOnly: boolean;
-}
+// Importamos el tipo InventoryObject desde characterDbTypes
+import { InventoryObject } from '@core/types/characters/characterDbTypes';
+
+// Re-exportamos el tipo para mantener la compatibilidad
+export type { InventoryObject };
 
 export interface SkillFields {
     id: string;

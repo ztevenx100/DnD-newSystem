@@ -5,7 +5,7 @@ import "uno.css";
 import "./WorldMap.css";
 
 // Types
-import { DBMapamundi } from '@core/types';
+import { DBMapamundi } from '@components/interfaces/dbTypes';
 
 // Feature
 import { useWorldMap } from '@features/worldMap';

@@ -10,6 +10,11 @@ interface InputNumberProps {
 }
 
 const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValuesChange})  => {
+  // Si inputStats es undefined, retornamos null para evitar errores
+  if (!inputStats) {
+    return null;
+  }
+  
   let sum = inputStats.valueDice + inputStats.valueClass + inputStats.valueLevel;
 
   function validateNumeric(value:string, valueDefault?: number): number{

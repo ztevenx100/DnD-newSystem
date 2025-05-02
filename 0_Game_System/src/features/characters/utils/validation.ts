@@ -1,4 +1,25 @@
-import { DBPersonajesUsuario, InputStats, InventoryObject, SkillsAcquired } from '../types';
+import { InputStats, SkillsAcquired } from '../types';
+import { DBPersonajesUsuario, InventoryObject } from '@core/types/characters/characterDbTypes';
+
+// Función para generar estadísticas aleatorias para un personaje
+export function generateRandomStats(): InputStats[] {
+  const statIds = ['STR', 'INT', 'DEX', 'CON', 'PER', 'CHA'];
+  const statLabels = ['Fuerza', 'Inteligencia', 'Destreza', 'Constitución', 'Percepción', 'Carisma'];
+  
+  return statIds.map((id, index) => ({
+    id,
+    label: statLabels[index],
+    valueDice: Math.floor(Math.random() * 6) + 1, // Valor aleatorio entre 1 y 6
+    valueClass: 0,
+    valueLevel: 0,
+    strength: id === 'STR' ? 1 : 0,
+    dexterity: id === 'DEX' ? 1 : 0,
+    intelligence: id === 'INT' ? 1 : 0,
+    constitution: id === 'CON' ? 1 : 0,
+    charisma: id === 'CHA' ? 1 : 0,
+    perception: id === 'PER' ? 1 : 0
+  }));
+}
 
 interface ValidationResult {
   isValid: boolean;
@@ -14,11 +35,11 @@ export function validateCharacter(
   const errors: { field: string; message: string }[] = [];
 
   // Validate character basic info
-  if (!character.nombre) {
+  if (!character.pus_nombre) {
     errors.push({ field: 'name', message: 'Character name is required' });
   }
 
-  if (!character.raza) {
+  if (!character.pus_raza) {
     errors.push({ field: 'race', message: 'Character race is required' });
   }
 
@@ -26,9 +47,9 @@ export function validateCharacter(
   if (stats.length === 0) {
     errors.push({ field: 'stats', message: 'Character must have stats' });
   } else {
-    const requiredStats = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'];
+    const requiredStats = ['STR', 'DEX', 'CON', 'INT', 'PER', 'CHA'];
     const missingStats = requiredStats.filter(
-      requiredStat => !stats.some(stat => stat.name === requiredStat)
+      requiredStat => !stats.some(stat => stat.id === requiredStat)
     );
 
     if (missingStats.length > 0) {
@@ -39,10 +60,11 @@ export function validateCharacter(
     }
 
     stats.forEach(stat => {
-      if (stat.value < 0 || stat.value > 20) {
+      const totalValue = (stat.valueDice || 0) + (stat.valueClass || 0) + (stat.valueLevel || 0);
+      if (totalValue < 0 || totalValue > 20) {
         errors.push({
-          field: `stats.${stat.name}`,
-          message: `${stat.name} must be between 0 and 20`
+          field: `stats.${stat.id}`,
+          message: `${stat.label} must be between 0 and 20`
         });
       }
     });
@@ -56,7 +78,7 @@ export function validateCharacter(
         message: 'Item name is required'
       });
     }
-    if (item.quantity < 0) {
+    if (item.count < 0) {
       errors.push({
         field: `inventory[${index}]`,
         message: 'Item quantity cannot be negative'

@@ -21,6 +21,8 @@ export interface WorldMapActions {
     setImageStage: (url: string) => void;
     setImageStageList: (list: StageImageList[]) => void;
     setLoading: (loading: boolean) => void;
+    initializeMap: () => Promise<void>;
+    handleStageChange: (stageId: string) => void;
 }
 
 export interface WorldMapHookResult extends WorldMapState, WorldMapActions {}

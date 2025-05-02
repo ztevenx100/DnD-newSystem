@@ -30,6 +30,7 @@ export default defineConfig({
       "@interfaces": `${path.resolve(__dirname, "./src/components/interfaces/")}`,
       "@utils": `${path.resolve(__dirname, "./src/components/utils/")}`,
       "@features": `${path.resolve(__dirname, "./src/features/")}`,
+      "@core": `${path.resolve(__dirname, "./src/core/")}`,
     },
   },
 })

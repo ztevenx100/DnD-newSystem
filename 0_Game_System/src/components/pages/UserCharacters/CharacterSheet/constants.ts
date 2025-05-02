@@ -43,3 +43,21 @@ export const RING_TYPES: RingTypeOption[] = [
   { id: 'PER', name: 'Anillo de Percepción', stat: 'PER' },
   { id: 'CHA', name: 'Anillo de Carisma', stat: 'CHA' }
 ];
+
+export const WEAPONS_LIST = [
+  'Espada corta',
+  'Espada larga',
+  'Hacha de batalla',
+  'Arco corto',
+  'Arco largo',
+  'Daga',
+  'Bastón',
+  'Vara mágica',
+  'Maza',
+  'Martillo de guerra',
+  'Lanza',
+  'Ballesta',
+  'Escudo',
+  'Guantelete',
+  'Látigo'
+];

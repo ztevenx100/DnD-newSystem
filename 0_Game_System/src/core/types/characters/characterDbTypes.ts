@@ -2,6 +2,11 @@
 import { DBSistemaJuego, DBUsuario } from '../gameSystem';
 
 export interface InputStats {
+  id: string;
+  label: string;
+  valueDice: number;
+  valueClass: number;
+  valueLevel: number;
     strength: number;
     dexterity: number;
     intelligence: number;
@@ -37,6 +42,7 @@ export interface DBPersonajesUsuario {
     skillsRing?: any[];
     inventory?: InventoryObject[];
     systemGame?: { sju_id: string; sju_nombre: string };
+    deleteItems?: string[];
 }
 
 export interface DBHabilidad {
@@ -85,4 +91,24 @@ export interface DBInventarioPersonaje {
     inp_cantidad: number;
 }
 
-export type InventoryObject = DBInventarioPersonaje;
+export interface InventoryObject {
+    id: string;
+    name: string;
+    description: string;
+    count: number;
+    readOnly: boolean;
+}
+
+// Función auxiliar para convertir DBInventarioPersonaje o InventoryObject a InventoryObject
+export const toInventoryObject = (dbItem: DBInventarioPersonaje | InventoryObject): InventoryObject => {
+  if ('inp_id' in dbItem) {
+    return {
+      id: dbItem.inp_id,
+      name: dbItem.inp_nombre,
+      description: dbItem.inp_descripcion || '',
+      count: dbItem.inp_cantidad,
+      readOnly: false
+    };
+  }
+  return dbItem;
+};

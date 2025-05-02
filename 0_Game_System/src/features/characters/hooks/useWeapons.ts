@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Option } from '../types';
+import { Option } from "@interfaces/typesCharacterSheet";
 import { WEAPONS_LIST } from '../../../components/pages/UserCharacters/CharacterSheet/constants';
 
 export function useWeapons(

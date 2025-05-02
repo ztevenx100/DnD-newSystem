@@ -1,9 +1,10 @@
 import { InputStats, InventoryObject } from '../../components/pages/UserCharacters/CharacterSheet/models';
+import { DBUsuario } from './gameSystem';
 
 export interface DBPersonajesUsuario {
     pus_id: string;
     pus_usuario: string;
-    usu_usuario?: { usu_id: string; usu_nombre: string };
+    usu_usuario: DBUsuario | null;
     pus_nombre: string;
     pus_nivel: number;
     pus_clase: string;

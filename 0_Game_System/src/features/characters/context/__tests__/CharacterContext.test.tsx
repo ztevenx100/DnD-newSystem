@@ -1,18 +1,36 @@
 import React from 'react';
-import { render, renderHook, act } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { CharacterProvider, useCharacter } from '../CharacterContext';
-import { DBPersonajesUsuario } from '@core/types';
+import { DBPersonajesUsuario } from "@core/types/characters/characterDbTypes";
+import { DBSistemaJuego } from "@core/types/gameSystem/gameSystemDbTypes";
 
 describe('CharacterContext', () => {
   const mockCharacter: DBPersonajesUsuario = {
     pus_id: "1",
     pus_usuario: "testUser",
+    usu_usuario: null,
     pus_nombre: "Test Character",
     pus_nivel: 1,
     pus_clase: "WAR",
+    pus_raza: "Humano",
+    pus_trabajo: "Guerrero",
+    pus_descripcion: "Descripción del personaje",
+    pus_conocimientos: "",
+    pus_arma_principal: "",
+    pus_arma_secundaria: "",
+    pus_cantidad_oro: 0,
+    pus_cantidad_plata: 0,
+    pus_cantidad_bronce: 0,
     pus_puntos_suerte: 3,
-    pus_vida: 10
-  } as DBPersonajesUsuario;
+    pus_vida: 10,
+    pus_alineacion: "Neutral",
+    pus_sistema_juego: null,
+    sju_sistema_juego: { sju_id: "1", sju_nombre: "DnD" } as DBSistemaJuego,
+    stats: [],
+    skills: [],
+    skillsRing: [],
+    inventory: []
+  };
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <CharacterProvider initialCharacter={mockCharacter}>
@@ -123,8 +141,11 @@ describe('CharacterContext', () => {
           id: '1',
           value: '0',
           name: 'Test Skill',
-          description: '',
-          ring: 'STR'
+          description: 'Descripción de la habilidad',
+          ring: 'STR',
+          type: 'combat',
+          level: 0,
+          stat: 'strength'
         });
       });
       expect(result.current.skillsAcquired).toHaveLength(1);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Select, SelectItem } from '@nextui-org/react';
-import { SkillsAcquired, SkillTypes, Option } from '../../types';
+import { SkillsAcquired, SkillTypes } from '../../types';
+import { Option } from "@interfaces/typesCharacterSheet";
 import { RING_TYPES } from '../../../../components/pages/UserCharacters/CharacterSheet/constants';
 
 interface FormSkillsProps {
@@ -34,14 +35,14 @@ const FormSkills: React.FC<FormSkillsProps> = ({
   };
 
   const handleRingTypeChange = (skillIndex: number, type: string) => {
-    const selectedRingType = RING_TYPES.find(ring => ring.value === type);
+    const selectedRingType = RING_TYPES.find(ring => ring.stat === type);
     if (!selectedRingType) return;
 
     const updatedSkills = [...skillsAcquired];
     updatedSkills[skillIndex] = {
       ...updatedSkills[skillIndex],
       ring: type,
-      stat: selectedRingType.value
+      stat: selectedRingType.stat
     };
     onSkillsChange(updatedSkills);
   };
@@ -107,7 +108,7 @@ const FormSkills: React.FC<FormSkillsProps> = ({
                   isDisabled={!isUnlocked || disabled}
                 >
                   {RING_TYPES.map((ring) => (
-                    <SelectItem key={ring.value} value={ring.value}>
+                    <SelectItem key={ring.stat} value={ring.stat}>
                       {ring.name}
                     </SelectItem>
                   ))}

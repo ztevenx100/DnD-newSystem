@@ -126,5 +126,7 @@ export function useWorldMap(systemId: string): WorldMapHookResult {
         setImageStage,
         setImageStageList,
         setLoading,
+        initializeMap,
+        handleStageChange
     };
 }

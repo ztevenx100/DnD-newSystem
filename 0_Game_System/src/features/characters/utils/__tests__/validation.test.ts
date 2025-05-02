@@ -1,5 +1,5 @@
 import { validateCharacter } from '../validation';
-import { DBPersonajesUsuario, InputStats, InventoryObject, SkillsAcquired } from '../../types';
+import { DBPersonajesUsuario, InputStats, InventoryObject, SkillsAcquired } from '@core/types/characters';
 
 describe('validateCharacter', () => {
   const validCharacter: DBPersonajesUsuario = {
@@ -17,7 +17,7 @@ describe('validateCharacter', () => {
   } as DBPersonajesUsuario;
 
   const validStats: InputStats[] = [
-    { id: "STR", label: "Fuerza", description: "", valueDice: 5, valueClass: 2, valueLevel: 1 }
+    { id: "STR", label: "Fuerza", description: "", valueDice: 5, valueClass: 2, valueLevel: 1, strength: 1, dexterity: 0, intelligence: 0, constitution: 0, charisma: 0, perception: 0 }
   ];
 
   const validInventory: InventoryObject[] = [

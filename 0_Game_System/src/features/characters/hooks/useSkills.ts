@@ -31,15 +31,21 @@ export function useSkills(
     setSkillsAcquired(prev => prev.filter((_, i) => i !== index));
   }, []);
 
-  const updateRingList = useCallback((ringType: string, skills: string[]) => {
+  const updateRingList = useCallback((ringType: string, skillValues: string[]) => {
+    const mappedSkills = skillValues.map(value => ({
+      id: value,
+      value: value,
+      name: value
+    }));
+
     setSkillsRingList(prev => {
       const existingIndex = prev.findIndex(item => item.id === ringType);
       if (existingIndex >= 0) {
         return prev.map((item, index) =>
-          index === existingIndex ? { ...item, skills } : item
+          index === existingIndex ? { ...item, skills: mappedSkills } : item
         );
       }
-      return [...prev, { id: ringType, skills }];
+      return [...prev, { id: ringType, skills: mappedSkills }];
     });
   }, []);
 
@@ -54,7 +60,7 @@ export function useSkills(
   }, [characterLevel]);
 
   const getRingTypeStats = useCallback((ringType: string) => {
-    return RING_TYPES.find(ring => ring.value === ringType)?.name || '';
+    return RING_TYPES.find(ring => ring.stat === ringType)?.name || '';
   }, []);
 
   return {

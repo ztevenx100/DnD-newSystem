@@ -36,7 +36,7 @@ describe('Character Validation Utils', () => {
   ];
 
   const mockSkills: SkillsAcquired[] = [
-    { id: "1", value: 0, name: "Skill1", type: "combat", level: 1 }
+    { id: "1", value: "0", name: "Skill1", description: "", ring: "STR", type: "combat", level: 1 }
   ];
 
   describe('validateCharacter', () => {

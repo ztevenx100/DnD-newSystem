@@ -34,6 +34,8 @@ export interface SkillsAcquired {
     name: string;
     description?: string;
     ring: string;
+    type?: string;
+    level?: number;
     stat?: string;
 }
 

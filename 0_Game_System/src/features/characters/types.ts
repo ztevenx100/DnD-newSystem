@@ -63,11 +63,14 @@ export interface SkillTypes {
 }
 
 export interface SkillsAcquired {
-  id: string;
-  name: string;
-  type: string;
-  level: number;
-  value: number;
+    id: string;
+    value: string;
+    name: string;
+    description?: string;
+    ring: string;
+    type?: string;
+    level?: number;
+    stat?: string;
 }
 
 export interface SkillsRing {

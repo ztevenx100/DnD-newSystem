@@ -118,10 +118,10 @@ export function validateCharacter(
         message: 'Skill name is required'
       });
     }
-    if (skill.level < 0 || skill.level > 5) {
+    if (skill.level && (skill.level < 0 || skill.level > 10)) {
       errors.push({
         field: `skills[${index}]`,
-        message: 'Skill level must be between 0 and 5'
+        message: 'El nivel de habilidad debe estar entre 0 y 10'
       });
     }
   });

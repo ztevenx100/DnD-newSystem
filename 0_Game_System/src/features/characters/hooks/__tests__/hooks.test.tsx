@@ -1,11 +1,11 @@
 import { renderHook, act } from '@testing-library/react';
 import { useStats, useInventory, useSkills, useProfile, useWeapons } from '..';
-import { DBPersonajesUsuario, InputStats, InventoryObject, SkillsAcquired } from '../../types';
+import { DBPersonajesUsuario, InputStats, InventoryObject, SkillsAcquired } from '@core/types/characters';
 
 describe('Character Hooks', () => {
   describe('useStats', () => {
     const mockStats: InputStats[] = [
-      { id: "STR", label: "Fuerza", description: "", valueDice: 5, valueClass: 2, valueLevel: 1 }
+      { id: "STR", label: "Fuerza", description: "", valueDice: 5, valueClass: 2, valueLevel: 1, strength: 1, dexterity: 0, intelligence: 0, constitution: 0, charisma: 0, perception: 0 }
     ];
 
     it('should initialize with default or provided stats', () => {
@@ -116,7 +116,7 @@ describe('Character Hooks', () => {
 
   describe('useSkills', () => {
     const mockSkills: SkillsAcquired[] = [
-      { id: "1", value: "0", name: "Skill1", description: "", ring: "STR" }
+      { id: "1", value: "0", name: "Skill1", description: "", ring: "STR", type: "combat", level: 0 }
     ];
 
     it('should calculate available skill slots based on level', () => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Select, SelectItem } from '@nextui-org/react';
-import { Option } from '../../types';
+import { Option } from "@interfaces/typesCharacterSheet";
 import { WEAPONS_LIST } from '../../../../components/pages/UserCharacters/CharacterSheet/constants';
 
 interface FormWeaponsProps {

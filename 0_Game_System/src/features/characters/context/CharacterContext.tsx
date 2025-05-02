@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer } from 'react';
-import { DBPersonajesUsuario, InputStats, InventoryObject, SkillsAcquired } from '../types';
+import { DBPersonajesUsuario, InputStats, InventoryObject, SkillsAcquired } from '@core/types/characters';
 import { validateCharacter } from '../utils/validation';
 
 interface CharacterState {
@@ -71,8 +71,11 @@ function characterReducer(state: CharacterState, action: CharacterAction): Chara
   }
 }
 
-export function CharacterProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(characterReducer, initialState);
+export function CharacterProvider({ children, initialCharacter }: { children: React.ReactNode; initialCharacter?: DBPersonajesUsuario }) {
+  const [state, dispatch] = useReducer(characterReducer, {
+    ...initialState,
+    character: initialCharacter || null
+  });
 
   return (
     <CharacterContext.Provider value={{ state, dispatch }}>

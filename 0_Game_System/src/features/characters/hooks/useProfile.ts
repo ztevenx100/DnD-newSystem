@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { DBPersonajesUsuario } from '@core/types';
+import { DBPersonajesUsuario } from "@core/types/characters/characterDbTypes";
 import { CHARACTER_JOBS } from '../../../components/pages/UserCharacters/CharacterSheet/constants';
 
 export function useProfile(initialCharacter?: DBPersonajesUsuario) {

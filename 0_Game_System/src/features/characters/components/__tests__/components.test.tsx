@@ -140,7 +140,6 @@ describe('Character Form Components', () => {
       skillsAcquired: [
         { id: "1", value: "0", name: "Skill1", description: "", ring: "STR" }
       ],
-      skillsRingList: [{ id: "0", skills: [] }],
       skillList: [{ value: "skill1", name: "Skill 1" }],
       onSkillsChange: jest.fn(),
       onAlignmentChange: jest.fn()

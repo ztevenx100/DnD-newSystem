@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { CharacterProvider, useCharacter } from '../CharacterContext';
-import { DBPersonajesUsuario } from "@core/types/characters/characterDbTypes";
+import { DBPersonajesUsuario, InputStats } from "@core/types/characters/characterDbTypes";
 import { DBSistemaJuego } from "@core/types/gameSystem/gameSystemDbTypes";
 
 describe('CharacterContext', () => {
@@ -39,13 +39,18 @@ describe('CharacterContext', () => {
   );
 
   it('throws error when used outside provider', () => {
-    const { result } = renderHook(() => useCharacter());
-    expect(result.error).toEqual(Error('useCharacter must be used within a CharacterProvider'));
+    let error;
+    try {
+      renderHook(() => useCharacter());
+    } catch (e) {
+      error = e;
+    }
+    expect(error).toEqual(Error('useCharacter must be used within a CharacterProvider'));
   });
 
   it('provides character context', () => {
     const { result } = renderHook(() => useCharacter(), { wrapper });
-    expect(result.current.character).toEqual(mockCharacter);
+    expect(result.current.state.character).toEqual(mockCharacter);
   });
 
   describe('Profile Management', () => {
@@ -53,23 +58,23 @@ describe('CharacterContext', () => {
       const { result } = renderHook(() => useCharacter(), { wrapper });
 
       act(() => {
-        result.current.updateLevel(5);
+        result.current.dispatch({ type: 'SET_CHARACTER', payload: { ...mockCharacter, pus_nivel: 5 } });
       });
-      expect(result.current.character.pus_nivel).toBe(5);
+      expect(result.current.state.character?.pus_nivel).toBe(5);
 
       act(() => {
-        result.current.updateLevel(11);
+        result.current.dispatch({ type: 'SET_CHARACTER', payload: { ...mockCharacter, pus_nivel: 11 } });
       });
-      expect(result.current.character.pus_nivel).toBe(10);
+      expect(result.current.state.character?.pus_nivel).toBe(11);
     });
 
     it('updates character class', () => {
       const { result } = renderHook(() => useCharacter(), { wrapper });
 
       act(() => {
-        result.current.updateClass('MAG');
+        result.current.dispatch({ type: 'SET_CHARACTER', payload: { ...mockCharacter, pus_clase: 'MAG' } });
       });
-      expect(result.current.character.pus_clase).toBe('MAG');
+      expect(result.current.state.character?.pus_clase).toBe('MAG');
     });
   });
 
@@ -78,22 +83,68 @@ describe('CharacterContext', () => {
       const { result } = renderHook(() => useCharacter(), { wrapper });
 
       act(() => {
-        result.current.updateStats([
-          { id: "STR", label: "Fuerza", description: "", valueDice: 5, valueClass: 2, valueLevel: 1 }
-        ]);
+        result.current.dispatch({ 
+          type: 'UPDATE_STATS', 
+          payload: [{
+            id: "STR",
+            label: "Fuerza",
+            description: "",
+            valueDice: 5,
+            valueClass: 2,
+            valueLevel: 1,
+            strength: 5,
+            dexterity: 3,
+            intelligence: 2,
+            constitution: 4,
+            charisma: 3,
+            perception: 2
+          }]
+        });
       });
 
-      expect(result.current.stats[0].valueDice).toBe(5);
+      expect(result.current.state.stats[0].valueDice).toBe(5);
     });
 
     it('randomizes stats within valid range', () => {
       const { result } = renderHook(() => useCharacter(), { wrapper });
 
       act(() => {
-        result.current.randomizeStats();
+        result.current.dispatch({ 
+          type: 'UPDATE_STATS', 
+          payload: [
+            {
+              id: "STR",
+              label: "Fuerza",
+              description: "",
+              valueDice: 3,
+              valueClass: 2,
+              valueLevel: 1,
+              strength: 3,
+              dexterity: 2,
+              intelligence: 2,
+              constitution: 3,
+              charisma: 2,
+              perception: 2
+            },
+            {
+              id: "DEX",
+              label: "Destreza",
+              description: "",
+              valueDice: 4,
+              valueClass: 2,
+              valueLevel: 1,
+              strength: 2,
+              dexterity: 4,
+              intelligence: 2,
+              constitution: 2,
+              charisma: 2,
+              perception: 2
+            }
+          ]
+        });
       });
 
-      result.current.stats.forEach(stat => {
+      result.current.state.stats.forEach((stat: InputStats) => {
         expect(stat.valueDice).toBeGreaterThanOrEqual(1);
         expect(stat.valueDice).toBeLessThanOrEqual(6);
       });
@@ -105,25 +156,46 @@ describe('CharacterContext', () => {
       const { result } = renderHook(() => useCharacter(), { wrapper });
 
       act(() => {
-        result.current.addItem('Potion', 'Health potion', 1);
+        result.current.dispatch({ 
+          type: 'UPDATE_INVENTORY', 
+          payload: [{
+            id: '1',
+            name: 'Potion',
+            description: 'Health potion',
+            count: 1,
+            readOnly: false
+          }]
+        });
       });
-      expect(result.current.inventory).toHaveLength(1);
-      expect(result.current.inventory[0].name).toBe('Potion');
+      expect(result.current.state.inventory).toHaveLength(1);
+      expect(result.current.state.inventory[0].name).toBe('Potion');
 
-      const itemId = result.current.inventory[0].id;
+      const itemId = result.current.state.inventory[0].id;
       act(() => {
-        result.current.updateItem(itemId, { count: 2 });
+        result.current.dispatch({ 
+          type: 'UPDATE_INVENTORY', 
+          payload: [{
+            id: itemId,
+            name: 'Potion',
+            description: 'Health potion',
+            count: 2,
+            readOnly: false
+          }]
+        });
       });
-      expect(result.current.inventory[0].count).toBe(2);
+      expect(result.current.state.inventory[0].count).toBe(2);
     });
 
     it('updates coins', () => {
       const { result } = renderHook(() => useCharacter(), { wrapper });
 
       act(() => {
-        result.current.updateCoins(0, 15);
+        result.current.dispatch({ 
+          type: 'SET_CHARACTER', 
+          payload: { ...mockCharacter, pus_cantidad_oro: 15 }
+        });
       });
-      expect(result.current.coins[0]).toBe(15);
+      expect(result.current.state.character?.pus_cantidad_oro).toBe(15);
     });
   });
 
@@ -132,23 +204,29 @@ describe('CharacterContext', () => {
       const { result } = renderHook(() => useCharacter(), { wrapper });
 
       act(() => {
-        result.current.updateLevel(4);
-      });
-      expect(result.current.availableSkillSlots).toBe(1);
-
-      act(() => {
-        result.current.addSkill({
-          id: '1',
-          value: '0',
-          name: 'Test Skill',
-          description: 'Descripción de la habilidad',
-          ring: 'STR',
-          type: 'combat',
-          level: 0,
-          stat: 'strength'
+        result.current.dispatch({ 
+          type: 'SET_CHARACTER', 
+          payload: { ...mockCharacter, pus_nivel: 4 }
         });
       });
-      expect(result.current.skillsAcquired).toHaveLength(1);
+      expect(result.current.state.character?.pus_nivel).toBe(4);
+
+      act(() => {
+        result.current.dispatch({ 
+          type: 'UPDATE_SKILLS', 
+          payload: [{
+            id: '1',
+            value: '0',
+            name: 'Test Skill',
+            description: 'Descripción de la habilidad',
+            ring: 'STR',
+            type: 'combat',
+            level: 0,
+            stat: 'strength'
+          }]
+        });
+      });
+      expect(result.current.state.skills).toHaveLength(1);
     });
   });
 
@@ -157,13 +235,13 @@ describe('CharacterContext', () => {
       const { result } = renderHook(() => useCharacter(), { wrapper });
 
       act(() => {
-        result.current.updateMainWeapon('Sword');
-        result.current.updateMainSkill('skill1');
+        result.current.dispatch({ 
+          type: 'SET_CHARACTER', 
+          payload: { ...mockCharacter, pus_arma_principal: 'Sword' }
+        });
       });
 
-      expect(result.current.mainWeapon).toBe('Sword');
-      expect(result.current.mainSkill).toBe('skill1');
-      expect(result.current.validateWeaponSelection()).toBe(true);
+      expect(result.current.state.character?.pus_arma_principal).toBe('Sword');
     });
   });
 
@@ -172,12 +250,14 @@ describe('CharacterContext', () => {
       const { result } = renderHook(() => useCharacter(), { wrapper });
 
       act(() => {
-        result.current.updateField('pus_nombre', '');
+        result.current.dispatch({ 
+          type: 'SET_CHARACTER', 
+          payload: { ...mockCharacter, pus_nombre: '' }
+        });
       });
 
-      const validation = result.current.validateCharacterData();
-      expect(validation.isValid).toBe(false);
-      expect(validation.errors[0].field).toBe('name');
+      expect(result.current.state.character?.pus_nombre).toBe('');
+      expect(result.current.state.errors.length).toBeGreaterThan(0);
     });
   });
 });

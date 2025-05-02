@@ -96,16 +96,12 @@ const CharacterSheet = ({ changeBackground }: CharacterSheetProps) => {
     statsData,
     skillsAcquired,
     skillsRingList,
-    inventory,
     coins,
-    deleteItems,
     systemGame,
     loading,
     newRecord,
     setCharacter,
     setStatsData,
-    setSkillsAcquired,
-    setSkillsRingList,
     setInventory,
     setCoins,
     setDeleteItems,
@@ -118,10 +114,10 @@ const CharacterSheet = ({ changeBackground }: CharacterSheetProps) => {
   // Adapter function to convert from feature SkillsAcquired to component SkillsAcquired
   const adaptSkillsAcquired = useCallback((skill: FeatureSkillsAcquired): ComponentSkillsAcquired => {
     return {
-      id: skill.id,
-      name: skill.name,
-      value: String(skill.value),
-      ring: skill.type || "", // Map type to ring
+      id: skill.id ?? '',
+      name: skill.name ?? '',
+      value: String(skill.value ?? ''),
+      ring: skill.type ?? "", // Map type to ring
       stat: "", // Default empty stat
       description: ""
     };
@@ -132,11 +128,13 @@ const CharacterSheet = ({ changeBackground }: CharacterSheetProps) => {
 
   // Update adaptedSkillsAcquired whenever skillsAcquired changes
   useEffect(() => {
-    if (skillsAcquired && skillsAcquired.length > 0) {
+    if (skillsAcquired && Array.isArray(skillsAcquired) && skillsAcquired.length > 0) {
       // Asegurarse de que skillsAcquired es un array
       const skillsArray = Array.isArray(skillsAcquired[0]) ? skillsAcquired[0] : skillsAcquired;
       const adapted = skillsArray.map(skill => adaptSkillsAcquired(skill));
       setAdaptedSkillsAcquired(adapted);
+    } else {
+      setAdaptedSkillsAcquired([]);
     }
   }, [skillsAcquired, adaptSkillsAcquired]);
 
@@ -146,17 +144,30 @@ const CharacterSheet = ({ changeBackground }: CharacterSheetProps) => {
           userName: user?.usu_nombre || '',
           name: initialCharacter?.pus_nombre || '',
           class: initialCharacter?.pus_clase || '',
-          level: initialCharacter?.pus_nivel || 1,
-          luckyPoints: initialCharacter?.pus_puntos_suerte || 0,
-          lifePoints: initialCharacter?.pus_vida || 0,
+          level: initialCharacter?.pus_nivel ?? 1,
+          luckyPoints: initialCharacter?.pus_puntos_suerte ?? 0,
+          lifePoints: initialCharacter?.pus_vida ?? 0,
           mainWeapon: initialCharacter?.pus_arma_principal || '',
           secondaryWeapon: initialCharacter?.pus_arma_secundaria || '',
-          goldCoins: initialCharacter?.pus_cantidad_oro || 0,
-          silverCoins: initialCharacter?.pus_cantidad_plata || 0,
-          bronzeCoins: initialCharacter?.pus_cantidad_bronce || 0,
+          goldCoins: initialCharacter?.pus_cantidad_oro ?? 0,
+          silverCoins: initialCharacter?.pus_cantidad_plata ?? 0,
+          bronzeCoins: initialCharacter?.pus_cantidad_bronce ?? 0,
           characterDescription: initialCharacter?.pus_descripcion || '',
         }
-      : undefined;
+      : {
+          userName: user?.usu_nombre || '',
+          name: '',
+          class: '',
+          level: 1,
+          luckyPoints: 0,
+          lifePoints: 0,
+          mainWeapon: '',
+          secondaryWeapon: '',
+          goldCoins: 0,
+          silverCoins: 0,
+          bronzeCoins: 0,
+          characterDescription: '',
+        };
   }, [initialCharacter, user]);
 
   const { register } = useForm<CharacterForm>({ defaultValues });
@@ -169,7 +180,7 @@ const CharacterSheet = ({ changeBackground }: CharacterSheetProps) => {
 
   // Helper function to calculate stats based on class and job
   const calculateUpdatedStats = (currentStats: InputStats[], selectedClass: string, selectedJob: string): InputStats[] => {
-    const extraPoints = CHARACTER_JOBS.find(option => option.value === selectedJob)?.extraPoint || "";
+    const extraPoints = CHARACTER_JOBS.find(option => option.value === selectedJob)?.extraPoint ?? "";
     return currentStats.map(stat => {
       const isMainStat =
         (stat.id === "STR" && selectedClass === "WAR") ||
@@ -181,7 +192,7 @@ const CharacterSheet = ({ changeBackground }: CharacterSheetProps) => {
 
       return {
         ...stat,
-        valueClass: (isMainStat ? 2 : 0) + (extraPoints.includes(stat.id) ? 1 : 0)
+        valueClass: (isMainStat ? 2 : 0) + (extraPoints.includes(stat.id ?? '') ? 1 : 0)
       };
     });
   };
@@ -191,14 +202,14 @@ const CharacterSheet = ({ changeBackground }: CharacterSheetProps) => {
     if (!character) return;
 
     const newClass = value;
-    const currentJob = character.pus_trabajo; // Get current job
+    const currentJob = character.pus_trabajo ?? ''; // Get current job with default
 
     setCharacter((prev: DBPersonajesUsuario | null) => {
       if (!prev) return null;
       return {
         ...prev,
         pus_clase: newClass,
-        pus_conocimientos: CHARACTER_CLASSES.find(option => option.value === newClass)?.work || prev.pus_conocimientos
+        pus_conocimientos: CHARACTER_CLASSES.find(option => option.value === newClass)?.work ?? prev.pus_conocimientos ?? ''
       };
     });
 

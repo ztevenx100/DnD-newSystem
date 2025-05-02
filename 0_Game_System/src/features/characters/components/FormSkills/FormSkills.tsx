@@ -1,6 +1,6 @@
 import React from 'react';
 import { Select, SelectItem } from '@nextui-org/react';
-import { SkillsAcquired, SkillTypes } from '../../types';
+import { SkillsAcquired } from '../../types';
 import { Option } from "@interfaces/typesCharacterSheet";
 import { RING_TYPES } from '../../../../components/pages/UserCharacters/CharacterSheet/constants';
 
@@ -8,7 +8,6 @@ interface FormSkillsProps {
   level: number;
   alignment: string;
   skillsAcquired: SkillsAcquired[];
-  skillsRingList: SkillTypes[];
   skillList: Option[];
   onSkillsChange: (skills: SkillsAcquired[]) => void;
   onAlignmentChange: (alignment: string) => void;
@@ -19,7 +18,6 @@ const FormSkills: React.FC<FormSkillsProps> = ({
   level,
   alignment,
   skillsAcquired,
-  skillsRingList,
   skillList,
   onSkillsChange,
   onAlignmentChange,

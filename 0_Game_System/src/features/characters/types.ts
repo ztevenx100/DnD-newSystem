@@ -1,10 +1,5 @@
 import { DBPersonajesUsuario } from "@core/types/characters/characterDbTypes";
-import { DBSistemaJuego, DBUsuario } from "@core/types/gameSystem/gameSystemDbTypes";
-import { 
-  DBEstadisticaPersonaje,
-  DBHabilidadPersonaje, 
-  DBInventarioPersonaje 
-} from "@core/types/characters/characterDbTypes";
+import { DBSistemaJuego } from "@core/types/gameSystem/gameSystemDbTypes";
 
 export type { DBSistemaJuego };
 

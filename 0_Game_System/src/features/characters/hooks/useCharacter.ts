@@ -22,20 +22,20 @@ export function useCharacter(id?: string, userId?: string) {
       const characterData = await characterService.getCharacter(id);
       if (characterData) {
         setCharacter(characterData);
-        setStatsData((characterData.stats || []).map(stat => ({
+        setStatsData((characterData.stats ?? []).map(stat => ({
           ...stat,
-          strength: stat.strength || 0,
-          dexterity: stat.dexterity || 0,
-          intelligence: stat.intelligence || 0,
-          constitution: stat.constitution || 0,
-          charisma: stat.charisma || 0,
-          perception: stat.perception || 0
+          strength: stat.strength ?? 0,
+          dexterity: stat.dexterity ?? 0,
+          intelligence: stat.intelligence ?? 0,
+          constitution: stat.constitution ?? 0,
+          charisma: stat.charisma ?? 0,
+          perception: stat.perception ?? 0
         })));
-        setSkillsAcquired(characterData.skills || []);
-        setSkillsRingList(characterData.skillsRing || []);
-        setInventory((characterData.inventory || []).map(toInventoryObject));
-        setCoins([characterData.pus_cantidad_oro || 0, characterData.pus_cantidad_plata || 0, characterData.pus_cantidad_bronce || 0]);
-        setSystemGame(characterData.systemGame || { sju_id: '', sju_nombre: '' });
+        setSkillsAcquired(characterData.skills ?? []);
+        setSkillsRingList(characterData.skillsRing ?? []);
+        setInventory((characterData.inventory ?? []).map(toInventoryObject));
+        setCoins([characterData.pus_cantidad_oro ?? 0, characterData.pus_cantidad_plata ?? 0, characterData.pus_cantidad_bronce ?? 0]);
+        setSystemGame(characterData.systemGame ?? { sju_id: '', sju_nombre: '' });
       }
     } catch (error) {
       console.error('Error al inicializar el personaje:', error);
@@ -71,24 +71,24 @@ export function useCharacter(id?: string, userId?: string) {
         pus_alineacion: character.pus_alineacion ?? '',
         stats: statsData.map(stat => ({
           ...stat,
-          strength: stat.strength || 0,
-          dexterity: stat.dexterity || 0,
-          intelligence: stat.intelligence || 0,
-          constitution: stat.constitution || 0,
-          charisma: stat.charisma || 0,
-          perception: stat.perception || 0
+          strength: stat.strength ?? 0,
+          dexterity: stat.dexterity ?? 0,
+          intelligence: stat.intelligence ?? 0,
+          constitution: stat.constitution ?? 0,
+          charisma: stat.charisma ?? 0,
+          perception: stat.perception ?? 0
         })),
-        skills: skillsAcquired,
-        skillsRing: skillsRingList,
-        inventory,
-        pus_cantidad_oro: coins[0],
-        pus_cantidad_plata: coins[1],
-        pus_cantidad_bronce: coins[2],
-        deleteItems,
+        skills: skillsAcquired ?? [],
+        skillsRing: skillsRingList ?? [],
+        inventory: inventory ?? [],
+        pus_cantidad_oro: coins[0] ?? 0,
+        pus_cantidad_plata: coins[1] ?? 0,
+        pus_cantidad_bronce: coins[2] ?? 0,
+        deleteItems: deleteItems ?? [],
         usu_usuario: character?.usu_usuario ?? null,
-        pus_sistema_juego: character?.pus_sistema_juego ?? systemGame.sju_id,
-        sju_sistema_juego: systemGame,
-        systemGame
+        pus_sistema_juego: character?.pus_sistema_juego ?? systemGame?.sju_id ?? '',
+        sju_sistema_juego: systemGame ?? { sju_id: '', sju_nombre: '' },
+        systemGame: systemGame ?? { sju_id: '', sju_nombre: '' }
       };
 
       const savedCharacterId = await characterService.saveCharacter(characterData, !id);

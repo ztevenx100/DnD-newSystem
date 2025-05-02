@@ -1,21 +1,25 @@
 import React, { ChangeEvent } from 'react';
-
 import { Tooltip } from "@nextui-org/react"
 
 import { InputStats } from '@interfaces/typesCharacterSheet';
 
 interface InputNumberProps {
-    inputStats: InputStats;
+    inputStats: InputStats | null;
     onSelectedValuesChange: (newInputStats: InputStats) => void;
 }
 
 const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValuesChange})  => {
-  // Si inputStats es undefined, retornamos null para evitar errores
+  // Si inputStats es undefined o null, retornamos null para evitar errores
   if (!inputStats) {
     return null;
   }
   
-  let sum = inputStats.valueDice + inputStats.valueClass + inputStats.valueLevel;
+  // Asegurar que los valores sean números
+  const valueDice = inputStats.valueDice ?? 0;
+  const valueClass = inputStats.valueClass ?? 0;
+  const valueLevel = inputStats.valueLevel ?? 0;
+  
+  let sum = valueDice + valueClass + valueLevel;
 
   function validateNumeric(value:string, valueDefault?: number): number{
     if(isNaN(Number(value))){
@@ -30,22 +34,25 @@ const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValu
 
     const handleInputChange = (index: number, value: string) => {
         let numericValue = validateNumeric(value);
+        const updatedStats = { ...inputStats };
+        
         switch (index) {
             case 0:
-                inputStats.valueDice = numericValue;
+                updatedStats.valueDice = numericValue;
                 break;
             case 1:
-                inputStats.valueClass = numericValue;
+                updatedStats.valueClass = numericValue;
                 break;
             case 2:
-                inputStats.valueLevel = numericValue;
+                updatedStats.valueLevel = numericValue;
                 break;
         
             default:
                 break;
         }
-        onSelectedValuesChange(inputStats);
-        sum = inputStats.valueDice + inputStats.valueClass + inputStats.valueLevel;
+        
+        onSelectedValuesChange(updatedStats);
+        sum = (updatedStats.valueDice ?? 0) + (updatedStats.valueClass ?? 0) + (updatedStats.valueLevel ?? 0);
     };
 
     return (
@@ -80,7 +87,7 @@ const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValu
                 placeholder="Dado" 
                 min="1" 
                 className="form-input stats-sub ml-2 col-start-1 col-end-2 focus:border-black focus:shadow"
-                value={inputStats.valueDice}
+                value={inputStats.valueDice ?? 0}
                 maxLength={2}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(0, e.target.value)}
                 required
@@ -92,7 +99,7 @@ const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValu
                 placeholder="Clase" 
                 min="1" 
                 className="form-input stats-sub col-start-2 col-end-3 focus:border-black focus:shadow"
-                value={inputStats.valueClass}
+                value={inputStats.valueClass ?? 0}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(1, e.target.value)}
                 readOnly
             />
@@ -103,7 +110,7 @@ const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValu
                 placeholder="Nivel" 
                 min="1" 
                 className="form-input stats-sub-end mr-2 col-start-3 col-end-4 focus:border-black focus:shadow"
-                value={inputStats.valueLevel}
+                value={inputStats.valueLevel ?? 0}
                 maxLength={2}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(2, e.target.value)}
            />

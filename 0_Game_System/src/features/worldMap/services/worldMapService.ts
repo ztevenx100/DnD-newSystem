@@ -1,6 +1,6 @@
 import { getDataQueryMmu, getDataQuerySub, getDataQueryPnj, getDataQueryEne, getDataQueryMis } from '@database/dbTables';
 import { getUrlStage, getUrlSound } from '@database/dbStorage';
-import { DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision } from '@core/types';
+import { DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision } from '@core/types';
 import { StageImageList } from '../types';
 
 export const worldMapService = {

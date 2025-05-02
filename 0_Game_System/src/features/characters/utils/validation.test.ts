@@ -1,10 +1,12 @@
 import { validateCharacter, validateSaveRequirements, generateRandomStats } from './validation';
-import { DBPersonajesUsuario, InputStats, InventoryObject, SkillsAcquired } from '../types';
+import { DBPersonajesUsuario, InputStats, InventoryObject } from '@core/types/characters/characterDbTypes';
+import { SkillsAcquired } from '../types';
 
 describe('Character Validation Utils', () => {
   const mockCharacter: DBPersonajesUsuario = {
     pus_id: "1",
     pus_usuario: "testUser",
+    usu_usuario: null,
     sju_sistema_juego: { sju_id: "1", sju_nombre: "Test System" },
     pus_nombre: "Test Character",
     pus_clase: "WAR",
@@ -17,17 +19,16 @@ describe('Character Validation Utils', () => {
     pus_arma_principal: "Sword",
     pus_arma_secundaria: "Shield",
     pus_descripcion: "Test description",
-    pus_habilidad_principal: "skill1",
-    pus_habilidad_extra: "skill2",
     pus_conocimientos: "HIS,ALC",
     pus_cantidad_oro: 10,
     pus_cantidad_plata: 5,
     pus_cantidad_bronce: 2,
+    pus_sistema_juego: null,
     url_character_image: ""
   };
 
   const mockStats: InputStats[] = [
-    { id: "STR", label: "Fuerza", description: "", valueDice: 5, valueClass: 2, valueLevel: 1 }
+    { id: "STR", label: "Fuerza", valueDice: 5, valueClass: 2, valueLevel: 1, strength: 1, dexterity: 0, intelligence: 0, constitution: 0, charisma: 0, perception: 0 }
   ];
 
   const mockInventory: InventoryObject[] = [
@@ -35,7 +36,7 @@ describe('Character Validation Utils', () => {
   ];
 
   const mockSkills: SkillsAcquired[] = [
-    { id: "1", value: "0", name: "Skill1", description: "", ring: "STR" }
+    { id: "1", value: 0, name: "Skill1", type: "combat", level: 1 }
   ];
 
   describe('validateCharacter', () => {
@@ -98,7 +99,7 @@ describe('Character Validation Utils', () => {
     });
 
     it('should fail on missing required fields', () => {
-      const invalidChar = { ...mockCharacter, pus_id: undefined };
+      const invalidChar = { ...mockCharacter, pus_id: "" };
       expect(validateSaveRequirements(invalidChar)).toBe(false);
     });
   });

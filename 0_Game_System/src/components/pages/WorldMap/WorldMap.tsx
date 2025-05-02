@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./WorldMap.css";
@@ -26,7 +25,7 @@ interface WorldMapProps {
 }
 
 const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
-    const params = useParams();
+    //const params = useParams();
     const systemId = 'd127c085-469a-4627-8801-77dc7262d41b'; // TODO: Get this from params or context
 
     const {
@@ -58,21 +57,21 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
 
                 <header className='bg-white shadow-lg rounded py-0 grid items-center mb-2'>
                     <h1 className='title-list'>Mapamundi</h1>
-                    <h2 className='subtitle-list'>{currentStage.esc_nombre}</h2>
+                    <h2 className='subtitle-list'>{currentStage?.esc_nombre ?? 'Sin nombre'}</h2>
                 </header>
 
                 <article 
                     className="map-grid relative grid grid-rows-7 rounded-xl bg-blue-900 text-gray-700 shadow-md w-full px-12 py-2 row-span-5" 
-                    style={{backgroundImage: `url("${imageStage}")`}}
+                    style={{backgroundImage: imageStage ? `url("${imageStage}")` : 'none'}}
                 >
                     <PlayerMap 
-                        imageStage={imageStage} 
-                        title={currentStage.esc_nombre} 
+                        imageStage={imageStage ?? ''} 
+                        title={currentStage?.esc_nombre ?? 'Sin nombre'} 
                     />
-                    {geographicalMap.map((row: DBMapamundi[], rowIndex: number) => (
+                    {geographicalMap?.map((row: DBMapamundi[], rowIndex: number) => (
                         <div key={rowIndex} className='map-grid-row grid-rows-1 grid grid-cols-11'>
-                            {row.map((elem: DBMapamundi, colIndex: number) => (
-                                elem.mmu_id !== '' ? (
+                            {row?.map((elem: DBMapamundi, colIndex: number) => (
+                                elem?.mmu_id !== '' ? (
                                     <ItemUbi 
                                         key={rowIndex + colIndex} 
                                         item={elem} 

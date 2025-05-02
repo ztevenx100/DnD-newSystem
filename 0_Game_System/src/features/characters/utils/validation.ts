@@ -1,6 +1,30 @@
 import { InputStats, SkillsAcquired } from '../types';
 import { DBPersonajesUsuario, InventoryObject } from '@core/types/characters/characterDbTypes';
 
+// Función para validar los requisitos mínimos para guardar un personaje
+export function validateSaveRequirements(character: DBPersonajesUsuario): boolean {
+  // Verificar campos requeridos
+  if (!character.pus_id || !character.pus_usuario || !character.pus_nombre) {
+    return false;
+  }
+
+  // Verificar campos numéricos
+  if (typeof character.pus_nivel !== 'number' || 
+      typeof character.pus_puntos_suerte !== 'number' || 
+      typeof character.pus_vida !== 'number') {
+    return false;
+  }
+
+  // Verificar campos de moneda
+  if (typeof character.pus_cantidad_oro !== 'number' || 
+      typeof character.pus_cantidad_plata !== 'number' || 
+      typeof character.pus_cantidad_bronce !== 'number') {
+    return false;
+  }
+
+  return true;
+}
+
 // Función para generar estadísticas aleatorias para un personaje
 export function generateRandomStats(): InputStats[] {
   const statIds = ['STR', 'INT', 'DEX', 'CON', 'PER', 'CHA'];

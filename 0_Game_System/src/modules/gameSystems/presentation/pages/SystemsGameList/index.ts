@@ -1,1 +1,2 @@
-export { default as SystemsGameList } from './SystemsGameList'; 
+import SystemsGameList from './SystemsGameList';
+export default SystemsGameList; 

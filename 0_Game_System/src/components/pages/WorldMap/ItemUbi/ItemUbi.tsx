@@ -6,7 +6,7 @@ import { Popover, PopoverTrigger, PopoverContent, Tooltip } from "@nextui-org/re
 import "./ItemUbi.css"
 
 // Interfaces
-import { DBMapamundi } from '@/components/interfaces/dbTypes'
+import { DBMapamundi } from '@/interfaces'
 import { itemsTypeUbgSvg, itemsSoundsSvg } from '@interfaces/iconInterface'
 
 // Components

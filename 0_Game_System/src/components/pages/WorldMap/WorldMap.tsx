@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { getDataQueryMmu, getDataQuerySub, getDataQueryPnj, getDataQueryEne, getDataQueryMis } from '@database/dbTables'
-import { getUrlStage, getUrlSound } from '@database/dbStorage'
+import { getDataQueryMmu, getDataQuerySub, getDataQueryPnj, getDataQueryEne, getDataQueryMis } from '@/services/database/dbTables'
+import { getUrlStage, getUrlSound } from '@/services/database/dbStorage'
 
 import "@unocss/reset/tailwind.css"
 import "uno.css"
 import "./WorldMap.css"
 
 // Interfaces
-import { stageImageList } from '@interfaces/typesCharacterSheet'
-import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision } from '@interfaces/dbTypes'
+import { stageImageList } from '@/interfaces/typesCharacterSheet'
+import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision } from '@/interfaces'
 
 // Components
-import ScreenLoader from '@UI/ScreenLoader/ScreenLoader'
+import ScreenLoader from '@/components/UI/ScreenLoader/ScreenLoader'
 import StageSelector from './StageSelector/StageSelector'
 import AmbientSoundsSelector from './AmbientSoundsSelector/AmbientSoundsSelector'
 import PlayerMap from './PlayerMap/PlayerMap'
@@ -20,11 +20,31 @@ import DiceThrower from './DiceThrower/DiceThrower'
 import ItemUbi from './ItemUbi/ItemUbi'
 
 // Images
-import bgMapWorld from '@img/webp/bg-mapWorld.webp'
+import bgMapWorld from '@/assets/img/webp/bg-mapWorld.webp'
 
 interface WorldMapProps {
     changeBackground: (newBackground: string) => void
 }
+
+// Funciones de transformación de datos
+const transformMission = (mission: any): DBMision => ({
+    ...mission,
+    mis_cumplido: mission.mis_cumplido === 'true'
+})
+
+const transformSound = (sound: any): DBSonidoUbicacion => ({
+    ...sound,
+    son_sonidos: sound.son_sonidos ? {
+        ...sound.son_sonidos,
+        son_url: sound.son_sonidos.son_url || undefined
+    } : null
+})
+
+const transformMapamundi = (mapamundi: any): DBMapamundi => ({
+    ...mapamundi,
+    lista_sonidos: mapamundi.lista_sonidos?.map(transformSound) || [],
+    lista_mision: mapamundi.lista_mision?.map(transformMission) || []
+})
 
 const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     
@@ -74,7 +94,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
      * Inicializar matriz del mapa.
      * @returns {DBMapamundi[][]} Retorna el mapa vacio.
      */
-    const buildTemplateMap = () => {
+    const buildTemplateMap = (): DBMapamundi[][] => {
         const templateMap: DBMapamundi[][] = [...geographicalMap]
         
         for (let i = 0; i < 7; i++) {
@@ -91,7 +111,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
      * Llenar el mapa con informacion de base de datos
      * @param {DBMapamundi[][]} templateMap - Mapa vacio.
      */
-    const getMap = async(templateMap: DBMapamundi[][]) => {
+    const getMap = async(templateMap: DBMapamundi[][]): Promise<void> => {
         const data = await Promise.resolve(
             getDataQueryMmu(
                 'mmu_id, mmu_sju, mmu_esc, esc_escenario(esc_id, esc_tipo, esc_nombre, esc_orden), mmu_ubi, ubi_ubicacion(ubi_id, ubi_tipo, ubi_nombre),mmu_pos_x, mmu_pos_y'
@@ -106,7 +126,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             const updatedImageStageList = [...imageStageList]
 
             await Promise.all(
-                data.map(async (elem) => {
+                data.map(async (elem: any) => {
                     let npcList: DBPersonajeNoJugable[] = []
                     
                     if(updatedImageStageList.length === 0){
@@ -121,15 +141,16 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
                         elem.lista_enemigo = await getEnemyList(elem.mmu_ubi)
                         elem.lista_mision = await getMissionList(elem.mmu_ubi)
                     } catch (error) {
+                        console.error('Error al cargar datos:', error)
                     }
                     if(stage.esc_id === elem.mmu_esc){
-                        templateMap[elem.mmu_pos_y][elem.mmu_pos_x] = elem
+                        templateMap[elem.mmu_pos_y][elem.mmu_pos_x] = transformMapamundi(elem)
                     }
                     getMapImage(updatedImageStageList, stage.esc_id)
                 })
             )
 
-            setListItemsMap(data)
+            setListItemsMap(data.map(transformMapamundi))
             setCurrentStage(stage)
             setImageStageList(updatedImageStageList)
             //console.log('getMap - stage: ',stage)
@@ -144,15 +165,15 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
      * @param {stageImageList[]} imageList - Listado de escenarios.
      * @param {string} idEsc - Identificador del escenario.
      */
-    const getMapImage = async(imageList:stageImageList[], idEsc:string) => {
-
+    const getMapImage = async(imageList:stageImageList[], idEsc:string): Promise<void> => {
         imageList.map(async (image) => {
             const url:string = await Promise.resolve(getUrlStage(image.id))
             image.url = url + '?' + randomValueRefreshImage
         })
         
-        if(idEsc !== null && idEsc !== undefined && imageList) setImagetStage(imageList.find(elem => elem.id === idEsc)?.url || '')
-
+        if(idEsc !== null && idEsc !== undefined && imageList) {
+            setImagetStage(imageList.find(elem => elem.id === idEsc)?.url || '')
+        }
     }
     
     /**
@@ -163,7 +184,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     const getSoundList = async(ubiId:string): Promise<DBSonidoUbicacion[]> => {
         let list: DBSonidoUbicacion[] = []
         
-        if (ubiId == undefined || ubiId == null) return list
+        if (!ubiId) return list
 
         const data =  await Promise.resolve( 
             getDataQuerySub(
@@ -173,13 +194,13 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         )
         if (data !== null) {
             await getSounds(data)
-            list = data
+            list = data.map(transformSound)
         }
         //console.log('getSoundList', list);
         return list
     }
 
-    const getSounds = async(soundsList:DBSonidoUbicacion[]) => {
+    const getSounds = async(soundsList:DBSonidoUbicacion[]): Promise<void> => {
         soundsList.map(async (sound) => {
             if (sound.sub_tipo === 'U') {
                 const url:string = await Promise.resolve(getUrlSound(sound.sub_son))
@@ -198,7 +219,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     const getNpcList = async(ubiId:string): Promise<DBPersonajeNoJugable[]> => {
         let characterList: DBPersonajeNoJugable[] = []
         
-        if (ubiId == undefined || ubiId == null) return characterList
+        if (!ubiId) return characterList
 
         const data =  await Promise.resolve(
             getDataQueryPnj(
@@ -221,7 +242,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     const getEnemyList = async(ubiId:string): Promise<DBEnemigo[]> => {
         let enemyList: DBEnemigo[] = []
         
-        if (ubiId == undefined || ubiId == null) return enemyList
+        if (!ubiId) return enemyList
 
         const data =  await Promise.resolve(
             getDataQueryEne(
@@ -244,7 +265,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     const getMissionList = async (ubiId:string): Promise<DBMision[]> => {
         let missionList: DBMision[] = []
         
-        if (ubiId == undefined || ubiId == null) return missionList
+        if (!ubiId) return missionList
 
         const data =  await Promise.resolve(
             getDataQueryMis(
@@ -254,12 +275,14 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             )
         )
 
-        if (data !== null) missionList = data
+        if (data !== null) {
+            missionList = data.map(transformMission)
+        }
 
         return missionList
     }
 
-    const handleImageStageChange = (idEsc: string) => {
+    const handleImageStageChange = (idEsc: string): void => {
         let listItemsByStage = listItemsMap.filter(elem => elem.mmu_esc === idEsc)
 
         setImagetStage(imageStageList.find(elem => elem.id === idEsc)?.url || '')
@@ -267,7 +290,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         mapChange(listItemsByStage)
     }
 
-    const mapChange = (list: DBMapamundi[]) => {
+    const mapChange = (list: DBMapamundi[]): void => {
         const templateMap = geographicalMap.map((row) => 
             row.map((col) => (col.mmu_id !== '' ? emptyTemplate : col))
         )

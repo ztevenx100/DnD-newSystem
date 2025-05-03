@@ -1,3 +1,17 @@
+import { getUrlStorage, addStorageFile } from '@/services/database/dbStorage';
+
+const FOLDER_CHARACTERS = 'personajes';
+
+export const getCharacterImageUrl = async (userId: string, characterId: string) => {
+    const path = `${FOLDER_CHARACTERS}/${userId}/${characterId}`;
+    return getUrlStorage(path);
+};
+
+export const uploadCharacterImage = async (userId: string, characterId: string, file: File) => {
+    const path = `${FOLDER_CHARACTERS}/${userId}/${characterId}`;
+    return addStorageFile(path, file);
+};
+
 export const getUrlCharacter = async (user: string, characterId: string): Promise<string> => {
   try {
     const response = await fetch(`/api/storage/characters/${user}/${characterId}`);

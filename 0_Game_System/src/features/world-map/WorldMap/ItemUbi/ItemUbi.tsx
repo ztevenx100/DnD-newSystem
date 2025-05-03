@@ -1,28 +1,23 @@
 import React from 'react';
-import dbConnection from '@database/dbConnection'
-import { getUrlLocation, getUrlNpc, getUrlEnemy } from '@database/dbStorage'
+import dbConnection from '@/services/database/dbConnection'
+import { getUrlLocation, getUrlNpc, getUrlEnemy } from '@/services/database/dbStorage'
 
 import { Popover, PopoverTrigger, PopoverContent, Tooltip } from "@nextui-org/react"
 import "./ItemUbi.css"
 
-// Interfaces
-import { DBMapamundi } from '@/interfaces'
-import { itemsTypeUbgSvg, itemsSoundsSvg } from '@interfaces/iconInterface'
-
-// Components
-import BtnMenuSound from '@UI/Buttons/BtnMenuSound'
-
-// Funciones
-import {getIcon} from '@utils/utilIcons'
+import { DBMapamundi } from '@/interfaces/dbTypes'
+import BtnMenuSound from '@/components/UI/Buttons/BtnMenuSound'
+import { getIcon } from '@/components/utils/utilIcons'
+import { itemsTypeUbgSvg, itemsSoundsSvg } from '@/components/utils/iconTypes'
 
 // Images
-import SvgPerson from '@Icons/SvgPerson'
-import SvgLookImage from '@Icons/SvgLookImage'
-import SvgSong from '@Icons/SvgSong'
-import SvgEnemy from '@Icons/SvgEnemy'
-import SvgGroup from '@Icons/SvgGroup'
-import SvgTaskList from '@Icons/SvgTaskList'
-import SvgHeart from '@Icons/SvgHeart';
+import SvgPerson from '@/components/UI/Icons/SvgPerson'
+import SvgLookImage from '@/components/UI/Icons/SvgLookImage'
+import SvgSong from '@/components/UI/Icons/SvgSong'
+import SvgEnemy from '@/components/UI/Icons/SvgEnemy'
+import SvgGroup from '@/components/UI/Icons/SvgGroup'
+import SvgTaskList from '@/components/UI/Icons/SvgTaskList'
+import SvgHeart from '@/components/UI/Icons/SvgHeart';
 
 interface ItemUbiProps{
     item: DBMapamundi;
@@ -104,12 +99,11 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
         const { error } = await dbConnection
         .from('mis_mision')
         .update({
-            mis_cumplido: ((isCompleted)?'S':'N'),
+            mis_cumplido: isCompleted ? 'S' : 'N',
         })
         .eq("mis_id", id)
         .select()
         if(error) alert('Stat not upload.')
-        
     };
 
     return (
@@ -194,15 +188,15 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
                                                 </header>
                                                 {item.lista_mision.map((mission, index) => (
                                                     <label
-                                                        htmlFor="vertical-list-react"
+                                                        htmlFor={`mission-${index}`}
                                                         key={index}
                                                         className="flex w-full cursor-pointer items-center p-1"
                                                     >
                                                         <input 
                                                             type='checkbox'
-                                                            id="vertical-list-react"
+                                                            id={`mission-${index}`}
                                                             className="p-0 mr-2"
-                                                            value={mission.mis_cumplido}
+                                                            checked={mission.mis_cumplido}
                                                             onChange={(e) => handleCheckboxChange(e, mission.mis_id)}
                                                         />
                                                         {mission.mis_nombre}
@@ -211,7 +205,6 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
                                             </article>
                                         </PopoverContent>
                                     </Popover>
-                                    
                                 )}
                                 {/*ENE panel*/}
                                 {item.lista_enemigo && item.lista_enemigo.length > 0 && (

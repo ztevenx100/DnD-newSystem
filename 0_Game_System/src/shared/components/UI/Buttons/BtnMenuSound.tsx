@@ -4,14 +4,14 @@ import { Tooltip } from "@nextui-org/react"
 import './BtnMenuSound.css'
 
 // Interfaces
-import { Components } from '@interfaces/typesCharacterSheet'
-import { DBSonidoUbicacion } from '@interfaces/dbTypes'
+import { Components } from '@shared/utils/types/typesCharacterSheet';
+import { DBSonidoUbicacion } from '@shared/utils/types';
 
 // Components
-import BtnReactPlayer from '@UI/Buttons/BtnReactPlayer'
+import BtnReactPlayer from '@UI/Buttons/BtnReactPlayer';
 
 // Funciones
-import {getIcon} from '@utils/utilIcons'
+import { getIcon } from '@utils/helpers/utilIcons';
 
 interface BtnMenuSoundProps{
     list: DBSonidoUbicacion[];
@@ -81,13 +81,13 @@ const BtnMenuSound: React.FC<BtnMenuSoundProps> = ({list, iconList}) => {
                             type="button" 
                             key={elem.sub_icon} 
                             className={'sounds-item flex justify-center items-center ' + (buttonActive && currentAudioIndex === elem.sub_icon ? 'active':'')} 
-                            onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}
+                            onClick={() => elem.sub_sound_url && playSound(elem.sub_sound_url, elem.sub_icon)}
                         >
                             {getIcon('type' + elem.sub_icon, iconList)}
                         </button>
                     </Tooltip>
                 ) : (
-                    <BtnReactPlayer key={index} url={elem.sub_sound_url} icon={getIcon('type' + elem.sub_icon, iconList)} />
+                    elem.sub_sound_url && <BtnReactPlayer key={index} url={elem.sub_sound_url} icon={getIcon('type' + elem.sub_icon, iconList)} />
                 )
             ))}
         </menu>

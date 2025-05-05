@@ -1,4 +1,3 @@
-// Tipos para personajes
 export interface DBPersonajesUsuario {
     pus_id: string;
     pus_usuario: string;

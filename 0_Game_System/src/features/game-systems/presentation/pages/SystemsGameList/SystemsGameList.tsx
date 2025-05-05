@@ -5,8 +5,8 @@ import "@unocss/reset/tailwind.css"
 import "uno.css"
 import "./SystemsGameList.css"
 
-import { DBSistemaJuego } from '@/modules/gameSystems/domain/types'
-import { getDataQuerySju } from '@/modules/gameSystems/infrastructure/services/gameSystems'
+import { DBSistemaJuego } from '@shared/utils/types';
+import { getDataQuerySju } from '@database/models/dbTables';
 
 const SystemsGameList: React.FC = () => {
     const [list, setList] = useState<DBSistemaJuego[]>([])

@@ -6,10 +6,10 @@
 import React from 'react';
 
 // Images
-import SvgUnknown from '../UI/Icons/SvgUnknown';
+import SvgUnknown from '@Icons/SvgUnknown';
 
 // Interfaces
-import { Components } from '../interfaces/typesCharacterSheet';
+import { Components } from '@shared/utils/types/typesCharacterSheet';
 
 /**
  * Retorna el icono a utilizar segun un valor-clave.

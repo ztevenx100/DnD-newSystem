@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getDataQuerySju } from '@/services/database/dbTables'
+import { getDataQuerySju } from '@database/models/dbTables';
 
 // Interfaces
-import { DBSistemaJuego } from '@interfaces/dbTypes'
+import { DBSistemaJuego } from '@shared/utils/types';
 
 import { Card, CardBody, Listbox, ListboxItem } from "@nextui-org/react"
 import "@unocss/reset/tailwind.css"

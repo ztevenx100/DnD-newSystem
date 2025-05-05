@@ -1,5 +1,5 @@
-import { getDataQuery } from '@/services/database/dbTables';
-import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision } from '@/interfaces';
+import { getDataQuery } from '@database/models/dbTables';
+import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision } from '@shared/utils/types';
 
 const TABLE_ESC = 'esc_escenario';
 const TABLE_MMU = 'mmu_mapamundi';

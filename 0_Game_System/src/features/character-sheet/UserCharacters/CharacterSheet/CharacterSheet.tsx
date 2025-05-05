@@ -11,11 +11,11 @@ import {
   deleteItemInventory,
   getCharacter,
   getGameSystem,
-  getListEpe,
+  getCharacterStats,
   getListHad,
-  getListInp,
+  getCharacterInventory,
   insertPus,
-  updateEpe,
+  updateCharacterStats,
   updateCharacter,
 } from "@features/character-sheet/infrastructure/services";
 import {
@@ -51,7 +51,7 @@ import {
   InventoryObject,
   SkillFields,
   Option,
-} from "@shared/utils/types/typesCharacterSheet";
+} from '@shared/utils/types/typesCharacterSheet';
 import {
   DBEstadisticaPersonaje,
   DBHabilidad,
@@ -61,7 +61,7 @@ import {
   DBSistemaJuego,
   DBUsuario,
   initialPersonajesUsuario,
-} from "@shared/utils/types";
+} from '@shared/utils/types';
 
 // Funciones
 import { validateNumeric } from "@shared/utils/helpers/utilConversions";
@@ -236,7 +236,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return;
     }
 
-    const data = await getListInp(params.id);
+    const data = await getCharacterInventory(params.id);
 
     if (data !== null) {
       data.forEach((elem: DBInventarioPersonaje) => {
@@ -334,7 +334,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const getStats = useCallback(async () => {
     if (params.id === null || params.id === undefined) return;
 
-    const data = await getListEpe(params.id);
+    const data = await getCharacterStats(params.id);
 
     if (data !== null) {
       const updatedInputsStatsData = [...inputsStatsData];
@@ -873,7 +873,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           epe_num_clase: element?.valueClass,
           epe_num_nivel: element?.valueLevel,
         };
-        updateEpe(record);
+        updateCharacterStats(record);
       }
     } else {
       const saveStats: DBEstadisticaPersonaje[] = [];

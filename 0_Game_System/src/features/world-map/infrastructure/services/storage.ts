@@ -1,4 +1,4 @@
-import { getUrlStorage, addStorageFile } from '@/services/database/dbStorage';
+import { getUrlStorage, addStorageFile } from '@database/storage/dbStorage';
 
 const FOLDER_STAGES = 'escenarios';
 const FOLDER_SOUNDS = 'sonidos';

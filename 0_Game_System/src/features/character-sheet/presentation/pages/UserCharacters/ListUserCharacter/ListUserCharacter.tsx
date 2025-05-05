@@ -87,7 +87,7 @@ const ListUserCharacter: React.FC<ListUserCharacterProps> = ({ user }) => {
                 </header>
                 <div className="character-info flex-1 min-w-0">
                   <h3 className="text-xl font-semibold text-gray-800 truncate">{elem.pus_nombre}</h3>
-                  <p className="text-base text-gray-600 mb-2">{elem.sju_sistema_juego.sju_nombre}</p>
+                  <p className="text-base text-gray-600 mb-2">{elem.sju_sistema_juego?.sju_nombre}</p>
                   {elem.pus_descripcion && (
                     <p className="text-sm text-gray-500 line-clamp-2">{elem.pus_descripcion}</p>
                   )}

@@ -16,11 +16,9 @@ export {
     upsertCharacterInventory,
     deleteItemInventory,
     getGameSystem,
-    getListEpe,
     getListHad,
-    getListInp,
     insertPus,
-    updateEpe
+    updateCharacterStats
 } from './database';
 
 // Characters

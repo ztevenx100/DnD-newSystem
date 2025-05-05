@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { getDataQuerySju } from '@database/dbTables'
+import { getDataQuerySju } from '@database/models/dbTables';
 
 import { Card, CardBody } from "@nextui-org/react"
 import "@unocss/reset/tailwind.css"
@@ -8,7 +8,7 @@ import "uno.css"
 import "./SystemGameElement.css"
 
 // Interfaces
-import { DBSistemaJuego } from '@interfaces/dbTypes'
+import { DBSistemaJuego } from '@shared/utils/types';
 
 const SystemGameElement: React.FC = () => {
     const [game, setGame] = useState<DBSistemaJuego>()

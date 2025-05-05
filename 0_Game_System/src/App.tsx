@@ -38,10 +38,10 @@ const userLoader = async () => {
 const userAndCharacterLoader = async ({ params }: any) => {
   const user = await getUserSession();
 
-  const characters: DBPersonajesUsuario[] = await getCharacter(params.id);
+  const characters = await getCharacter(params.id);
   return {
     user,
-    character: Boolean(characters?.length) ? characters[0] : undefined,
+    character: Boolean(characters?.length) ? characters[0] as DBPersonajesUsuario : undefined,
   };
 };
 

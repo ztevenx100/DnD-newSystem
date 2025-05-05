@@ -1,5 +1,5 @@
-import React, { ChangeEvent,useEffect } from 'react'
-import { SkillTypes, SkillsAcquired} from '@interfaces/typesCharacterSheet'
+import { ChangeEvent,useEffect } from 'react'
+import { SkillTypes, SkillsAcquired, Skill } from '@/shared/utils/types/typesCharacterSheet'
 
 interface RingTypes {
   id: string;
@@ -75,8 +75,8 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({ id, level, le
                     disabled={!values.ring} // Deshabilita si no se ha seleccionado un tipo de anillo
                 >
                     <option value=""/>
-                    {skillList.skills.map((elem,index) => (
-                        <option key={index} value={elem.value}>{elem.name}</option>
+                    {skillList.skills.map((elem: Skill, index: number) => (
+                        <option key={index} value={elem.value || ''}>{elem.name}</option>
                     ))}
                 </select>
             </>

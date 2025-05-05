@@ -13,5 +13,7 @@ export interface DBHabilidad {
   nombre: string;
   descripcion: string;
   tipo: string;
+  sigla: string;
+  estadistica_base: string;
   nivel: number;
 } 

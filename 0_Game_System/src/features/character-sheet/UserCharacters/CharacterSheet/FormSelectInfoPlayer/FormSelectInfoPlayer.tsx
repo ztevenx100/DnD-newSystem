@@ -1,10 +1,8 @@
 import React, { ChangeEvent } from "react";
+import { Option } from "@/shared/utils/types/typesCharacterSheet";
 
-import { Option } from "@interfaces/typesCharacterSheet";
-
-// Definir el tipo para los elementos del array 'options'
 type SelectFieldProps = {
-  id: string; // Id del select
+  id: string;
   label: string;
   options: Option[];
   selectedValue: string;

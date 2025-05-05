@@ -18,8 +18,14 @@ export const insertCharacter = async (character: DBPersonajesUsuario) => {
     return insertDataQuery<DBPersonajesUsuario>(TABLE_PUS, character);
 };
 
-export const updateCharacter = async (character: DBPersonajesUsuario) => {
-    return updateDataQuery<DBPersonajesUsuario>(TABLE_PUS, character, { pus_id: character.pus_id });
+export const updateCharacter = async (character: DBPersonajesUsuario): Promise<DBPersonajesUsuario | null> => {
+    const result = await updateDataQuery<DBPersonajesUsuario>(TABLE_PUS, character, { pus_id: character.pus_id });
+    return result && result.length > 0 ? result[0] : null;
+};
+
+export const insertPus = async (character: DBPersonajesUsuario): Promise<DBPersonajesUsuario | null> => {
+    const result = await insertDataQuery<DBPersonajesUsuario>(TABLE_PUS, character);
+    return result && result.length > 0 ? result[0] : null;
 };
 
 export const deleteCharacter = async (id: string) => {
@@ -32,6 +38,13 @@ export const getCharacterStats = async (characterId: string) => {
 
 export const upsertCharacterStats = async (stats: DBEstadisticaPersonaje[]) => {
     return upsertDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, stats);
+};
+
+export const updateCharacterStats = async (stats: DBEstadisticaPersonaje) => {
+    return updateDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, stats, { 
+        epe_personaje: stats.epe_personaje, 
+        epe_sigla: stats.epe_sigla 
+    });
 };
 
 export const getCharacterSkills = async (characterId: string) => {
@@ -58,25 +71,6 @@ export const getGameSystem = async () => {
     return getDataQuery<DBSistemaJuego>('sju_sistema_juego', '*', { sju_estado: 'A' });
 };
 
-export const getListEpe = async (characterId: string) => {
-    return getDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, '*', { epe_personaje: characterId });
-};
-
 export const getListHad = async () => {
     return getDataQuery<DBHabilidad>('hab_habilidad', '*', { hab_tipo: ['C','E','R'] });
 };
-
-export const getListInp = async (characterId: string) => {
-    return getDataQuery<DBInventarioPersonaje>(TABLE_INP, '*', { inp_personaje: characterId });
-};
-
-export const insertPus = async (character: DBPersonajesUsuario) => {
-    return insertDataQuery<DBPersonajesUsuario>(TABLE_PUS, character);
-};
-
-export const updateEpe = async (stats: DBEstadisticaPersonaje) => {
-    return updateDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, stats, { 
-        epe_personaje: stats.epe_personaje, 
-        epe_sigla: stats.epe_sigla 
-    });
-}; 

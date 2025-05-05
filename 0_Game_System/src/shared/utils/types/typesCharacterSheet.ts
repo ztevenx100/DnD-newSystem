@@ -1,8 +1,11 @@
-
 export interface Option {
     id?: string;
     value: string;
     name: string;
+    extraPoint?: string;
+    work?: string;
+    mainStat?: string;
+    stat?: string;
 }
 
 export interface InputStats {
@@ -58,4 +61,17 @@ export type Components = {
 export interface stageImageList {
     id: string;
     url: string;
+}
+
+export type CheckboxItem = {
+    id: string;
+    value: string;
+    name: string;
+}
+
+export type RingTypes = {
+    id: string;
+    value: string;
+    name: string;
+    stat: string;
 }

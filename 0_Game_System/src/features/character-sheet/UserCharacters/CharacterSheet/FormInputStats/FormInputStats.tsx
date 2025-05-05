@@ -2,7 +2,7 @@ import React, { ChangeEvent } from 'react';
 
 import { Tooltip } from "@nextui-org/react"
 
-import { InputStats } from '@interfaces/typesCharacterSheet';
+import { InputStats } from '@/shared/utils/types/typesCharacterSheet';
 
 interface InputNumberProps {
     inputStats: InputStats;

@@ -1,5 +1,5 @@
-import { getDataQuery } from '@/services/database/dbTables';
-import { DBSistemaJuego } from '@/interfaces';
+import { getDataQuery } from '@database/models/dbTables';
+import { DBSistemaJuego } from "@shared/utils/types";
 
 const TABLE_SJU = 'sju_sistema_juego';
 

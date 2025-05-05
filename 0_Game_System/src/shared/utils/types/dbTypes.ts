@@ -63,6 +63,16 @@ export interface DBInventarioPersonaje {
     inp_cantidad: number;
 }
 
+export interface DBHabilidad {
+    hab_id: string;
+    hab_nombre: string;
+    hab_descripcion?: string;
+    hab_tipo: string;
+    hab_siglas: string;
+    had_estadistica_base: string;
+    hab_nivel: number;
+}
+
 // Tipos para mundo
 export interface DBEscenario {
     esc_id: string;
@@ -173,4 +183,4 @@ export const initialPersonajesUsuario: DBPersonajesUsuario = {
     pus_cantidad_oro: 0,
     pus_cantidad_plata: 0,
     pus_cantidad_bronce: 0
-}; 
+};

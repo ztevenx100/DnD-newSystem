@@ -1,4 +1,4 @@
-import { DBPersonajesUsuario } from '../../domain/types';
+import { DBPersonajesUsuario } from "@shared/utils/types";
 
 export const getlistCharacters = async (user: string): Promise<DBPersonajesUsuario[]> => {
   try {

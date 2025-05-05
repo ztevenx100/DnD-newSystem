@@ -6,11 +6,11 @@ import { Listbox, ListboxItem, Avatar, Chip, Button } from "@nextui-org/react";
 import {
   deleteCharacter,
   getlistCharacters,
-} from "@services/UserCharactersServices";
-import { getUrlCharacter } from "@services/database/dbStorage";
+} from "@features/character-sheet/infrastructure/services/characters";
+import { getUrlCharacter } from "@database/storage/dbStorage";
 
 // Interfaces
-import { DBPersonajesUsuario, DBUsuario } from "@interfaces/dbTypes";
+import { DBPersonajesUsuario, DBUsuario } from "@shared/utils/types";
 
 // Images
 import SvgDeleteItem from "@Icons/SvgDeleteItem";
@@ -46,7 +46,7 @@ const ListUserCharacter: React.FC<ListUserCharacterProps> = ({ user }) => {
   const [list, setList] = useState<DBPersonajesUsuario[]>([]);
 
   useEffect(() => {
-    getList(user.usu_id).then((listData) => {
+    getList(user.id).then((listData) => {
       setList(listData ?? []);
     });
   }, [user]);
@@ -92,7 +92,7 @@ const ListUserCharacter: React.FC<ListUserCharacterProps> = ({ user }) => {
                 </header>
                 <div className="character-info flex-1 min-w-0">
                   <h3 className="text-xl font-semibold text-gray-800 truncate">{elem.pus_nombre}</h3>
-                  <p className="text-base text-gray-600 mb-2">{elem.sju_sistema_juego.sju_nombre}</p>
+                  <p className="text-base text-gray-600 mb-2">{elem.sju_sistema_juego?.sju_nombre}</p>
                   {elem.pus_descripcion && (
                     <p className="text-sm text-gray-500 line-clamp-2">{elem.pus_descripcion}</p>
                   )}

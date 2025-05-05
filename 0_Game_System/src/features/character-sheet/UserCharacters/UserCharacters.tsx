@@ -3,13 +3,13 @@ import "./UserCharacters.css";
 import { Suspense } from "react";
 import { useLoaderData, useNavigate } from "react-router-dom";
 
-import ListUserCharacterSkeleton from "@/components/UI/Skeleton/ListUserCharacterSkeleton";
+import ListUserCharacterSkeleton from "@components/UI/Skeleton/ListUserCharacterSkeleton";
 // Images
 import SvgAddCharacter from "@Icons/SvgAddCharacter";
 import { Card, CardBody } from "@nextui-org/react";
 
 import ListUserCharacter from "./ListUserCharacter/ListUserCharacter";
-import { DBUsuario } from "@/components/interfaces/dbTypes";
+import { DBUsuario } from "@shared/utils/types";
 
 const UserCharacters = () => {
   const navigate = useNavigate();

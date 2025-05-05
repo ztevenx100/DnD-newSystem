@@ -1,5 +1,17 @@
+export * from './dbTypes';
+export * from './typesCharacterSheet';
+export * from './iconTypes';
+
 export interface DBUsuario {
-  usu_id: string;
-  usu_nombre: string;
-  usu_email: string;
+  id: string;
+  nombre: string;
+  email: string;
+}
+
+export interface DBHabilidad {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  tipo: string;
+  nivel: number;
 } 

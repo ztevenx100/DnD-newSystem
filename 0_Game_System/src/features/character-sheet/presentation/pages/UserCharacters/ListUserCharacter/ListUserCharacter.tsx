@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 
 import { Listbox, ListboxItem, Avatar, Chip, Button } from "@nextui-org/react";
 
-import { DBUsuario } from "@/shared/types";
-import { DBPersonajesUsuario } from "@/modules/characters/domain/types";
-import { getUrlCharacter } from "@/modules/characters/infrastructure/services/storage";
-import { deleteCharacter, getlistCharacters } from "@/modules/characters/infrastructure/services/characters";
+import { DBUsuario } from "@utils/types";
+import { DBPersonajesUsuario } from "@features/character-sheet/domain/types";
+import { getUrlCharacter } from "@features/character-sheet/infrastructure/services/storage";
+import { deleteCharacter, getlistCharacters } from "@features/character-sheet/infrastructure/services/characters";
 
 // Images
-import SvgDeleteItem from "@/shared/components/Icons/SvgDeleteItem";
+import SvgDeleteItem from "@Icons/SvgDeleteItem";
 
 interface ListUserCharacterProps {
   user: DBUsuario;
@@ -41,7 +41,7 @@ const ListUserCharacter: React.FC<ListUserCharacterProps> = ({ user }) => {
   const [list, setList] = useState<DBPersonajesUsuario[]>([]);
 
   useEffect(() => {
-    getList(user.usu_id).then((listData) => {
+    getList(user.id).then((listData) => {
       setList(listData ?? []);
     });
   }, [user]);

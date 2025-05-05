@@ -3,9 +3,9 @@
  * @file: Maneja las funciones relacionadas con el listado de personajes por usuario
  */ 
 
-import { getDataQueryPus, deleteDataQueryPus, getDataQueryUsu, getDataQueryHad, getDataQuerySju, getDataQueryEpe, getDataQueryHpe, getDataQueryInp, updateDataPus, updateDataEpe, insertDataPus, deleteDataQueryInp } from '@database/dbTables';
+import { getDataQueryPus, deleteDataQueryPus, getDataQueryUsu, getDataQueryHad, getDataQuerySju, getDataQueryEpe, getDataQueryHpe, getDataQueryInp, updateDataPus, updateDataEpe, insertDataPus, deleteDataQueryInp } from '@database/models/dbTables';
 // Interfaces
-import { DBEstadisticaPersonaje, DBHabilidad, DBHabilidadPersonaje, DBInventarioPersonaje, DBPersonajesUsuario, DBSistemaJuego, DBUsuario, initialPersonajesUsuario } from '@interfaces/dbTypes';
+import { DBEstadisticaPersonaje, DBHabilidad, DBHabilidadPersonaje, DBInventarioPersonaje, DBPersonajesUsuario, DBSistemaJuego, DBUsuario, initialPersonajesUsuario } from '@shared/utils/types';
 
 /**
  * Busca el listado de personajes por usuario.

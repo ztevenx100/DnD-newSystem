@@ -1,4 +1,4 @@
-import supabase, {bucket} from '@/services/database/supabase'
+import supabase, { bucket } from './supabase'
 
 const dbConnection = supabase
 export const bucketName = bucket

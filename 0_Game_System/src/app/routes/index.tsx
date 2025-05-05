@@ -5,21 +5,25 @@ import { ErrorPage } from '@/shared/components/ErrorPage';
 import { ScreenLoader } from '@/shared/components/ScreenLoader';
 
 // Importaciones lazy para las páginas principales
-const Home = lazy(() => import('@modules/home/presentation/pages/Home'));
-const UserCharacters = lazy(() => import('@modules/characters/presentation/pages/UserCharacters'));
-const CharacterSheet = lazy(() => import('@modules/characters/presentation/pages/CharacterSheet'));
-const WorldMap = lazy(() => import('@modules/world/presentation/pages/WorldMap'));
-const SystemsGameList = lazy(() => import('@modules/gameSystems/presentation/pages/SystemsGameList'));
+const Home = lazy(() => import('@/app/Home'));
+const UserCharacters = lazy(() => import('@features/character-sheet/UserCharacters/UserCharacters'));
+const CharacterSheet = lazy(() => import('@features/character-sheet/UserCharacters/CharacterSheet/CharacterSheet'));
+const WorldMap = lazy(() => import('@features/world-map/WorldMap/WorldMap'));
+const SystemsGameList = lazy(() => import('@features/game-systems/presentation/pages/SystemsGameList'));
 
 // Componente de carga para las rutas lazy
 const LoadingFallback = () => <ScreenLoader />;
+
+const changeBackground = (newBackground: string) => {
+    document.body.style.backgroundImage = `url(${newBackground})`;
+};
 
 export const router = createBrowserRouter([
     {
         path: ROUTES.HOME,
         element: (
             <Suspense fallback={<LoadingFallback />}>
-                <Home />
+                <Home changeBackground={changeBackground} />
             </Suspense>
         ),
     },
@@ -35,7 +39,7 @@ export const router = createBrowserRouter([
         path: ROUTES.CHARACTERS.SHEET,
         element: (
             <Suspense fallback={<LoadingFallback />}>
-                <CharacterSheet />
+                <CharacterSheet changeBackground={changeBackground} />
             </Suspense>
         ),
     },
@@ -43,7 +47,7 @@ export const router = createBrowserRouter([
         path: ROUTES.CHARACTERS.CREATE,
         element: (
             <Suspense fallback={<LoadingFallback />}>
-                <CharacterSheet />
+                <CharacterSheet changeBackground={changeBackground} />
             </Suspense>
         ),
     },
@@ -51,7 +55,7 @@ export const router = createBrowserRouter([
         path: ROUTES.WORLD.MAP,
         element: (
             <Suspense fallback={<LoadingFallback />}>
-                <WorldMap />
+                <WorldMap changeBackground={changeBackground} />
             </Suspense>
         ),
     },

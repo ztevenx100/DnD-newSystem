@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { getDataQueryMmu, getDataQuerySub, getDataQueryPnj, getDataQueryEne, getDataQueryMis } from '@/services/database/dbTables'
-import { getUrlStage, getUrlSound } from '@/services/database/dbStorage'
+import { getDataQueryMmu, getDataQuerySub, getDataQueryPnj, getDataQueryEne, getDataQueryMis } from '@database/models/dbTables'
+import { getUrlStage, getUrlSound } from '@database/storage/dbStorage'
 
 import "@unocss/reset/tailwind.css"
 import "uno.css"
 import "./WorldMap.css"
 
 // Interfaces
-import { stageImageList } from '@/interfaces/typesCharacterSheet'
-import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision } from '@/interfaces'
+import { stageImageList } from '@features/world-map/domain/types'
+import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision } from '@features/world-map/domain/types'
 
 // Components
-import ScreenLoader from '@/components/UI/ScreenLoader/ScreenLoader'
+import ScreenLoader from '@UI/ScreenLoader/ScreenLoader'
 import StageSelector from './StageSelector/StageSelector'
 import AmbientSoundsSelector from './AmbientSoundsSelector/AmbientSoundsSelector'
 import PlayerMap from './PlayerMap/PlayerMap'

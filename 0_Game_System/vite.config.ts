@@ -19,16 +19,17 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src/"),
-      "@assets": `${path.resolve(__dirname, "./src/assets/")}`,
-      "@img": `${path.resolve(__dirname, "./src/assets/img/")}`,
-      "@components": `${path.resolve(__dirname, "./src/components/")}`,
-      "@UI": `${path.resolve(__dirname, "./src/components/UI/")}`,
-      "@Icons": `${path.resolve(__dirname, "./src/components/UI/Icons/")}`,
-      "@pages": `${path.resolve(__dirname, "./src/components/pages/")}`,
-      "@services": `${path.resolve(__dirname, "./src/services/")}`,
-      "@database": `${path.resolve(__dirname, "./src/services/database/")}`,
-      "@interfaces": `${path.resolve(__dirname, "./src/components/interfaces/")}`,
-      "@utils": `${path.resolve(__dirname, "./src/components/utils/")}`,
+      "@assets": path.resolve(__dirname, "./src/assets/"),
+      "@components": path.resolve(__dirname, "./src/shared/components/"),
+      "@features": path.resolve(__dirname, "./src/features/"),
+      "@shared": path.resolve(__dirname, "./src/shared/"),
+      "@utils": path.resolve(__dirname, "./src/shared/utils/"),
+      "@services": path.resolve(__dirname, "./src/shared/services/"),
+      "@interfaces": path.resolve(__dirname, "./src/shared/interfaces/"),
+      "@database": path.resolve(__dirname, "./src/database/"),
+      "@types": path.resolve(__dirname, "./src/shared/utils/types/"),
+      "@UI": path.resolve(__dirname, "./src/shared/components/UI/"),
+      "@Icons": path.resolve(__dirname, "./src/shared/components/UI/Icons/")
     },
   },
 })

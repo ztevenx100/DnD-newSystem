@@ -4,11 +4,10 @@ import { Suspense } from "react";
 import { useLoaderData, useNavigate } from "react-router-dom";
 
 import { Card, CardBody } from "@nextui-org/react";
-import { ScreenLoader } from "@/shared/components";
-
+import { ScreenLoader } from "@components/ScreenLoader";
 import ListUserCharacter from "./ListUserCharacter/ListUserCharacter";
-import { DBUsuario } from "@/shared/types";
-import SvgAddCharacter from "@/components/UI/Icons/SvgAddCharacter";
+import { DBUsuario } from "@utils/types";
+import SvgAddCharacter from '@Icons/SvgAddCharacter';
 
 const UserCharacters = () => {
   const navigate = useNavigate();

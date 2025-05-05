@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import {
   addStorageCharacter,
   getUrlCharacter,
-} from "@services/database/dbStorage";
+} from "@database/storage/dbStorage";
 import {
   deleteItemInventory,
   getCharacter,
@@ -17,12 +17,12 @@ import {
   insertPus,
   updateEpe,
   updatePus,
-} from "@services/UserCharactersServices";
+} from "@features/character-sheet/infrastructure/services";
 import {
   insertDataEpe,
   upsertDataHpe,
   upsertDataInp,
-} from "@services/database/dbTables";
+} from "@database/models/dbTables";
 
 import {
   Tooltip,
@@ -51,7 +51,7 @@ import {
   InventoryObject,
   SkillFields,
   Option,
-} from "@interfaces/typesCharacterSheet";
+} from "@shared/utils/types/typesCharacterSheet";
 import {
   DBEstadisticaPersonaje,
   DBHabilidad,
@@ -61,10 +61,10 @@ import {
   DBSistemaJuego,
   DBUsuario,
   initialPersonajesUsuario,
-} from "@interfaces/dbTypes";
+} from "@shared/utils/types";
 
 // Funciones
-import { validateNumeric } from "@utils/utilConversions";
+import { validateNumeric } from "@shared/utils/helpers/utilConversions";
 
 // Images
 import mainBackground from "@img/webp/bg-home-02.webp";

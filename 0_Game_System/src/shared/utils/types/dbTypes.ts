@@ -14,10 +14,20 @@ export interface DBPersonajesUsuario {
     pus_arma_principal: string;
     pus_arma_secundaria: string;
     pus_alineacion: string;
-    pus_sistema_juego: {
+    pus_sistema_juego: string;
+    pus_cantidad_oro: number;
+    pus_cantidad_plata: number;
+    pus_cantidad_bronce: number;
+    sju_sistema_juego?: {
         sju_id: string;
         sju_nombre: string;
     };
+    usu_usuario?: {
+        id: string;
+        nombre: string;
+        email: string;
+    };
+    url_character_image?: string;
 }
 
 export interface DBEstadisticaPersonaje {
@@ -36,6 +46,13 @@ export interface DBHabilidadPersonaje {
     hpe_habilidad: string;
     hpe_campo: string;
     hpe_alineacion: string | null;
+    hab_habilidad?: {
+        id: string;
+        nombre: string;
+        descripcion: string;
+        tipo: string;
+        nivel: number;
+    };
 }
 
 export interface DBInventarioPersonaje {
@@ -135,4 +152,25 @@ export interface DBSistemaJuego {
     sju_id: string;
     sju_nombre: string;
     sju_descripcion: string;
-} 
+}
+
+export const initialPersonajesUsuario: DBPersonajesUsuario = {
+    pus_id: "",
+    pus_usuario: "",
+    pus_nombre: "",
+    pus_clase: "",
+    pus_raza: "",
+    pus_trabajo: "",
+    pus_nivel: 1,
+    pus_puntos_suerte: 0,
+    pus_vida: 0,
+    pus_descripcion: "",
+    pus_conocimientos: "",
+    pus_arma_principal: "",
+    pus_arma_secundaria: "",
+    pus_alineacion: "",
+    pus_sistema_juego: "",
+    pus_cantidad_oro: 0,
+    pus_cantidad_plata: 0,
+    pus_cantidad_bronce: 0
+}; 

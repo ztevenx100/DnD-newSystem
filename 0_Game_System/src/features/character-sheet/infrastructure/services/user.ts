@@ -1,0 +1,13 @@
+import { getDataQueryUsu } from '@database/models/dbTables';
+import { DBUsuario } from '@utils/types';
+
+export const getUser = async(user: string): Promise<DBUsuario[]> => {
+    const data = await Promise.resolve(
+        getDataQueryUsu(
+            'usu_id, usu_nombre, usu_email, usu_imagen'
+            , { 'usu_id': user }
+        )
+    );
+
+    return data;
+}; 

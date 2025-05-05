@@ -1,5 +1,5 @@
 // @filename: tables.ts
-import dbConnection from '@services/database/dbConnection';
+import dbConnection from '@database/config/dbConnection';
 
 // Interfaces
 import { 
@@ -16,7 +16,7 @@ import {
     DBHabilidad, 
     DBEstadisticaPersonaje, 
     DBInventarioPersonaje 
-} from '@interfaces/dbTypes';
+} from '@utils/types';
 
 const TABLE_ENE:string = 'ene_enemigo';
 const TABLE_EPE:string = 'epe_estadistica_personaje';

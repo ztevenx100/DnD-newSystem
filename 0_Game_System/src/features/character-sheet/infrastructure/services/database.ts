@@ -1,5 +1,5 @@
-import { getDataQuery, insertDataQuery, updateDataQuery, upsertDataQuery, deleteDataQuery } from '@/services/database/dbTables';
-import { DBPersonajesUsuario, DBEstadisticaPersonaje, DBHabilidadPersonaje, DBInventarioPersonaje } from '@/interfaces';
+import { getDataQuery, insertDataQuery, updateDataQuery, upsertDataQuery, deleteDataQuery } from '@database/models/dbTables';
+import { DBPersonajesUsuario, DBEstadisticaPersonaje, DBHabilidadPersonaje, DBInventarioPersonaje, DBSistemaJuego, DBHabilidad } from '@utils/types';
 
 const TABLE_PUS = 'pus_personajes_usuario';
 const TABLE_EPE = 'epe_estadistica_personaje';
@@ -48,4 +48,35 @@ export const getCharacterInventory = async (characterId: string) => {
 
 export const upsertCharacterInventory = async (inventory: DBInventarioPersonaje[]) => {
     return upsertDataQuery<DBInventarioPersonaje>(TABLE_INP, inventory);
+};
+
+export const deleteItemInventory = async (items: string[]) => {
+    return deleteDataQuery(TABLE_INP, { inp_id: items });
+};
+
+export const getGameSystem = async () => {
+    return getDataQuery<DBSistemaJuego>('sju_sistema_juego', '*', { sju_estado: 'A' });
+};
+
+export const getListEpe = async (characterId: string) => {
+    return getDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, '*', { epe_personaje: characterId });
+};
+
+export const getListHad = async () => {
+    return getDataQuery<DBHabilidad>('hab_habilidad', '*', { hab_tipo: ['C','E','R'] });
+};
+
+export const getListInp = async (characterId: string) => {
+    return getDataQuery<DBInventarioPersonaje>(TABLE_INP, '*', { inp_personaje: characterId });
+};
+
+export const insertPus = async (character: DBPersonajesUsuario) => {
+    return insertDataQuery<DBPersonajesUsuario>(TABLE_PUS, character);
+};
+
+export const updateEpe = async (stats: DBEstadisticaPersonaje) => {
+    return updateDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, stats, { 
+        epe_personaje: stats.epe_personaje, 
+        epe_sigla: stats.epe_sigla 
+    });
 }; 

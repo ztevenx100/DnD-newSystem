@@ -24,18 +24,17 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@app/*": ["./src/app/*"],
-      "@modules/*": ["./src/modules/*"],
-      "@shared/*": ["./src/shared/*"],
       "@assets/*": ["./src/assets/*"],
+      "@components/*": ["./src/shared/components/*"],
+      "@features/*": ["./src/features/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@utils/*": ["./src/shared/utils/*"],
+      "@services/*": ["./src/shared/services/*"],
+      "@interfaces/*": ["./src/shared/interfaces/*"],
       "@database/*": ["./src/database/*"],
-      "@components*": ["./src/components/*"],
-      "@pages*": ["./src/components/pages/*"],
-      "@interfaces*": ["./src/components/interfaces/*"],
-      "@services*": ["./src/services/*"],
-      "@UI*": ["./src/components/UI/*"],
-      "@Icons*": ["./src/components/UI/Icons/*"],
-      "@utils*": ["./src/components/utils/*"]
+      "@types/*": ["./src/shared/utils/types/*"],
+      "@UI/*": ["./src/shared/components/UI/*"],
+      "@Icons/*": ["./src/shared/components/UI/Icons/*"]
     }
   },
   "include": ["src"],

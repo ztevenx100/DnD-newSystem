@@ -5,29 +5,28 @@ import "uno.css";
 import "./WorldMap.css";
 
 import { ScreenLoader } from '@/shared/components';
+// Use types from the domain directory to match the services
 import { 
   DBEscenario, 
   DBMapamundi, 
-  DBSonidoUbicacion, 
   DBPersonajeNoJugable, 
-  DBEnemigo, 
-  DBMision,
-  stageImageList 
-} from '@/modules/world/domain/types';
+  stageImageList
+} from '@/features/world-map/domain/types';
 import { 
   getMapData, 
   getSoundList, 
   getNpcList, 
   getEnemyList, 
   getMissionList 
-} from '@/modules/world/infrastructure/services/world';
-import { getUrlStage, getUrlSound } from '@/modules/world/infrastructure/services/storage';
+} from '@/features/world-map/infrastructure/services/world';
+import { getUrlStage } from '@/database/storage/dbStorage';
 
-import StageSelector from './StageSelector/StageSelector';
-import AmbientSoundsSelector from './AmbientSoundsSelector/AmbientSoundsSelector';
-import PlayerMap from './PlayerMap/PlayerMap';
-import DiceThrower from './DiceThrower/DiceThrower';
-import ItemUbi from './ItemUbi/ItemUbi';
+// Import components from the correct locations
+import StageSelector from '@/features/world-map/WorldMap/StageSelector/StageSelector';
+import AmbientSoundsSelector from '@/features/world-map/WorldMap/AmbientSoundsSelector/AmbientSoundsSelector';
+import PlayerMap from '@/features/world-map/WorldMap/PlayerMap/PlayerMap';
+import DiceThrower from '@/features/world-map/WorldMap/DiceThrower/DiceThrower';
+import ItemUbi from '@/features/world-map/WorldMap/ItemUbi/ItemUbi';
 
 import bgMapWorld from '@/assets/images/webp/bg-mapWorld.webp';
 
@@ -154,10 +153,6 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     setImagetStage(imageStageList.find(elem => elem.id === idEsc)?.url || '');
   };
 
-  const mapChange = (list: DBMapamundi[]) => {
-    setListItemsMap(list);
-  };
-
   if (loading) {
     return <ScreenLoader />;
   }
@@ -165,21 +160,29 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
   return (
     <div className="world-map">
       <StageSelector
-        currentStage={currentStage}
-        imageStageList={imageStageList}
-        onImageStageChange={handleImageStageChange}
+        title="Selección de escenario"
+        imageList={imageStageList}
+        onImageChange={handleImageStageChange}
       />
-      <AmbientSoundsSelector />
+      <AmbientSoundsSelector 
+        title="Sonidos ambientales"
+      />
       <PlayerMap
-        geographicalMap={geographicalMap}
+        title={currentStage?.esc_nombre || "Mapa"}
         imageStage={imageStage}
-        listItemsMap={listItemsMap}
-        onMapChange={mapChange}
       />
-      <DiceThrower />
-      <ItemUbi />
+      <DiceThrower 
+        title="Lanzar dados"
+      />
+      {listItemsMap.length > 0 && 
+        <ItemUbi 
+          item={listItemsMap[0]} 
+          row={0} 
+          col={0} 
+        />
+      }
     </div>
   );
 };
 
-export default WorldMap; 
+export default WorldMap;

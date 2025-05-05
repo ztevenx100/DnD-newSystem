@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { getDataQueryMmu, getDataQuerySub, getDataQueryPnj, getDataQueryEne, getDataQueryMis } from '@database/models/dbTables'
-import { getUrlStage, getUrlSound } from '@database/storage/dbStorage'
+import { getDataQueryMmu, getDataQuerySub, getDataQueryPnj, getDataQueryEne, getDataQueryMis } from '@database/models/dbTables';
+import { getUrlStage, getUrlSound } from '@database/storage/dbStorage';
 
 import "@unocss/reset/tailwind.css"
 import "uno.css"
 import "./WorldMap.css"
 
 // Interfaces
-import { stageImageList } from '@features/world-map/domain/types'
-import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision } from '@features/world-map/domain/types'
+import { stageImageList } from '@features/world-map/domain/types';
+import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision } from '@features/world-map/domain/types';
+// Importar las funciones de transformación
+import { transformToDomainPNJList, transformToDomainEnemigoList } from '@/features/world-map/infrastructure/utils/typeTransformers';
 
 // Components
 import ScreenLoader from '@UI/ScreenLoader/ScreenLoader'
@@ -194,19 +196,24 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         )
         if (data !== null) {
             await getSounds(data)
+            // Use the transformSound function to ensure consistent structure
             list = data.map(transformSound)
         }
-        //console.log('getSoundList', list);
         return list
     }
 
-    const getSounds = async(soundsList:DBSonidoUbicacion[]): Promise<void> => {
-        soundsList.map(async (sound) => {
+    const getSounds = async(soundsList: any[]): Promise<void> => {
+        soundsList.forEach(async (sound) => {
             if (sound.sub_tipo === 'U') {
-                const url:string = await Promise.resolve(getUrlSound(sound.sub_son))
+                const url: string = await Promise.resolve(getUrlSound(sound.sub_son))
                 sound.sub_sound_url = url + '?' + randomValueRefreshImage
             } else if (sound.sub_tipo === 'UL') {
-                sound.sub_sound_url = sound.son_sonidos?.son_url ?? ''
+                // Make sure son_sonidos exists and has the correct structure
+                if (sound.son_sonidos) {
+                    sound.sub_sound_url = sound.son_sonidos.son_url || ''
+                } else {
+                    sound.sub_sound_url = ''
+                }
             }
         })
     }
@@ -221,7 +228,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
         
         if (!ubiId) return characterList
 
-        const data =  await Promise.resolve(
+        const data = await Promise.resolve(
             getDataQueryPnj(
                 'pnj_id, pnj_nombre, pnj_raza, pnj_clase, pnj_trabajo, pnj_edad, pnj_tipo, pnj_str, pnj_int, pnj_dex, pnj_con, pnj_cha, pnj_per, pnj_vida'
                 , {'pnj_estado': 'A', 'pnj_ubi': ubiId}
@@ -229,7 +236,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             )
         )
 
-        if (data !== null) characterList = data
+        if (data !== null) characterList = transformToDomainPNJList(data)
 
         return characterList
     }
@@ -237,14 +244,14 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
     /**
      * Llenar listado de enemigos por ubicacion.
      * @param {string} ubiId - Identificador de la ubicacion.
-     * @returns {DBPersonajeNoJugable[]} Retorna el listado de enemigos por ubicacion.
+     * @returns {DBEnemigo[]} Retorna el listado de enemigos por ubicacion.
      */
     const getEnemyList = async(ubiId:string): Promise<DBEnemigo[]> => {
         let enemyList: DBEnemigo[] = []
         
         if (!ubiId) return enemyList
 
-        const data =  await Promise.resolve(
+        const data = await Promise.resolve(
             getDataQueryEne(
                 'ene_id, ene_nombre, ene_raza, ene_clase, ene_trabajo, ene_edad, ene_tipo, ene_str, ene_int, ene_dex, ene_con, ene_cha, ene_per, ene_vida'
                 , {'ene_estado': 'A', 'ene_ubi': ubiId}
@@ -252,7 +259,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             )
         )
 
-        if (data !== null) enemyList = data
+        if (data !== null) enemyList = transformToDomainEnemigoList(data)
 
         return enemyList
     }

@@ -1,22 +1,22 @@
 import React, {useEffect, useState, ChangeEvent} from 'react'
-import { getUrlSound } from '@database/dbStorage'
-import { getDataQuerySub } from '@database/dbTables'
+import { getUrlSound } from '@/database/storage/dbStorage'
+import { getDataQuerySub } from '@/database/models/dbTables'
 
 import { Popover, PopoverTrigger, PopoverContent, Tooltip } from "@nextui-org/react"
 import "./AmbientSoundsSelector.css"
 
 // Interfaces
-import { DBSonidoUbicacion } from '@interfaces/dbTypes'
-import { itemsSoundsSvg } from '@interfaces/iconInterface'
+import { DBSonidoUbicacion } from '@/shared/utils/types/dbTypes'
+import { itemsSoundsSvg } from '@/shared/interfaces/iconInterface'
 
 // Components
-import BtnReactPlayer from '@UI/Buttons/BtnReactPlayer'
+import BtnReactPlayer from '@/shared/components/UI/Buttons/BtnReactPlayer'
 
 // Funciones
-import {getIcon} from '@utils/utilIcons'
+import { getIcon } from '@utils/helpers/utilIcons';
 
 // Images
-import SvgWeather from '@Icons/SvgWeather'
+import SvgWeather from '@/shared/components/UI/Icons/SvgWeather'
 
 interface AmbientSoundsSelectorProps{
     title: string;

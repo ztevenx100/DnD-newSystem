@@ -7,7 +7,7 @@ import "./ItemUbi.css"
 
 import { DBMapamundi } from '@/interfaces/dbTypes'
 import BtnMenuSound from '@/components/UI/Buttons/BtnMenuSound'
-import { getIcon } from '@/components/utils/utilIcons'
+import { getIcon } from '@utils/helpers/utilIcons';
 import { itemsTypeUbgSvg, itemsSoundsSvg } from '@/components/utils/iconTypes'
 
 // Images

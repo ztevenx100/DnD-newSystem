@@ -6,23 +6,21 @@ import { Suspense, useState } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { NextUIProvider } from "@nextui-org/react";
 
-import {
-  DBPersonajesUsuario,
-  DBUsuario,
-} from "@/components/interfaces/dbTypes";
-import CharacterSheet from "@/components/pages/UserCharacters/CharacterSheet/CharacterSheet";
-import homeBackground from "@img/webp/bg-home-01.webp";
-import ErrorPage from "@pages/ErrorPage/ErrorPage";
-import Home from "@pages/Home";
-import SystemGameElement from "@pages/SystemsGameList/SystemGameElement/SystemGameElement";
-import SystemsGameList from "@pages/SystemsGameList/SystemsGameList";
-import UserCharacters from "@pages/UserCharacters/UserCharacters";
-import WorldMap from "@pages/WorldMap/WorldMap";
+import { DBUsuario } from "@utils/types";
+import { DBPersonajesUsuario } from "@features/character-sheet/domain/types";
+import CharacterSheet from "@features/character-sheet/UserCharacters/CharacterSheet/CharacterSheet";
+import homeBackground from "@assets/img/webp/bg-home-01.webp";
+import { ErrorPage } from "@components/ErrorPage";
+import Home from "@/app/Home";
+import SystemGameElement from "@features/game-systems/SystemGameElement/SystemGameElement";
+import SystemsGameList from "@features/game-systems/presentation/pages/SystemsGameList";
+import UserCharacters from "@features/character-sheet/UserCharacters/UserCharacters";
+import WorldMap from "@features/world-map/WorldMap/WorldMap";
 import BackgroundChanger from "@UI/Background/BackgroundChanger";
 import BtnBackToTop from "@UI/Buttons/BtnBackToTop";
 import Footer from "@UI/Footer/Footer";
 import Navbar from "@UI/Navbar/Navbar";
-import { getCharacter, getUser } from "./services/UserCharactersServices";
+import { getCharacter, getUser } from "@features/character-sheet/infrastructure/services";
 
 async function getUserSession(): Promise<DBUsuario> {
   const user: DBUsuario[] = await Promise.resolve(
@@ -40,10 +38,10 @@ const userLoader = async () => {
 const userAndCharacterLoader = async ({ params }: any) => {
   const user = await getUserSession();
 
-  const characters: DBPersonajesUsuario[] = await getCharacter(params.id);
+  const characters = await getCharacter(params.id);
   return {
     user,
-    character: Boolean(characters?.length) ? characters[0] : undefined,
+    character: Boolean(characters?.length) ? characters[0] as DBPersonajesUsuario : undefined,
   };
 };
 

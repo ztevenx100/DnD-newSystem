@@ -1,0 +1,74 @@
+.world-map {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.world-map > * {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.world-map .stage-selector {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.world-map .ambient-sounds {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.world-map .player-map {
+  grid-column: 1;
+  grid-row: 3;
+  min-height: 500px;
+}
+
+.world-map .dice-thrower {
+  grid-column: 1;
+  grid-row: 4;
+}
+
+.world-map .item-ubi {
+  grid-column: 1;
+  grid-row: 5;
+}
+
+@media (min-width: 1024px) {
+  .world-map {
+    grid-template-columns: 300px 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .world-map .stage-selector {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .world-map .ambient-sounds {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .world-map .player-map {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .world-map .dice-thrower {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .world-map .item-ubi {
+    grid-column: 2;
+    grid-row: 3;
+  }
+} 

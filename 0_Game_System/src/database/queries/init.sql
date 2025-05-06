@@ -1,7 +1,7 @@
 -- Creation of tables
 
 -- Users table
-CREATE TABLE usuarios (
+CREATE TABLE usu_usuario (
     usu_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     usu_nombre VARCHAR(100) NOT NULL,
     usu_email VARCHAR(100) UNIQUE NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE usuarios (
 );
 
 -- Game System table
-CREATE TABLE sistema_juego (
+CREATE TABLE sju_sistema_juego (
     sju_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     sju_nombre VARCHAR(100) NOT NULL,
     sju_descripcion TEXT,
@@ -19,7 +19,7 @@ CREATE TABLE sistema_juego (
 );
 
 -- Character table
-CREATE TABLE personajes_usuario (
+CREATE TABLE pus_personajes_usuario (
     pus_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     pus_usuario UUID REFERENCES usuarios(usu_id),
     pus_sistema_juego UUID REFERENCES sistema_juego(sju_id),
@@ -43,7 +43,7 @@ CREATE TABLE personajes_usuario (
 );
 
 -- Skills table
-CREATE TABLE habilidad (
+CREATE TABLE hab_habilidad (
     hab_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     hab_nombre VARCHAR(100) NOT NULL,
     hab_siglas VARCHAR(10) NOT NULL,
@@ -54,7 +54,7 @@ CREATE TABLE habilidad (
 );
 
 -- Character statistics table
-CREATE TABLE estadistica_personaje (
+CREATE TABLE epe_estadistica_personaje (
     epe_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     epe_usuario UUID REFERENCES usuarios(usu_id),
     epe_personaje UUID REFERENCES personajes_usuario(pus_id),
@@ -68,7 +68,7 @@ CREATE TABLE estadistica_personaje (
 );
 
 -- Character skills table
-CREATE TABLE habilidad_personaje (
+CREATE TABLE hpe_habilidad_personaje (
     hpe_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     hpe_habilidad UUID REFERENCES habilidad(hab_id),
     hpe_usuario UUID REFERENCES usuarios(usu_id),
@@ -81,7 +81,7 @@ CREATE TABLE habilidad_personaje (
 );
 
 -- Character inventory table
-CREATE TABLE inventario_personaje (
+CREATE TABLE inp_inventario_personaje (
     inp_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     inp_usuario UUID REFERENCES usuarios(usu_id),
     inp_personaje UUID REFERENCES personajes_usuario(pus_id),
@@ -100,7 +100,7 @@ VALUES ('D&D New System', 'Un nuevo sistema basado en D&D con mecánicas simplif
 
 -- Skills
 -- Class Skills
-INSERT INTO habilidad (hab_nombre, hab_siglas, hab_tipo) 
+INSERT INTO hab_habilidad (hab_nombre, hab_siglas, hab_tipo) 
 VALUES 
 ('Strength Strike', 'SSTR', 'C'),
 ('Intelligence Cast', 'SINT', 'C'),
@@ -110,7 +110,7 @@ VALUES
 ('Charisma Influence', 'SCHA', 'C');
 
 -- Extra Skills
-INSERT INTO habilidad (hab_nombre, hab_siglas, hab_tipo)
+INSERT INTO hab_habilidad (hab_nombre, hab_siglas, hab_tipo)
 VALUES 
 ('Dual Wielding', 'EDWI', 'E'),
 ('Arcane Knowledge', 'EARK', 'E'),
@@ -120,42 +120,42 @@ VALUES
 ('Persuasion', 'EPER', 'E');
 
 -- Ring Skills - Strength
-INSERT INTO habilidad (hab_nombre, hab_siglas, hab_tipo, had_estadistica_base)
+INSERT INTO hab_habilidad (hab_nombre, hab_siglas, hab_tipo, had_estadistica_base)
 VALUES 
 ('Brutal Strike', 'RBST', 'R', 'STR'),
 ('Shield Wall', 'RSHW', 'R', 'STR'),
 ('Weapon Master', 'RWPM', 'R', 'STR');
 
 -- Ring Skills - Intelligence
-INSERT INTO habilidad (hab_nombre, hab_siglas, hab_tipo, had_estadistica_base)
+INSERT INTO hab_habilidad (hab_nombre, hab_siglas, hab_tipo, had_estadistica_base)
 VALUES 
 ('Spell Mastery', 'RSPM', 'R', 'INT'),
 ('Arcane Shield', 'RARS', 'R', 'INT'),
 ('Magic Theory', 'RMTH', 'R', 'INT');
 
 -- Ring Skills - Dexterity
-INSERT INTO habilidad (hab_nombre, hab_siglas, hab_tipo, had_estadistica_base)
+INSERT INTO hab_habilidad (hab_nombre, hab_siglas, hab_tipo, had_estadistica_base)
 VALUES 
 ('Quick Shot', 'RQSH', 'R', 'DEX'),
 ('Evasion', 'REVA', 'R', 'DEX'),
 ('Acrobatics', 'RACR', 'R', 'DEX');
 
 -- Ring Skills - Constitution
-INSERT INTO habilidad (hab_nombre, hab_siglas, hab_tipo, had_estadistica_base)
+INSERT INTO hab_habilidad (hab_nombre, hab_siglas, hab_tipo, had_estadistica_base)
 VALUES 
 ('Endurance', 'REND', 'R', 'CON'),
 ('Vitality', 'RVIT', 'R', 'CON'),
 ('Resilience', 'RRES', 'R', 'CON');
 
 -- Ring Skills - Perception
-INSERT INTO habilidad (hab_nombre, hab_siglas, hab_tipo, had_estadistica_base)
+INSERT INTO hab_habilidad (hab_nombre, hab_siglas, hab_tipo, had_estadistica_base)
 VALUES 
 ('Eagle Eye', 'REAE', 'R', 'PER'),
 ('Trap Detection', 'RTRD', 'R', 'PER'),
 ('Investigation Master', 'RINM', 'R', 'PER');
 
 -- Ring Skills - Charisma
-INSERT INTO habilidad (hab_nombre, hab_siglas, hab_tipo, had_estadistica_base)
+INSERT INTO hab_habilidad (hab_nombre, hab_siglas, hab_tipo, had_estadistica_base)
 VALUES 
 ('Leadership', 'RLEA', 'R', 'CHA'),
 ('Diplomacy', 'RDIP', 'R', 'CHA'),

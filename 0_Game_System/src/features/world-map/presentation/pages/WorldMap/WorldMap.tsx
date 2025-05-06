@@ -5,13 +5,14 @@ import "uno.css";
 import "./WorldMap.css";
 
 import { ScreenLoader } from '@/shared/components';
-// Use types from the domain directory to match the services
+// Use shared types instead of domain types to ensure consistency
 import { 
   DBEscenario, 
   DBMapamundi, 
-  DBPersonajeNoJugable, 
-  stageImageList
-} from '@/features/world-map/domain/types';
+  DBPersonajeNoJugable,
+} from '@/shared/utils/types/dbTypes';
+// Keep using stageImageList from domain as it doesn't exist in shared types
+import { stageImageList } from '@/features/world-map/domain/types';
 import { 
   getMapData, 
   getSoundList, 
@@ -21,7 +22,6 @@ import {
 } from '@/features/world-map/infrastructure/services/world';
 import { getUrlStage } from '@/database/storage/dbStorage';
 
-// Import components from the correct locations
 import StageSelector from '@/features/world-map/WorldMap/StageSelector/StageSelector';
 import AmbientSoundsSelector from '@/features/world-map/WorldMap/AmbientSoundsSelector/AmbientSoundsSelector';
 import PlayerMap from '@/features/world-map/WorldMap/PlayerMap/PlayerMap';
@@ -119,7 +119,10 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             npcList = await getNpcList(elem.mmu_ubi);
             elem.lista_pnj = npcList;
             elem.lista_enemigo = await getEnemyList(elem.mmu_ubi);
+            
+            // Fetch mission list with the correct type (with mis_cumplido property)
             elem.lista_mision = await getMissionList(elem.mmu_ubi);
+            
           } catch (error) {
             console.error('Error loading data:', error);
           }

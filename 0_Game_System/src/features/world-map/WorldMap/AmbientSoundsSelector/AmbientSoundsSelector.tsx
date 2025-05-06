@@ -7,7 +7,7 @@ import "./AmbientSoundsSelector.css"
 
 // Interfaces
 import { DBSonidoUbicacion } from '@/shared/utils/types/dbTypes'
-import { itemsSoundsSvg } from '@/shared/interfaces/iconInterface'
+import { soundIcons } from '@/shared/utils/types/iconTypes'
 
 // Components
 import BtnReactPlayer from '@/shared/components/UI/Buttons/BtnReactPlayer'
@@ -130,13 +130,13 @@ const AmbientSoundsSelector: React.FC<AmbientSoundsSelectorProps> = ({title}) =>
                                             type="button" 
                                             key={elem.sub_icon} 
                                             className={'sounds-item flex justify-center items-center ' + (buttonActive && currentAudioIndex === elem.sub_icon ? 'active':'')} 
-                                            onClick={() => playSound(elem.sub_sound_url, elem.sub_icon)}
+                                            onClick={() => elem.sub_sound_url && playSound(elem.sub_sound_url, elem.sub_icon)}
                                         >
-                                            {getIcon('type' + elem.sub_icon, itemsSoundsSvg)}
+                                            {getIcon('type' + elem.sub_icon, soundIcons)}
                                         </button>
                                     </Tooltip>
                                 ) : (
-                                    <BtnReactPlayer key={index} url={elem.sub_sound_url} icon={getIcon('type' + elem.sub_icon, itemsSoundsSvg)} />
+                                    <BtnReactPlayer key={index} url={elem.sub_sound_url ?? ''} icon={getIcon('type' + elem.sub_icon, soundIcons)} />
                                 )
                             ))}
                         </menu>

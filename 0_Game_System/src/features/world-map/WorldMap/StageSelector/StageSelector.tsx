@@ -4,7 +4,7 @@ import { Popover, PopoverTrigger, PopoverContent } from '@nextui-org/react';
 import "./StageSelector.css";
 
 // Interfaces
-import { stageImageList } from '@interfaces/typesCharacterSheet';
+import { stageImageList } from '@/features/world-map/domain/types';
 // Images
 import SvgChangeItem from '@Icons/SvgChangeItem';
 

@@ -1,23 +1,23 @@
 import React from 'react';
-import dbConnection from '@/services/database/dbConnection'
-import { getUrlLocation, getUrlNpc, getUrlEnemy } from '@/services/database/dbStorage'
+import dbConnection from '@database/config/dbConnection';
+import { getUrlLocation, getUrlNpc, getUrlEnemy } from '@/database/storage/dbStorage';
 
-import { Popover, PopoverTrigger, PopoverContent, Tooltip } from "@nextui-org/react"
-import "./ItemUbi.css"
+import { Popover, PopoverTrigger, PopoverContent, Tooltip } from "@nextui-org/react";
+import "./ItemUbi.css";
 
-import { DBMapamundi } from '@/interfaces/dbTypes'
-import BtnMenuSound from '@/components/UI/Buttons/BtnMenuSound'
-import { getIcon } from '@utils/helpers/utilIcons';
-import { itemsTypeUbgSvg, itemsSoundsSvg } from '@/components/utils/iconTypes'
+import { DBMapamundi } from '@/shared/utils/types/dbTypes';
+import BtnMenuSound from '@/shared/components/UI/Buttons/BtnMenuSound';
+import { getIcon } from '@/shared/utils/helpers/utilIcons';
+import { locationIcons, soundIcons } from '@/shared/utils/types/iconTypes';
 
 // Images
-import SvgPerson from '@/components/UI/Icons/SvgPerson'
-import SvgLookImage from '@/components/UI/Icons/SvgLookImage'
-import SvgSong from '@/components/UI/Icons/SvgSong'
-import SvgEnemy from '@/components/UI/Icons/SvgEnemy'
-import SvgGroup from '@/components/UI/Icons/SvgGroup'
-import SvgTaskList from '@/components/UI/Icons/SvgTaskList'
-import SvgHeart from '@/components/UI/Icons/SvgHeart';
+import SvgPerson from '@/shared/components/UI/Icons/SvgPerson';
+import SvgLookImage from '@/shared/components/UI/Icons/SvgLookImage';
+import SvgSong from '@/shared/components/UI/Icons/SvgSong';
+import SvgEnemy from '@/shared/components/UI/Icons/SvgEnemy';
+import SvgGroup from '@/shared/components/UI/Icons/SvgGroup';
+import SvgTaskList from '@/shared/components/UI/Icons/SvgTaskList';
+import SvgHeart from '@/shared/components/UI/Icons/SvgHeart';
 
 interface ItemUbiProps{
     item: DBMapamundi;
@@ -112,7 +112,7 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
             <Popover key={row + col} placement="bottom" offset={5} isOpen={isOpenUbi} onOpenChange={(open) => setIsOpenUbi(open)} onClose={handleCloseUbi} >
                 <PopoverTrigger>
                     <div className='map-grid-col grid-cols-1 border-dashed border-white border-2 text-light'>
-                        {getIcon('type' + item.ubi_ubicacion?.ubi_tipo, itemsTypeUbgSvg, 50, 50)}
+                        {getIcon('type' + item.ubi_ubicacion?.ubi_tipo, locationIcons, 50, 50)}
                     </div>
                 </PopoverTrigger>
                 <PopoverContent className='p-2' >
@@ -332,7 +332,7 @@ const ItemUbi: React.FC<ItemUbiProps> = ({item, row, col}) => {
                                                 <header className='flex justify-between items-center border-b border-black py-1'>
                                                     <h6 className='text-black font-semibold '>Listado de canciones</h6>
                                                 </header>
-                                                <BtnMenuSound list={item.lista_sonidos} iconList={itemsSoundsSvg} />
+                                                <BtnMenuSound list={item.lista_sonidos} iconList={soundIcons} />
                                             </article>
                                         </PopoverContent>
                                     </Popover>

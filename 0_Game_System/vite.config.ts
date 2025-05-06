@@ -29,7 +29,8 @@ export default defineConfig({
       "@database": path.resolve(__dirname, "./src/database/"),
       "@types": path.resolve(__dirname, "./src/shared/utils/types/"),
       "@UI": path.resolve(__dirname, "./src/shared/components/UI/"),
-      "@Icons": path.resolve(__dirname, "./src/shared/components/UI/Icons/")
+      "@Icons": path.resolve(__dirname, "./src/shared/components/UI/Icons/"),
+      "@img": path.resolve(__dirname, "./src/assets/img/")
     },
   },
 })

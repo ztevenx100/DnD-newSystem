@@ -34,7 +34,8 @@
       "@database/*": ["./src/database/*"],
       "@types/*": ["./src/shared/utils/types/*"],
       "@UI/*": ["./src/shared/components/UI/*"],
-      "@Icons/*": ["./src/shared/components/UI/Icons/*"]
+      "@Icons/*": ["./src/shared/components/UI/Icons/*"],
+      "@img/*": ["./src/assets/img/*"],
     }
   },
   "include": ["src"],

@@ -1,21 +1,34 @@
-import React, {useState, ChangeEvent} from 'react';
+import React, { useState, ChangeEvent } from 'react';
 
-//import { Popover, PopoverHandler, PopoverContent, Tooltip, Button, Dialog, DialogHeader, DialogBody, DialogFooter } from "@material-tailwind/react";
-import { Popover, PopoverTrigger, PopoverContent, Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from "@nextui-org/react"
-import "@unocss/reset/tailwind.css"
-import "uno.css"
-import "./DiceThrower.css"
+// UI Components
+import { 
+  Popover, 
+  PopoverTrigger, 
+  PopoverContent, 
+  Tooltip, 
+  Modal, 
+  ModalContent, 
+  ModalHeader, 
+  ModalBody, 
+  ModalFooter, 
+  Button, 
+  useDisclosure 
+} from "@nextui-org/react";
 
-// Funciones
-import {validateNumeric} from '@utils/utilConversions'
-import {getRandomInt} from '@utils/utilOperations'
+// Styles
+import "@unocss/reset/tailwind.css";
+import "uno.css";
+import "./DiceThrower.css";
 
-// Images
-import SvgRollDice from '@Icons/SvgRollDice'
-import SvgDice04 from '@Icons/SvgDice04'
-import SvgDice06 from '@Icons/SvgDice06'
-import SvgDice08 from '@Icons/SvgDice08'
-import SvgDice20 from '@Icons/SvgDice20'
+// Utilities
+import { validateNumeric } from '@shared/utils/helpers/utilConversions';
+import { getRandomInt } from '@shared/utils/helpers/utilOperations';
+// Icons
+import SvgRollDice from '@Icons/SvgRollDice';
+import SvgDice04 from '@Icons/SvgDice04';
+import SvgDice06 from '@Icons/SvgDice06';
+import SvgDice08 from '@Icons/SvgDice08';
+import SvgDice20 from '@Icons/SvgDice20';
 
 interface DiceThrowerProps{
     title: string;

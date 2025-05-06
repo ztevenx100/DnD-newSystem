@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react';
 import { ROUTES } from '../config/routes';
 import { ErrorPage } from '@/shared/components/ErrorPage';
 import { ScreenLoader } from '@/shared/components/ScreenLoader';
+import DatabaseErrorBoundary from '@/shared/components/ErrorBoundary/DatabaseErrorBoundary';
 
 // Importaciones lazy para las páginas principales
 const Home = lazy(() => import('@/app/Home'));
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
                 <UserCharacters />
             </Suspense>
         ),
+        errorElement: <DatabaseErrorBoundary />,
     },
     {
         path: ROUTES.CHARACTERS.SHEET,
@@ -42,6 +44,7 @@ export const router = createBrowserRouter([
                 <CharacterSheet changeBackground={changeBackground} />
             </Suspense>
         ),
+        errorElement: <DatabaseErrorBoundary />,
     },
     {
         path: ROUTES.CHARACTERS.CREATE,
@@ -50,6 +53,7 @@ export const router = createBrowserRouter([
                 <CharacterSheet changeBackground={changeBackground} />
             </Suspense>
         ),
+        errorElement: <DatabaseErrorBoundary />,
     },
     {
         path: ROUTES.WORLD.MAP,
@@ -79,4 +83,4 @@ export const router = createBrowserRouter([
         path: ROUTES.ERROR,
         element: <ErrorPage />,
     },
-]); 
+]);

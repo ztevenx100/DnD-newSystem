@@ -9,9 +9,7 @@ import "./WorldMap.css"
 
 // Interfaces
 import { stageImageList } from '@features/world-map/domain/types';
-import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision } from '@features/world-map/domain/types';
-// Importar las funciones de transformación
-import { transformToDomainPNJList, transformToDomainEnemigoList } from '@/features/world-map/infrastructure/utils/typeTransformers';
+import { DBEscenario, DBMapamundi, DBSonidoUbicacion, DBPersonajeNoJugable, DBEnemigo, DBMision } from '@shared/utils/types/dbTypes';
 
 // Components
 import ScreenLoader from '@UI/ScreenLoader/ScreenLoader'
@@ -236,7 +234,10 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             )
         )
 
-        if (data !== null) characterList = transformToDomainPNJList(data)
+        if (data !== null) {
+            // The data is already in shared type format (DBPersonajeNoJugable[])
+            characterList = data as DBPersonajeNoJugable[];
+        }
 
         return characterList
     }
@@ -259,7 +260,10 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
             )
         )
 
-        if (data !== null) enemyList = transformToDomainEnemigoList(data)
+        if (data !== null) {
+            // The data is already in shared type format (DBEnemigo[])
+            enemyList = data as DBEnemigo[];
+        }
 
         return enemyList
     }
@@ -311,38 +315,35 @@ const WorldMap: React.FC<WorldMapProps> = ({ changeBackground }) => {
 
     return (
         <>
+            {loading && (
+                <ScreenLoader/>
+            )}
+            <section className="min-h-screen grid grid-cols-1 grid-rows-[80px_repeat(3,minmax(0,_1fr))] gap-x-0 gap-y-0 py-2">
+                {/* Selecionar escenarios */}
+                {/* Botones */}
+                <StageSelector title='Listados de escenarios' imageList={imageStageList} onImageChange={handleImageStageChange}/>
+                <AmbientSoundsSelector title='Lista de sonidos' />
+                <DiceThrower title='Lanzador de dados' />
+                <header className='bg-white shadow-lg rounded py-0 grid items-center mb-2'>
+                    <h1 className='title-list'>Mapamundi</h1>
+                    <h2 className='subtitle-list'>{currentStage.esc_nombre}</h2>
+                </header>
 
-        {loading && (
-            <ScreenLoader/>
-        )}
-        <section className="min-h-screen grid grid-cols-1 grid-rows-[80px_repeat(3,minmax(0,_1fr))] gap-x-0 gap-y-0 py-2">
-            {/* Selecionar escenarios */}
-            {/* Botones */}
-            <StageSelector title='Listados de escenarios' imageList={imageStageList} onImageChange={handleImageStageChange}/>
-            <AmbientSoundsSelector title='Lista de sonidos' />
-            <DiceThrower title='Lanzador de dados' />
-            <header className='bg-white shadow-lg rounded py-0 grid items-center mb-2'>
-                <h1 className='title-list'>Mapamundi</h1>
-                <h2 className='subtitle-list'>{currentStage.esc_nombre}</h2>
-            </header>
-
-
-            <article className="map-grid relative grid grid-rows-7 rounded-xl bg-blue-900 text-gray-700 shadow-md w-full px-12 py-2 row-span-5 " style={{backgroundImage: `url("${imageStage}")`}}>
-                <PlayerMap imageStage={imageStage} title={currentStage.esc_nombre} />
-                {geographicalMap.map((row, rowIndex) => (
-                    <div key={rowIndex} className='map-grid-row grid-rows-1 grid grid-cols-11 '>
-                        {row.map((elem, colIndex) => (
-                            (elem.mmu_id !== '') ? (
-                                <ItemUbi key={rowIndex + colIndex} item={elem} row={rowIndex} col={colIndex} />
-                            ) : (
-                                <div key={rowIndex + colIndex} className='map-grid-col-empty grid-cols-1 border-dashed border-[#000c] border-1 text-light'></div>
-                            )
-                        ))}
-                    </div>
-                ))}
-            </article>
-        </section>
-
+                <article className="map-grid relative grid grid-rows-7 rounded-xl bg-blue-900 text-gray-700 shadow-md w-full px-12 py-2 row-span-5 " style={{backgroundImage: `url("${imageStage}")`}}>
+                    <PlayerMap imageStage={imageStage} title={currentStage.esc_nombre} />
+                    {geographicalMap.map((row, rowIndex) => (
+                        <div key={rowIndex} className='map-grid-row grid-rows-1 grid grid-cols-11 '>
+                            {row.map((elem, colIndex) => (
+                                (elem.mmu_id !== '') ? (
+                                    <ItemUbi key={rowIndex + colIndex} item={elem} row={rowIndex} col={colIndex} />
+                                ) : (
+                                    <div key={rowIndex + colIndex} className='map-grid-col-empty grid-cols-1 border-dashed border-[#000c] border-1 text-light'></div>
+                                )
+                            ))}
+                        </div>
+                    ))}
+                </article>
+            </section>
         </>
     )
 }

@@ -11,11 +11,7 @@ export interface DBMapamundi {
   mmu_esc: string;
   esc_escenario: DBEscenario | null;
   mmu_ubi: string;
-  ubi_ubicacion: {
-    ubi_id: string;
-    ubi_tipo: string;
-    ubi_nombre: string;
-  } | null;
+  ubi_ubicacion: DBUbicacion | null;
   mmu_pos_x: number;
   mmu_pos_y: number;
   lista_sonidos: DBSonidoUbicacion[];
@@ -24,16 +20,24 @@ export interface DBMapamundi {
   lista_mision: DBMision[];
 }
 
+export interface DBUbicacion {
+  ubi_id: string;
+  ubi_tipo: string;
+  ubi_nombre: string;
+}
+
 export interface DBSonidoUbicacion {
+  sub_id: string;
   sub_son: string;
   sub_tipo: string;
   sub_icon: string;
-  son_sonidos?: {
-    son_id: string;
-    son_nombre: string;
-    son_url: string;
-  };
+  sub_ubi: string;
   sub_sound_url?: string;
+  son_sonidos?: {
+      son_id: string;
+      son_nombre: string;
+      son_url?: string;
+  } | null;
 }
 
 export interface DBPersonajeNoJugable {
@@ -42,7 +46,7 @@ export interface DBPersonajeNoJugable {
   pnj_raza: string;
   pnj_clase: string;
   pnj_trabajo: string;
-  pnj_edad: string;
+  pnj_edad: number;
   pnj_tipo: string;
   pnj_str: number;
   pnj_int: number;
@@ -59,7 +63,7 @@ export interface DBEnemigo {
   ene_raza: string;
   ene_clase: string;
   ene_trabajo: string;
-  ene_edad: string;
+  ene_edad: number;
   ene_tipo: string;
   ene_str: number;
   ene_int: number;

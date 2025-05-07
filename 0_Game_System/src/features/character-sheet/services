@@ -3,9 +3,37 @@
  * @file: Maneja las funciones relacionadas con el listado de personajes por usuario
  */ 
 
-import { getDataQueryPus, deleteDataQueryPus, getDataQueryUsu, getDataQueryHad, getDataQuerySju, getDataQueryEpe, getDataQueryHpe, getDataQueryInp, updateDataPus, updateDataEpe, insertDataPus, deleteDataQueryInp } from '@database/models/dbTables';
-// Interfaces
-import { DBEstadisticaPersonaje, DBHabilidad, DBHabilidadPersonaje, DBInventarioPersonaje, DBPersonajesUsuario, DBSistemaJuego, DBUsuario, initialPersonajesUsuario } from '@shared/utils/types';
+// Database operations
+import { 
+  // GET operations
+  getDataQueryPus,
+  getDataQueryUsu,
+  getDataQueryHad,
+  getDataQuerySju,
+  getDataQueryEpe,
+  getDataQueryHpe, 
+  getDataQueryInp,
+  // UPDATE operations
+  updateDataPus,
+  updateDataEpe,
+  // INSERT operations
+  insertDataPus,
+  // DELETE operations
+  deleteDataQueryPus,
+  deleteDataQueryInp
+} from '@database/models/dbTables';
+
+// Types and interfaces
+import { 
+  DBEstadisticaPersonaje,
+  DBHabilidad, 
+  DBHabilidadPersonaje, 
+  DBInventarioPersonaje, 
+  DBPersonajesUsuario, 
+  DBSistemaJuego, 
+  DBUsuario, 
+  initialPersonajesUsuario 
+} from '@utils/types';
 
 /**
  * Busca el listado de personajes por usuario.
@@ -14,14 +42,23 @@ import { DBEstadisticaPersonaje, DBHabilidad, DBHabilidadPersonaje, DBInventario
  * @returns {DBPersonajesUsuario[]} Retorna un listado de personajes por usuario.
  */
 export const getlistCharacters = async(user: string): Promise<DBPersonajesUsuario[]> => {
+    // Validación mejorada para el parámetro user
+    if (!user || user === "undefined") {
+        console.error('ID de usuario inválido en getlistCharacters:', user);
+        return [];
+    }
+
     let data:DBPersonajesUsuario[] = [];
     try {
+        console.log('Consultando personajes para usuario:', user);
         data = await getDataQueryPus(
             'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, usu_usuario(usu_id, usu_nombre), sju_sistema_juego(sju_id, sju_nombre)'
             , {'pus_usuario': user}
         );
+        console.log('Datos obtenidos:', data ? data.length : 0, 'registros');
     } catch (error) {
-        data = []
+        console.error('Error al obtener personajes en getlistCharacters:', error);
+        data = [];
     }
 
     return data;
@@ -171,20 +208,24 @@ export const getListInp = async(id: string): Promise<DBInventarioPersonaje[]> =>
 
 // DELETE
 
-
 /**
  * Eliminar personajes por id.
  * 
  * @param {string} id - El id del personaje.
  */
 export const deleteCharacter = async (id: string): Promise<void> => {
+    if (!id) {
+        console.error('ID de personaje inválido para eliminar');
+        return;
+    }
     
     try {
-        deleteDataQueryPus({'pus_id': id});
+        await deleteDataQueryPus({'pus_id': id});
+        console.log('Personaje eliminado correctamente:', id);
     } catch (error) {
-        console.error(error);
+        console.error('Error al eliminar personaje:', error);
+        throw error;
     }
-
 };
 
 /**

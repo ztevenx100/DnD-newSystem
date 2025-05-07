@@ -1,74 +1,60 @@
 import { DBPersonajesUsuario } from "@shared/utils/types";
+import { getDataQueryPus } from '@database/models/dbTables';
 import { getMockCharacters } from "./mock/charactersMock";
-
-// Determinar si estamos en modo desarrollo
-const isDevelopmentMode = import.meta.env.DEV;
+// Flag para usar datos mock (temporal mientras solucionamos la API)
+const useMockData = false; // Cambiado a false para usar Supabase
 
 export const getlistCharacters = async (user: string): Promise<DBPersonajesUsuario[]> => {
-  // En modo desarrollo, usar datos mock
-  if (isDevelopmentMode) {
-    console.log('Usando datos mock para desarrollo');
+  // Mejorada la validación para detectar undefined y manejar errores adecuadamente
+  if (!user || user === "undefined") {
+    console.error('ID de usuario inválido:', user);
+    return [];
+  }
+  
+  if (useMockData) {
+    console.log('Usando datos mock (flag useMockData está activado)');
     return getMockCharacters(user);
   }
   
+  let data:DBPersonajesUsuario[] = [];
   try {
-    const response = await fetch(`/api/characters?user=${user}`);
+    console.log('Intentando cargar datos de Supabase para el usuario:', user);
     
-    if (!response.ok) {
-      // Extraemos el texto para hacer diagnóstico
-      const errorText = await response.text();
-      console.error('Respuesta no exitosa:', {
-        status: response.status,
-        statusText: response.statusText,
-        responseText: errorText.substring(0, 200) + '...' // Solo los primeros 200 caracteres
-      });
-      
-      // Si en producción hay un error, intentamos usar datos mock como fallback
-      console.warn('Usando datos mock como fallback debido a error en API');
-      return getMockCharacters(user);
+    data = await getDataQueryPus(
+        'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria'
+        + ', pus_cantidad_oro, pus_cantidad_plata, pus_cantidad_bronce, pus_puntos_suerte, pus_vida, pus_alineacion, pus_sistema_juego'
+        + ', sju_sistema_juego(sju_id,sju_nombre)'
+        , {'pus_usuario': user}
+    );
+    
+    console.log('Datos recibidos de Supabase:', data);
+    
+    if (data && data.length > 0) {
+      return data as DBPersonajesUsuario[];
+    } else {
+      console.log('No se encontraron personajes para el usuario:', user);
+      return [];
     }
-    
-    // Verificamos el tipo de contenido
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      // Si no es JSON, intentamos obtener el texto para diagnóstico
-      const textResponse = await response.text();
-      console.error('Respuesta no es JSON:', {
-        contentType,
-        responsePreview: textResponse.substring(0, 200) + '...' // Solo los primeros 200 caracteres
-      });
-      
-      // Usamos datos mock como fallback
-      console.warn('Usando datos mock como fallback debido a respuesta no-JSON');
-      return getMockCharacters(user);
-    }
-    
-    return await response.json();
   } catch (error) {
     console.error('Error al obtener personajes:', error);
-    
-    // En caso de cualquier error, usamos los datos mock como fallback
-    console.warn('Usando datos mock como fallback debido a error en fetch');
+    console.warn('Usando datos mock como fallback debido a error');
     return getMockCharacters(user);
   }
 };
 
 export const deleteCharacter = async (id: string): Promise<void> => {
-  // En modo desarrollo, simplemente logueamos la acción
-  if (isDevelopmentMode) {
-    console.log(`[MOCK] Eliminando personaje con ID: ${id}`);
+  if (!id) {
+    console.error('ID de personaje inválido para eliminar');
     return;
   }
   
   try {
-    const response = await fetch(`/api/characters/${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) {
-      throw new Error('Error al eliminar el personaje');
-    }
+    await import('@database/models/dbTables').then(({ deleteDataQueryPus }) => 
+      deleteDataQueryPus({ 'pus_id': id })
+    );
+    console.log('Personaje eliminado correctamente:', id);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error al eliminar personaje:', error);
     throw error;
   }
 };

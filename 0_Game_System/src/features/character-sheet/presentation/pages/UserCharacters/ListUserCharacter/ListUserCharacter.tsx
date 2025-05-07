@@ -16,34 +16,82 @@ interface ListUserCharacterProps {
 }
 
 async function getUrlImage(character: DBPersonajesUsuario) {
-  const url = await getUrlCharacter(character.pus_usuario, character.pus_id);
-  return url + "?" + Math.random().toString(36).substring(7);
+  if (!character || !character.pus_usuario || !character.pus_id) {
+    console.error("Datos de personaje incompletos para obtener imagen:", character);
+    return "";
+  }
+
+  try {
+    const url = await getUrlCharacter(character.pus_usuario, character.pus_id);
+    return url + "?" + Math.random().toString(36).substring(7);
+  } catch (error) {
+    console.error("Error al obtener URL de imagen:", error);
+    return "";
+  }
 }
 
 async function getList(user: string) {
-  if (user === "" || user === null) return;
+  if (!user || user === "" || user === "undefined") {
+    console.error("ID de usuario inválido:", user);
+    return [];
+  }
 
-  const data: DBPersonajesUsuario[] = await getlistCharacters(user);
+  try {
+    console.log("Obteniendo lista de personajes para usuario:", user);
+    const data: DBPersonajesUsuario[] = await getlistCharacters(user);
+    console.log("Datos recibidos:", data);
 
-  if (data !== null && data.length > 0) {
-    await Promise.all(
-      data.map(async (elem) => {
-        elem.url_character_image = await getUrlImage(elem);
-      })
-    );
+    if (data !== null && data.length > 0) {
+      await Promise.all(
+        data.map(async (elem) => {
+          try {
+            elem.url_character_image = await getUrlImage(elem);
+          } catch (error) {
+            console.error("Error al obtener imagen para personaje:", elem.pus_id, error);
+            elem.url_character_image = ""; // Usar una imagen por defecto
+          }
+        })
+      );
 
-    return data;
+      return data;
+    } else {
+      console.log("No se encontraron personajes para el usuario:", user);
+      return [];
+    }
+  } catch (error) {
+    console.error("Error al obtener la lista de personajes:", error);
+    return [];
   }
 }
 
 const ListUserCharacter: React.FC<ListUserCharacterProps> = ({ user }) => {
   const navigate = useNavigate();
   const [list, setList] = useState<DBPersonajesUsuario[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getList(user.id).then((listData) => {
-      setList(listData ?? []);
-    });
+    if (!user || !user.id) {
+      console.error("Usuario no válido recibido en ListUserCharacter:", user);
+      setError("No se ha proporcionado un ID de usuario válido");
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    
+    console.log("Cargando personajes para usuario:", user.id);
+    getList(user.id)
+      .then((listData) => {
+        setList(listData ?? []);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error en useEffect al cargar personajes:", err);
+        setError("Error al cargar la lista de personajes");
+        setIsLoading(false);
+      });
   }, [user]);
 
   async function handleDeleteCharacter(id: string) {
@@ -51,10 +99,31 @@ const ListUserCharacter: React.FC<ListUserCharacterProps> = ({ user }) => {
 
     if (id === null || id === "") return;
 
-    // Eliminar objeto db
-    await deleteCharacter(id);
+    try {
+      // Eliminar objeto db
+      await deleteCharacter(id);
+      console.log("Personaje eliminado correctamente:", id);
+      setList((prevObjects) => prevObjects.filter((obj) => obj.pus_id !== id));
+    } catch (error) {
+      console.error("Error al eliminar personaje:", error);
+      alert("Error al eliminar el personaje");
+    }
+  }
 
-    setList((prevObjects) => prevObjects.filter((obj) => obj.pus_id !== id));
+  if (isLoading) {
+    return <div className="text-center p-8">Cargando personajes...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center p-8 text-red-500">{error}</div>;
+  }
+
+  if (list.length === 0) {
+    return (
+      <div className="text-center p-8 text-gray-500">
+        No tienes personajes creados. ¡Crea uno nuevo!
+      </div>
+    );
   }
 
   return (
@@ -125,4 +194,4 @@ const ListUserCharacter: React.FC<ListUserCharacterProps> = ({ user }) => {
   );
 };
 
-export default ListUserCharacter; 
+export default ListUserCharacter;

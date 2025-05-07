@@ -13,10 +13,18 @@ import { DBUsuario } from "@shared/utils/types";
 
 const UserCharacters = () => {
   const navigate = useNavigate();
-  const user: DBUsuario = useLoaderData() as DBUsuario;
+  const user = useLoaderData() as DBUsuario;
+  
+  // Si el usuario es undefined, usamos un usuario fijo para que el componente pueda seguir funcionando
+  const safeUser: DBUsuario = user || {
+    id: "43c29fa1-d02c-4da5-90ea-51f451ed8952", // El mismo ID que usas en getUserSession
+    nombre: "Usuario Temporal",
+    email: "temp@example.com"
+  };
 
   const handleOpenCharacter = () => {
-    navigate("/CharacterSheet/" + user);
+    // Navegamos usando el ID del usuario
+    navigate("/CharacterSheet/" + safeUser.id);
   };
 
   return (
@@ -27,6 +35,9 @@ const UserCharacters = () => {
             <h1 className="text-3xl font-bold uppercase text-center text-gray-800">
               Listado de personajes
             </h1>
+            <p className="text-center text-gray-600 mt-2">
+              Usuario: {safeUser.nombre}
+            </p>
           </header>
           <Card className="bg-white/80 backdrop-blur-sm shadow-xl">
             <CardBody className="p-6 md:p-8">
@@ -41,7 +52,7 @@ const UserCharacters = () => {
                 </button>
               </div>
               <Suspense fallback={<ListUserCharacterSkeleton />}>
-                <ListUserCharacter user={user} />
+                <ListUserCharacter user={safeUser} />
               </Suspense>
             </CardBody>
           </Card>

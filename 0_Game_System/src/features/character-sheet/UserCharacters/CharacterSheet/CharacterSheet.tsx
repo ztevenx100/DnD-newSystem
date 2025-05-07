@@ -98,10 +98,22 @@ interface CharacterForm {
 const CharacterSheet: React.FC<CharacterSheetProps> = ({
   changeBackground,
 }) => {
-  const { user, character: initialCharacter } = useLoaderData() as {
+  const loaderData = useLoaderData() as {
     user: DBUsuario;
     character?: DBPersonajesUsuario;
   };
+  
+  // Si el usuario es undefined, usamos un usuario fijo para que el componente pueda seguir funcionando
+  const safeData = {
+    user: loaderData?.user || {
+      id: "43c29fa1-d02c-4da5-90ea-51f451ed8952", // El mismo ID que usas en getUserSession
+      nombre: "Usuario Temporal",
+      email: "temp@example.com"
+    },
+    character: loaderData?.character
+  };
+  
+  const { user, character: initialCharacter } = safeData;
 
   const defaultValues = useMemo(() => {
     return initialCharacter

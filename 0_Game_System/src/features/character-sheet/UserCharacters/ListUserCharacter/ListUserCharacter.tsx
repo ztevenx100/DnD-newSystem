@@ -46,8 +46,10 @@ const ListUserCharacter: React.FC<ListUserCharacterProps> = ({ user }) => {
   const [list, setList] = useState<DBPersonajesUsuario[]>([]);
 
   useEffect(() => {
+    user.id = user.id ?? "43c29fa1-d02c-4da5-90ea-51f451ed8952";
     getList(user.id).then((listData) => {
       setList(listData ?? []);
+      console.log("Lista de personajes:", listData);
     });
   }, [user]);
 

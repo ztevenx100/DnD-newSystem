@@ -52,7 +52,7 @@ const UserCharacters = () => {
           // Para desarrollo: si no hay sesión, usa un usuario de prueba
           console.warn('No se encontró sesión de usuario. Usando ID de prueba para desarrollo.');
           setUser({
-            id: '123e4567-e89b-12d3-a456-426614174000', // Un UUID fijo para pruebas
+            id: '43c29fa1-d02c-4da5-90ea-51f451ed8952', // Un UUID fijo para pruebas
             nombre: 'Usuario de Prueba',
             email: 'test@example.com'
           });
@@ -70,11 +70,22 @@ const UserCharacters = () => {
   }, []);
 
   const handleOpenCharacter = () => {
-    if (user) {
-      navigate("/CharacterSheet/" + user.id);
-    } else {
+    if (!user) {
       console.error('No hay usuario disponible para crear un personaje');
+      // Mostrar algún mensaje de error al usuario
+      setError('No se puede crear un personaje sin un usuario válido.');
+      return;
     }
+    
+    // Asegurarse de que user.id está definido antes de usarlo en la navegación
+    if (!user.id) {
+      console.error('El usuario no tiene un ID válido');
+      setError('El usuario no tiene un ID válido para crear un personaje.');
+      return;
+    }
+    
+    // Navegar a la página de creación de personajes con el ID de usuario como parámetro
+    navigate(`/CharacterSheet/${user.id}`);
   };
 
   if (loading) {

@@ -1,11 +1,11 @@
 import { DBPersonajesUsuario } from "@shared/utils/types";
+import { getDataQueryPus } from '@database/models/dbTables';
 import { getMockCharacters } from "./mock/charactersMock";
-import supabase from "@database/config/supabase";
-
 // Flag para usar datos mock (temporal mientras solucionamos la API)
 const useMockData = false; // Cambiado a false para usar Supabase
 
 export const getlistCharacters = async (user: string): Promise<DBPersonajesUsuario[]> => {
+  // Mejorada la validación para detectar undefined y manejar errores adecuadamente
   if (!user || user === "undefined") {
     console.error('ID de usuario inválido:', user);
     return [];
@@ -16,19 +16,16 @@ export const getlistCharacters = async (user: string): Promise<DBPersonajesUsuar
     return getMockCharacters(user);
   }
   
+  let data:DBPersonajesUsuario[] = [];
   try {
     console.log('Intentando cargar datos de Supabase para el usuario:', user);
     
-    const { data, error } = await supabase
-      .from('pus_personajes_usuario')
-      .select('*, sju_sistema_juego(*)')
-      .eq('pus_usuario', user);
-    
-    if (error) {
-      console.error('Error de Supabase:', error);
-      console.warn('Usando datos mock como fallback debido a error en Supabase');
-      return getMockCharacters(user);
-    }
+    data = await getDataQueryPus(
+        'pus_id, pus_usuario, pus_nombre, pus_clase, pus_raza, pus_trabajo, pus_nivel, pus_descripcion, pus_conocimientos, pus_arma_principal, pus_arma_secundaria'
+        + ', pus_cantidad_oro, pus_cantidad_plata, pus_cantidad_bronce, pus_puntos_suerte, pus_vida, pus_alineacion, pus_sistema_juego'
+        + ', sju_sistema_juego(sju_id,sju_nombre)'
+        , {'pus_usuario': user}
+    );
     
     console.log('Datos recibidos de Supabase:', data);
     
@@ -46,35 +43,18 @@ export const getlistCharacters = async (user: string): Promise<DBPersonajesUsuar
 };
 
 export const deleteCharacter = async (id: string): Promise<void> => {
-  // Validar que id no sea undefined o vacío
-  if (!id || id === "undefined" || id === "") {
-    console.error('ID de personaje inválido:', id);
-    throw new Error("ID de personaje no válido");
-  }
-  
-  // Si estamos usando datos mock
-  if (useMockData) {
-    console.log(`[MOCK] Eliminando personaje con ID: ${id}`);
+  if (!id) {
+    console.error('ID de personaje inválido para eliminar');
     return;
   }
   
   try {
-    console.log('Intentando eliminar personaje con ID:', id);
-    
-    // Usar el cliente de Supabase directamente con el nombre correcto de la tabla
-    const { error } = await supabase
-      .from('pus_personajes_usuario')
-      .delete()
-      .eq('pus_id', id);
-    
-    if (error) {
-      console.error('Error al eliminar personaje en Supabase:', error);
-      throw new Error(`Error al eliminar el personaje: ${error.message}`);
-    }
-    
-    console.log('Personaje eliminado correctamente de Supabase');
+    await import('@database/models/dbTables').then(({ deleteDataQueryPus }) => 
+      deleteDataQueryPus({ 'pus_id': id })
+    );
+    console.log('Personaje eliminado correctamente:', id);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error al eliminar personaje:', error);
     throw error;
   }
 };

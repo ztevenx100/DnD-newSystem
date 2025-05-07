@@ -4,6 +4,9 @@ import { ROUTES } from '../config/routes';
 import { ErrorPage } from '@/shared/components/ErrorPage';
 import { ScreenLoader } from '@/shared/components/ScreenLoader';
 import DatabaseErrorBoundary from '@/shared/components/ErrorBoundary/DatabaseErrorBoundary';
+import { getCharacter, getUser } from '@features/character-sheet/infrastructure/services';
+import { DBUsuario } from '@shared/utils/types';
+import { DBPersonajesUsuario } from '@shared/utils/types/dbTypes';
 
 // Importaciones lazy para las páginas principales
 const Home = lazy(() => import('@/app/Home'));
@@ -14,6 +17,29 @@ const SystemsGameList = lazy(() => import('@features/game-systems/presentation/p
 
 // Componente de carga para las rutas lazy
 const LoadingFallback = () => <ScreenLoader />;
+
+async function getUserSession(): Promise<DBUsuario> {
+    const user: DBUsuario[] = await Promise.resolve(
+      getUser("43c29fa1-d02c-4da5-90ea-51f451ed8952")
+    );
+  
+    return user[0];
+}
+
+const userLoader = async () => {
+    const user = await getUserSession();
+    return user;
+};
+
+const userAndCharacterLoader = async ({ params }: any) => {
+    const user = await getUserSession();
+  
+    const characters = await getCharacter(params.id);
+    return {
+      user,
+      character: Boolean(characters?.length) ? characters[0] as DBPersonajesUsuario : undefined,
+    };
+};
 
 const changeBackground = (newBackground: string) => {
     document.body.style.backgroundImage = `url(${newBackground})`;
@@ -36,6 +62,7 @@ export const router = createBrowserRouter([
             </Suspense>
         ),
         errorElement: <DatabaseErrorBoundary />,
+        loader: userLoader, // Agregar el loader aquí
     },
     {
         path: ROUTES.CHARACTERS.SHEET,
@@ -45,6 +72,7 @@ export const router = createBrowserRouter([
             </Suspense>
         ),
         errorElement: <DatabaseErrorBoundary />,
+        loader: userAndCharacterLoader, // Agregar el loader aquí
     },
     {
         path: ROUTES.CHARACTERS.CREATE,
@@ -54,6 +82,7 @@ export const router = createBrowserRouter([
             </Suspense>
         ),
         errorElement: <DatabaseErrorBoundary />,
+        loader: userLoader, // Agregar el loader aquí
     },
     {
         path: ROUTES.WORLD.MAP,

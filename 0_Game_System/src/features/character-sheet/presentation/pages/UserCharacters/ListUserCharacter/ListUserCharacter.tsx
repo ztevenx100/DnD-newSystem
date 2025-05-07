@@ -16,12 +16,22 @@ interface ListUserCharacterProps {
 }
 
 async function getUrlImage(character: DBPersonajesUsuario) {
-  const url = await getUrlCharacter(character.pus_usuario, character.pus_id);
-  return url + "?" + Math.random().toString(36).substring(7);
+  if (!character || !character.pus_usuario || !character.pus_id) {
+    console.error("Datos de personaje incompletos para obtener imagen:", character);
+    return "";
+  }
+
+  try {
+    const url = await getUrlCharacter(character.pus_usuario, character.pus_id);
+    return url + "?" + Math.random().toString(36).substring(7);
+  } catch (error) {
+    console.error("Error al obtener URL de imagen:", error);
+    return "";
+  }
 }
 
 async function getList(user: string) {
-  if (user === "" || user === null || user === undefined) {
+  if (!user || user === "" || user === "undefined") {
     console.error("ID de usuario inválido:", user);
     return [];
   }
@@ -62,6 +72,7 @@ const ListUserCharacter: React.FC<ListUserCharacterProps> = ({ user }) => {
 
   useEffect(() => {
     if (!user || !user.id) {
+      console.error("Usuario no válido recibido en ListUserCharacter:", user);
       setError("No se ha proporcionado un ID de usuario válido");
       setIsLoading(false);
       return;

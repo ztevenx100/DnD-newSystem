@@ -17,6 +17,7 @@ import {
   insertPus,
   updateCharacterStats,
   updateCharacter,
+  getCharacterSkills,
 } from "@features/character-sheet/infrastructure/services";
 import {
   insertDataEpe,
@@ -187,7 +188,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [loading, setLoading] = useState<boolean>(true);
   const [newRecord, setNewRecord] = useState<boolean>(true);
-  const randomValueRefreshImage = Math.random().toString(36).substring(7);
   const [character, setCharacter] = useState<DBPersonajesUsuario>(
     initialPersonajesUsuario
   );
@@ -281,67 +281,113 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     id: string,
     type: string
   ) => {
-    const updatedSetSkillsRingList = [...skillsRingList];
-    updatedSetSkillsRingList[Number(id)].skills =
-      (skillsTypes.find((option) => option.id === type) || {}).skills || [];
-    setSkillsRingList(updatedSetSkillsRingList);
-  }, [skillsRingList, skillsTypes]);
+    // Crear una nueva referencia para evitar dependencia circular con skillsRingList
+    setSkillsRingList(prevList => {
+      const newList = [...prevList];
+      const skills = skillsTypes.find(option => option.id === type)?.skills || [];
+      newList[Number(id)] = {
+        ...newList[Number(id)],
+        skills: skills
+      };
+      return newList;
+    });
+  }, [skillsTypes]); // Solo depende de skillsTypes, no de skillsRingList
 
   const getSkills = useCallback(async () => {
     const data = await getListHad();
     
     if (data !== null) {
-      const updatedFieldSkill = [...fieldSkill];
-      const updatedSkills = [...skillsAcquired];
+      // Crear copias locales para no depender de los estados directamente
+      const updatedFieldSkill = fieldSkill.map(item => ({...item}));
+      const updatedSkills = skillsAcquired.map(item => ({...item}));
 
-      (data as DBHabilidad[]).forEach((elem : DBHabilidad) => {
+      // Primero, obtenemos las habilidades del personaje
+      let characterSkills: DBHabilidadPersonaje[] = [];
+      if (params.id) {
+        characterSkills = await getCharacterSkills(params.id);
+        console.log("Habilidades cargadas:", characterSkills);
+      }
+
+      // Procesamos las habilidades de clase y extra
+      (data as DBHabilidad[]).forEach((elem: DBHabilidad) => {
         if (elem.tipo === "C") {
-          setSelectedSkillValue(elem.sigla);
-          updatedFieldSkill.filter(
-            (skill: SkillFields) => skill.field === "skillClass"
-          )[0].id = elem.sigla;
-          updatedFieldSkill.filter(
-            (skill: SkillFields) => skill.field === "skillClass"
-          )[0].skill = elem.id;
-        } else if (elem.tipo === "E") {
-          setSelectedExtraSkillValue(elem.sigla);
-          updatedFieldSkill.filter(
-            (skill: SkillFields) => skill.field === "skillExtra"
-          )[0].id = elem.sigla;
-          updatedFieldSkill.filter(
-            (skill: SkillFields) => skill.field === "skillExtra"
-          )[0].skill = elem.id;
-        } else if (elem.tipo === "R") {
-          const selectTypeRing = document.getElementById(
-            "skillTypeRing" + elem.estadistica_base
-          ) as HTMLSelectElement;
-          if (selectTypeRing) {
-            selectTypeRing.value = elem.estadistica_base;
+          // Buscar si el personaje ya tiene esta habilidad asignada
+          const existingSkill = characterSkills.find(skill => 
+            skill.hpe_campo === "skillClass" && skill.hpe_habilidad === elem.id);
+          
+          if (existingSkill) {
+            setSelectedSkillValue(elem.sigla);
+            const classSkill = updatedFieldSkill.find(skill => skill.field === "skillClass");
+            if (classSkill) {
+              classSkill.id = elem.sigla;
+              classSkill.skill = elem.id;
+            }
           }
+        } else if (elem.tipo === "E") {
+          // Buscar si el personaje ya tiene esta habilidad asignada
+          const existingSkill = characterSkills.find(skill => 
+            skill.hpe_campo === "skillExtra" && skill.hpe_habilidad === elem.id);
+          
+          if (existingSkill) {
+            setSelectedExtraSkillValue(elem.sigla);
+            const extraSkill = updatedFieldSkill.find(skill => skill.field === "skillExtra");
+            if (extraSkill) {
+              extraSkill.id = elem.sigla;
+              extraSkill.skill = elem.id;
+            }
+          }
+        } else if (elem.tipo === "R") {
+          // Buscar si el personaje ya tiene esta habilidad de anillo asignada
+          const existingRingSkill = characterSkills.find(skill => 
+            skill.hpe_campo.startsWith("skillRing") && skill.hpe_habilidad === elem.id);
+          
+          if (existingRingSkill) {
+            // Extraer el número del anillo (0, 1, 2) del campo
+            const ringNumber = existingRingSkill.hpe_campo.replace("skillRing", "");
+            
+            // Actualizar el valor del select (esto es seguro porque es DOM directo)
+            const selectTypeRing = document.getElementById(
+              "skillTypeRing" + ringNumber
+            ) as HTMLSelectElement;
+            if (selectTypeRing) {
+              selectTypeRing.value = elem.estadistica_base;
+            }
 
-          handleSelectedTypeRingSkillChange(elem.estadistica_base, elem.estadistica_base);
-          updatedSkills[Number(elem.estadistica_base)] = {
-            id: elem.id,
-            value: elem.estadistica_base,
-            name: elem.sigla,
-            description: elem.descripcion || "",
-            ring: elem.estadistica_base,
-          };
+            // Actualizar el estado mediante la función memoizada
+            handleSelectedTypeRingSkillChange(ringNumber, elem.estadistica_base);
+            
+            // Actualizar el objeto local
+            const ringIndex = Number(ringNumber);
+            if (ringIndex >= 0 && ringIndex < updatedSkills.length) {
+              updatedSkills[ringIndex] = {
+                id: elem.id,
+                value: ringNumber,
+                name: elem.sigla,
+                description: elem.descripcion || "",
+                ring: elem.estadistica_base,
+                stat: elem.estadistica_base
+              };
+            }
+          }
         }
       });
+      
+      // Actualizar los estados una sola vez al final
       setSkillsAcquired(updatedSkills);
       setFieldSkill(updatedFieldSkill);
     }
-  }, [params.id, skillsAcquired, fieldSkill, handleSelectedTypeRingSkillChange]);
+  }, [params.id, handleSelectedTypeRingSkillChange]); // Dependencias reducidas
 
   const getCharacterImage = useCallback(async () => {
     if (!user || !params.id) return;
 
-    const url = await getUrlCharacter(user.id, params.id);  // Changed from usu_id to id
+    const url = await getUrlCharacter(user.id, params.id);
     if (url) {
-      setCharacterImage(url + "?" + randomValueRefreshImage);
+      // Genera el valor aleatorio solo cuando se necesita cargar la imagen
+      const refreshParam = Math.random().toString(36).substring(7);
+      setCharacterImage(url + "?" + refreshParam);
     }
-  }, [user, params.id, randomValueRefreshImage]);
+  }, [user, params.id]); // Ya no incluye randomValueRefreshImage como dependencia
 
   const getStats = useCallback(async () => {
     if (params.id === null || params.id === undefined) return;
@@ -349,15 +395,22 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     const data = await getCharacterStats(params.id);
 
     if (data !== null) {
-      const updatedInputsStatsData = [...inputsStatsData];
-      for (let i = 0; i < data.length; i++) {
-        updatedInputsStatsData[i].valueDice = data[i].epe_num_dado;
-        updatedInputsStatsData[i].valueClass = data[i].epe_num_clase;
-        updatedInputsStatsData[i].valueLevel = data[i].epe_num_nivel;
-      }
+      // Crear una nueva copia sin referenciar la dependencia del estado
+      const updatedInputsStatsData = inputsStatsData.map((item, index) => {
+        if (index < data.length) {
+          return {
+            ...item,
+            valueDice: data[index].epe_num_dado,
+            valueClass: data[index].epe_num_clase,
+            valueLevel: data[index].epe_num_nivel
+          };
+        }
+        return item;
+      });
+      
       setInputsStatsData(updatedInputsStatsData);
     }
-  }, [params.id, inputsStatsData]);
+  }, [params.id]); // Eliminada la dependencia de inputsStatsData
 
   const getInfoCharacter = useCallback(async () => {
     const userId = user.id;  // Changed from usu_id to id
@@ -376,38 +429,47 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setCharacter(characterData);
 
       if (characterData.sju_sistema_juego) {
-        const updateSystemGame = { ...systemGame };
-        updateSystemGame.sju_id = characterData.sju_sistema_juego.sju_id;
-        updateSystemGame.sju_nombre = characterData.sju_sistema_juego.sju_nombre;
-        setSystemGame(updateSystemGame);
+        setSystemGame({
+          sju_id: characterData.sju_sistema_juego.sju_id,
+          sju_nombre: characterData.sju_sistema_juego.sju_nombre,
+          sju_descripcion: ""
+        });
       }
     }
-  }, [params.id, user.id, systemGame]);
+  }, [params.id, user.id]); // Eliminada la dependencia systemGame
 
+  // useEffect para la carga de habilidades
   useEffect(() => {
     getSkills();
-  }, [getSkills, skillsTypes]);
+  }, [getSkills]);
 
+  // useEffect para la carga inicial - separado del useEffect de habilidades
   useEffect(() => {
     changeBackground(mainBackground);
 
     const loadInfo = async () => {
       document.documentElement.scrollTop = 0;
-
       setNewRecord(params.id === null || params.id === undefined);
+      
+      // Cargar todos los datos necesarios
+      await Promise.all([
+        getListSkill(),
+        getGameSystemList(),
+        getInfoCharacter()
+      ]);
 
-      await getListSkill();
-      await getGameSystemList();
-      await getInfoCharacter();
+      // Cargar la imagen solo después de que tengamos la información del personaje
       await getCharacterImage();
 
-      Promise.all([getStats(), getInventory()]).finally(() => {
+      // Finalmente cargar estadísticas e inventario, y quitar el loading
+      await Promise.all([getStats(), getInventory()]).finally(() => {
         setLoading(false);
       });
     };
 
     loadInfo();
-  }, [changeBackground, getCharacterImage, getInfoCharacter, getInventory, getStats, params.id]);
+    // Dependencias explícitas y estables
+  }, [params.id, user.id, getInfoCharacter, getCharacterImage, getStats, getInventory, changeBackground]);
 
   async function getListSkill() {
     const data = await getListHad();

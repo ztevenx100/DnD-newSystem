@@ -70,6 +70,10 @@ export interface DBHabilidad {
     hab_siglas: string;
     had_estadistica_base: string;
     hab_nivel: number;
+    hab_dado?: string;
+    hab_vlr_min?: number;
+    hab_vlr_solventar?: number;
+    hab_turnos?: number;
 }
 
 // Tipos para mundo

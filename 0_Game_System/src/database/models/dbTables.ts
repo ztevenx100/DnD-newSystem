@@ -403,7 +403,7 @@ export const updateDataEpe = async ( data: DBEstadisticaPersonaje, where?: Where
  * @returns {Promise<DBHabilidadPersonaje>} datos obtenidos de la actualizacion a base de datos.
  */
 export const updateDataHpe = async ( data: DBHabilidadPersonaje, where?: WhereClause ): Promise<DBHabilidadPersonaje[]> => {
-    return await updateDataQuery<DBHabilidadPersonaje>(TABLE_EPE, data, where);
+    return await updateDataQuery<DBHabilidadPersonaje>(TABLE_HPE, data, where);
 }
 
 /**
@@ -462,15 +462,24 @@ export const updateDataQuery = async <T>(table: string, data: object, where?: Wh
  * @param {DBHabilidadPersonaje} data - Habilidades del personaje.
  * @returns {Promise<DBHabilidadPersonaje>} datos obtenidos de la adicion a base de datos.
  */
-export const upsertDataHpe = async ( data: DBHabilidadPersonaje | DBHabilidadPersonaje[] ): Promise<DBHabilidadPersonaje[]> => {
-    if (Array.isArray(data)) {
-        // quitar los Join
-        const dataWithoutJoinArray = data.map(({ hab_habilidad, ...rest }) => rest);
-        return upsertDataQuery<DBHabilidadPersonaje>(TABLE_HPE, dataWithoutJoinArray);
-    } else {
-        // Si `data` es un solo objeto, quitar los joins directamente
-        const { hab_habilidad, ...dataWithoutJoin } = data;
-        return upsertDataQuery<DBHabilidadPersonaje>(TABLE_HPE, dataWithoutJoin);
+export const upsertDataHpe = async (data: DBHabilidadPersonaje | DBHabilidadPersonaje[]): Promise<DBHabilidadPersonaje[]> => {
+    try {
+        if (Array.isArray(data)) {
+            // Procesar un array de habilidades
+            const dataWithoutJoinArray = data.map(item => {
+                // Extraer solo las propiedades válidas de la tabla
+                const { hab_habilidad, ...rest } = item;
+                return rest;
+            });
+            return upsertDataQuery<DBHabilidadPersonaje>(TABLE_HPE, dataWithoutJoinArray);
+        } else {
+            // Procesar un solo objeto
+            const { hab_habilidad, ...dataWithoutJoin } = data;
+            return upsertDataQuery<DBHabilidadPersonaje>(TABLE_HPE, dataWithoutJoin);
+        }
+    } catch (error) {
+        console.error('Error en upsertDataHpe:', error);
+        throw error;
     }
 }
 

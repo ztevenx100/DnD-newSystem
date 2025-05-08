@@ -10,47 +10,97 @@ import {
 import { getUrlCharacter } from "@database/storage/dbStorage";
 
 // Interfaces
-import { DBPersonajesUsuario, DBUsuario } from "@shared/utils/types";
+import { DBPersonajesUsuario } from "@shared/utils/types";
 
 // Images
 import SvgDeleteItem from "@Icons/SvgDeleteItem";
 
+import { normalizeUser } from "@shared/utils/helpers/userHelpers";
+
+// Interface for component props
 interface ListUserCharacterProps {
-  user: DBUsuario;
+  user: {
+    id: string;
+    nombre?: string;
+    usu_nombre?: string;
+    usu_id?: string;
+    email?: string;
+  };
 }
 
+// Asegurar que getUrlImage utilice el id correcto
 async function getUrlImage(character: DBPersonajesUsuario) {
-  const url = await getUrlCharacter(character.pus_usuario, character.pus_id);
+  if (!character || !character.pus_usuario || !character.pus_id) {
+    console.error("Datos de personaje incompletos para obtener imagen:", character);
+    return "";
+  }
 
-  return url + "?" + Math.random().toString(36).substring(7);
+  try {
+    const url = await getUrlCharacter(character.pus_usuario, character.pus_id);
+    return url ? url + "?" + Math.random().toString(36).substring(7) : "";
+  } catch (error) {
+    console.error("Error al obtener URL de imagen:", error);
+    return "";
+  }
 }
 
 async function getList(user: string) {
-  if (user === "" || user === null) return;
+  if (!user || user === "" || user === undefined) {
+    console.error("ID de usuario inválido:", user);
+    return [];
+  }
 
-  const data: DBPersonajesUsuario[] = await getlistCharacters(user);
+  try {
+    console.log("Obteniendo lista de personajes para usuario:", user);
+    const data: DBPersonajesUsuario[] = await getlistCharacters(user);
 
-  if (data !== null && data.length > 0) {
-    await Promise.all(
-      data.map(async (elem) => {
-        elem.url_character_image = await getUrlImage(elem);
-      })
-    );
-
-    return data;
+    if (data && data.length > 0) {
+      await Promise.all(
+        data.map(async (elem) => {
+          try {
+            elem.url_character_image = await getUrlImage(elem);
+          } catch (error) {
+            console.error("Error al obtener imagen para personaje:", elem.pus_id, error);
+            elem.url_character_image = "";
+          }
+        })
+      );
+      return data;
+    } else {
+      console.log("No se encontraron personajes para el usuario:", user);
+      return [];
+    }
+  } catch (error) {
+    console.error("Error al obtener la lista de personajes:", error);
+    return [];
   }
 }
 
 const ListUserCharacter: React.FC<ListUserCharacterProps> = ({ user }) => {
   const navigate = useNavigate();
   const [list, setList] = useState<DBPersonajesUsuario[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const id = user.id ?? "43c29fa1-d02c-4da5-90ea-51f451ed8952";
-    getList(id).then((listData) => {
-      setList(listData ?? []);
-      console.log("Lista de personajes:", listData);
-    });
+    // Normalizar el usuario para asegurar que tenga todos los campos necesarios
+    const normalizedUser = normalizeUser(user);
+    
+    setIsLoading(true);
+    setError(null);
+    
+    console.log("Cargando personajes para usuario:", normalizedUser.usu_id);
+    
+    getList(normalizedUser.usu_id)
+      .then((listData) => {
+        setList(listData || []);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error al cargar personajes:", err);
+        setError("Error al cargar la lista de personajes");
+        setIsLoading(false);
+      });
   }, [user]);
 
   async function handleDeleteCharacter(id: string) {

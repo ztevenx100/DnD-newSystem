@@ -4,10 +4,10 @@ import { Suspense, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Card, CardBody } from "@nextui-org/react";
-import { ScreenLoader } from "@components/ScreenLoader";
-import ListUserCharacter from "./ListUserCharacter/ListUserCharacter";
-import { DBUsuario } from "@utils/types";
-import SvgAddCharacter from '@Icons/SvgAddCharacter';
+import ScreenLoader from "@shared/components/UI/ScreenLoader/ScreenLoader";
+import ListUserCharacter from "@features/character-sheet/UserCharacters/ListUserCharacter/ListUserCharacter";
+import { DBUsuario } from "@shared/utils/types";
+import SvgAddCharacter from '@shared/components/UI/Icons/SvgAddCharacter';
 import supabase from "@database/config/supabase";
 
 const UserCharacters = () => {
@@ -34,8 +34,11 @@ const UserCharacters = () => {
             .single();
 
           if (userData) {
-            // Si existen datos de usuario, configura el estado
+            // Si existen datos de usuario, configura el estado con TODOS los campos requeridos
             setUser({
+              usu_id: session.session.user.id,
+              usu_nombre: userData.nombre || session.session.user.email?.split('@')[0] || 'Usuario',
+              usu_email: session.session.user.email || '',
               id: session.session.user.id,
               nombre: userData.nombre || session.session.user.email?.split('@')[0] || 'Usuario',
               email: session.session.user.email || ''
@@ -43,6 +46,9 @@ const UserCharacters = () => {
           } else {
             // Si no hay datos, usa información básica del usuario de auth
             setUser({
+              usu_id: session.session.user.id,
+              usu_nombre: session.session.user.email?.split('@')[0] || 'Usuario',
+              usu_email: session.session.user.email || '',
               id: session.session.user.id,
               nombre: session.session.user.email?.split('@')[0] || 'Usuario',
               email: session.session.user.email || ''
@@ -52,7 +58,10 @@ const UserCharacters = () => {
           // Para desarrollo: si no hay sesión, usa un usuario de prueba
           console.warn('No se encontró sesión de usuario. Usando ID de prueba para desarrollo.');
           setUser({
-            id: '43c29fa1-d02c-4da5-90ea-51f451ed8952', // Un UUID fijo para pruebas
+            usu_id: '43c29fa1-d02c-4da5-90ea-51f451ed8952', // Un UUID fijo para pruebas
+            usu_nombre: 'Usuario de Prueba',
+            usu_email: 'test@example.com',
+            id: '43c29fa1-d02c-4da5-90ea-51f451ed8952',
             nombre: 'Usuario de Prueba',
             email: 'test@example.com'
           });
@@ -84,8 +93,8 @@ const UserCharacters = () => {
       return;
     }
     
-    // Navegar a la página de creación de personajes con el ID de usuario como parámetro
-    navigate(`/CharacterSheet/${user.id}`);
+    // Navegar a la página de creación de personajes
+    navigate('/CharacterSheet');
   };
 
   if (loading) {
@@ -119,7 +128,7 @@ const UserCharacters = () => {
             </h1>
             {user && (
               <p className="text-center text-gray-600 mt-2">
-                Usuario: {user.nombre}
+                Usuario: {user.nombre || user.usu_nombre}
               </p>
             )}
           </header>
@@ -136,8 +145,16 @@ const UserCharacters = () => {
                 </button>
               </div>
               <Suspense fallback={<ScreenLoader />}>
-                {user && <ListUserCharacter user={user} />}
-                {!user && (
+                {user && user.id && (
+                  <ListUserCharacter user={{
+                    id: user.id,
+                    nombre: user.nombre || user.usu_nombre,
+                    usu_nombre: user.usu_nombre,
+                    usu_id: user.usu_id,
+                    email: user.email || user.usu_email
+                  }} />
+                )}
+                {(!user || !user.id) && (
                   <div className="text-center p-8 text-gray-500">
                     No se ha podido cargar la información del usuario
                   </div>

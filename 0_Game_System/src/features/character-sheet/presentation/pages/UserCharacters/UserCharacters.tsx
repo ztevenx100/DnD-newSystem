@@ -86,7 +86,9 @@ const UserCharacters = () => {
     };
 
     getCurrentUser();
-  }, []);  const handleOpenCharacter = () => {
+  }, []);
+
+  const handleOpenCharacter = () => {
     if (!user) {
       console.error('No hay usuario disponible para crear un personaje');
       // Mostrar algún mensaje de error al usuario

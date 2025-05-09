@@ -396,13 +396,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const getCharacterImage = useCallback(async () => {
     if (!user || !params.id) return;
 
-    // Ensure user.id is defined before using it
-    if (!user.id) {
+    // Normalize the user object
+    const normalizedUser = normalizeUser(user);
+
+    // Ensure normalizedUser.usu_id is defined before using it
+    if (!normalizedUser.usu_id) {
       console.error("User ID is undefined");
       return;
     }
 
-    const url = await getUrlCharacter(user.id, params.id);
+    const url = await getUrlCharacter(normalizedUser.usu_id, params.id);
     if (url) {
       // Genera el valor aleatorio solo cuando se necesita cargar la imagen
       const refreshParam = Math.random().toString(36).substring(7);

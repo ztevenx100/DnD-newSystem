@@ -9,6 +9,16 @@ import ListUserCharacter from "@features/character-sheet/UserCharacters/ListUser
 import { DBUsuario } from "@shared/utils/types";
 import SvgAddCharacter from '@shared/components/UI/Icons/SvgAddCharacter';
 import supabase from "@database/config/supabase";
+import { normalizeUser } from "@shared/utils/helpers/userHelpers";
+
+// Definimos un tipo que se ajuste exactamente a lo que espera ListUserCharacter
+type ListUserCharacterUser = {
+  id: string;  // Este campo es requerido, NO opcional
+  nombre?: string;
+  usu_nombre?: string;
+  usu_id?: string;
+  email?: string;
+};
 
 const UserCharacters = () => {
   const navigate = useNavigate();
@@ -76,9 +86,7 @@ const UserCharacters = () => {
     };
 
     getCurrentUser();
-  }, []);
-
-  const handleOpenCharacter = () => {
+  }, []);  const handleOpenCharacter = () => {
     if (!user) {
       console.error('No hay usuario disponible para crear un personaje');
       // Mostrar algún mensaje de error al usuario
@@ -86,8 +94,8 @@ const UserCharacters = () => {
       return;
     }
     
-    // Asegurarse de que user.id está definido antes de usarlo en la navegación
-    if (!user.id) {
+    // Verificamos que el ID sea válido antes de navegar
+    if (!user.id && !user.usu_id) {
       console.error('El usuario no tiene un ID válido');
       setError('El usuario no tiene un ID válido para crear un personaje.');
       return;
@@ -95,6 +103,19 @@ const UserCharacters = () => {
     
     // Navegar a la página de creación de personajes
     navigate('/CharacterSheet');
+  };// Función para convertir de DBUsuario al tipo que espera ListUserCharacter
+  const toListUserCharacterUser = (user: DBUsuario): ListUserCharacterUser => {
+    // Primero normalizamos el usuario para asegurar que tenga todos los campos
+    const normalizedUser = normalizeUser(user);
+    
+    // Luego creamos un objeto que cumpla con la interfaz de ListUserCharacter
+    return {
+      id: normalizedUser.id || normalizedUser.usu_id, // Garantizamos que id nunca sea undefined
+      nombre: normalizedUser.nombre,
+      usu_nombre: normalizedUser.usu_nombre,
+      usu_id: normalizedUser.usu_id,
+      email: normalizedUser.email || normalizedUser.usu_email
+    };
   };
 
   if (loading) {
@@ -143,18 +164,11 @@ const UserCharacters = () => {
                   <SvgAddCharacter className="icon" width={32} height={32} />
                   <span>Nuevo Personaje</span>
                 </button>
-              </div>
-              <Suspense fallback={<ScreenLoader />}>
-                {user && user.id && (
-                  <ListUserCharacter user={{
-                    id: user.id,
-                    nombre: user.nombre || user.usu_nombre,
-                    usu_nombre: user.usu_nombre,
-                    usu_id: user.usu_id,
-                    email: user.email || user.usu_email
-                  }} />
+              </div>              <Suspense fallback={<ScreenLoader />}>
+                {user && (
+                  <ListUserCharacter user={toListUserCharacterUser(user)} />
                 )}
-                {(!user || !user.id) && (
+                {!user && (
                   <div className="text-center p-8 text-gray-500">
                     No se ha podido cargar la información del usuario
                   </div>

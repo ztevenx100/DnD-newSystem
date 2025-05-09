@@ -66,6 +66,7 @@ import {
 
 // Funciones
 import { validateNumeric } from "@shared/utils/helpers/utilConversions";
+import { normalizeUser } from "@shared/utils/helpers/userHelpers";
 
 // Images
 import mainBackground from "@img/webp/bg-home-02.webp";
@@ -104,22 +105,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     character?: DBPersonajesUsuario;
   };
   
-  // Si el usuario es undefined, usamos un usuario fijo para que el componente pueda seguir funcionando
+  // Normalizar el usuario para asegurar que tenga todos los campos necesarios
+  const normalizedUser = normalizeUser(loaderData?.user);
+  
   const safeData = {
-    user: loaderData?.user || {
-      id: "43c29fa1-d02c-4da5-90ea-51f451ed8952", // El mismo ID que usas en getUserSession
-      nombre: "Usuario Temporal",
-      email: "temp@example.com"
-    },
+    user: normalizedUser,
     character: loaderData?.character
   };
   
   const { user, character: initialCharacter } = safeData;
 
+  // Ahora podemos usar con seguridad user.nombre o user.usu_nombre
+  const userName = user.usu_nombre;
+
   const defaultValues = useMemo(() => {
     return initialCharacter
       ? {
-          userName: user.nombre,
+          userName: userName, // Usar la variable que definimos arriba
           name: initialCharacter.pus_nombre,
           class: initialCharacter.pus_clase,
           level: initialCharacter.pus_nivel,
@@ -132,8 +134,21 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           bronzeCoins: initialCharacter.pus_cantidad_bronce,
           characterDescription: initialCharacter.pus_descripcion,
         }
-      : undefined;
-  }, [initialCharacter, user]);
+      : {
+          userName: userName, // Establecer un valor predeterminado para nuevos personajes también
+          name: "",
+          class: "",
+          level: 1,
+          luckyPoints: 0,
+          lifePoints: 0,
+          mainWeapon: "",
+          secondaryWeapon: "",
+          goldCoins: 0,
+          silverCoins: 0,
+          bronzeCoins: 0,
+          characterDescription: "",
+        };
+  }, [initialCharacter, userName]);
 
   const {
     register,
@@ -381,7 +396,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const getCharacterImage = useCallback(async () => {
     if (!user || !params.id) return;
 
-    const url = await getUrlCharacter(user.id, params.id);
+    // Normalize the user object
+    const normalizedUser = normalizeUser(user);
+
+    // Ensure normalizedUser.usu_id is defined before using it
+    if (!normalizedUser.usu_id) {
+      console.error("User ID is undefined");
+      return;
+    }
+
+    const url = await getUrlCharacter(normalizedUser.usu_id, params.id);
     if (url) {
       // Genera el valor aleatorio solo cuando se necesita cargar la imagen
       const refreshParam = Math.random().toString(36).substring(7);
@@ -413,7 +437,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   }, [params.id]); // Eliminada la dependencia de inputsStatsData
 
   const getInfoCharacter = useCallback(async () => {
-    const userId = user.id;  // Changed from usu_id to id
+    // Ensure user.id exists before using it
+    if (!user || !user.id) {
+      console.error("User ID is undefined");
+      return;
+    }
+    
+    const userId = user.id;
 
     if (params.id === null || params.id === undefined) {
       initialPersonajesUsuario.pus_id = uuidv4();
@@ -426,7 +456,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
     if (data && data.length > 0) {
       const characterData = { ...data[0], pus_usuario: userId };
-      setCharacter(characterData);
+      setCharacter(characterData as DBPersonajesUsuario); // Add type assertion
 
       if (characterData.sju_sistema_juego) {
         setSystemGame({
@@ -436,7 +466,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         });
       }
     }
-  }, [params.id, user.id]); // Eliminada la dependencia systemGame
+  }, [params.id, user]); // Removed systemGame, added user as dependency
 
   // useEffect para la carga de habilidades
   useEffect(() => {
@@ -658,6 +688,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   // Manejar el cambio de la URL de la imagen en characterImage
   const handleCharacterImageFileChange = async (value: string, file: File) => {
     if (!user || !params.id) return;
+
+    // Ensure user.id exists before using it
+    if (!user.id) {
+      console.error("User ID is undefined");
+      return;
+    }
 
     const { path, error } = await addStorageCharacter(
       user.id,  // Changed from usu_id to id

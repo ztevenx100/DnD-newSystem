@@ -4,11 +4,21 @@ import { Suspense, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Card, CardBody } from "@nextui-org/react";
-import { ScreenLoader } from "@components/ScreenLoader";
-import ListUserCharacter from "./ListUserCharacter/ListUserCharacter";
-import { DBUsuario } from "@utils/types";
-import SvgAddCharacter from '@Icons/SvgAddCharacter';
+import ScreenLoader from "@shared/components/UI/ScreenLoader/ScreenLoader";
+import ListUserCharacter from "@features/character-sheet/UserCharacters/ListUserCharacter/ListUserCharacter";
+import { DBUsuario } from "@shared/utils/types";
+import SvgAddCharacter from '@shared/components/UI/Icons/SvgAddCharacter';
 import supabase from "@database/config/supabase";
+import { normalizeUser } from "@shared/utils/helpers/userHelpers";
+
+// Definimos un tipo que se ajuste exactamente a lo que espera ListUserCharacter
+type ListUserCharacterUser = {
+  id: string;  // Este campo es requerido, NO opcional
+  nombre?: string;
+  usu_nombre?: string;
+  usu_id?: string;
+  email?: string;
+};
 
 const UserCharacters = () => {
   const navigate = useNavigate();
@@ -34,8 +44,11 @@ const UserCharacters = () => {
             .single();
 
           if (userData) {
-            // Si existen datos de usuario, configura el estado
+            // Si existen datos de usuario, configura el estado con TODOS los campos requeridos
             setUser({
+              usu_id: session.session.user.id,
+              usu_nombre: userData.nombre || session.session.user.email?.split('@')[0] || 'Usuario',
+              usu_email: session.session.user.email || '',
               id: session.session.user.id,
               nombre: userData.nombre || session.session.user.email?.split('@')[0] || 'Usuario',
               email: session.session.user.email || ''
@@ -43,6 +56,9 @@ const UserCharacters = () => {
           } else {
             // Si no hay datos, usa información básica del usuario de auth
             setUser({
+              usu_id: session.session.user.id,
+              usu_nombre: session.session.user.email?.split('@')[0] || 'Usuario',
+              usu_email: session.session.user.email || '',
               id: session.session.user.id,
               nombre: session.session.user.email?.split('@')[0] || 'Usuario',
               email: session.session.user.email || ''
@@ -52,7 +68,10 @@ const UserCharacters = () => {
           // Para desarrollo: si no hay sesión, usa un usuario de prueba
           console.warn('No se encontró sesión de usuario. Usando ID de prueba para desarrollo.');
           setUser({
-            id: '43c29fa1-d02c-4da5-90ea-51f451ed8952', // Un UUID fijo para pruebas
+            usu_id: '43c29fa1-d02c-4da5-90ea-51f451ed8952', // Un UUID fijo para pruebas
+            usu_nombre: 'Usuario de Prueba',
+            usu_email: 'test@example.com',
+            id: '43c29fa1-d02c-4da5-90ea-51f451ed8952',
             nombre: 'Usuario de Prueba',
             email: 'test@example.com'
           });
@@ -77,15 +96,28 @@ const UserCharacters = () => {
       return;
     }
     
-    // Asegurarse de que user.id está definido antes de usarlo en la navegación
-    if (!user.id) {
+    // Verificamos que el ID sea válido antes de navegar
+    if (!user.id && !user.usu_id) {
       console.error('El usuario no tiene un ID válido');
       setError('El usuario no tiene un ID válido para crear un personaje.');
       return;
     }
     
-    // Navegar a la página de creación de personajes con el ID de usuario como parámetro
-    navigate(`/CharacterSheet/${user.id}`);
+    // Navegar a la página de creación de personajes
+    navigate('/CharacterSheet');
+  };// Función para convertir de DBUsuario al tipo que espera ListUserCharacter
+  const toListUserCharacterUser = (user: DBUsuario): ListUserCharacterUser => {
+    // Primero normalizamos el usuario para asegurar que tenga todos los campos
+    const normalizedUser = normalizeUser(user);
+    
+    // Luego creamos un objeto que cumpla con la interfaz de ListUserCharacter
+    return {
+      id: normalizedUser.id || normalizedUser.usu_id, // Garantizamos que id nunca sea undefined
+      nombre: normalizedUser.nombre,
+      usu_nombre: normalizedUser.usu_nombre,
+      usu_id: normalizedUser.usu_id,
+      email: normalizedUser.email || normalizedUser.usu_email
+    };
   };
 
   if (loading) {
@@ -119,7 +151,7 @@ const UserCharacters = () => {
             </h1>
             {user && (
               <p className="text-center text-gray-600 mt-2">
-                Usuario: {user.nombre}
+                Usuario: {user.nombre || user.usu_nombre}
               </p>
             )}
           </header>
@@ -134,9 +166,10 @@ const UserCharacters = () => {
                   <SvgAddCharacter className="icon" width={32} height={32} />
                   <span>Nuevo Personaje</span>
                 </button>
-              </div>
-              <Suspense fallback={<ScreenLoader />}>
-                {user && <ListUserCharacter user={user} />}
+              </div>              <Suspense fallback={<ScreenLoader />}>
+                {user && (
+                  <ListUserCharacter user={toListUserCharacterUser(user)} />
+                )}
                 {!user && (
                   <div className="text-center p-8 text-gray-500">
                     No se ha podido cargar la información del usuario

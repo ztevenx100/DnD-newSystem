@@ -3,6 +3,20 @@ import { useParams, useNavigate, useLoaderData } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useForm } from "react-hook-form";
 
+// NextUI Components
+import {
+  Tooltip,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  useDisclosure,
+} from "@nextui-org/react";
+import "./CharacterSheet.css";
+
+// Database Services
 import {
   addStorageCharacter,
   getUrlCharacter,
@@ -25,26 +39,14 @@ import {
   upsertDataInp,
 } from "@database/models/dbTables";
 
-import {
-  Tooltip,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  useDisclosure,
-} from "@nextui-org/react";
-import "./CharacterSheet.css";
-
-// Components
+// Local Components
 import FormSelectInfoPlayer from "./FormSelectInfoPlayer/FormSelectInfoPlayer";
 import FormCardCheckbox from "./FormCardCheckbox/FormCardCheckbox";
 import FormInputStats from "./FormInputStats/FormInputStats";
 import FormInputSkillsRing from "./FormInputSkillsRing/FormInputSkillsRing";
 import FormImageFile from "./FormImageFile/FormImageFile";
 
-// Interfaces
+// Type Definitions
 import {
   InputStats,
   SkillTypes,
@@ -64,11 +66,11 @@ import {
   initialPersonajesUsuario,
 } from '@shared/utils/types';
 
-// Funciones
+// Utility Functions
 import { validateNumeric } from "@shared/utils/helpers/utilConversions";
 import { normalizeUser } from "@shared/utils/helpers/userHelpers";
 
-// Images
+// Assets and Icons
 import mainBackground from "@img/webp/bg-home-02.webp";
 import ScreenLoader from "@UI/ScreenLoader/ScreenLoader";
 import SvgCharacter from "@Icons/SvgCharacter";
@@ -76,7 +78,15 @@ import SvgSaveCharacter from "@Icons/SvgSaveCharacter";
 import SvgD4Roll from "@Icons/SvgD4Roll";
 import SvgDeleteItem from "@Icons/SvgDeleteItem";
 
-import { optionsCharacterClass, optionsCharacterRace, optionsCharacterJob, optionsRingTypes, listWearpons, checkboxesData } from '../../constants/characterOptions';
+// Constants
+import { 
+  optionsCharacterClass, 
+  optionsCharacterRace, 
+  optionsCharacterJob, 
+  optionsRingTypes, 
+  listWearpons, 
+  checkboxesData 
+} from '../../constants/characterOptions';
 
 interface CharacterSheetProps {
   changeBackground: (newBackground: string) => void;
@@ -355,20 +365,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           // Buscar si el personaje ya tiene esta habilidad de anillo asignada
           const existingRingSkill = characterSkills.find(skill => 
             skill.hpe_campo.startsWith("skillRing") && skill.hpe_habilidad === elem.id);
-          
-          if (existingRingSkill) {
+            if (existingRingSkill) {
             // Extraer el número del anillo (0, 1, 2) del campo
             const ringNumber = existingRingSkill.hpe_campo.replace("skillRing", "");
             
-            // Actualizar el valor del select (esto es seguro porque es DOM directo)
-            const selectTypeRing = document.getElementById(
-              "skillTypeRing" + ringNumber
-            ) as HTMLSelectElement;
-            if (selectTypeRing) {
-              selectTypeRing.value = elem.estadistica_base;
-            }
-
-            // Actualizar el estado mediante la función memoizada
+            // Actualizar el estado mediante la función memoizada (React se encargará de actualizar el DOM)
             handleSelectedTypeRingSkillChange(ringNumber, elem.estadistica_base);
             
             // Actualizar el objeto local
@@ -443,12 +444,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return;
     }
     
-    const userId = user.id;
-
-    if (params.id === null || params.id === undefined) {
-      initialPersonajesUsuario.pus_id = uuidv4();
-      initialPersonajesUsuario.pus_usuario = userId;
-      setCharacter(initialPersonajesUsuario);
+    const userId = user.id;    if (params.id === null || params.id === undefined) {
+      // Crear un nuevo objeto en lugar de modificar directamente initialPersonajesUsuario
+      setCharacter({
+        ...initialPersonajesUsuario,
+        pus_id: uuidv4(),
+        pus_usuario: userId
+      });
       return;
     }
 
@@ -581,20 +583,24 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       );
       
    };*/
-
   // Manejar el cambio en la selección
   const handleSelectRaceChange = (value: string) => {
+    clearValidationError('characterRace');
     setCharacter((prevState) => ({ ...prevState!, ["pus_raza"]: value }));
   };
-
   // Actualizar el systema de juego
   const handleSystemGameChange = (currentSystem: string = "") => {
     if (!currentSystem) return;
     const option = SystemGameList.filter((elem) => elem.value === currentSystem);
-    const updateSystemGame = systemGame;
-    updateSystemGame.sju_id = option[0].value;
-    updateSystemGame.sju_nombre = option[0].name;
-    setSystemGame(updateSystemGame);
+    if (option.length === 0) return;
+    
+    // Crear un nuevo objeto en lugar de mutar el existente
+    setSystemGame({
+      sju_id: option[0].value,
+      sju_nombre: option[0].name,
+      sju_descripcion: systemGame.sju_descripcion
+    });
+    
     setCharacter((prevState) => ({
       ...prevState!,
       ["pus_sistema_juego"]: currentSystem,
@@ -630,13 +636,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     );
     setSelectedExtraSkillValue(currentSkill);
   };
-
-  const setAllValueClassesToZero = () => {
-    setInputsStatsData((prevItems) =>
-      prevItems.map((item) => ({ ...item, valueClass: 0 }))
-    );
-  };
-
   const updStatsPoints = (selectedClass: string, selectedJob: string): void => {
     const updatedInputsStatsData = [...inputsStatsData];
     const extraPoints =
@@ -658,31 +657,33 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
     setInputsStatsData(updatedInputsStatsData);
   };
-
   const handleCharacterClassChange = (value: string) => {
-    setCharacter((prevState) => ({ ...prevState!, ["pus_clase"]: value }));
-
-    // selectedCheckValues - Usar el método find para obtener el objeto con el valor específico
+    // Clear validation error for this field
+    clearValidationError('characterClass');
+    
+    // Buscar la opción seleccionada una sola vez
     const selectedOption = optionsCharacterClass.find(
       (option) => option.value === value
     );
-    setCharacter((prevState) => ({
-      ...prevState!,
-      ["pus_conocimientos"]: selectedOption?.work || ""
+    
+    // Actualizar character en una sola operación en lugar de múltiples actualizaciones
+    setCharacter((prevState) => ({ 
+      ...prevState!, 
+      pus_clase: value,
+      pus_conocimientos: selectedOption?.work || ""
     }));
 
-    // inputsStatsData - Poner todos los valores de valueClass en cero
-    setAllValueClassesToZero();
+    // Actualizar las estadísticas
     updStatsPoints(value, character!.pus_trabajo);
 
-    // skillClass - Llenar el valor de la habilidad principal
+    // Actualizar la habilidad principal
     const skillValue = selectedOption?.mainStat ? "S" + selectedOption.mainStat : "";
     setSelectedSkillValue(skillValue);
     handleSelectSkillChange(skillValue);
   };
-
   // Manejar el cambio en la selección characterJob
   const handleCharacterJobSelectChange = (value: string) => {
+    clearValidationError('characterJob');
     setCharacter((prevState) => ({ ...prevState!, ["pus_trabajo"]: value }));
     updStatsPoints(character!.pus_clase, value);
   };
@@ -714,29 +715,21 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       ["pus_conocimientos"]: newValues.join(","),
     }));
   };
-
   const handleStatsInputChange = (newInputStats: InputStats) => {
     setInputsStatsData((prevItems) =>
       prevItems.map((item) =>
-        item.id === newInputStats.id ? { ...item, item: newInputStats } : item
+        item.id === newInputStats.id ? { ...item, ...newInputStats } : item
       )
     );
   };
-
+  // Estado para controlar las clases de alineación
+  const [formAlignment, setFormAlignment] = useState<string>("");
+  
   const handleAlignmentChange = (value: string) => {
     setCharacter((prevState) => ({ ...prevState!, ["pus_alineacion"]: value }));
-
-    const formElement = document.getElementById("form-sheet");
-    if (value === "O") {
-      formElement?.classList.add("orden");
-      formElement?.classList.remove("caos");
-    } else if (value === "C") {
-      formElement?.classList.add("caos");
-      formElement?.classList.remove("orden");
-    } else {
-      formElement?.classList.remove("caos");
-      formElement?.classList.remove("orden");
-    }
+    
+    // Actualizar el estado de alineación en lugar de manipular directamente el DOM
+    setFormAlignment(value);
   };
 
   const handleCoinsChange = (index: number, value: string) => {
@@ -787,29 +780,33 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     const numericValue = validateNumeric(value, 1);
     setNewObjectCount(numericValue);
   };
+  // Estado para rastrear campos requeridos vacíos
+  const [emptyRequiredFields, setEmptyRequiredFields] = useState<string[]>([]);
+
+  // Function to clear validation errors for a specific field
+  const clearValidationError = (fieldId: string) => {
+    if (emptyRequiredFields.includes(fieldId)) {
+      setEmptyRequiredFields(prev => prev.filter(field => field !== fieldId));
+    }
+  };
 
   const handleOpenModal = () => {
-    // Obtener todos los elementos con el atributo required
-    const requiredElements = Array.from(
-      document.querySelectorAll("[required]")
-    ) as HTMLInputElement[];
-    let hayCamposVacios = false;
+    // Validar programáticamente los campos requeridos usando el estado actual
     const fieldsRequired: string[] = [];
-
-    // Iterar sobre los elementos y verificar si están vacíos
-    for (let i = 0; i < requiredElements.length; i++) {
-      if (requiredElements[i].value.trim() === "") {
-        hayCamposVacios = true;
-        requiredElements[i].classList.add("required-input");
-        fieldsRequired.push(requiredElements[i].id);
-      } else {
-        requiredElements[i].classList.remove("required-input");
-      }
-    }
-
+    
+    // Verificar campos requeridos basados en el estado actual
+    if (!character?.pus_nombre?.trim()) fieldsRequired.push('name');
+    if (!character?.pus_descripcion?.trim()) fieldsRequired.push('description');
+    if (!character?.pus_clase?.trim()) fieldsRequired.push('characterClass');
+    if (!character?.pus_raza?.trim()) fieldsRequired.push('characterRace');
+    if (!character?.pus_trabajo?.trim()) fieldsRequired.push('characterJob');
+    
+    // Actualizar estado de campos vacíos para referencia CSS
+    setEmptyRequiredFields(fieldsRequired);
+    
     // Si hay campos vacíos, no enviar el formulario
-    if (hayCamposVacios) {
-      alert("Por favor, digite todos los campos obligatorios.");
+    if (fieldsRequired.length > 0) {
+      alert("Por favor, digite todos los campos obligatorios: " + fieldsRequired.join(", "));
       return;
     }
 
@@ -1063,10 +1060,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
   return (
     <>
-      {loading && <ScreenLoader />}
-      <form
+      {loading && <ScreenLoader />}      <form
         id="form-sheet"
-        className="form-sheet min-h-screen grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4"
+        className={`form-sheet min-h-screen grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4 ${
+          formAlignment === 'O' ? 'orden' : formAlignment === 'C' ? 'caos' : ''
+        }`}
       >
         {/* Titulo */}
         <fieldset className="fieldset-form form-title col-span-2 md:col-span-2 lg:col-span-3 shadow-lg rounded">
@@ -1108,35 +1106,37 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             className="form-lbl col-start-1 bg-grey-lighter "
           >
             Personaje
-          </label>
-          <input
-            {...register("name", { required: true, maxLength: 50 })}
+          </label>          <input
+            {...register("name", { 
+              required: true, 
+              maxLength: 50,
+              onChange: () => clearValidationError('name')
+            })}
             placeholder="Nombre del personaje"
-            className="form-input col-start-2 mr-2 focus:border-black focus:shadow"
-          />
-
-          <FormSelectInfoPlayer
+            className={`form-input col-start-2 mr-2 focus:border-black focus:shadow ${
+              emptyRequiredFields.includes('name') ? 'required-input' : ''
+            }`}
+          /><FormSelectInfoPlayer
             id="characterClass"
             label="Clase"
             options={optionsCharacterClass}
             selectedValue={character?.pus_clase || ""}
             onSelectChange={handleCharacterClassChange}
-          />
-
-          <FormSelectInfoPlayer
+            className={emptyRequiredFields.includes('characterClass') ? 'required-input' : ''}
+          />          <FormSelectInfoPlayer
             id="characterRace"
             label="Raza"
             options={optionsCharacterRace}
             selectedValue={character?.pus_raza || ""}
             onSelectChange={handleSelectRaceChange}
-          ></FormSelectInfoPlayer>
-
-          <FormSelectInfoPlayer
+            className={emptyRequiredFields.includes('characterRace') ? 'required-input' : ''}
+          ></FormSelectInfoPlayer>          <FormSelectInfoPlayer
             id="characterJob"
             label="Trabajo"
             options={optionsCharacterJob}
             selectedValue={character?.pus_trabajo || ""}
             onSelectChange={handleCharacterJobSelectChange}
+            className={emptyRequiredFields.includes('characterJob') ? 'required-input' : ''}
           ></FormSelectInfoPlayer>
 
           <label
@@ -1191,11 +1191,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             className="form-lbl-y col-start-1 md:col-start-1 col-span-5 row-start-14 md:row-start-6 bg-grey-lighter "
           >
             Descripción
-          </label>
-          <textarea
-            {...register("characterDescription", { required: true, maxLength: 500 })}
+          </label>          <textarea
+            {...register("characterDescription", { 
+              required: true, 
+              maxLength: 500,
+              onChange: () => clearValidationError('description')
+            })}
             placeholder="Descripcion del personaje"
-            className="form-input-y col-start-1 md:col-start-1 col-span-5 row-start-15 md:row-start-7 row-span-1 focus:border-black focus:shadow"
+            className={`form-input-y col-start-1 md:col-start-1 col-span-5 row-start-15 md:row-start-7 row-span-1 focus:border-black focus:shadow ${
+              emptyRequiredFields.includes('description') ? 'required-input' : ''
+            }`}
           />
 
           <FormCardCheckbox

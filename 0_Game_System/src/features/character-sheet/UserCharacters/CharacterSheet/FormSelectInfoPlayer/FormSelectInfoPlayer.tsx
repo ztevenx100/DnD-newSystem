@@ -7,6 +7,7 @@ type SelectFieldProps = {
   options: Option[];
   selectedValue: string;
   onSelectChange: (selectedValue: string) => void;
+  className?: string;
 };
 
 const FormSelectInfoPlayer: React.FC<SelectFieldProps> = ({
@@ -15,6 +16,7 @@ const FormSelectInfoPlayer: React.FC<SelectFieldProps> = ({
   options,
   selectedValue,
   onSelectChange,
+  className = '',
 }) => {
   // Manejar el cambio en la selección
   const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {

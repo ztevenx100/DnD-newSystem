@@ -471,35 +471,37 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   // useEffect para la carga de habilidades
   useEffect(() => {
     getSkills();
-  }, [getSkills]);
-
-  // useEffect para la carga inicial - separado del useEffect de habilidades
+  }, [getSkills]);  // useEffect para la carga inicial - separado del useEffect de habilidades
   useEffect(() => {
+    // Configuramos el fondo solo una vez al montar el componente
     changeBackground(mainBackground);
 
     const loadInfo = async () => {
       document.documentElement.scrollTop = 0;
       setNewRecord(params.id === null || params.id === undefined);
+      setLoading(true); // Aseguramos que se muestre el loader
       
-      // Cargar todos los datos necesarios
-      await Promise.all([
-        getListSkill(),
-        getGameSystemList(),
-        getInfoCharacter()
-      ]);
+      try {
+        // Cargar todos los datos necesarios
+        await Promise.all([
+          getListSkill(),
+          getGameSystemList(),
+          getInfoCharacter()
+        ]);
 
-      // Cargar la imagen solo después de que tengamos la información del personaje
-      await getCharacterImage();
+        // Cargar la imagen solo después de que tengamos la información del personaje
+        await getCharacterImage();
 
-      // Finalmente cargar estadísticas e inventario, y quitar el loading
-      await Promise.all([getStats(), getInventory()]).finally(() => {
-        setLoading(false);
-      });
-    };
-
-    loadInfo();
-    // Dependencias explícitas y estables
-  }, [params.id, user.id, getInfoCharacter, getCharacterImage, getStats, getInventory, changeBackground]);
+        // Finalmente cargar estadísticas e inventario
+        await Promise.all([getStats(), getInventory()]);
+      } catch (error) {
+        console.error("Error al cargar datos:", error);
+      } finally {
+        setLoading(false); // Aseguramos que el loader se oculte incluso si hay errores
+      }
+    };    loadInfo();
+    // Solo ejecutar cuando se monte el componente o cambie la ID
+  }, [params.id, changeBackground]);
 
   async function getListSkill() {
     const data = await getListHad();

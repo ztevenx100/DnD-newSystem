@@ -545,7 +545,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     };    
     
     loadInfo();
-  }, [params.id, changeBackground]);  async function getListSkill() {
+  }, [params.id, changeBackground]);
+  
+  async function getListSkill() {
     try {
       console.log("Fetching skill list data...");
       const data = await getListHad();
@@ -644,7 +646,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     } catch (error) {
       console.error("Error in getListSkill:", error);
     }
-  }async function getGameSystemList() {
+  }
+  
+  async function getGameSystemList() {
     const data: DBSistemaJuego[] = await getGameSystem();
     if (data !== null) {
       const updatedSystemGameList = [];

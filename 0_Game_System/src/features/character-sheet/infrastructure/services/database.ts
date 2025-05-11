@@ -7,7 +7,12 @@ const TABLE_HPE = 'hpe_habilidad_personaje';
 const TABLE_INP = 'inp_inventario_personaje';
 
 export const getCharacter = async (id: string) => {
-    return getDataQuery<DBPersonajesUsuario>(TABLE_PUS, '*', { pus_id: id });
+    // Especificamos explícitamente que queremos incluir la información del sistema de juego
+    return getDataQuery<DBPersonajesUsuario>(
+        TABLE_PUS, 
+        '*, sju_sistema_juego!inner(*)', 
+        { pus_id: id }
+    );
 };
 
 export const getCharactersByUser = async (userId: string) => {

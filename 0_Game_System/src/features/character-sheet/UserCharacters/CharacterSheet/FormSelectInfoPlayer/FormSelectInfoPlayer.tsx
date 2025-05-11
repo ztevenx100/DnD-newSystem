@@ -18,10 +18,18 @@ const FormSelectInfoPlayer: React.FC<SelectFieldProps> = ({
   onSelectChange,
   className = '',
 }) => {
-  // Manejar el cambio en la selección
   const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    console.log(`Select ${id} changed to: ${e.target.value}`);
     onSelectChange(e.target.value);
   };
+  // Log debugging info
+  React.useEffect(() => {
+    console.log(`FormSelectInfoPlayer ${id} rendering with:`, {
+      selectedValue,
+      options: options.map(o => `${o.value}: ${o.name}`).join(', '),
+      hasSelectedValue: options.some(o => o.value === selectedValue)
+    });
+  }, [id, selectedValue, options]);
 
   return (
     <>
@@ -30,7 +38,8 @@ const FormSelectInfoPlayer: React.FC<SelectFieldProps> = ({
         className="form-lbl col-start-1 col-end-2 bg-grey-lighter "
       >
         {label}
-      </label>      <select
+      </label>
+      <select
         id={id}
         className={`form-input col-start-2 col-end-3 mr-2 ${className}`}
         value={selectedValue}

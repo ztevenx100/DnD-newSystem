@@ -168,7 +168,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   }, [initialCharacter, userName]);  const {
     register,
     handleSubmit,
-    setValue
+    setValue,
+    getValues
   } = useForm<CharacterForm>({
     defaultValues: defaultValues,
     mode: "onSubmit"
@@ -260,6 +261,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     coinsInv: number[];
     inv: InventoryObject[];
   }
+
   const [dataCharacter, setDataCharacter] = useState<DataCharacter>();
 
   const getInventory = useCallback(async () => {
@@ -434,7 +436,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return;
     }
     
-    const userId = user.id;    if (params.id === null || params.id === undefined) {
+    const userId = user.id;
+    
+    if (params.id === null || params.id === undefined) {
       setCharacter({
         ...initialPersonajesUsuario,
         pus_id: uuidv4(),
@@ -444,56 +448,92 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     }
 
     const data = await getCharacter(params.id);
+    console.log("Character data fetched:", data);
 
     if (data && data.length > 0) {
       const characterData = { ...data[0], pus_usuario: userId };
+      console.log("Setting character data:", characterData);
+      
+      // Validar el formato de los campos clave
+      console.log("Datos del personaje cargados:", {
+        nombre: characterData.pus_nombre,
+        clase: characterData.pus_clase,
+        raza: characterData.pus_raza,
+        trabajo: characterData.pus_trabajo,
+        sistema: characterData.sju_sistema_juego
+      });
+      
       setCharacter(characterData as DBPersonajesUsuario);
-
+      
       if (characterData.sju_sistema_juego) {
+        console.log("Sistema de juego encontrado:", {
+          id: characterData.sju_sistema_juego.sju_id,
+          nombre: characterData.sju_sistema_juego.sju_nombre
+        });
+        
         setSystemGame({
           sju_id: characterData.sju_sistema_juego.sju_id,
           sju_nombre: characterData.sju_sistema_juego.sju_nombre,
           sju_descripcion: ""
         });
+      } else {
+        console.log("No se encontró sistema de juego en characterData:", characterData);
       }
     }
-  }, [params.id, user]);
-
-  useEffect(() => {
+  }, [params.id, user]);  useEffect(() => {
+    console.log("Actualizando valores de formulario desde character:", {
+      nombre: character?.pus_nombre,
+      descripcion: character?.pus_descripcion,
+      clase: character?.pus_clase,
+      raza: character?.pus_raza,
+      trabajo: character?.pus_trabajo,
+      usuario: user?.usu_nombre
+    });
+    
     if (character?.pus_nombre) setValue("name", character.pus_nombre);
     if (character?.pus_descripcion) setValue("characterDescription", character.pus_descripcion);
     if (character?.pus_clase) setValue("class", character.pus_clase);
     if (character?.pus_raza) setValue("race", character.pus_raza);
     if (character?.pus_trabajo) setValue("job", character.pus_trabajo);
-  }, [character, setValue]);
+    if (user?.usu_nombre) setValue("userName", user.usu_nombre);
+  }, [character, setValue, user]);
 
   useEffect(() => {
     getSkills();
   }, [getSkills]);
+
   useEffect(() => {
     changeBackground(mainBackground);
 
     const loadInfo = async () => {
       document.documentElement.scrollTop = 0;
-      setNewRecord(params.id === null || params.id === undefined);
-      setLoading(true); // Aseguramos que se muestre el loader
+      const isNewRecord = params.id === null || params.id === undefined;
+      setNewRecord(isNewRecord);
+      console.log("Estableciendo newRecord a:", isNewRecord);
+      setLoading(true);
       
       try {
+        console.log("Cargando datos iniciales...");
+        if (!isNewRecord) {
+          await getInfoCharacter();
+          console.log("Después de getInfoCharacter, systemGame:", systemGame);
+        }
+        
         await Promise.all([
           getListSkill(),
-          getGameSystemList(),
-          getInfoCharacter()
+          getGameSystemList()
         ]);
 
         await getCharacterImage();
-
         await Promise.all([getStats(), getInventory()]);
       } catch (error) {
         console.error("Error al cargar datos:", error);
       } finally {
         setLoading(false);
       }
-    };    loadInfo();
+    };    
+    
+    loadInfo();
   }, [params.id, changeBackground]);
 
   async function getListSkill() {
@@ -547,16 +587,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setOptionsSkillExtra(updatedOptionsSkillExtra);
       setSkillsTypes(otherSkills);
     }
-  }
-
-  async function getGameSystemList() {
+  }  async function getGameSystemList() {
     const data: DBSistemaJuego[] = await getGameSystem();
     if (data !== null) {
       const updatedSystemGameList = [];
       for (let i = 0; i < data.length; i++) {
         updatedSystemGameList.push({
-          value: data[0].sju_id,
-          name: data[0].sju_nombre,
+          value: data[i].sju_id,
+          name: data[i].sju_nombre,
         });
       }
       setSystemGameList(updatedSystemGameList);
@@ -574,14 +612,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       );
       
    };*/
-  const handleSelectRaceChange = (value: string) => {
+   const handleSelectRaceChange = (value: string) => {
     clearValidationError('characterRace');
-    setCharacter((prevState) => ({ ...prevState!, ["pus_raza"]: value }));
+    console.log("Selecting race:", value);
+    
+    setCharacter((prevState) => {
+      const updated = { ...prevState!, ["pus_raza"]: value };
+      console.log("Updated character state with race:", updated);
+      return updated;
+    });
   };
+
   const handleSystemGameChange = (currentSystem: string = "") => {
     if (!currentSystem) return;
     const option = SystemGameList.filter((elem) => elem.value === currentSystem);
     if (option.length === 0) return;
+    
+    console.log("Cambiando sistema de juego:", currentSystem, option[0].name);
     
     setSystemGame({
       sju_id: option[0].value,
@@ -595,7 +642,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     }));
   };
 
-  // Actualizar la habilidad principal del personaje
   const handleSelectSkillChange = (currentSkill: string) => {
     const option = optionsSkillClass.filter(
       (skill) => skill.value === currentSkill
@@ -623,6 +669,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     );
     setSelectedExtraSkillValue(currentSkill);
   };
+
   const updStatsPoints = (selectedClass: string, selectedJob: string): void => {
     const updatedInputsStatsData = [...inputsStatsData];
     const extraPoints =
@@ -644,6 +691,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
     setInputsStatsData(updatedInputsStatsData);
   };
+
   const handleCharacterClassChange = (value: string) => {
     clearValidationError('characterClass');
     
@@ -651,20 +699,34 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       (option) => option.value === value
     );
     
-    setCharacter((prevState) => ({ 
-      ...prevState!, 
-      pus_clase: value,
-      pus_conocimientos: selectedOption?.work || ""
-    }));
+    console.log("Selecting class:", value, "Option found:", selectedOption);
+    
+    setCharacter((prevState) => {
+      const updated = { 
+        ...prevState!, 
+        pus_clase: value,
+        pus_conocimientos: selectedOption?.work || ""
+      };
+      console.log("Updated character state with class:", updated);
+      return updated;
+    });
 
     updStatsPoints(value, character!.pus_trabajo);
     const skillValue = selectedOption?.mainStat ? "S" + selectedOption.mainStat : "";
     setSelectedSkillValue(skillValue);
     handleSelectSkillChange(skillValue);
   };
+  
   const handleCharacterJobSelectChange = (value: string) => {
     clearValidationError('characterJob');
-    setCharacter((prevState) => ({ ...prevState!, ["pus_trabajo"]: value }));
+    console.log("Selecting job:", value);
+    
+    setCharacter((prevState) => {
+      const updated = { ...prevState!, ["pus_trabajo"]: value };
+      console.log("Updated character state with job:", updated);
+      return updated;
+    });
+    
     updStatsPoints(character!.pus_clase, value);
   };
 
@@ -933,7 +995,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         const data = await insertPus(character);
         return data?.pus_id;
     }
-}
+  }
 
   async function uploadStats(isNewCharacter: boolean, characterId: string) {
     if (characterId === "") return;
@@ -1022,17 +1084,38 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     upsertDataInp(saveItems);
     deleteItemInventory(deleteItems);
   }
-  // Función para enviar el formulario utilizando React Hook Form
+  
   const onSubmitForm = (data: CharacterForm) => {
+    console.log("Form submission data:", {
+      formData: data,
+      characterState: {
+        name: character?.pus_nombre,
+        clase: character?.pus_clase,
+        raza: character?.pus_raza,
+        trabajo: character?.pus_trabajo,
+        userName: user?.usu_nombre
+      },
+      fieldValues: {
+        nameValue: getValues("name"),
+        userNameValue: getValues("userName"),
+        classValue: character?.pus_clase,
+        raceValue: character?.pus_raza,
+        jobValue: character?.pus_trabajo
+      }
+    });
+    
     const fieldsRequired: string[] = [];
     
-    if (!character?.pus_raza?.trim()) fieldsRequired.push('race');
-    if (!character?.pus_trabajo?.trim()) fieldsRequired.push('job');
+    if (!character?.pus_raza?.trim()) fieldsRequired.push('characterRace');
+    if (!character?.pus_trabajo?.trim()) fieldsRequired.push('characterJob');
+    if (!character?.pus_clase?.trim()) fieldsRequired.push('characterClass');
+    if (!data.name?.trim()) fieldsRequired.push('name');
     
     setEmptyRequiredFields(fieldsRequired);
     
     // Si hay campos vacíos, no enviar el formulario
     if (fieldsRequired.length > 0) {
+      console.log("Required fields missing:", fieldsRequired);
       alert("Por favor, complete todos los campos obligatorios: " + fieldsRequired.join(", "));
       return;
     }
@@ -1115,9 +1198,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       >
         {/* Titulo */}
         <fieldset className="fieldset-form form-title col-span-2 md:col-span-2 lg:col-span-3 shadow-lg rounded">
-          {!newRecord ? (
+          {!newRecord && character?.sju_sistema_juego?.sju_nombre ? (
             <h1 className="col-span-2 text-center font-bold">
-              {systemGame.sju_nombre}
+              {character.sju_sistema_juego.sju_nombre}
             </h1>
           ) : (
             <FormSelectInfoPlayer

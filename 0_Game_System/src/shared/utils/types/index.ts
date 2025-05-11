@@ -18,12 +18,24 @@ export interface DBUsuario {
 // Esta interfaz se mantiene por compatibilidad pero idealmente todos los componentes
 // deberían usar la interfaz de dbTypes.ts para evitar duplicación de código
 export interface DBHabilidad {
-  id: string;                // Mapea a hab_id
-  nombre: string;            // Mapea a hab_nombre
-  descripcion: string;       // Mapea a hab_descripcion
-  tipo: string;              // Mapea a hab_tipo
-  sigla: string;             // Mapea a hab_siglas
-  estadistica_base: string;  // Mapea a had_estadistica_base
-  nivel: number;             // Mapea a hab_nivel
-  dado?: string;             // Mapea a hab_dado
+  id: string;
+  nombre: string;
+  descripcion: string;
+  tipo: string;
+  sigla: string;
+  estadistica_base: string;
+  nivel: number;
+  dado?: string;
+  
+  hab_id: string;
+  hab_nombre: string;
+  hab_descripcion?: string;
+  hab_tipo: string;
+  hab_siglas: string;
+  had_estadistica_base: string;
+  hab_nivel: number;
+  hab_dado?: string;
+  hab_vlr_min?: number;
+  hab_vlr_solventar?: number;
+  hab_turnos?: number;
 }

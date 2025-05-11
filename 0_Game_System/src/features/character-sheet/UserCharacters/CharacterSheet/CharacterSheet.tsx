@@ -168,7 +168,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   }, [initialCharacter, userName]);  const {
     register,
     handleSubmit,
-    setValue
+    setValue,
+    getValues
   } = useForm<CharacterForm>({
     defaultValues: defaultValues,
     mode: "onSubmit"
@@ -260,6 +261,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     coinsInv: number[];
     inv: InventoryObject[];
   }
+
   const [dataCharacter, setDataCharacter] = useState<DataCharacter>();
 
   const getInventory = useCallback(async () => {
@@ -336,7 +338,17 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         console.log("Habilidades cargadas:", characterSkills);
       }
 
-      (data as DBHabilidad[]).forEach((elem: DBHabilidad) => {
+      (data as DBHabilidad[]).forEach((rawElem: DBHabilidad) => {
+        // Map DB fields to expected property names
+        const elem = {
+          id: rawElem.hab_id || rawElem.id || '',
+          nombre: rawElem.hab_nombre || rawElem.nombre || '',
+          sigla: rawElem.hab_siglas || rawElem.sigla || '',
+          tipo: rawElem.hab_tipo || rawElem.tipo || '',
+          estadistica_base: rawElem.had_estadistica_base || rawElem.estadistica_base || '',
+          descripcion: rawElem.hab_descripcion || rawElem.descripcion || ''
+        };
+
         if (elem.tipo === "C") {
           const existingSkill = characterSkills.find(skill => 
             skill.hpe_campo === "skillClass" && skill.hpe_habilidad === elem.id);
@@ -434,7 +446,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return;
     }
     
-    const userId = user.id;    if (params.id === null || params.id === undefined) {
+    const userId = user.id;
+    
+    if (params.id === null || params.id === undefined) {
       setCharacter({
         ...initialPersonajesUsuario,
         pus_id: uuidv4(),
@@ -444,119 +458,204 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     }
 
     const data = await getCharacter(params.id);
+    console.log("Character data fetched:", data);
 
     if (data && data.length > 0) {
       const characterData = { ...data[0], pus_usuario: userId };
+      console.log("Setting character data:", characterData);
+      
+      // Validar el formato de los campos clave
+      console.log("Datos del personaje cargados:", {
+        nombre: characterData.pus_nombre,
+        clase: characterData.pus_clase,
+        raza: characterData.pus_raza,
+        trabajo: characterData.pus_trabajo,
+        sistema: characterData.sju_sistema_juego
+      });
+      
       setCharacter(characterData as DBPersonajesUsuario);
-
+      
       if (characterData.sju_sistema_juego) {
+        console.log("Sistema de juego encontrado:", {
+          id: characterData.sju_sistema_juego.sju_id,
+          nombre: characterData.sju_sistema_juego.sju_nombre
+        });
+        
         setSystemGame({
           sju_id: characterData.sju_sistema_juego.sju_id,
           sju_nombre: characterData.sju_sistema_juego.sju_nombre,
           sju_descripcion: ""
         });
+      } else {
+        console.log("No se encontró sistema de juego en characterData:", characterData);
       }
     }
   }, [params.id, user]);
-
+  
   useEffect(() => {
+    console.log("Actualizando valores de formulario desde character:", {
+      nombre: character?.pus_nombre,
+      descripcion: character?.pus_descripcion,
+      clase: character?.pus_clase,
+      raza: character?.pus_raza,
+      trabajo: character?.pus_trabajo,
+      usuario: user?.usu_nombre
+    });
+    
     if (character?.pus_nombre) setValue("name", character.pus_nombre);
     if (character?.pus_descripcion) setValue("characterDescription", character.pus_descripcion);
     if (character?.pus_clase) setValue("class", character.pus_clase);
     if (character?.pus_raza) setValue("race", character.pus_raza);
     if (character?.pus_trabajo) setValue("job", character.pus_trabajo);
-  }, [character, setValue]);
+    if (user?.usu_nombre) setValue("userName", user.usu_nombre);
+  }, [character, setValue, user]);
 
   useEffect(() => {
     getSkills();
   }, [getSkills]);
+
   useEffect(() => {
     changeBackground(mainBackground);
 
     const loadInfo = async () => {
       document.documentElement.scrollTop = 0;
-      setNewRecord(params.id === null || params.id === undefined);
-      setLoading(true); // Aseguramos que se muestre el loader
+      const isNewRecord = params.id === null || params.id === undefined;
+      setNewRecord(isNewRecord);
+      console.log("Estableciendo newRecord a:", isNewRecord);
+      setLoading(true);
       
       try {
-        await Promise.all([
-          getListSkill(),
-          getGameSystemList(),
-          getInfoCharacter()
-        ]);
-
+        console.log("Cargando datos iniciales...");
+        
+        await getListSkill();
+        
+        if (!isNewRecord) {
+          await getInfoCharacter();
+          console.log("Después de getInfoCharacter, systemGame:", systemGame);
+        }
+        
+        await getGameSystemList();
         await getCharacterImage();
-
         await Promise.all([getStats(), getInventory()]);
       } catch (error) {
         console.error("Error al cargar datos:", error);
       } finally {
         setLoading(false);
       }
-    };    loadInfo();
+    };    
+    
+    loadInfo();
   }, [params.id, changeBackground]);
-
+  
   async function getListSkill() {
-    const data = await getListHad();
+    try {
+      console.log("Fetching skill list data...");
+      const data = await getListHad();
+      console.log("Raw skill data received:", data);
 
-    if (data !== null) {
-      const updatedOptionsSkillClass: Option[] = [];
-      const updatedOptionsSkillExtra: Option[] = [];
-      const otherSkills: SkillTypes[] = [];
+      if (data !== null && Array.isArray(data) && data.length > 0) {
+        const updatedOptionsSkillClass: Option[] = [];
+        const updatedOptionsSkillExtra: Option[] = [];
+        const otherSkills: SkillTypes[] = [];
 
-      (data as DBHabilidad[]).forEach((elem) => {
-        if (elem.tipo === "C") {
-          updatedOptionsSkillClass.push({
-            id: elem.id,
-            value: elem.sigla,
-            name: elem.nombre,
-          });
-        } else if (elem.tipo === "E") {
-          updatedOptionsSkillExtra.push({
-            id: elem.id,
-            value: elem.sigla,
-            name: elem.nombre,
-          });
-        } else if (elem.tipo === "R") {
-          const countSkill = otherSkills.filter(
-            (option: SkillTypes) => option.id === elem.estadistica_base
-          ).length;
-          if (countSkill === 0) {
-            otherSkills.push({
-              id: elem.estadistica_base,
-              skills: [
-                {
+        // Debug the raw data structure
+        console.log("Example skill data structure:", JSON.stringify(data[0], null, 2));
+        
+        (data as DBHabilidad[]).forEach((rawElem) => {
+          // Create consistent field mappings regardless of database field names
+          const elem = {
+            id: rawElem.hab_id || rawElem.id || '',
+            nombre: rawElem.hab_nombre || rawElem.nombre || '',
+            sigla: rawElem.hab_siglas || rawElem.sigla || '',
+            tipo: rawElem.hab_tipo || rawElem.tipo || '',
+            estadistica_base: rawElem.had_estadistica_base || rawElem.estadistica_base || '',
+            descripcion: rawElem.hab_descripcion || rawElem.descripcion || ''
+          };
+          
+          console.log("Mapped skill fields:", elem);
+          
+          if (!elem || !elem.tipo || !elem.id || !elem.sigla || !elem.nombre) {
+            console.warn("Skipping invalid skill data:", elem);
+            return;
+          }
+          
+          if (elem.tipo === "C") {
+            updatedOptionsSkillClass.push({
+              id: elem.id,
+              value: elem.sigla,
+              name: elem.nombre,
+            });
+          } else if (elem.tipo === "E") {
+            updatedOptionsSkillExtra.push({
+              id: elem.id,
+              value: elem.sigla,
+              name: elem.nombre,
+            });
+          } else if (elem.tipo === "R" && elem.estadistica_base) {
+            const countSkill = otherSkills.filter(
+              (option: SkillTypes) => option.id === elem.estadistica_base
+            ).length;
+            if (countSkill === 0) {
+              otherSkills.push({
+                id: elem.estadistica_base,
+                skills: [
+                  {
+                    id: elem.id,
+                    value: elem.sigla,
+                    name: elem.nombre,
+                  },
+                ],
+              });
+            } else {
+              const existingSkill = otherSkills.find(
+                (option: SkillTypes) => option.id === elem.estadistica_base
+              );
+              if (existingSkill) {
+                existingSkill.skills.push({
                   id: elem.id,
                   value: elem.sigla,
                   name: elem.nombre,
-                },
-              ],
-            });
-          } else {
-            otherSkills
-              .find((option: SkillTypes) => option.id === elem.estadistica_base)
-              ?.skills.push({
-                id: elem.id,
-                value: elem.sigla,
-                name: elem.nombre,
-              });
+                });
+              }
+            }
           }
+        });
+        
+        console.log("Processed options for skillClass:", updatedOptionsSkillClass);
+        console.log("Processed options for skillExtra:", updatedOptionsSkillExtra);
+        
+        // Only update state if we actually have options
+        if (updatedOptionsSkillClass.length > 0) {
+          setOptionsSkillClass(updatedOptionsSkillClass);
+        } else {
+          console.warn("No Class skill options processed from data");
         }
-      });
-      setOptionsSkillClass(updatedOptionsSkillClass);
-      setOptionsSkillExtra(updatedOptionsSkillExtra);
-      setSkillsTypes(otherSkills);
+        
+        if (updatedOptionsSkillExtra.length > 0) {
+          setOptionsSkillExtra(updatedOptionsSkillExtra);
+        } else {
+          console.warn("No Extra skill options processed from data");
+        }
+        
+        if (otherSkills.length > 0) {
+          setSkillsTypes(otherSkills);
+        }
+      } else {
+        console.error("Invalid or empty data received from getListHad():", data);
+      }
+    } catch (error) {
+      console.error("Error in getListSkill:", error);
     }
   }
-
+  
   async function getGameSystemList() {
     const data: DBSistemaJuego[] = await getGameSystem();
     if (data !== null) {
       const updatedSystemGameList = [];
       for (let i = 0; i < data.length; i++) {
         updatedSystemGameList.push({
-          value: data[0].sju_id,
-          name: data[0].sju_nombre,
+          value: data[i].sju_id,
+          name: data[i].sju_nombre,
         });
       }
       setSystemGameList(updatedSystemGameList);
@@ -574,14 +673,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       );
       
    };*/
-  const handleSelectRaceChange = (value: string) => {
+   const handleSelectRaceChange = (value: string) => {
     clearValidationError('characterRace');
-    setCharacter((prevState) => ({ ...prevState!, ["pus_raza"]: value }));
+    console.log("Selecting race:", value);
+    
+    setCharacter((prevState) => {
+      const updated = { ...prevState!, ["pus_raza"]: value };
+      console.log("Updated character state with race:", updated);
+      return updated;
+    });
   };
+
   const handleSystemGameChange = (currentSystem: string = "") => {
     if (!currentSystem) return;
     const option = SystemGameList.filter((elem) => elem.value === currentSystem);
     if (option.length === 0) return;
+    
+    console.log("Cambiando sistema de juego:", currentSystem, option[0].name);
     
     setSystemGame({
       sju_id: option[0].value,
@@ -594,35 +702,60 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       ["pus_sistema_juego"]: currentSystem,
     }));
   };
-
-  // Actualizar la habilidad principal del personaje
   const handleSelectSkillChange = (currentSkill: string) => {
+    console.log("handleSelectSkillChange called with:", currentSkill);
+    if (!currentSkill) {
+      console.log("Empty skill value, skipping update");
+      setSelectedSkillValue("");
+      return;
+    }
+    
     const option = optionsSkillClass.filter(
       (skill) => skill.value === currentSkill
     );
-    setFieldSkill((prevItems) =>
-      prevItems.map((item) =>
-        item.field === "skillClass"
-          ? { ...item, id: option[0].value, skill: option[0].id || "" }
-          : item
-      )
-    );
-    setSelectedSkillValue(currentSkill);
+    
+    if (option.length > 0) {
+      console.log("Found matching option for skillClass:", option[0]);
+      setFieldSkill((prevItems) =>
+        prevItems.map((item) =>
+          item.field === "skillClass"
+            ? { ...item, id: option[0].value, skill: option[0].id || "" }
+            : item
+        )
+      );
+      setSelectedSkillValue(currentSkill);
+    } else {
+      console.warn("No matching option found for skillClass:", currentSkill);
+    }
   };
 
   const handleSelectExtraSkillChange = (currentSkill: string) => {
+    console.log("handleSelectExtraSkillChange called with:", currentSkill);
+    if (!currentSkill) {
+      console.log("Empty extra skill value, skipping update");
+      setSelectedExtraSkillValue("");
+      return;
+    }
+    
     const option = optionsSkillExtra.filter(
       (skill) => skill.value === currentSkill
     );
-    setFieldSkill((prevItems) =>
-      prevItems.map((item) =>
-        item.field === "skillExtra"
-          ? { ...item, id: option[0].value, skill: option[0].id || "" }
-          : item
-      )
-    );
-    setSelectedExtraSkillValue(currentSkill);
+    
+    if (option.length > 0) {
+      console.log("Found matching option for skillExtra:", option[0]);
+      setFieldSkill((prevItems) =>
+        prevItems.map((item) =>
+          item.field === "skillExtra"
+            ? { ...item, id: option[0].value, skill: option[0].id || "" }
+            : item
+        )
+      );
+      setSelectedExtraSkillValue(currentSkill);
+    } else {
+      console.warn("No matching option found for skillExtra:", currentSkill);
+    }
   };
+
   const updStatsPoints = (selectedClass: string, selectedJob: string): void => {
     const updatedInputsStatsData = [...inputsStatsData];
     const extraPoints =
@@ -651,20 +784,45 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       (option) => option.value === value
     );
     
-    setCharacter((prevState) => ({ 
-      ...prevState!, 
-      pus_clase: value,
-      pus_conocimientos: selectedOption?.work || ""
-    }));
+    console.log("Selecting class:", value, "Option found:", selectedOption);
+    
+    // Asignar el conocimiento según la clase seleccionada
+    let knowledgeValue = "";
+    switch (value) {
+      case 'WAR': knowledgeValue = "FOR"; break;
+      case 'MAG': knowledgeValue = "SAB"; break;
+      case 'SCO': knowledgeValue = "HER"; break;
+      case 'MED': knowledgeValue = "ALC"; break;
+      case 'RES': knowledgeValue = "ACO"; break;
+      case 'ACT': knowledgeValue = "ART"; break;
+    }
+    
+    setCharacter((prevState) => {
+      const updated = { 
+        ...prevState!, 
+        pus_clase: value,
+        pus_conocimientos: knowledgeValue
+      };
+      console.log("Updated character state with class:", updated);
+      return updated;
+    });
 
     updStatsPoints(value, character!.pus_trabajo);
     const skillValue = selectedOption?.mainStat ? "S" + selectedOption.mainStat : "";
     setSelectedSkillValue(skillValue);
     handleSelectSkillChange(skillValue);
   };
+  
   const handleCharacterJobSelectChange = (value: string) => {
     clearValidationError('characterJob');
-    setCharacter((prevState) => ({ ...prevState!, ["pus_trabajo"]: value }));
+    console.log("Selecting job:", value);
+    
+    setCharacter((prevState) => {
+      const updated = { ...prevState!, ["pus_trabajo"]: value };
+      console.log("Updated character state with job:", updated);
+      return updated;
+    });
+    
     updStatsPoints(character!.pus_clase, value);
   };
 
@@ -688,10 +846,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   };
 
   const handleSelectedCheckValuesChange = (newValues: string[]) => {
-    setCharacter((prevState) => ({
-      ...prevState!,
-      ["pus_conocimientos"]: newValues.join(","),
-    }));
+    console.log("Conocimientos seleccionados:", newValues);
+    setCharacter((prevState) => {
+      const updated = {
+        ...prevState!,
+        ["pus_conocimientos"]: newValues.join(","),
+      };
+      console.log("Estado actualizado con conocimientos:", updated);
+      return updated;
+    });
   };
   const handleStatsInputChange = (newInputStats: InputStats) => {
     setInputsStatsData((prevItems) =>
@@ -876,12 +1039,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const getJobName = (id: string | undefined): string | undefined => {
     return optionsCharacterJob.find((elem) => elem.value === id)?.name;
   };
-
   const getKnowledgeName = (ids: string[] | undefined): string | undefined => {
     let names = "";
-    if (ids === undefined) return names;
-    ids.forEach((know) => {
-      names += checkboxesData.find((elem) => elem.value === know)?.name + ", ";
+    if (ids === undefined || ids.length === 0) return names;
+    
+    // Filtrar valores vacíos
+    const validIds = ids.filter(Boolean);
+    if (validIds.length === 0) return names;
+    
+    console.log("Buscando nombres para conocimientos:", validIds);
+    
+    validIds.forEach((know) => {
+      const found = checkboxesData.find((elem) => elem.value === know);
+      if (found) {
+        names += found.name + ", ";
+      } else {
+        console.log("Conocimiento no encontrado:", know);
+      }
     });
     names = names.length > 2 ? names.substring(0, names.length - 2) : names;
 
@@ -933,7 +1107,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         const data = await insertPus(character);
         return data?.pus_id;
     }
-}
+  }
 
   async function uploadStats(isNewCharacter: boolean, characterId: string) {
     if (characterId === "") return;
@@ -1022,17 +1196,38 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     upsertDataInp(saveItems);
     deleteItemInventory(deleteItems);
   }
-  // Función para enviar el formulario utilizando React Hook Form
+  
   const onSubmitForm = (data: CharacterForm) => {
+    console.log("Form submission data:", {
+      formData: data,
+      characterState: {
+        name: character?.pus_nombre,
+        clase: character?.pus_clase,
+        raza: character?.pus_raza,
+        trabajo: character?.pus_trabajo,
+        userName: user?.usu_nombre
+      },
+      fieldValues: {
+        nameValue: getValues("name"),
+        userNameValue: getValues("userName"),
+        classValue: character?.pus_clase,
+        raceValue: character?.pus_raza,
+        jobValue: character?.pus_trabajo
+      }
+    });
+    
     const fieldsRequired: string[] = [];
     
-    if (!character?.pus_raza?.trim()) fieldsRequired.push('race');
-    if (!character?.pus_trabajo?.trim()) fieldsRequired.push('job');
+    if (!character?.pus_raza?.trim()) fieldsRequired.push('characterRace');
+    if (!character?.pus_trabajo?.trim()) fieldsRequired.push('characterJob');
+    if (!character?.pus_clase?.trim()) fieldsRequired.push('characterClass');
+    if (!data.name?.trim()) fieldsRequired.push('name');
     
     setEmptyRequiredFields(fieldsRequired);
     
     // Si hay campos vacíos, no enviar el formulario
     if (fieldsRequired.length > 0) {
+      console.log("Required fields missing:", fieldsRequired);
       alert("Por favor, complete todos los campos obligatorios: " + fieldsRequired.join(", "));
       return;
     }
@@ -1115,9 +1310,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       >
         {/* Titulo */}
         <fieldset className="fieldset-form form-title col-span-2 md:col-span-2 lg:col-span-3 shadow-lg rounded">
-          {!newRecord ? (
+          {!newRecord && character?.sju_sistema_juego?.sju_nombre ? (
             <h1 className="col-span-2 text-center font-bold">
-              {systemGame.sju_nombre}
+              {character.sju_sistema_juego.sju_nombre}
             </h1>
           ) : (
             <FormSelectInfoPlayer
@@ -1347,7 +1542,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             className="form-input mr-2 focus:border-black focus:shadow"
             list="wearons"
           />
-
           <FormSelectInfoPlayer
             id="skillClass"
             label="Habilidad innata"
@@ -1356,6 +1550,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             onSelectChange={handleSelectSkillChange}
           ></FormSelectInfoPlayer>
 
+          {/* Debug information */}
+          {optionsSkillClass.length === 0 && <div className="text-red-500 text-xs">No options available for skillClass</div>}
+
           <FormSelectInfoPlayer
             id="skillExtra"
             label="Habilidad extra"
@@ -1363,6 +1560,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             selectedValue={selectedExtraSkillValue}
             onSelectChange={handleSelectExtraSkillChange}
           ></FormSelectInfoPlayer>
+
+          {/* Debug information */}
+          {optionsSkillExtra.length === 0 && <div className="text-red-500 text-xs">No options available for skillExtra</div>}
         </fieldset>
 
         {/* Habilidades */}

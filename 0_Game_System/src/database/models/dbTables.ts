@@ -232,29 +232,34 @@ export const getDataQueryUsu = async (fields: string, where?: WhereClause, order
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQuery = async<T> (table: string, fields: string, where?: WhereClause, orderBy?: OrderByClause):Promise<T[]> => {
-
     try {
+        console.log(`Executing query on table ${table} with fields ${fields}`, {
+            where: where ? JSON.stringify(where) : 'none',
+            orderBy: orderBy ? JSON.stringify(orderBy) : 'none'
+        });
+
         let query = dbConnection
         .from(table)
         .select(fields);
     
         if (where) {
             for (const [key, value] of Object.entries(where)) {
-                if ( Array.isArray(value) && value.every(item => typeof item === 'string')) {
+                if (Array.isArray(value) && value.every(item => typeof item === 'string')) {
+                    console.log(`Adding IN condition: ${key} in [${value.join(', ')}]`);
                     query = query.in(key, value);
-                } else if ( typeof value === 'string' ) {
+                } else if (typeof value === 'string') {
+                    console.log(`Adding EQ condition: ${key} = ${value}`);
                     query = query.eq(key, value);
                 }
             }
         }
 
         if (orderBy) {
-            //query = query.order(orderBy.field, { ascending: orderBy.ascending });
             for (const [key, value] of Object.entries(orderBy)) {
-                if ( typeof value === 'boolean' ) {
+                if (typeof value === 'boolean') {
                     query = query.order(key, { ascending: value });
                 } else {
-                    for (const [keyRef, valueRef] of Object.entries(value) ){
+                    for (const [keyRef, valueRef] of Object.entries(value)) {
                         query = query.order(key, { referencedTable: keyRef, ascending: valueRef });
                     }
                 }
@@ -263,14 +268,18 @@ export const getDataQuery = async<T> (table: string, fields: string, where?: Whe
         
         const { data, error } = await query.returns<T[]>();
 
-        if (error) throw error;
+        if (error) {
+            console.error(`Database error when querying ${table}:`, error);
+            throw error;
+        }
         
-        return data as T[];
+        console.log(`Query on ${table} returned ${data?.length || 0} results`);
+        return data as T[] || [];
     } catch (error) {
-        console.error('Error executing select:', error);
-        throw error;
+        console.error(`Error executing select on ${table}:`, error);
+        // Return empty array instead of throwing to avoid breaking the UI
+        return [] as T[];
     }
-
 }
 
 // -- DELETE

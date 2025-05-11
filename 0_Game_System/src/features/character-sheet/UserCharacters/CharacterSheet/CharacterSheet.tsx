@@ -338,7 +338,17 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         console.log("Habilidades cargadas:", characterSkills);
       }
 
-      (data as DBHabilidad[]).forEach((elem: DBHabilidad) => {
+      (data as DBHabilidad[]).forEach((rawElem: DBHabilidad) => {
+        // Map DB fields to expected property names
+        const elem = {
+          id: rawElem.hab_id || rawElem.id || '',
+          nombre: rawElem.hab_nombre || rawElem.nombre || '',
+          sigla: rawElem.hab_siglas || rawElem.sigla || '',
+          tipo: rawElem.hab_tipo || rawElem.tipo || '',
+          estadistica_base: rawElem.had_estadistica_base || rawElem.estadistica_base || '',
+          descripcion: rawElem.hab_descripcion || rawElem.descripcion || ''
+        };
+
         if (elem.tipo === "C") {
           const existingSkill = characterSkills.find(skill => 
             skill.hpe_campo === "skillClass" && skill.hpe_habilidad === elem.id);
@@ -480,7 +490,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         console.log("No se encontró sistema de juego en characterData:", characterData);
       }
     }
-  }, [params.id, user]);  useEffect(() => {
+  }, [params.id, user]);
+  
+  useEffect(() => {
     console.log("Actualizando valores de formulario desde character:", {
       nombre: character?.pus_nombre,
       descripcion: character?.pus_descripcion,
@@ -514,16 +526,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       
       try {
         console.log("Cargando datos iniciales...");
+        
+        await getListSkill();
+        
         if (!isNewRecord) {
           await getInfoCharacter();
           console.log("Después de getInfoCharacter, systemGame:", systemGame);
         }
         
-        await Promise.all([
-          getListSkill(),
-          getGameSystemList()
-        ]);
-
+        await getGameSystemList();
         await getCharacterImage();
         await Promise.all([getStats(), getInventory()]);
       } catch (error) {
@@ -534,60 +545,106 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     };    
     
     loadInfo();
-  }, [params.id, changeBackground]);
+  }, [params.id, changeBackground]);  async function getListSkill() {
+    try {
+      console.log("Fetching skill list data...");
+      const data = await getListHad();
+      console.log("Raw skill data received:", data);
 
-  async function getListSkill() {
-    const data = await getListHad();
+      if (data !== null && Array.isArray(data) && data.length > 0) {
+        const updatedOptionsSkillClass: Option[] = [];
+        const updatedOptionsSkillExtra: Option[] = [];
+        const otherSkills: SkillTypes[] = [];
 
-    if (data !== null) {
-      const updatedOptionsSkillClass: Option[] = [];
-      const updatedOptionsSkillExtra: Option[] = [];
-      const otherSkills: SkillTypes[] = [];
-
-      (data as DBHabilidad[]).forEach((elem) => {
-        if (elem.tipo === "C") {
-          updatedOptionsSkillClass.push({
-            id: elem.id,
-            value: elem.sigla,
-            name: elem.nombre,
-          });
-        } else if (elem.tipo === "E") {
-          updatedOptionsSkillExtra.push({
-            id: elem.id,
-            value: elem.sigla,
-            name: elem.nombre,
-          });
-        } else if (elem.tipo === "R") {
-          const countSkill = otherSkills.filter(
-            (option: SkillTypes) => option.id === elem.estadistica_base
-          ).length;
-          if (countSkill === 0) {
-            otherSkills.push({
-              id: elem.estadistica_base,
-              skills: [
-                {
+        // Debug the raw data structure
+        console.log("Example skill data structure:", JSON.stringify(data[0], null, 2));
+        
+        (data as DBHabilidad[]).forEach((rawElem) => {
+          // Create consistent field mappings regardless of database field names
+          const elem = {
+            id: rawElem.hab_id || rawElem.id || '',
+            nombre: rawElem.hab_nombre || rawElem.nombre || '',
+            sigla: rawElem.hab_siglas || rawElem.sigla || '',
+            tipo: rawElem.hab_tipo || rawElem.tipo || '',
+            estadistica_base: rawElem.had_estadistica_base || rawElem.estadistica_base || '',
+            descripcion: rawElem.hab_descripcion || rawElem.descripcion || ''
+          };
+          
+          console.log("Mapped skill fields:", elem);
+          
+          if (!elem || !elem.tipo || !elem.id || !elem.sigla || !elem.nombre) {
+            console.warn("Skipping invalid skill data:", elem);
+            return;
+          }
+          
+          if (elem.tipo === "C") {
+            updatedOptionsSkillClass.push({
+              id: elem.id,
+              value: elem.sigla,
+              name: elem.nombre,
+            });
+          } else if (elem.tipo === "E") {
+            updatedOptionsSkillExtra.push({
+              id: elem.id,
+              value: elem.sigla,
+              name: elem.nombre,
+            });
+          } else if (elem.tipo === "R" && elem.estadistica_base) {
+            const countSkill = otherSkills.filter(
+              (option: SkillTypes) => option.id === elem.estadistica_base
+            ).length;
+            if (countSkill === 0) {
+              otherSkills.push({
+                id: elem.estadistica_base,
+                skills: [
+                  {
+                    id: elem.id,
+                    value: elem.sigla,
+                    name: elem.nombre,
+                  },
+                ],
+              });
+            } else {
+              const existingSkill = otherSkills.find(
+                (option: SkillTypes) => option.id === elem.estadistica_base
+              );
+              if (existingSkill) {
+                existingSkill.skills.push({
                   id: elem.id,
                   value: elem.sigla,
                   name: elem.nombre,
-                },
-              ],
-            });
-          } else {
-            otherSkills
-              .find((option: SkillTypes) => option.id === elem.estadistica_base)
-              ?.skills.push({
-                id: elem.id,
-                value: elem.sigla,
-                name: elem.nombre,
-              });
+                });
+              }
+            }
           }
+        });
+        
+        console.log("Processed options for skillClass:", updatedOptionsSkillClass);
+        console.log("Processed options for skillExtra:", updatedOptionsSkillExtra);
+        
+        // Only update state if we actually have options
+        if (updatedOptionsSkillClass.length > 0) {
+          setOptionsSkillClass(updatedOptionsSkillClass);
+        } else {
+          console.warn("No Class skill options processed from data");
         }
-      });
-      setOptionsSkillClass(updatedOptionsSkillClass);
-      setOptionsSkillExtra(updatedOptionsSkillExtra);
-      setSkillsTypes(otherSkills);
+        
+        if (updatedOptionsSkillExtra.length > 0) {
+          setOptionsSkillExtra(updatedOptionsSkillExtra);
+        } else {
+          console.warn("No Extra skill options processed from data");
+        }
+        
+        if (otherSkills.length > 0) {
+          setSkillsTypes(otherSkills);
+        }
+      } else {
+        console.error("Invalid or empty data received from getListHad():", data);
+      }
+    } catch (error) {
+      console.error("Error in getListSkill:", error);
     }
-  }  async function getGameSystemList() {
+  }async function getGameSystemList() {
     const data: DBSistemaJuego[] = await getGameSystem();
     if (data !== null) {
       const updatedSystemGameList = [];
@@ -641,33 +698,58 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       ["pus_sistema_juego"]: currentSystem,
     }));
   };
-
   const handleSelectSkillChange = (currentSkill: string) => {
+    console.log("handleSelectSkillChange called with:", currentSkill);
+    if (!currentSkill) {
+      console.log("Empty skill value, skipping update");
+      setSelectedSkillValue("");
+      return;
+    }
+    
     const option = optionsSkillClass.filter(
       (skill) => skill.value === currentSkill
     );
-    setFieldSkill((prevItems) =>
-      prevItems.map((item) =>
-        item.field === "skillClass"
-          ? { ...item, id: option[0].value, skill: option[0].id || "" }
-          : item
-      )
-    );
-    setSelectedSkillValue(currentSkill);
+    
+    if (option.length > 0) {
+      console.log("Found matching option for skillClass:", option[0]);
+      setFieldSkill((prevItems) =>
+        prevItems.map((item) =>
+          item.field === "skillClass"
+            ? { ...item, id: option[0].value, skill: option[0].id || "" }
+            : item
+        )
+      );
+      setSelectedSkillValue(currentSkill);
+    } else {
+      console.warn("No matching option found for skillClass:", currentSkill);
+    }
   };
 
   const handleSelectExtraSkillChange = (currentSkill: string) => {
+    console.log("handleSelectExtraSkillChange called with:", currentSkill);
+    if (!currentSkill) {
+      console.log("Empty extra skill value, skipping update");
+      setSelectedExtraSkillValue("");
+      return;
+    }
+    
     const option = optionsSkillExtra.filter(
       (skill) => skill.value === currentSkill
     );
-    setFieldSkill((prevItems) =>
-      prevItems.map((item) =>
-        item.field === "skillExtra"
-          ? { ...item, id: option[0].value, skill: option[0].id || "" }
-          : item
-      )
-    );
-    setSelectedExtraSkillValue(currentSkill);
+    
+    if (option.length > 0) {
+      console.log("Found matching option for skillExtra:", option[0]);
+      setFieldSkill((prevItems) =>
+        prevItems.map((item) =>
+          item.field === "skillExtra"
+            ? { ...item, id: option[0].value, skill: option[0].id || "" }
+            : item
+        )
+      );
+      setSelectedExtraSkillValue(currentSkill);
+    } else {
+      console.warn("No matching option found for skillExtra:", currentSkill);
+    }
   };
 
   const updStatsPoints = (selectedClass: string, selectedJob: string): void => {
@@ -1456,7 +1538,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             className="form-input mr-2 focus:border-black focus:shadow"
             list="wearons"
           />
-
           <FormSelectInfoPlayer
             id="skillClass"
             label="Habilidad innata"
@@ -1465,6 +1546,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             onSelectChange={handleSelectSkillChange}
           ></FormSelectInfoPlayer>
 
+          {/* Debug information */}
+          {optionsSkillClass.length === 0 && <div className="text-red-500 text-xs">No options available for skillClass</div>}
+
           <FormSelectInfoPlayer
             id="skillExtra"
             label="Habilidad extra"
@@ -1472,6 +1556,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             selectedValue={selectedExtraSkillValue}
             onSelectChange={handleSelectExtraSkillChange}
           ></FormSelectInfoPlayer>
+
+          {/* Debug information */}
+          {optionsSkillExtra.length === 0 && <div className="text-red-500 text-xs">No options available for skillExtra</div>}
         </fieldset>
 
         {/* Habilidades */}

@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from "react";
+import React, { ChangeEvent, useEffect } from "react";
 import { Option } from "@/shared/utils/types/typesCharacterSheet";
 
 type SelectFieldProps = {
@@ -22,14 +22,19 @@ const FormSelectInfoPlayer: React.FC<SelectFieldProps> = ({
     console.log(`Select ${id} changed to: ${e.target.value}`);
     onSelectChange(e.target.value);
   };
+  
   // Log debugging info
-  React.useEffect(() => {
+  useEffect(() => {
     console.log(`FormSelectInfoPlayer ${id} rendering with:`, {
       selectedValue,
-      options: options.map(o => `${o.value}: ${o.name}`).join(', '),
-      hasSelectedValue: options.some(o => o.value === selectedValue)
+      optionsCount: options?.length || 0,
+      options: options?.map(o => `${o.value}: ${o.name}`)?.join(', ') || 'none',
+      hasSelectedValue: options?.some(o => o.value === selectedValue) || false
     });
   }, [id, selectedValue, options]);
+
+  // Ensure options is always an array even if null/undefined is passed
+  const safeOptions = Array.isArray(options) ? options : [];
 
   return (
     <>
@@ -47,11 +52,15 @@ const FormSelectInfoPlayer: React.FC<SelectFieldProps> = ({
         required
       >
         <option value="" />
-        {options.map((option, index) => (
-          <option key={index} value={option.value}>
-            {option.name}
-          </option>
-        ))}
+        {safeOptions.length > 0 ? (
+          safeOptions.map((option, index) => (
+            <option key={index} value={option.value}>
+              {option.name}
+            </option>
+          ))
+        ) : (
+          <option disabled value="">No options available</option>
+        )}
       </select>
     </>
   );

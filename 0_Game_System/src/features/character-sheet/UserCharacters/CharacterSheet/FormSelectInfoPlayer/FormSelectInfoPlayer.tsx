@@ -30,10 +30,9 @@ const FormSelectInfoPlayer: React.FC<SelectFieldProps> = ({
         className="form-lbl col-start-1 col-end-2 bg-grey-lighter "
       >
         {label}
-      </label>
-      <select
+      </label>      <select
         id={id}
-        className="form-input col-start-2 col-end-3 mr-2"
+        className={`form-input col-start-2 col-end-3 mr-2 ${className}`}
         value={selectedValue}
         onChange={handleSelectChange}
         required

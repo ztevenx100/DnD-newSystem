@@ -105,6 +105,9 @@ interface CharacterForm {
   silverCoins: number;
   bronzeCoins: number;
   characterDescription: string;
+  race: string;
+  job: string;
+  alignment: string;
 }
 
 const CharacterSheet: React.FC<CharacterSheetProps> = ({
@@ -115,7 +118,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     character?: DBPersonajesUsuario;
   };
   
-  // Normalizar el usuario para asegurar que tenga todos los campos necesarios
   const normalizedUser = normalizeUser(loaderData?.user);
   
   const safeData = {
@@ -125,13 +127,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   
   const { user, character: initialCharacter } = safeData;
 
-  // Ahora podemos usar con seguridad user.nombre o user.usu_nombre
   const userName = user.usu_nombre;
 
   const defaultValues = useMemo(() => {
     return initialCharacter
       ? {
-          userName: userName, // Usar la variable que definimos arriba
+          userName: userName,
           name: initialCharacter.pus_nombre,
           class: initialCharacter.pus_clase,
           level: initialCharacter.pus_nivel,
@@ -143,9 +144,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           silverCoins: initialCharacter.pus_cantidad_plata,
           bronzeCoins: initialCharacter.pus_cantidad_bronce,
           characterDescription: initialCharacter.pus_descripcion,
+          race: initialCharacter.pus_raza,
+          job: initialCharacter.pus_trabajo,
+          alignment: initialCharacter.pus_alineacion,
         }
       : {
-          userName: userName, // Establecer un valor predeterminado para nuevos personajes también
+          userName: userName,
           name: "",
           class: "",
           level: 1,
@@ -157,21 +161,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           silverCoins: 0,
           bronzeCoins: 0,
           characterDescription: "",
+          race: "",
+          job: "",
+          alignment: "",
         };
-  }, [initialCharacter, userName]);
-
-  const {
+  }, [initialCharacter, userName]);  const {
     register,
+    handleSubmit,
+    setValue
   } = useForm<CharacterForm>({
     defaultValues: defaultValues,
+    mode: "onSubmit"
   });
 
-  // Varibles - estados
   const [characterImage, setCharacterImage] = useState<string | undefined>(
     undefined
   );
 
-  // Definir el estado para las habilidades
   const [selectedSkillValue, setSelectedSkillValue] = useState<string>("");
   const [selectedExtraSkillValue, setSelectedExtraSkillValue] =
     useState<string>("");
@@ -306,7 +312,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     id: string,
     type: string
   ) => {
-    // Crear una nueva referencia para evitar dependencia circular con skillsRingList
     setSkillsRingList(prevList => {
       const newList = [...prevList];
       const skills = skillsTypes.find(option => option.id === type)?.skills || [];
@@ -316,27 +321,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       };
       return newList;
     });
-  }, [skillsTypes]); // Solo depende de skillsTypes, no de skillsRingList
+  }, [skillsTypes]);
 
   const getSkills = useCallback(async () => {
     const data = await getListHad();
     
     if (data !== null) {
-      // Crear copias locales para no depender de los estados directamente
       const updatedFieldSkill = fieldSkill.map(item => ({...item}));
       const updatedSkills = skillsAcquired.map(item => ({...item}));
 
-      // Primero, obtenemos las habilidades del personaje
       let characterSkills: DBHabilidadPersonaje[] = [];
       if (params.id) {
         characterSkills = await getCharacterSkills(params.id);
         console.log("Habilidades cargadas:", characterSkills);
       }
 
-      // Procesamos las habilidades de clase y extra
       (data as DBHabilidad[]).forEach((elem: DBHabilidad) => {
         if (elem.tipo === "C") {
-          // Buscar si el personaje ya tiene esta habilidad asignada
           const existingSkill = characterSkills.find(skill => 
             skill.hpe_campo === "skillClass" && skill.hpe_habilidad === elem.id);
           
@@ -349,7 +350,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             }
           }
         } else if (elem.tipo === "E") {
-          // Buscar si el personaje ya tiene esta habilidad asignada
           const existingSkill = characterSkills.find(skill => 
             skill.hpe_campo === "skillExtra" && skill.hpe_habilidad === elem.id);
           
@@ -362,17 +362,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             }
           }
         } else if (elem.tipo === "R") {
-          // Buscar si el personaje ya tiene esta habilidad de anillo asignada
           const existingRingSkill = characterSkills.find(skill => 
             skill.hpe_campo.startsWith("skillRing") && skill.hpe_habilidad === elem.id);
             if (existingRingSkill) {
-            // Extraer el número del anillo (0, 1, 2) del campo
             const ringNumber = existingRingSkill.hpe_campo.replace("skillRing", "");
             
-            // Actualizar el estado mediante la función memoizada (React se encargará de actualizar el DOM)
             handleSelectedTypeRingSkillChange(ringNumber, elem.estadistica_base);
             
-            // Actualizar el objeto local
             const ringIndex = Number(ringNumber);
             if (ringIndex >= 0 && ringIndex < updatedSkills.length) {
               updatedSkills[ringIndex] = {
@@ -388,19 +384,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         }
       });
       
-      // Actualizar los estados una sola vez al final
       setSkillsAcquired(updatedSkills);
       setFieldSkill(updatedFieldSkill);
     }
-  }, [params.id, handleSelectedTypeRingSkillChange]); // Dependencias reducidas
+  }, [params.id, handleSelectedTypeRingSkillChange]);
 
   const getCharacterImage = useCallback(async () => {
     if (!user || !params.id) return;
 
-    // Normalize the user object
     const normalizedUser = normalizeUser(user);
 
-    // Ensure normalizedUser.usu_id is defined before using it
     if (!normalizedUser.usu_id) {
       console.error("User ID is undefined");
       return;
@@ -408,11 +401,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
     const url = await getUrlCharacter(normalizedUser.usu_id, params.id);
     if (url) {
-      // Genera el valor aleatorio solo cuando se necesita cargar la imagen
       const refreshParam = Math.random().toString(36).substring(7);
       setCharacterImage(url + "?" + refreshParam);
     }
-  }, [user, params.id]); // Ya no incluye randomValueRefreshImage como dependencia
+  }, [user, params.id]);
 
   const getStats = useCallback(async () => {
     if (params.id === null || params.id === undefined) return;
@@ -420,7 +412,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     const data = await getCharacterStats(params.id);
 
     if (data !== null) {
-      // Crear una nueva copia sin referenciar la dependencia del estado
       const updatedInputsStatsData = inputsStatsData.map((item, index) => {
         if (index < data.length) {
           return {
@@ -435,17 +426,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       
       setInputsStatsData(updatedInputsStatsData);
     }
-  }, [params.id]); // Eliminada la dependencia de inputsStatsData
+  }, [params.id]);
 
   const getInfoCharacter = useCallback(async () => {
-    // Ensure user.id exists before using it
     if (!user || !user.id) {
       console.error("User ID is undefined");
       return;
     }
     
     const userId = user.id;    if (params.id === null || params.id === undefined) {
-      // Crear un nuevo objeto en lugar de modificar directamente initialPersonajesUsuario
       setCharacter({
         ...initialPersonajesUsuario,
         pus_id: uuidv4(),
@@ -458,7 +447,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
     if (data && data.length > 0) {
       const characterData = { ...data[0], pus_usuario: userId };
-      setCharacter(characterData as DBPersonajesUsuario); // Add type assertion
+      setCharacter(characterData as DBPersonajesUsuario);
 
       if (characterData.sju_sistema_juego) {
         setSystemGame({
@@ -468,14 +457,20 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         });
       }
     }
-  }, [params.id, user]); // Removed systemGame, added user as dependency
+  }, [params.id, user]);
 
-  // useEffect para la carga de habilidades
+  useEffect(() => {
+    if (character?.pus_nombre) setValue("name", character.pus_nombre);
+    if (character?.pus_descripcion) setValue("characterDescription", character.pus_descripcion);
+    if (character?.pus_clase) setValue("class", character.pus_clase);
+    if (character?.pus_raza) setValue("race", character.pus_raza);
+    if (character?.pus_trabajo) setValue("job", character.pus_trabajo);
+  }, [character, setValue]);
+
   useEffect(() => {
     getSkills();
-  }, [getSkills]);  // useEffect para la carga inicial - separado del useEffect de habilidades
+  }, [getSkills]);
   useEffect(() => {
-    // Configuramos el fondo solo una vez al montar el componente
     changeBackground(mainBackground);
 
     const loadInfo = async () => {
@@ -484,25 +479,21 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setLoading(true); // Aseguramos que se muestre el loader
       
       try {
-        // Cargar todos los datos necesarios
         await Promise.all([
           getListSkill(),
           getGameSystemList(),
           getInfoCharacter()
         ]);
 
-        // Cargar la imagen solo después de que tengamos la información del personaje
         await getCharacterImage();
 
-        // Finalmente cargar estadísticas e inventario
         await Promise.all([getStats(), getInventory()]);
       } catch (error) {
         console.error("Error al cargar datos:", error);
       } finally {
-        setLoading(false); // Aseguramos que el loader se oculte incluso si hay errores
+        setLoading(false);
       }
     };    loadInfo();
-    // Solo ejecutar cuando se monte el componente o cambie la ID
   }, [params.id, changeBackground]);
 
   async function getListSkill() {
@@ -583,18 +574,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       );
       
    };*/
-  // Manejar el cambio en la selección
   const handleSelectRaceChange = (value: string) => {
     clearValidationError('characterRace');
     setCharacter((prevState) => ({ ...prevState!, ["pus_raza"]: value }));
   };
-  // Actualizar el systema de juego
   const handleSystemGameChange = (currentSystem: string = "") => {
     if (!currentSystem) return;
     const option = SystemGameList.filter((elem) => elem.value === currentSystem);
     if (option.length === 0) return;
     
-    // Crear un nuevo objeto en lugar de mutar el existente
     setSystemGame({
       sju_id: option[0].value,
       sju_nombre: option[0].name,
@@ -622,7 +610,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     setSelectedSkillValue(currentSkill);
   };
 
-  // Actualizar la habilidad extra del personaje
   const handleSelectExtraSkillChange = (currentSkill: string) => {
     const option = optionsSkillExtra.filter(
       (skill) => skill.value === currentSkill
@@ -658,48 +645,39 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     setInputsStatsData(updatedInputsStatsData);
   };
   const handleCharacterClassChange = (value: string) => {
-    // Clear validation error for this field
     clearValidationError('characterClass');
     
-    // Buscar la opción seleccionada una sola vez
     const selectedOption = optionsCharacterClass.find(
       (option) => option.value === value
     );
     
-    // Actualizar character en una sola operación en lugar de múltiples actualizaciones
     setCharacter((prevState) => ({ 
       ...prevState!, 
       pus_clase: value,
       pus_conocimientos: selectedOption?.work || ""
     }));
 
-    // Actualizar las estadísticas
     updStatsPoints(value, character!.pus_trabajo);
-
-    // Actualizar la habilidad principal
     const skillValue = selectedOption?.mainStat ? "S" + selectedOption.mainStat : "";
     setSelectedSkillValue(skillValue);
     handleSelectSkillChange(skillValue);
   };
-  // Manejar el cambio en la selección characterJob
   const handleCharacterJobSelectChange = (value: string) => {
     clearValidationError('characterJob');
     setCharacter((prevState) => ({ ...prevState!, ["pus_trabajo"]: value }));
     updStatsPoints(character!.pus_clase, value);
   };
 
-  // Manejar el cambio de la URL de la imagen en characterImage
   const handleCharacterImageFileChange = async (value: string, file: File) => {
     if (!user || !params.id) return;
 
-    // Ensure user.id exists before using it
     if (!user.id) {
       console.error("User ID is undefined");
       return;
     }
 
     const { path, error } = await addStorageCharacter(
-      user.id,  // Changed from usu_id to id
+      user.id,
       params.id,
       file
     );
@@ -722,13 +700,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       )
     );
   };
-  // Estado para controlar las clases de alineación
   const [formAlignment, setFormAlignment] = useState<string>("");
   
   const handleAlignmentChange = (value: string) => {
     setCharacter((prevState) => ({ ...prevState!, ["pus_alineacion"]: value }));
-    
-    // Actualizar el estado de alineación en lugar de manipular directamente el DOM
     setFormAlignment(value);
   };
 
@@ -780,33 +755,25 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     const numericValue = validateNumeric(value, 1);
     setNewObjectCount(numericValue);
   };
-  // Estado para rastrear campos requeridos vacíos
   const [emptyRequiredFields, setEmptyRequiredFields] = useState<string[]>([]);
 
-  // Function to clear validation errors for a specific field
   const clearValidationError = (fieldId: string) => {
     if (emptyRequiredFields.includes(fieldId)) {
       setEmptyRequiredFields(prev => prev.filter(field => field !== fieldId));
     }
   };
-
-  const handleOpenModal = () => {
-    // Validar programáticamente los campos requeridos usando el estado actual
+  
+  const handleOpenModal = handleSubmit(() => {
     const fieldsRequired: string[] = [];
     
-    // Verificar campos requeridos basados en el estado actual
-    if (!character?.pus_nombre?.trim()) fieldsRequired.push('name');
-    if (!character?.pus_descripcion?.trim()) fieldsRequired.push('description');
-    if (!character?.pus_clase?.trim()) fieldsRequired.push('characterClass');
-    if (!character?.pus_raza?.trim()) fieldsRequired.push('characterRace');
-    if (!character?.pus_trabajo?.trim()) fieldsRequired.push('characterJob');
+    if (!character?.pus_raza?.trim()) fieldsRequired.push('race');
+    if (!character?.pus_trabajo?.trim()) fieldsRequired.push('job');
+    if (!character?.pus_clase?.trim()) fieldsRequired.push('class');
     
-    // Actualizar estado de campos vacíos para referencia CSS
     setEmptyRequiredFields(fieldsRequired);
     
-    // Si hay campos vacíos, no enviar el formulario
     if (fieldsRequired.length > 0) {
-      alert("Por favor, digite todos los campos obligatorios: " + fieldsRequired.join(", "));
+      alert("Por favor, complete todos los campos obligatorios: " + fieldsRequired.join(", "));
       return;
     }
 
@@ -875,7 +842,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
     setDataCharacter(newCharacter);
     onOpen();
-  };
+  });
 
   const randomRoll = () => {
     if (character!.pus_nivel > 1) return;
@@ -1053,18 +1020,98 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     }
 
     upsertDataInp(saveItems);
-
-    // Eliminar objeto db
     deleteItemInventory(deleteItems);
   }
+  // Función para enviar el formulario utilizando React Hook Form
+  const onSubmitForm = (data: CharacterForm) => {
+    const fieldsRequired: string[] = [];
+    
+    if (!character?.pus_raza?.trim()) fieldsRequired.push('race');
+    if (!character?.pus_trabajo?.trim()) fieldsRequired.push('job');
+    
+    setEmptyRequiredFields(fieldsRequired);
+    
+    // Si hay campos vacíos, no enviar el formulario
+    if (fieldsRequired.length > 0) {
+      alert("Por favor, complete todos los campos obligatorios: " + fieldsRequired.join(", "));
+      return;
+    }
+    const newCharacter: DataCharacter = {
+      id: character!.pus_id,
+      player: character!.pus_usuario,
+      name: data.name,
+      class: character!.pus_clase,
+      race: character!.pus_raza,
+      job: character!.pus_trabajo,
+      level: data.level,
+      luckyPoints: character!.pus_puntos_suerte,
+      description: data.characterDescription,
+      knowledge: character!.pus_conocimientos ? character!.pus_conocimientos.split(',').filter(Boolean) : [],
+      mainWeapon: data.mainWeapon,
+      secondaryWeapon: data.secondaryWeapon,
+      str: [
+        {
+          dice: inputsStatsData[0].valueDice,
+          class: inputsStatsData[0].valueClass,
+          level: inputsStatsData[0].valueLevel,
+        },
+      ],
+      int: [
+        {
+          dice: inputsStatsData[1].valueDice,
+          class: inputsStatsData[1].valueClass,
+          level: inputsStatsData[1].valueLevel,
+        },
+      ],
+      dex: [
+        {
+          dice: inputsStatsData[2].valueDice,
+          class: inputsStatsData[2].valueClass,
+          level: inputsStatsData[2].valueLevel,
+        },
+      ],
+      con: [
+        {
+          dice: inputsStatsData[3].valueDice,
+          class: inputsStatsData[3].valueClass,
+          level: inputsStatsData[3].valueLevel,
+        },
+      ],
+      per: [
+        {
+          dice: inputsStatsData[4].valueDice,
+          class: inputsStatsData[4].valueClass,
+          level: inputsStatsData[4].valueLevel,
+        },
+      ],
+      cha: [
+        {
+          dice: inputsStatsData[5].valueDice,
+          class: inputsStatsData[5].valueClass,
+          level: inputsStatsData[5].valueLevel,
+        },
+      ],
+      mainSkill: selectedSkillValue,
+      extraSkill: selectedExtraSkillValue,
+      alignment: character!.pus_alineacion,
+      skills: skillsAcquired,
+      coinsInv: coins,
+      inv: invObjects,
+    };
+    
+    setDataCharacter(newCharacter);
+    onOpen();
+  };
 
   return (
     <>
-      {loading && <ScreenLoader />}      <form
+      {loading && <ScreenLoader />}
+      <form
         id="form-sheet"
         className={`form-sheet min-h-screen grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4 ${
           formAlignment === 'O' ? 'orden' : formAlignment === 'C' ? 'caos' : ''
         }`}
+        onSubmit={handleSubmit(onSubmitForm)}
       >
         {/* Titulo */}
         <fieldset className="fieldset-form form-title col-span-2 md:col-span-2 lg:col-span-3 shadow-lg rounded">

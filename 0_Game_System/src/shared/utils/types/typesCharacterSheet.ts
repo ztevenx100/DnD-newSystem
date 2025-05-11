@@ -6,6 +6,7 @@ export interface Option {
     work?: string;
     mainStat?: string;
     stat?: string;
+    knowledge?: string;
 }
 
 export interface InputStats {

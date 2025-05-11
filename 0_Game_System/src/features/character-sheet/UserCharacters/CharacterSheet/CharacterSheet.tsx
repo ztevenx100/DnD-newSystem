@@ -691,7 +691,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
     setInputsStatsData(updatedInputsStatsData);
   };
-
   const handleCharacterClassChange = (value: string) => {
     clearValidationError('characterClass');
     
@@ -701,11 +700,22 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     
     console.log("Selecting class:", value, "Option found:", selectedOption);
     
+    // Asignar el conocimiento según la clase seleccionada
+    let knowledgeValue = "";
+    switch (value) {
+      case 'WAR': knowledgeValue = "FOR"; break;
+      case 'MAG': knowledgeValue = "SAB"; break;
+      case 'SCO': knowledgeValue = "HER"; break;
+      case 'MED': knowledgeValue = "ALC"; break;
+      case 'RES': knowledgeValue = "ACO"; break;
+      case 'ACT': knowledgeValue = "ART"; break;
+    }
+    
     setCharacter((prevState) => {
       const updated = { 
         ...prevState!, 
         pus_clase: value,
-        pus_conocimientos: selectedOption?.work || ""
+        pus_conocimientos: knowledgeValue
       };
       console.log("Updated character state with class:", updated);
       return updated;
@@ -750,10 +760,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   };
 
   const handleSelectedCheckValuesChange = (newValues: string[]) => {
-    setCharacter((prevState) => ({
-      ...prevState!,
-      ["pus_conocimientos"]: newValues.join(","),
-    }));
+    console.log("Conocimientos seleccionados:", newValues);
+    setCharacter((prevState) => {
+      const updated = {
+        ...prevState!,
+        ["pus_conocimientos"]: newValues.join(","),
+      };
+      console.log("Estado actualizado con conocimientos:", updated);
+      return updated;
+    });
   };
   const handleStatsInputChange = (newInputStats: InputStats) => {
     setInputsStatsData((prevItems) =>
@@ -938,12 +953,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const getJobName = (id: string | undefined): string | undefined => {
     return optionsCharacterJob.find((elem) => elem.value === id)?.name;
   };
-
   const getKnowledgeName = (ids: string[] | undefined): string | undefined => {
     let names = "";
-    if (ids === undefined) return names;
-    ids.forEach((know) => {
-      names += checkboxesData.find((elem) => elem.value === know)?.name + ", ";
+    if (ids === undefined || ids.length === 0) return names;
+    
+    // Filtrar valores vacíos
+    const validIds = ids.filter(Boolean);
+    if (validIds.length === 0) return names;
+    
+    console.log("Buscando nombres para conocimientos:", validIds);
+    
+    validIds.forEach((know) => {
+      const found = checkboxesData.find((elem) => elem.value === know);
+      if (found) {
+        names += found.name + ", ";
+      } else {
+        console.log("Conocimiento no encontrado:", know);
+      }
     });
     names = names.length > 2 ? names.substring(0, names.length - 2) : names;
 

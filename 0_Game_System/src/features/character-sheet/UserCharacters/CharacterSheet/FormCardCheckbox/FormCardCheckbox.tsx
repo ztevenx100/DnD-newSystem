@@ -20,12 +20,12 @@ const FormCardCheckbox: React.FC<CardWithCheckboxesProps> = ({ id, label, checkb
 
   // Log de depuración para ver los valores actuales
   React.useEffect(() => {
-    console.log(`FormCardCheckbox ${id} rendering with:`, {
+    /*console.log(`FormCardCheckbox ${id} rendering with:`, {
       selectedValues,
       availableValues: checkboxes.map(c => `${c.value}: ${c.name}`).join(', '),
       checkboxesCount: checkboxes.length,
       selectedCount: selectedValues.filter(Boolean).length
-    });
+    });*/
   }, [id, selectedValues, checkboxes]);
 
   const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {

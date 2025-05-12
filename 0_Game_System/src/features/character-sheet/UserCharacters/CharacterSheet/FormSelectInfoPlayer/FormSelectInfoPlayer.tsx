@@ -25,12 +25,12 @@ const FormSelectInfoPlayer: React.FC<SelectFieldProps> = ({
   
   // Log debugging info
   useEffect(() => {
-    console.log(`FormSelectInfoPlayer ${id} rendering with:`, {
+    /*console.log(`FormSelectInfoPlayer ${id} rendering with:`, {
       selectedValue,
       optionsCount: options?.length || 0,
       options: options?.map(o => `${o.value}: ${o.name}`)?.join(', ') || 'none',
       hasSelectedValue: options?.some(o => o.value === selectedValue) || false
-    });
+    });*/
   }, [id, selectedValue, options]);
 
   // Ensure options is always an array even if null/undefined is passed

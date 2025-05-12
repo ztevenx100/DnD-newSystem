@@ -299,12 +299,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
   const handleSelectedRingSkillChange = useCallback((
     id: string,
-    value: string
+    ring: string,
+    skill: string,
+    stat: string
   ) => {
+    console.log('handleSelectedRingSkillChange', {id, ring, skill, stat});
     setSkillsAcquired((prevItems) =>
       prevItems.map((item) =>
         item.value === id
-          ? { ...item, name: value, stat: id }
+          ? { ...item, name: skill, ring: ring, stat: stat, id: skill }
           : item
       )
     );
@@ -314,13 +317,32 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     id: string,
     type: string
   ) => {
+    console.log('handleSelectedTypeRingSkillChange', {id, type});
     setSkillsRingList(prevList => {
       const newList = [...prevList];
       const skills = skillsTypes.find(option => option.id === type)?.skills || [];
+      console.log('New skills for ring', id, ':', skills.map(s => s.name).join(', '));
+      
+      // Log para depuración 
+      if (skills.length === 0) {
+        console.warn(`No se encontraron habilidades para el tipo ${type}. skillsTypes contiene:`, 
+          skillsTypes.map(s => ({ id: s.id, numSkills: s.skills.length })));
+      }
+      
       newList[Number(id)] = {
         ...newList[Number(id)],
         skills: skills
       };
+      
+      // Reset the skill selection when changing the skill type
+      setSkillsAcquired(prev => 
+        prev.map((item) => 
+          item.value === id
+            ? { ...item, name: "", id: "", ring: type }
+            : item
+        )
+      );
+      
       return newList;
     });
   }, [skillsTypes]);
@@ -493,14 +515,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   }, [params.id, user]);
   
   useEffect(() => {
-    console.log("Actualizando valores de formulario desde character:", {
+    /*console.log("Actualizando valores de formulario desde character:", {
       nombre: character?.pus_nombre,
       descripcion: character?.pus_descripcion,
       clase: character?.pus_clase,
       raza: character?.pus_raza,
       trabajo: character?.pus_trabajo,
       usuario: user?.usu_nombre
-    });
+    });*/
     
     if (character?.pus_nombre) setValue("name", character.pus_nombre);
     if (character?.pus_descripcion) setValue("characterDescription", character.pus_descripcion);
@@ -557,9 +579,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         const updatedOptionsSkillClass: Option[] = [];
         const updatedOptionsSkillExtra: Option[] = [];
         const otherSkills: SkillTypes[] = [];
-
-        // Debug the raw data structure
-        console.log("Example skill data structure:", JSON.stringify(data[0], null, 2));
         
         (data as DBHabilidad[]).forEach((rawElem) => {
           // Create consistent field mappings regardless of database field names
@@ -572,7 +591,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             descripcion: rawElem.hab_descripcion || rawElem.descripcion || ''
           };
           
-          console.log("Mapped skill fields:", elem);
+          /*console.log("Mapped skill fields:", elem);*/
           
           if (!elem || !elem.tipo || !elem.id || !elem.sigla || !elem.nombre) {
             console.warn("Skipping invalid skill data:", elem);
@@ -620,9 +639,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             }
           }
         });
-        
-        console.log("Processed options for skillClass:", updatedOptionsSkillClass);
-        console.log("Processed options for skillExtra:", updatedOptionsSkillExtra);
         
         // Only update state if we actually have options
         if (updatedOptionsSkillClass.length > 0) {
@@ -1388,10 +1404,22 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             Nivel
           </label>
           <input
-            {...register("level", { required: true, maxLength: 2, min:1, max:10 })}
+            {...register("level", { 
+              required: true, 
+              maxLength: 2, 
+              min:1, 
+              max:10, 
+              onChange: (e) => {
+                const levelValue = parseInt(e.target.value) || 0;
+                setCharacter(prevState => ({
+                  ...prevState!,
+                  pus_nivel: levelValue
+                }));
+              }
+            })}
             placeholder="Nivel"
             className="form-input-y numeric-input col-start-1 md:col-start-3 col-span-1 row-start-3 md:row-start-2 row-span-3 md:row-span-4 focus:border-black focus:shadow"
-            />
+          />
           <label
             htmlFor="luckyPoints"
             className="form-lbl-y col-start-2 md:col-start-4 col-span-1 row-start-2 md:row-start-1 bg-grey-lighter "

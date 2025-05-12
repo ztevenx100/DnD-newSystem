@@ -85,14 +85,38 @@ export const getListHad = async () => {
         }
         
         console.log("Skills data result:", result ? `Found ${result.length} skills` : "No skills found");
-        
-        if (!result || result.length === 0) {
+          if (!result || result.length === 0) {
             result = [
-                { id: '1', nombre: 'Ataque Brutal', sigla: 'AB', tipo: 'C', estadistica_base: 'STR' } as DBHabilidad,
-                { id: '2', nombre: 'Magia Arcana', sigla: 'MA', tipo: 'C', estadistica_base: 'INT' } as DBHabilidad,
-                { id: '3', nombre: 'Sigilo Avanzado', sigla: 'SA', tipo: 'E', estadistica_base: 'DEX' } as DBHabilidad,
-                { id: '4', nombre: 'Curación', sigla: 'CU', tipo: 'E', estadistica_base: 'CON' } as DBHabilidad,
-                { id: '5', nombre: 'Anillo de Fuerza', sigla: 'RF', tipo: 'R', estadistica_base: 'STR' } as DBHabilidad,
+                { id: '1', nombre: 'Ataque Brutal', sigla: 'AB', tipo: 'C', estadistica_base: 'STR', 
+                  hab_id: '1', hab_nombre: 'Ataque Brutal', hab_siglas: 'AB', hab_tipo: 'C', had_estadistica_base: 'STR' } as DBHabilidad,
+                
+                { id: '2', nombre: 'Magia Arcana', sigla: 'MA', tipo: 'C', estadistica_base: 'INT',
+                  hab_id: '2', hab_nombre: 'Magia Arcana', hab_siglas: 'MA', hab_tipo: 'C', had_estadistica_base: 'INT' } as DBHabilidad,
+                
+                { id: '3', nombre: 'Sigilo Avanzado', sigla: 'SA', tipo: 'E', estadistica_base: 'DEX',
+                  hab_id: '3', hab_nombre: 'Sigilo Avanzado', hab_siglas: 'SA', hab_tipo: 'E', had_estadistica_base: 'DEX' } as DBHabilidad,
+                
+                { id: '4', nombre: 'Curación', sigla: 'CU', tipo: 'E', estadistica_base: 'CON',
+                  hab_id: '4', hab_nombre: 'Curación', hab_siglas: 'CU', hab_tipo: 'E', had_estadistica_base: 'CON' } as DBHabilidad,
+                
+                // Habilidades de Anillo para cada estadística base
+                { id: '5', nombre: 'Anillo de Fuerza', sigla: 'RF', tipo: 'R', estadistica_base: 'STR',
+                  hab_id: '5', hab_nombre: 'Anillo de Fuerza', hab_siglas: 'RF', hab_tipo: 'R', had_estadistica_base: 'STR' } as DBHabilidad,
+                
+                { id: '6', nombre: 'Anillo de Inteligencia', sigla: 'RI', tipo: 'R', estadistica_base: 'INT',
+                  hab_id: '6', hab_nombre: 'Anillo de Inteligencia', hab_siglas: 'RI', hab_tipo: 'R', had_estadistica_base: 'INT' } as DBHabilidad,
+                
+                { id: '7', nombre: 'Anillo de Destreza', sigla: 'RD', tipo: 'R', estadistica_base: 'DEX',
+                  hab_id: '7', hab_nombre: 'Anillo de Destreza', hab_siglas: 'RD', hab_tipo: 'R', had_estadistica_base: 'DEX' } as DBHabilidad,
+                
+                { id: '8', nombre: 'Anillo de Constitución', sigla: 'RC', tipo: 'R', estadistica_base: 'CON',
+                  hab_id: '8', hab_nombre: 'Anillo de Constitución', hab_siglas: 'RC', hab_tipo: 'R', had_estadistica_base: 'CON' } as DBHabilidad,
+                
+                { id: '9', nombre: 'Anillo de Percepción', sigla: 'RP', tipo: 'R', estadistica_base: 'PER',
+                  hab_id: '9', hab_nombre: 'Anillo de Percepción', hab_siglas: 'RP', hab_tipo: 'R', had_estadistica_base: 'PER' } as DBHabilidad,
+                
+                { id: '10', nombre: 'Anillo de Carisma', sigla: 'RCH', tipo: 'R', estadistica_base: 'CHA',
+                  hab_id: '10', hab_nombre: 'Anillo de Carisma', hab_siglas: 'RCH', hab_tipo: 'R', had_estadistica_base: 'CHA' } as DBHabilidad,
             ];
             console.log("Created test data:", result);
         }

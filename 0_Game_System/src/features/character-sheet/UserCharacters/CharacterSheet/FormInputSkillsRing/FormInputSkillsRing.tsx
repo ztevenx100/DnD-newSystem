@@ -28,24 +28,34 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({
     onSelectChange, 
     onSelectTypeChange 
 }) => {
-    // useEffect se coloca directamente en el componente, no dentro de otra función
     useEffect(() => {
-        // Cuando el valor del anillo cambia, actualizamos las habilidades disponibles
-        if (values.ring) {
-            handleSkillTypeRingChange(values.ring);
+        if (values.ring && skillList.skills.length === 0) {
+            console.log('useEffect - Initializing skills for ring', id, values.ring);
+            const ringType = ringTypes.find(ring => ring.id === values.ring);
+            const stat: string = ringType?.stat || '';
+            if (stat !== '') {
+                onSelectTypeChange(id, stat);
+            }
         }
-    }, [values.ring]);
+    }, [id, values.ring, ringTypes, skillList.skills.length, onSelectTypeChange]);
 
     const handleSkillTypeRingChange = (newRing: string) => {
-        const stat: string = ringTypes.find(ring => ring.id === newRing)?.stat || '';
+        const ringType = ringTypes.find(ring => ring.id === newRing);
+        const stat: string = ringType?.stat || '';
+        
+        console.log('handleSkillTypeRingChange', {id, newRing, ringType, stat});
+        
         if (stat !== '') {
             onSelectTypeChange(id, stat);
+            console.log('Available ring types:', ringTypes.map(r => ({id: r.id, name: r.name, stat: r.stat})));
         }
+        
         onSelectChange(id, newRing, values.name || '', stat);
     };
 
     const handleSkillChange = (id: string, newSkill: string) => {
         const stat: string = ringTypes.find(ring => ring.id === values.ring)?.stat || '';
+        console.log('handleSkillChange', {id, newSkill, ring: values.ring, stat});
         onSelectChange(id, values.ring, newSkill, stat);
     };
 

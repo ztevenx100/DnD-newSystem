@@ -233,10 +233,10 @@ export const getDataQueryUsu = async (fields: string, where?: WhereClause, order
  */
 export const getDataQuery = async<T> (table: string, fields: string, where?: WhereClause, orderBy?: OrderByClause):Promise<T[]> => {
     try {
-        console.log(`Executing query on table ${table} with fields ${fields}`, {
+        /*console.log(`Executing query on table ${table} with fields ${fields}`, {
             where: where ? JSON.stringify(where) : 'none',
             orderBy: orderBy ? JSON.stringify(orderBy) : 'none'
-        });
+        });*/
 
         let query = dbConnection
         .from(table)
@@ -245,10 +245,10 @@ export const getDataQuery = async<T> (table: string, fields: string, where?: Whe
         if (where) {
             for (const [key, value] of Object.entries(where)) {
                 if (Array.isArray(value) && value.every(item => typeof item === 'string')) {
-                    console.log(`Adding IN condition: ${key} in [${value.join(', ')}]`);
+                    /*console.log(`Adding IN condition: ${key} in [${value.join(', ')}]`);*/
                     query = query.in(key, value);
                 } else if (typeof value === 'string') {
-                    console.log(`Adding EQ condition: ${key} = ${value}`);
+                    /*console.log(`Adding EQ condition: ${key} = ${value}`);*/
                     query = query.eq(key, value);
                 }
             }
@@ -273,11 +273,10 @@ export const getDataQuery = async<T> (table: string, fields: string, where?: Whe
             throw error;
         }
         
-        console.log(`Query on ${table} returned ${data?.length || 0} results`);
+        /*console.log(`Query on ${table} returned ${data?.length || 0} results`);*/
         return data as T[] || [];
     } catch (error) {
         console.error(`Error executing select on ${table}:`, error);
-        // Return empty array instead of throwing to avoid breaking the UI
         return [] as T[];
     }
 }
@@ -474,15 +473,12 @@ export const updateDataQuery = async <T>(table: string, data: object, where?: Wh
 export const upsertDataHpe = async (data: DBHabilidadPersonaje | DBHabilidadPersonaje[]): Promise<DBHabilidadPersonaje[]> => {
     try {
         if (Array.isArray(data)) {
-            // Procesar un array de habilidades
             const dataWithoutJoinArray = data.map(item => {
-                // Extraer solo las propiedades válidas de la tabla
                 const { hab_habilidad, ...rest } = item;
                 return rest;
             });
             return upsertDataQuery<DBHabilidadPersonaje>(TABLE_HPE, dataWithoutJoinArray);
         } else {
-            // Procesar un solo objeto
             const { hab_habilidad, ...dataWithoutJoin } = data;
             return upsertDataQuery<DBHabilidadPersonaje>(TABLE_HPE, dataWithoutJoin);
         }
@@ -522,9 +518,9 @@ export const upsertDataQuery = async <T>(table: string, data: object | object[])
             .upsert(data)
             .select()
         );
-  
+        
         if (error) throw error;
-
+        
         console.log('data: ', upsertedData);
         
         return upsertedData as T[];

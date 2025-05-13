@@ -235,6 +235,41 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     { id: 'CHA', label: 'Carisma', description: 'Personalidad y liderazgo', valueDice: 1, valueClass: 0, valueLevel: 0 }
   ]);
 
+  // Calculate total stats with useMemo to optimize performance
+  const totalStats = useMemo(() => {
+    return {
+      str: inputsStatsData[0].valueDice + inputsStatsData[0].valueClass + inputsStatsData[0].valueLevel,
+      int: inputsStatsData[1].valueDice + inputsStatsData[1].valueClass + inputsStatsData[1].valueLevel,
+      dex: inputsStatsData[2].valueDice + inputsStatsData[2].valueClass + inputsStatsData[2].valueLevel,
+      con: inputsStatsData[3].valueDice + inputsStatsData[3].valueClass + inputsStatsData[3].valueLevel,
+      per: inputsStatsData[4].valueDice + inputsStatsData[4].valueClass + inputsStatsData[4].valueLevel,
+      cha: inputsStatsData[5].valueDice + inputsStatsData[5].valueClass + inputsStatsData[5].valueLevel,
+      total: inputsStatsData.reduce((sum, stat) => sum + stat.valueDice + stat.valueClass + stat.valueLevel, 0)
+    };
+  }, [inputsStatsData]);
+  
+  /**
+   * Helper function to calculate the total value of a stat from inputsStatsData
+   * Uses the cached totalStats when possible
+   */
+  const getStatTotal = useCallback((statId: string): number => {
+    switch(statId) {
+      case 'STR': return totalStats.str;
+      case 'INT': return totalStats.int;
+      case 'DEX': return totalStats.dex;
+      case 'CON': return totalStats.con;
+      case 'PER': return totalStats.per;
+      case 'CHA': return totalStats.cha;
+      case 'total': return totalStats.total;
+      default: {
+        // Fallback calculation if statId doesn't match
+        const stat = inputsStatsData.find(s => s.id === statId);
+        if (!stat) return 0;
+        return stat.valueDice + stat.valueClass + stat.valueLevel;
+      }
+    }
+  }, [totalStats, inputsStatsData]);
+
   interface DataCharacter {
     id: string;
     player: string;
@@ -461,56 +496,83 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setInputsStatsData(updatedInputsStatsData);
     }
   }, [params.id]);
-
   const getInfoCharacter = useCallback(async () => {
-    if (!user || !user.id) {
-      console.error("User ID is undefined");
-      return;
-    }
-    
-    const userId = user.id;
-    
-    if (params.id === null || params.id === undefined) {
-      setCharacter({
-        ...initialPersonajesUsuario,
-        pus_id: uuidv4(),
-        pus_usuario: userId
-      });
-      return;
-    }
-
-    const data = await getCharacter(params.id);
-    console.log("Character data fetched:", data);
-
-    if (data && data.length > 0) {
-      const characterData = { ...data[0], pus_usuario: userId };
-      console.log("Setting character data:", characterData);
-      
-      // Validar el formato de los campos clave
-      console.log("Datos del personaje cargados:", {
-        nombre: characterData.pus_nombre,
-        clase: characterData.pus_clase,
-        raza: characterData.pus_raza,
-        trabajo: characterData.pus_trabajo,
-        sistema: characterData.sju_sistema_juego
-      });
-      
-      setCharacter(characterData as DBPersonajesUsuario);
-      
-      if (characterData.sju_sistema_juego) {
-        console.log("Sistema de juego encontrado:", {
-          id: characterData.sju_sistema_juego.sju_id,
-          nombre: characterData.sju_sistema_juego.sju_nombre
-        });
-        
-        setSystemGame({
-          sju_id: characterData.sju_sistema_juego.sju_id,
-          sju_nombre: characterData.sju_sistema_juego.sju_nombre,
-          sju_descripcion: ""
-        });
-      } else {
-        console.log("No se encontró sistema de juego en characterData:", characterData);
+    try {
+      if (!user || !user.id) {
+        console.error("User ID is undefined");
+        return;
       }
+      
+      const userId = user.id;
+      
+      // For new characters, just initialize with defaults
+      if (params.id === null || params.id === undefined) {
+        setCharacter({
+          ...initialPersonajesUsuario,
+          pus_id: uuidv4(),
+          pus_usuario: userId
+        });
+        return;
+      }
+
+      // Fetch character data with error handling
+      const data = await withErrorHandling(
+        () => getCharacter(params.id!), 
+        "fetching character data"
+      );
+      
+      if (!data || data.length === 0) {
+        console.error("No character data found for ID:", params.id);
+        alert(`No se encontró información del personaje con ID: ${params.id}`);
+        return;
+      }
+      
+      // Process character data
+      try {
+        const characterData = { ...data[0], pus_usuario: userId };
+        
+        // Validate key fields using type-safe property access
+        const missingFields: string[] = [];
+        if (!characterData.pus_nombre) missingFields.push('pus_nombre');
+        if (!characterData.pus_clase) missingFields.push('pus_clase');
+        if (!characterData.pus_raza) missingFields.push('pus_raza');
+        if (!characterData.pus_trabajo) missingFields.push('pus_trabajo');
+        
+        if (missingFields.length > 0) {
+          console.warn("Missing character fields:", missingFields);
+        }
+        
+        // Set character data in state
+        setCharacter(characterData as DBPersonajesUsuario);
+        
+        // Handle game system data
+        if (characterData.sju_sistema_juego) {
+          const gameSystem = characterData.sju_sistema_juego;
+          
+          if (!gameSystem.sju_id || !gameSystem.sju_nombre) {
+            console.warn("Game system data is incomplete:", gameSystem);
+          }
+          
+          setSystemGame({
+            sju_id: gameSystem.sju_id || '',
+            sju_nombre: gameSystem.sju_nombre || 'Sistema Desconocido',
+            sju_descripcion: ""
+          });
+        } else {
+          console.warn("No game system found for character:", characterData.pus_id);
+          // Set default game system if none found
+          setSystemGame({
+            sju_id: '',
+            sju_nombre: 'Sistema por defecto',
+            sju_descripcion: ""
+          });
+        }
+      } catch (parseError) {
+        console.error("Error processing character data:", parseError);
+        alert("Error al procesar los datos del personaje. Algunos campos pueden no estar disponibles.");
+      }
+    } catch (error) {
+      handleAsyncError(error, "fetching character info");
     }
   }, [params.id, user]);
   
@@ -537,34 +599,57 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   }, [getSkills]);
 
   useEffect(() => {
-    changeBackground(mainBackground);
-
-    const loadInfo = async () => {
+    changeBackground(mainBackground);    const loadInfo = async () => {
       document.documentElement.scrollTop = 0;
       const isNewRecord = params.id === null || params.id === undefined;
       setNewRecord(isNewRecord);
-      console.log("Estableciendo newRecord a:", isNewRecord);
       setLoading(true);
       
       try {
+        // Load initial data sequentially for better error handling
         console.log("Cargando datos iniciales...");
         
-        await getListSkill();
+        // First fetch skill data which is needed for all characters
+        await withErrorHandling(
+          () => getListSkill(),
+          "loading skill data"
+        );
         
+        // For existing characters, fetch character data
         if (!isNewRecord) {
-          await getInfoCharacter();
-          console.log("Después de getInfoCharacter, systemGame:", systemGame);
+          await withErrorHandling(
+            () => getInfoCharacter(),
+            "loading character information"
+          );
         }
         
-        await getGameSystemList();
-        await getCharacterImage();
-        await Promise.all([getStats(), getInventory()]);
+        // Load support data
+        await withErrorHandling(
+          () => getGameSystemList(),
+          "loading game systems"
+        );
+        
+        // Load optional data like character image
+        if (!isNewRecord) {
+          await withErrorHandling(
+            () => getCharacterImage(),
+            "loading character image"
+          );
+        }
+        
+        // Load remaining character data in parallel
+        if (!isNewRecord) {
+          await Promise.all([
+            withErrorHandling(() => getStats(), "loading character stats"),
+            withErrorHandling(() => getInventory(), "loading inventory")
+          ]);
+        }
       } catch (error) {
-        console.error("Error al cargar datos:", error);
+        handleAsyncError(error, "initializing character sheet");
       } finally {
         setLoading(false);
       }
-    };    
+    };
     
     loadInfo();
   }, [params.id, changeBackground]);
@@ -694,7 +779,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     console.log("Selecting race:", value);
     
     setCharacter((prevState) => {
-      const updated = { ...prevState!, ["pus_raza"]: value };
+      if (!prevState) return prevState;
+      const updated = { 
+        ...prevState,
+        pus_raza: value 
+      };
       console.log("Updated character state with race:", updated);
       return updated;
     });
@@ -712,11 +801,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       sju_nombre: option[0].name,
       sju_descripcion: systemGame.sju_descripcion
     });
-    
-    setCharacter((prevState) => ({
-      ...prevState!,
-      ["pus_sistema_juego"]: currentSystem,
-    }));
+      setCharacter((prevState) => {
+      if (!prevState) return prevState;
+      return {
+        ...prevState,
+        pus_sistema_juego: currentSystem,
+      };
+    });
   };
   const handleSelectSkillChange = (currentSkill: string) => {
     console.log("handleSelectSkillChange called with:", currentSkill);
@@ -835,10 +926,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const handleCharacterJobSelectChange = (value: string) => {
     clearValidationError('characterJob');
     console.log("Selecting job:", value);
-    
-    setCharacter((prevState) => {
+      setCharacter((prevState) => {
       if (!prevState) return prevState;
-      const updated = { ...prevState, ["pus_trabajo"]: value };
+      const updated = { 
+        ...prevState,
+        pus_trabajo: value 
+      };
       console.log("Updated character state with job:", updated);
       return updated;
     });
@@ -867,11 +960,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   };
 
   const handleSelectedCheckValuesChange = (newValues: string[]) => {
-    console.log("Conocimientos seleccionados:", newValues);
-    setCharacter((prevState) => {
+    console.log("Conocimientos seleccionados:", newValues);    setCharacter((prevState) => {
+      if (!prevState) return prevState;
       const updated = {
-        ...prevState!,
-        ["pus_conocimientos"]: newValues.join(","),
+        ...prevState,
+        pus_conocimientos: newValues.join(","),
       };
       console.log("Estado actualizado con conocimientos:", updated);
       return updated;
@@ -885,9 +978,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     );
   };
   const [formAlignment, setFormAlignment] = useState<string>("");
-  
-  const handleAlignmentChange = (value: string) => {
-    setCharacter((prevState) => ({ ...prevState!, ["pus_alineacion"]: value }));
+    const handleAlignmentChange = (value: string) => {
+    setCharacter((prevState) => {
+      if (!prevState) return prevState;
+      return { 
+        ...prevState,
+        pus_alineacion: value 
+      };
+    });
     setFormAlignment(value);
   };
 
@@ -896,37 +994,46 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     const updatedCoins = [...coins];
     updatedCoins[index] = numericValue;
     setCoins(updatedCoins);
-  };
+  };  /**
+   * Validates an inventory object and returns null if valid, or an error message if invalid
+   */
+  const validateInventoryItem = useCallback((name: string, count: number): string | null => {
+    if (!name.trim()) {
+      return "El nombre del objeto es obligatorio";
+    }
+    if (isNaN(count) || count < 1) {
+      return "La cantidad debe ser un número mayor a 0";
+    }
+    return null;
+  }, []);
 
-  const handleAddObject = () => {
-    if (!newObjectName || newObjectName === "") {
-      alert("Por favor digitar este campo");
+  const handleAddObject = useCallback(() => {
+    const errorMessage = validateInventoryItem(newObjectName, newObjectCount);
+    if (errorMessage) {
+      alert(errorMessage);
       document.getElementById("objectName")?.focus();
       return;
-    }
-
-    const newObject: InventoryObject = {
+    }    // Use our validateInventoryObject function to ensure object has all required fields
+    const newObject = validateInventoryObject({
       id: uuidv4(),
-      name: newObjectName,
-      description: newObjectDescription || "Descripción del nuevo objeto",
+      name: newObjectName.trim(),
+      description: newObjectDescription.trim(),
       count: newObjectCount,
       readOnly: false,
-    };
+    });
 
     setInvObjects((prev) => [...prev, newObject]);
     setNewObjectName("");
     setNewObjectDescription("");
     setNewObjectCount(1);
-  };
+  }, [newObjectName, newObjectCount, newObjectDescription, validateInventoryItem]);
 
-  async function handleDeleteObject(id: string) {
+  const handleDeleteObject = useCallback(async (id: string) => {
     setInvObjects((prevObjects) => prevObjects.filter((obj) => obj.id !== id));
-    const updatedDeleteItems = [...deleteItems];
-    updatedDeleteItems.push(id);
-    setDeleteItems(updatedDeleteItems);
-  }
+    setDeleteItems((prevItems) => [...prevItems, id]);
+  }, []);
 
-  const handleEditCount = (id: string, newCount: string) => {
+  const handleEditCount = useCallback((id: string, newCount: string) => {
     // Convert input string to a valid number with default value of 1
     const numericValue = validateNumeric(newCount, 1);
     
@@ -935,7 +1042,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         obj.id === id ? { ...obj, count: numericValue } : obj
       )
     );
-  };
+  }, []);
 
   const handleNewCount = (value: string) => {
     const numericValue = validateNumeric(value, 1);
@@ -948,14 +1055,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setEmptyRequiredFields(prev => prev.filter(field => field !== fieldId));
     }
   };
-  
-  // Función para abrir el modal con validación manual
+    // Función para abrir el modal con validación manual
   const handleOpenModal = () => {
     console.log("Ejecutando handleOpenModal");
     
     // Validar campos requeridos manualmente
     const fieldsRequired: string[] = [];
     
+    // Validate required character properties
     if (!character?.pus_raza?.trim()) {
       console.log("Falta la raza");
       fieldsRequired.push('characterRace');
@@ -967,6 +1074,20 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     if (!character?.pus_clase?.trim()) {
       console.log("Falta la clase");
       fieldsRequired.push('characterClass');
+    }
+    
+    // Validate form fields
+    const formValues = getValues();
+    if (!formValues.name?.trim()) {
+      console.log("Falta el nombre del personaje");
+      fieldsRequired.push('name');
+    }
+      // Validate stats - use our getStatTotal helper
+    const totalStatsSum = getStatTotal('total');
+    
+    if (totalStatsSum <= 0) {
+      console.log("No hay estadísticas definidas");
+      fieldsRequired.push('stats');
     }
     
     setEmptyRequiredFields(fieldsRequired);
@@ -1051,10 +1172,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     onOpen();
     console.log("Modal abierto, isOpen=", isOpen);
   };
-
-  const randomRoll = () => {
+  /**
+   * Generates random dice values for character stats
+   * Only allows randomization for level 1 characters
+   */
+  const randomRoll = useCallback(() => {
     // Prevent stat changes for characters above level 1
     if (character?.pus_nivel > 1) {
+      alert("Solo puedes generar estadísticas aleatorias para personajes de nivel 1");
       return;
     }
 
@@ -1067,8 +1192,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     }
 
     setInputsStatsData(updatedInputsStatsData);
-    return;
-  };
+  }, [character?.pus_nivel, inputsStatsData]);
 
   const getClassName = (id: string | undefined): string | undefined => {
     return optionsCharacterClass.find((elem) => elem.value === id)?.name;
@@ -1117,22 +1241,47 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       .find((skill) => skill.id === stat)
       ?.skills.find((ele) => ele.value === id)?.name;
   };
-
   async function saveData() {
-    const ID_CHARACTER: string =
-      (await Promise.resolve(uploadInfoCharacter(newRecord))) || "";
+    try {
+      // Show saving indicator
+      setLoading(true);
+      
+      // Upload character information first
+      const ID_CHARACTER: string = await withErrorHandling(
+        () => uploadInfoCharacter(newRecord),
+        "character upload"
+      ) || "";
+      
+      if (!ID_CHARACTER) {
+        throw new Error("No se pudo guardar la información básica del personaje");
+      }
 
-    Promise.all([
-      uploadStats(newRecord, ID_CHARACTER),
-      uploadSkill(ID_CHARACTER),
-      uploadInventory(ID_CHARACTER),
-    ]).finally(() => {
+      // Upload remaining data in parallel
+      await Promise.all([
+        withErrorHandling(
+          () => uploadStats(newRecord, ID_CHARACTER),
+          "stats upload"
+        ),
+        withErrorHandling(
+          () => uploadSkill(ID_CHARACTER), 
+          "skills upload"
+        ),
+        withErrorHandling(
+          () => uploadInventory(ID_CHARACTER),
+          "inventory upload"
+        ),
+      ]);
+      
+      // Update state and navigate
       setNewRecord(false);
-    });
-
-    document.documentElement.scrollTop = 0;
-    onOpenChange();
-    reloadPage(ID_CHARACTER);
+      document.documentElement.scrollTop = 0;
+      onOpenChange();
+      reloadPage(ID_CHARACTER);
+    } catch (error) {
+      handleAsyncError(error, "saving character data");
+    } finally {
+      setLoading(false);
+    }
   }
 
   const reloadPage = (characterId: string) => {
@@ -1256,21 +1405,42 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         raceValue: character?.pus_raza,
         jobValue: character?.pus_trabajo
       }
-    });
+    });      // Use our validateCharacterForm function to check for errors
+    let fieldsRequired: string[] = validateCharacterForm();
     
-    const fieldsRequired: string[] = [];
-    
-    if (!character?.pus_raza?.trim()) fieldsRequired.push('characterRace');
-    if (!character?.pus_trabajo?.trim()) fieldsRequired.push('characterJob');
-    if (!character?.pus_clase?.trim()) fieldsRequired.push('characterClass');
+    // Add additional form-specific validations
     if (!data.name?.trim()) fieldsRequired.push('name');
+    
+    // Validate numerical fields
+    if (data.level < 1 || data.level > 10) fieldsRequired.push('level');
+    if (data.luckyPoints < 0) fieldsRequired.push('luckyPoints');
+    if (data.lifePoints < 0) fieldsRequired.push('lifePoints');
+    
+    // Validate weapon fields
+    if (!data.mainWeapon?.trim()) fieldsRequired.push('mainWeapon');
     
     setEmptyRequiredFields(fieldsRequired);
     
     // Si hay campos vacíos, no enviar el formulario
     if (fieldsRequired.length > 0) {
       console.log("Required fields missing:", fieldsRequired);
-      alert("Por favor, complete todos los campos obligatorios: " + fieldsRequired.join(", "));
+      
+      // Group error messages by category
+      const basicInfoErrors = ['name', 'characterRace', 'characterClass', 'characterJob'];
+      const statsErrors = ['stats', 'level', 'luckyPoints', 'lifePoints'];
+      const weaponsErrors = ['mainWeapon', 'secondaryWeapon'];
+      
+      let errorMessage = "Por favor, complete todos los campos obligatorios:\n";
+      
+      const basicMissing = fieldsRequired.filter(field => basicInfoErrors.includes(field));
+      const statsMissing = fieldsRequired.filter(field => statsErrors.includes(field));
+      const weaponsMissing = fieldsRequired.filter(field => weaponsErrors.includes(field));
+      
+      if (basicMissing.length > 0) errorMessage += "\n- Información básica: " + basicMissing.join(", ");
+      if (statsMissing.length > 0) errorMessage += "\n- Estadísticas: " + statsMissing.join(", ");
+      if (weaponsMissing.length > 0) errorMessage += "\n- Armamento: " + weaponsMissing.join(", ");
+      
+      alert(errorMessage);
       return;
     }
     
@@ -1349,6 +1519,82 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     onOpen();
     console.log("onSubmitForm: Modal debería estar abierto ahora, isOpen=", isOpen);
   };
+
+  /**
+   * Validates an inventory object and ensures it has all required fields
+   * @param object The inventory object to validate
+   * @returns A valid inventory object with defaults for missing fields
+   */
+  const validateInventoryObject = (object: Partial<InventoryObject>): InventoryObject => {
+    return {
+      id: object.id || uuidv4(),
+      name: object.name || '',
+      description: object.description || 'Sin descripción',
+      count: object.count !== undefined ? object.count : 1,
+      readOnly: object.readOnly || false
+    };
+  };
+
+  /**
+   * Validates the character form data and returns an array of field IDs with errors
+   * @returns Array of field IDs that failed validation
+   */
+  const validateCharacterForm = (): string[] => {
+    const fieldsRequired: string[] = [];
+    
+    // Basic required fields
+    if (!character?.pus_raza?.trim()) {
+      fieldsRequired.push('characterRace');
+    }
+    if (!character?.pus_trabajo?.trim()) {
+      fieldsRequired.push('characterJob');
+    }
+    if (!character?.pus_clase?.trim()) {
+      fieldsRequired.push('characterClass');
+    }
+    
+    const formValues = getValues();
+    if (!formValues.name?.trim()) {
+      fieldsRequired.push('name');
+    }
+    
+    // Stats validation
+    const totalStats = inputsStatsData.reduce((sum, stat) => 
+      sum + stat.valueDice + stat.valueClass + stat.valueLevel, 0);
+    
+    if (totalStats <= 0) {
+      fieldsRequired.push('stats');
+    }
+    
+    return fieldsRequired;
+  };
+
+  /**
+   * Generic async function error handler with proper logging and error messaging
+   */
+  const handleAsyncError = useCallback((error: unknown, operation: string) => {
+    console.error(`Error during ${operation}:`, error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    alert(`Error during ${operation}: ${errorMessage}. Please try again later.`);
+    return null;
+  }, []);
+
+  /**
+   * Wraps an async function with error handling and loading state management
+   */
+  const withErrorHandling = useCallback(<T,>(
+    asyncFn: () => Promise<T>,
+    operation: string,
+    setLoadingState?: (loading: boolean) => void
+  ): Promise<T | null> => {
+    if (setLoadingState) setLoadingState(true);
+    
+    return asyncFn()
+      .catch(error => handleAsyncError(error, operation))
+      .finally(() => {
+        if (setLoadingState) setLoadingState(false);
+      });
+  }, [handleAsyncError]);
 
   return (
     <>

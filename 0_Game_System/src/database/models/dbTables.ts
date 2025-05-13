@@ -86,7 +86,7 @@ export const getDataQueryEsc = async (fields: string, where?: WhereClause, order
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
  * @returns {any} datos obtenidos de la consulta a base de datos.
  */
-export const getDataQueryHad = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBHabilidad[]>  => {
+export const getDataQueryHab = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBHabilidad[]>  => {
     return getDataQuery<DBHabilidad>(TABLE_HAD, fields, where, orderBy);
 }
 

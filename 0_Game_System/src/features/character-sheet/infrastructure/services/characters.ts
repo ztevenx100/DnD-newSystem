@@ -56,7 +56,6 @@ export const getlistCharacters = async (user: string): Promise<DBPersonajesUsuar
     }
   } catch (error) {
     console.error('Error al obtener personajes:', error);
-    // Usar datos mock como fallback en caso de error
     console.warn('Usando datos mock como fallback debido a error');
     return getMockCharacters(user);
   }

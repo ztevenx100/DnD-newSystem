@@ -942,12 +942,25 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     }
   };
   
-  const handleOpenModal = handleSubmit(() => {
+  // Función para abrir el modal con validación manual
+  const handleOpenModal = () => {
+    console.log("Ejecutando handleOpenModal");
+    
+    // Validar campos requeridos manualmente
     const fieldsRequired: string[] = [];
     
-    if (!character?.pus_raza?.trim()) fieldsRequired.push('race');
-    if (!character?.pus_trabajo?.trim()) fieldsRequired.push('job');
-    if (!character?.pus_clase?.trim()) fieldsRequired.push('class');
+    if (!character?.pus_raza?.trim()) {
+      console.log("Falta la raza");
+      fieldsRequired.push('characterRace');
+    }
+    if (!character?.pus_trabajo?.trim()) {
+      console.log("Falta el trabajo");
+      fieldsRequired.push('characterJob');
+    }
+    if (!character?.pus_clase?.trim()) {
+      console.log("Falta la clase");
+      fieldsRequired.push('characterClass');
+    }
     
     setEmptyRequiredFields(fieldsRequired);
     
@@ -955,6 +968,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       alert("Por favor, complete todos los campos obligatorios: " + fieldsRequired.join(", "));
       return;
     }
+    
+    console.log("Campos requeridos completos, preparando datos para el modal...");
 
     const newCharacter: DataCharacter = {
       id: character!.pus_id,
@@ -1018,10 +1033,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       coinsInv: coins,
       inv: invObjects,
     };
-
+    console.log("Datos del personaje preparados para el modal:", newCharacter);
     setDataCharacter(newCharacter);
+    console.log("Abriendo modal...");
     onOpen();
-  });
+    console.log("Modal abierto, isOpen=", isOpen);
+  };
 
   const randomRoll = () => {
     if (character!.pus_nivel > 1) return;
@@ -1310,8 +1327,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       inv: invObjects,
     };
     
+    console.log("onSubmitForm: Preparando datos para el modal", newCharacter);
     setDataCharacter(newCharacter);
+    console.log("onSubmitForm: Abriendo modal...");
     onOpen();
+    console.log("onSubmitForm: Modal debería estar abierto ahora, isOpen=", isOpen);
   };
 
   return (
@@ -1786,7 +1806,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           <button
             type="button"
             className="btn-save-character"
-            onClick={() => handleOpenModal()}
+            onClick={handleOpenModal}
           >
             <SvgSaveCharacter className="icon" width={40} height={40} />
           </button>
@@ -1798,9 +1818,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           isOpen={isOpen}
           size={"5xl"}
           onOpenChange={onOpenChange}
-          className="dialog "
+          className="dialog modal-fix"
           classNames={{
             wrapper: "my-0",
+            base: "z-50",
+            backdrop: "z-40 bg-black/50",
             footer: "px-2 py-2",
           }}
         >

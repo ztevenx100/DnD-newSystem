@@ -1,10 +1,11 @@
-import { getDataQuery, insertDataQuery, updateDataQuery, upsertDataQuery, deleteDataQuery } from '@database/models/dbTables';
+import { getDataQuery, insertDataQuery, updateDataQuery, upsertDataQuery, deleteDataQuery, getDataQueryHab } from '@database/models/dbTables';
 import { DBPersonajesUsuario, DBEstadisticaPersonaje, DBHabilidadPersonaje, DBInventarioPersonaje, DBSistemaJuego, DBHabilidad } from '@utils/types';
 
 const TABLE_PUS = 'pus_personajes_usuario';
 const TABLE_EPE = 'epe_estadistica_personaje';
 const TABLE_HPE = 'hpe_habilidad_personaje';
 const TABLE_INP = 'inp_inventario_personaje';
+const TABLE_HAD = 'hab_habilidad';
 
 export const getCharacter = async (id: string) => {
     return getDataQuery<DBPersonajesUsuario>(
@@ -78,10 +79,10 @@ export const getGameSystem = async () => {
 export const getListHad = async () => {
     try {
         console.log("Getting skills data from database");
-        let result = await getDataQuery<DBHabilidad>('hab_habilidad', '*', { hab_tipo: ['C','E','R'] });
+        let result = await getDataQueryHab('*', { hab_tipo: ['C','E','R'] });
         
         if (!result || result.length === 0) {
-            result = await getDataQuery<DBHabilidad>('hab_habilidad', '*', { tipo: ['C','E','R'] });
+            result = await getDataQuery<DBHabilidad>(TABLE_HAD, '*', { tipo: ['C','E','R'] });
         }
         
         console.log("Skills data result:", result ? `Found ${result.length} skills` : "No skills found");

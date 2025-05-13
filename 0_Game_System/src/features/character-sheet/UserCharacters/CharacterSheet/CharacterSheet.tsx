@@ -793,6 +793,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
     setInputsStatsData(updatedInputsStatsData);
   };
+  
   const handleCharacterClassChange = (value: string) => {
     clearValidationError('characterClass');
     
@@ -814,8 +815,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     }
     
     setCharacter((prevState) => {
+      if (!prevState) return prevState;
       const updated = { 
-        ...prevState!, 
+        ...prevState, 
         pus_clase: value,
         pus_conocimientos: knowledgeValue
       };
@@ -823,7 +825,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return updated;
     });
 
-    updStatsPoints(value, character!.pus_trabajo);
+    // Use optional chaining to avoid non-null assertion
+    updStatsPoints(value, character?.pus_trabajo || '');
     const skillValue = selectedOption?.mainStat ? "S" + selectedOption.mainStat : "";
     setSelectedSkillValue(skillValue);
     handleSelectSkillChange(skillValue);
@@ -834,12 +837,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     console.log("Selecting job:", value);
     
     setCharacter((prevState) => {
-      const updated = { ...prevState!, ["pus_trabajo"]: value };
+      if (!prevState) return prevState;
+      const updated = { ...prevState, ["pus_trabajo"]: value };
       console.log("Updated character state with job:", updated);
       return updated;
     });
     
-    updStatsPoints(character!.pus_clase, value);
+    // Use optional chaining to avoid non-null assertion
+    updStatsPoints(character?.pus_clase || '', value);
   };
 
   const handleCharacterImageFileChange = async (value: string, file: File) => {
@@ -922,7 +927,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   }
 
   const handleEditCount = (id: string, newCount: string) => {
+    // Convert input string to a valid number with default value of 1
     const numericValue = validateNumeric(newCount, 1);
+    
     setInvObjects((prevObjects) =>
       prevObjects.map((obj) =>
         obj.id === id ? { ...obj, count: numericValue } : obj
@@ -969,19 +976,25 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return;
     }
     
+    // Ensure character exists
+    if (!character) {
+      console.error("Character data is missing");
+      return;
+    }
+    
     console.log("Campos requeridos completos, preparando datos para el modal...");
 
     const newCharacter: DataCharacter = {
-      id: character!.pus_id,
-      player: character!.pus_usuario,
-      name: character!.pus_nombre,
-      class: character!.pus_clase,
-      race: character!.pus_raza,
-      job: character!.pus_trabajo,
-      level: character!.pus_nivel,
-      luckyPoints: character!.pus_puntos_suerte,
-      description: character!.pus_descripcion,
-      knowledge: character!.pus_conocimientos.split(","),
+      id: character.pus_id || '',
+      player: character.pus_usuario || '',
+      name: character.pus_nombre || '',
+      class: character.pus_clase || '',
+      race: character.pus_raza || '',
+      job: character.pus_trabajo || '',
+      level: character.pus_nivel || 1,
+      luckyPoints: character.pus_puntos_suerte || 0,
+      description: character.pus_descripcion || '',
+      knowledge: character.pus_conocimientos ? character.pus_conocimientos.split(",").filter(Boolean) : [],
       str: [
         {
           dice: inputsStatsData[0].valueDice,
@@ -1023,15 +1036,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           class: inputsStatsData[5].valueClass,
           level: inputsStatsData[5].valueLevel,
         },
-      ],
-      mainWeapon: character!.pus_arma_principal,
-      secondaryWeapon: character!.pus_arma_secundaria,
-      alignment: character!.pus_alineacion,
-      mainSkill: selectedSkillValue,
-      extraSkill: selectedExtraSkillValue,
-      skills: skillsAcquired,
-      coinsInv: coins,
-      inv: invObjects,
+      ],      mainWeapon: character.pus_arma_principal || '',
+      secondaryWeapon: character.pus_arma_secundaria || '',
+      alignment: character.pus_alineacion || '',
+      mainSkill: selectedSkillValue || '',
+      extraSkill: selectedExtraSkillValue || '',
+      skills: skillsAcquired || [],
+      coinsInv: coins || [0, 0, 0],
+      inv: invObjects || [],
     };
     console.log("Datos del personaje preparados para el modal:", newCharacter);
     setDataCharacter(newCharacter);
@@ -1041,21 +1053,18 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   };
 
   const randomRoll = () => {
-    if (character!.pus_nivel > 1) return;
+    // Prevent stat changes for characters above level 1
+    if (character?.pus_nivel > 1) {
+      return;
+    }
 
     const updatedInputsStatsData = [...inputsStatsData];
-    let randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[0].valueDice = randomNumber;
-    randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[1].valueDice = randomNumber;
-    randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[2].valueDice = randomNumber;
-    randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[3].valueDice = randomNumber;
-    randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[4].valueDice = randomNumber;
-    randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[5].valueDice = randomNumber;
+    
+    // Generate random dice values for all stats (1-4)
+    for (let i = 0; i < 6; i++) {
+      const randomNumber = Math.floor(Math.random() * 4) + 1;
+      updatedInputsStatsData[i].valueDice = randomNumber;
+    }
 
     setInputsStatsData(updatedInputsStatsData);
     return;
@@ -1264,19 +1273,26 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       alert("Por favor, complete todos los campos obligatorios: " + fieldsRequired.join(", "));
       return;
     }
+    
+    // Ensure character exists before proceeding
+    if (!character) {
+      console.error("Character data is missing");
+      return;
+    }
+    
     const newCharacter: DataCharacter = {
-      id: character!.pus_id,
-      player: character!.pus_usuario,
+      id: character.pus_id || '',
+      player: character.pus_usuario || '',
       name: data.name,
-      class: character!.pus_clase,
-      race: character!.pus_raza,
-      job: character!.pus_trabajo,
+      class: character.pus_clase || '',
+      race: character.pus_raza || '',
+      job: character.pus_trabajo || '',
       level: data.level,
-      luckyPoints: character!.pus_puntos_suerte,
-      description: data.characterDescription,
-      knowledge: character!.pus_conocimientos ? character!.pus_conocimientos.split(',').filter(Boolean) : [],
-      mainWeapon: data.mainWeapon,
-      secondaryWeapon: data.secondaryWeapon,
+      luckyPoints: character.pus_puntos_suerte || 0,
+      description: data.characterDescription || '',
+      knowledge: character.pus_conocimientos ? character.pus_conocimientos.split(',').filter(Boolean) : [],
+      mainWeapon: data.mainWeapon || '',
+      secondaryWeapon: data.secondaryWeapon || '',
       str: [
         {
           dice: inputsStatsData[0].valueDice,
@@ -1321,7 +1337,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       ],
       mainSkill: selectedSkillValue,
       extraSkill: selectedExtraSkillValue,
-      alignment: character!.pus_alineacion,
+      alignment: character.pus_alineacion || '',
       skills: skillsAcquired,
       coinsInv: coins,
       inv: invObjects,
@@ -1384,7 +1400,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             className="form-lbl col-start-1 bg-grey-lighter "
           >
             Personaje
-          </label>          <input
+          </label>
+          <input
             {...register("name", { 
               required: true, 
               maxLength: 50,
@@ -1394,21 +1411,24 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             className={`form-input col-start-2 mr-2 focus:border-black focus:shadow ${
               emptyRequiredFields.includes('name') ? 'required-input' : ''
             }`}
-          /><FormSelectInfoPlayer
+          />
+          <FormSelectInfoPlayer
             id="characterClass"
             label="Clase"
             options={optionsCharacterClass}
             selectedValue={character?.pus_clase || ""}
             onSelectChange={handleCharacterClassChange}
             className={emptyRequiredFields.includes('characterClass') ? 'required-input' : ''}
-          />          <FormSelectInfoPlayer
+          />
+          <FormSelectInfoPlayer
             id="characterRace"
             label="Raza"
             options={optionsCharacterRace}
             selectedValue={character?.pus_raza || ""}
             onSelectChange={handleSelectRaceChange}
             className={emptyRequiredFields.includes('characterRace') ? 'required-input' : ''}
-          ></FormSelectInfoPlayer>          <FormSelectInfoPlayer
+          ></FormSelectInfoPlayer>
+          <FormSelectInfoPlayer
             id="characterJob"
             label="Trabajo"
             options={optionsCharacterJob}
@@ -1481,7 +1501,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             className="form-lbl-y col-start-1 md:col-start-1 col-span-5 row-start-14 md:row-start-6 bg-grey-lighter "
           >
             Descripción
-          </label>          <textarea
+          </label>
+          <textarea
             {...register("characterDescription", { 
               required: true, 
               maxLength: 500,

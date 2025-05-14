@@ -29,7 +29,7 @@ export interface DBPersonajesUsuario {
     url_character_image?: string;
     
     // Permite acceder a las propiedades con índices de string
-    [key: string]: string | number | boolean | object | undefined;
+    [key: string]: string | number | boolean | undefined;
 }
 
 export interface DBEstadisticaPersonaje {

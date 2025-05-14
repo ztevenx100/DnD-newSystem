@@ -69,6 +69,15 @@ import {
 // Utility Functions
 import { validateNumeric } from "@shared/utils/helpers/utilConversions";
 import { normalizeUser } from "@shared/utils/helpers/userHelpers";
+import { mapSkillFields } from "./fixSkills";
+import { 
+  getCharacterProperty, 
+  setCharacterProperty, 
+  getGameSystemProperty,
+  validateCharacter,
+  validateCharacterStats,
+  safeNumberConversion
+} from "@shared/utils/helpers/characterHelpers";
 
 // Assets and Icons
 import mainBackground from "@img/webp/bg-home-02.webp";
@@ -133,20 +142,20 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     return initialCharacter
       ? {
           userName: userName,
-          name: initialCharacter.pus_nombre,
-          class: initialCharacter.pus_clase,
-          level: initialCharacter.pus_nivel,
-          luckyPoints: initialCharacter.pus_puntos_suerte,
-          lifePoints: initialCharacter.pus_vida,
-          mainWeapon: initialCharacter.pus_arma_principal,
-          secondaryWeapon: initialCharacter.pus_arma_secundaria,
-          goldCoins: initialCharacter.pus_cantidad_oro,
-          silverCoins: initialCharacter.pus_cantidad_plata,
-          bronzeCoins: initialCharacter.pus_cantidad_bronce,
-          characterDescription: initialCharacter.pus_descripcion,
-          race: initialCharacter.pus_raza,
-          job: initialCharacter.pus_trabajo,
-          alignment: initialCharacter.pus_alineacion,
+          name: getCharacterProperty(initialCharacter, 'pus_nombre', ''),
+          class: getCharacterProperty(initialCharacter, 'pus_clase', ''),
+          level: getCharacterProperty(initialCharacter, 'pus_nivel', 1),
+          luckyPoints: getCharacterProperty(initialCharacter, 'pus_puntos_suerte', 0),
+          lifePoints: getCharacterProperty(initialCharacter, 'pus_vida', 0),
+          mainWeapon: getCharacterProperty(initialCharacter, 'pus_arma_principal', ''),
+          secondaryWeapon: getCharacterProperty(initialCharacter, 'pus_arma_secundaria', ''),
+          goldCoins: getCharacterProperty(initialCharacter, 'pus_cantidad_oro', 0),
+          silverCoins: getCharacterProperty(initialCharacter, 'pus_cantidad_plata', 0),
+          bronzeCoins: getCharacterProperty(initialCharacter, 'pus_cantidad_bronce', 0),
+          characterDescription: getCharacterProperty(initialCharacter, 'pus_descripcion', ''),
+          race: getCharacterProperty(initialCharacter, 'pus_raza', ''),
+          job: getCharacterProperty(initialCharacter, 'pus_trabajo', ''),
+          alignment: getCharacterProperty(initialCharacter, 'pus_alineacion', ''),
         }
       : {
           userName: userName,
@@ -234,6 +243,41 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     { id: 'PER', label: 'Percepción', description: 'Atención y observación', valueDice: 1, valueClass: 0, valueLevel: 0 },
     { id: 'CHA', label: 'Carisma', description: 'Personalidad y liderazgo', valueDice: 1, valueClass: 0, valueLevel: 0 }
   ]);
+
+  // Calculate total stats with useMemo to optimize performance
+  const totalStats = useMemo(() => {
+    return {
+      str: inputsStatsData[0].valueDice + inputsStatsData[0].valueClass + inputsStatsData[0].valueLevel,
+      int: inputsStatsData[1].valueDice + inputsStatsData[1].valueClass + inputsStatsData[1].valueLevel,
+      dex: inputsStatsData[2].valueDice + inputsStatsData[2].valueClass + inputsStatsData[2].valueLevel,
+      con: inputsStatsData[3].valueDice + inputsStatsData[3].valueClass + inputsStatsData[3].valueLevel,
+      per: inputsStatsData[4].valueDice + inputsStatsData[4].valueClass + inputsStatsData[4].valueLevel,
+      cha: inputsStatsData[5].valueDice + inputsStatsData[5].valueClass + inputsStatsData[5].valueLevel,
+      total: inputsStatsData.reduce((sum, stat) => sum + stat.valueDice + stat.valueClass + stat.valueLevel, 0)
+    };
+  }, [inputsStatsData]);
+  
+  /**
+   * Helper function to calculate the total value of a stat from inputsStatsData
+   * Uses the cached totalStats when possible
+   */
+  const getStatTotal = useCallback((statId: string): number => {
+    switch(statId) {
+      case 'STR': return totalStats.str;
+      case 'INT': return totalStats.int;
+      case 'DEX': return totalStats.dex;
+      case 'CON': return totalStats.con;
+      case 'PER': return totalStats.per;
+      case 'CHA': return totalStats.cha;
+      case 'total': return totalStats.total;
+      default: {
+        // Fallback calculation if statId doesn't match
+        const stat = inputsStatsData.find(s => s.id === statId);
+        if (!stat) return 0;
+        return stat.valueDice + stat.valueClass + stat.valueLevel;
+      }
+    }
+  }, [totalStats, inputsStatsData]);
 
   interface DataCharacter {
     id: string;
@@ -359,17 +403,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         characterSkills = await getCharacterSkills(params.id);
         console.log("Habilidades cargadas:", characterSkills);
       }
-
       (data as DBHabilidad[]).forEach((rawElem: DBHabilidad) => {
-        // Map DB fields to expected property names
-        const elem = {
-          id: rawElem.hab_id || rawElem.id || '',
-          nombre: rawElem.hab_nombre || rawElem.nombre || '',
-          sigla: rawElem.hab_siglas || rawElem.sigla || '',
-          tipo: rawElem.hab_tipo || rawElem.tipo || '',
-          estadistica_base: rawElem.had_estadistica_base || rawElem.estadistica_base || '',
-          descripcion: rawElem.hab_descripcion || rawElem.descripcion || ''
-        };
+        // Usar nuestro helper para mapear campos de manera segura
+        const elem = mapSkillFields(rawElem);
 
         if (elem.tipo === "C") {
           const existingSkill = characterSkills.find(skill => 
@@ -461,56 +497,82 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setInputsStatsData(updatedInputsStatsData);
     }
   }, [params.id]);
-
   const getInfoCharacter = useCallback(async () => {
-    if (!user || !user.id) {
-      console.error("User ID is undefined");
-      return;
-    }
-    
-    const userId = user.id;
-    
-    if (params.id === null || params.id === undefined) {
-      setCharacter({
-        ...initialPersonajesUsuario,
-        pus_id: uuidv4(),
-        pus_usuario: userId
-      });
-      return;
-    }
-
-    const data = await getCharacter(params.id);
-    console.log("Character data fetched:", data);
-
-    if (data && data.length > 0) {
-      const characterData = { ...data[0], pus_usuario: userId };
-      console.log("Setting character data:", characterData);
-      
-      // Validar el formato de los campos clave
-      console.log("Datos del personaje cargados:", {
-        nombre: characterData.pus_nombre,
-        clase: characterData.pus_clase,
-        raza: characterData.pus_raza,
-        trabajo: characterData.pus_trabajo,
-        sistema: characterData.sju_sistema_juego
-      });
-      
-      setCharacter(characterData as DBPersonajesUsuario);
-      
-      if (characterData.sju_sistema_juego) {
-        console.log("Sistema de juego encontrado:", {
-          id: characterData.sju_sistema_juego.sju_id,
-          nombre: characterData.sju_sistema_juego.sju_nombre
-        });
-        
-        setSystemGame({
-          sju_id: characterData.sju_sistema_juego.sju_id,
-          sju_nombre: characterData.sju_sistema_juego.sju_nombre,
-          sju_descripcion: ""
-        });
-      } else {
-        console.log("No se encontró sistema de juego en characterData:", characterData);
+    try {
+      if (!user || !user.id) {
+        console.error("User ID is undefined");
+        return;
       }
+      
+      const userId = user.id;
+      
+      // For new characters, just initialize with defaults
+      if (params.id === null || params.id === undefined) {
+        setCharacter({
+          ...initialPersonajesUsuario,
+          pus_id: uuidv4(),
+          pus_usuario: userId
+        });
+        return;
+      }
+
+      // Fetch character data with error handling
+      const data = await withErrorHandling(
+        () => getCharacter(params.id!), 
+        "fetching character data"
+      );
+      
+      if (!data || data.length === 0) {
+        console.error("No character data found for ID:", params.id);
+        alert(`No se encontró información del personaje con ID: ${params.id}`);
+        return;
+      }
+      
+      // Process character data
+      try {
+        const characterData = { ...data[0], pus_usuario: userId };
+          // Validate key fields using type-safe property access
+        const missingFields: string[] = [];
+        if (!getCharacterProperty(characterData, 'pus_nombre')) missingFields.push('pus_nombre');
+        if (!getCharacterProperty(characterData, 'pus_clase')) missingFields.push('pus_clase');
+        if (!getCharacterProperty(characterData, 'pus_raza')) missingFields.push('pus_raza');
+        if (!getCharacterProperty(characterData, 'pus_trabajo')) missingFields.push('pus_trabajo');
+        
+        if (missingFields.length > 0) {
+          console.warn("Missing character fields:", missingFields);
+        }
+        
+        // Set character data in state
+        setCharacter(characterData as DBPersonajesUsuario);
+        // Handle game system data
+        if (characterData.sju_sistema_juego) {
+          const gameSystem = characterData.sju_sistema_juego;
+          
+          if (!getGameSystemProperty(gameSystem, 'sju_id') || 
+              !getGameSystemProperty(gameSystem, 'sju_nombre')) {
+            console.warn("Game system data is incomplete:", gameSystem);
+          }
+          
+          setSystemGame({
+            sju_id: getGameSystemProperty(gameSystem, 'sju_id', ''),
+            sju_nombre: getGameSystemProperty(gameSystem, 'sju_nombre', 'Sistema Desconocido'),
+            sju_descripcion: getGameSystemProperty(gameSystem, 'sju_descripcion', '')
+          });
+        } else {
+          console.warn("No game system found for character:", getCharacterProperty(characterData, 'pus_id'));
+          // Set default game system if none found
+          setSystemGame({
+            sju_id: '',
+            sju_nombre: 'Sistema por defecto',
+            sju_descripcion: ""
+          });
+        }
+      } catch (parseError) {
+        console.error("Error processing character data:", parseError);
+        alert("Error al procesar los datos del personaje. Algunos campos pueden no estar disponibles.");
+      }
+    } catch (error) {
+      handleAsyncError(error, "fetching character info");
     }
   }, [params.id, user]);
   
@@ -537,34 +599,57 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   }, [getSkills]);
 
   useEffect(() => {
-    changeBackground(mainBackground);
-
-    const loadInfo = async () => {
+    changeBackground(mainBackground);    const loadInfo = async () => {
       document.documentElement.scrollTop = 0;
       const isNewRecord = params.id === null || params.id === undefined;
       setNewRecord(isNewRecord);
-      console.log("Estableciendo newRecord a:", isNewRecord);
       setLoading(true);
       
       try {
+        // Load initial data sequentially for better error handling
         console.log("Cargando datos iniciales...");
         
-        await getListSkill();
+        // First fetch skill data which is needed for all characters
+        await withErrorHandling(
+          () => getListSkill(),
+          "loading skill data"
+        );
         
+        // For existing characters, fetch character data
         if (!isNewRecord) {
-          await getInfoCharacter();
-          console.log("Después de getInfoCharacter, systemGame:", systemGame);
+          await withErrorHandling(
+            () => getInfoCharacter(),
+            "loading character information"
+          );
         }
         
-        await getGameSystemList();
-        await getCharacterImage();
-        await Promise.all([getStats(), getInventory()]);
+        // Load support data
+        await withErrorHandling(
+          () => getGameSystemList(),
+          "loading game systems"
+        );
+        
+        // Load optional data like character image
+        if (!isNewRecord) {
+          await withErrorHandling(
+            () => getCharacterImage(),
+            "loading character image"
+          );
+        }
+        
+        // Load remaining character data in parallel
+        if (!isNewRecord) {
+          await Promise.all([
+            withErrorHandling(() => getStats(), "loading character stats"),
+            withErrorHandling(() => getInventory(), "loading inventory")
+          ]);
+        }
       } catch (error) {
-        console.error("Error al cargar datos:", error);
+        handleAsyncError(error, "initializing character sheet");
       } finally {
         setLoading(false);
       }
-    };    
+    };
     
     loadInfo();
   }, [params.id, changeBackground]);
@@ -694,7 +779,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     console.log("Selecting race:", value);
     
     setCharacter((prevState) => {
-      const updated = { ...prevState!, ["pus_raza"]: value };
+      if (!prevState) return prevState;
+      // Use the type-safe helper to update race property
+      const updated = setCharacterProperty(prevState, 'pus_raza', value);
       console.log("Updated character state with race:", updated);
       return updated;
     });
@@ -712,11 +799,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       sju_nombre: option[0].name,
       sju_descripcion: systemGame.sju_descripcion
     });
-    
-    setCharacter((prevState) => ({
-      ...prevState!,
-      ["pus_sistema_juego"]: currentSystem,
-    }));
+      setCharacter((prevState) => {
+      if (!prevState) return prevState;
+      // Use the type-safe helper to update system game property
+      return setCharacterProperty(prevState, 'pus_sistema_juego', currentSystem);
+    });
   };
   const handleSelectSkillChange = (currentSkill: string) => {
     console.log("handleSelectSkillChange called with:", currentSkill);
@@ -793,6 +880,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
     setInputsStatsData(updatedInputsStatsData);
   };
+  
   const handleCharacterClassChange = (value: string) => {
     clearValidationError('characterClass');
     
@@ -812,34 +900,34 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       case 'RES': knowledgeValue = "ACO"; break;
       case 'ACT': knowledgeValue = "ART"; break;
     }
-    
-    setCharacter((prevState) => {
-      const updated = { 
-        ...prevState!, 
-        pus_clase: value,
-        pus_conocimientos: knowledgeValue
-      };
+      setCharacter((prevState) => {
+      if (!prevState) return prevState;
+      // Usar nuestra función de utilidad para actualizar propiedades de manera segura
+      let updated = setCharacterProperty(prevState, 'pus_clase', value);
+      updated = setCharacterProperty(updated, 'pus_conocimientos', knowledgeValue);
       console.log("Updated character state with class:", updated);
       return updated;
     });
 
-    updStatsPoints(value, character!.pus_trabajo);
+    // Use optional chaining to avoid non-null assertion
+    updStatsPoints(value, character?.pus_trabajo || '');
     const skillValue = selectedOption?.mainStat ? "S" + selectedOption.mainStat : "";
     setSelectedSkillValue(skillValue);
     handleSelectSkillChange(skillValue);
   };
-  
-  const handleCharacterJobSelectChange = (value: string) => {
+    const handleCharacterJobSelectChange = (value: string) => {
     clearValidationError('characterJob');
     console.log("Selecting job:", value);
-    
-    setCharacter((prevState) => {
-      const updated = { ...prevState!, ["pus_trabajo"]: value };
+      setCharacter((prevState) => {
+      if (!prevState) return prevState;
+      // Use the type-safe helper to update job property
+      const updated = setCharacterProperty(prevState, 'pus_trabajo', value);
       console.log("Updated character state with job:", updated);
       return updated;
     });
     
-    updStatsPoints(character!.pus_clase, value);
+    // Use optional chaining to avoid non-null assertion
+    updStatsPoints(character?.pus_clase || '', value);
   };
 
   const handleCharacterImageFileChange = async (value: string, file: File) => {
@@ -860,14 +948,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
     if (path) setCharacterImage(value);
   };
-
   const handleSelectedCheckValuesChange = (newValues: string[]) => {
     console.log("Conocimientos seleccionados:", newValues);
     setCharacter((prevState) => {
-      const updated = {
-        ...prevState!,
-        ["pus_conocimientos"]: newValues.join(","),
-      };
+      if (!prevState) return prevState;
+      // Use the type-safe helper to update knowledge property
+      const updated = setCharacterProperty(prevState, 'pus_conocimientos', newValues.join(","));
       console.log("Estado actualizado con conocimientos:", updated);
       return updated;
     });
@@ -879,10 +965,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       )
     );
   };
+
   const [formAlignment, setFormAlignment] = useState<string>("");
-  
-  const handleAlignmentChange = (value: string) => {
-    setCharacter((prevState) => ({ ...prevState!, ["pus_alineacion"]: value }));
+    const handleAlignmentChange = (value: string) => {
+    setCharacter((prevState) => {
+      if (!prevState) return prevState;
+      // Use the type-safe helper to modify the property
+      return setCharacterProperty(prevState, 'pus_alineacion', value);
+    });
     setFormAlignment(value);
   };
 
@@ -891,44 +981,55 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     const updatedCoins = [...coins];
     updatedCoins[index] = numericValue;
     setCoins(updatedCoins);
-  };
+  };  /**
+   * Validates an inventory object and returns null if valid, or an error message if invalid
+   */
+  const validateInventoryItem = useCallback((name: string, count: number): string | null => {
+    if (!name.trim()) {
+      return "El nombre del objeto es obligatorio";
+    }
+    if (isNaN(count) || count < 1) {
+      return "La cantidad debe ser un número mayor a 0";
+    }
+    return null;
+  }, []);
 
-  const handleAddObject = () => {
-    if (!newObjectName || newObjectName === "") {
-      alert("Por favor digitar este campo");
+  const handleAddObject = useCallback(() => {
+    const errorMessage = validateInventoryItem(newObjectName, newObjectCount);
+    if (errorMessage) {
+      alert(errorMessage);
       document.getElementById("objectName")?.focus();
       return;
-    }
-
-    const newObject: InventoryObject = {
+    }    // Use our validateInventoryObject function to ensure object has all required fields
+    const newObject = validateInventoryObject({
       id: uuidv4(),
-      name: newObjectName,
-      description: newObjectDescription || "Descripción del nuevo objeto",
+      name: newObjectName.trim(),
+      description: newObjectDescription.trim(),
       count: newObjectCount,
       readOnly: false,
-    };
+    });
 
     setInvObjects((prev) => [...prev, newObject]);
     setNewObjectName("");
     setNewObjectDescription("");
     setNewObjectCount(1);
-  };
+  }, [newObjectName, newObjectCount, newObjectDescription, validateInventoryItem]);
 
-  async function handleDeleteObject(id: string) {
+  const handleDeleteObject = useCallback(async (id: string) => {
     setInvObjects((prevObjects) => prevObjects.filter((obj) => obj.id !== id));
-    const updatedDeleteItems = [...deleteItems];
-    updatedDeleteItems.push(id);
-    setDeleteItems(updatedDeleteItems);
-  }
+    setDeleteItems((prevItems) => [...prevItems, id]);
+  }, []);
 
-  const handleEditCount = (id: string, newCount: string) => {
+  const handleEditCount = useCallback((id: string, newCount: string) => {
+    // Convert input string to a valid number with default value of 1
     const numericValue = validateNumeric(newCount, 1);
+    
     setInvObjects((prevObjects) =>
       prevObjects.map((obj) =>
         obj.id === id ? { ...obj, count: numericValue } : obj
       )
     );
-  };
+  }, []);
 
   const handleNewCount = (value: string) => {
     const numericValue = validateNumeric(value, 1);
@@ -941,14 +1042,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setEmptyRequiredFields(prev => prev.filter(field => field !== fieldId));
     }
   };
-  
-  // Función para abrir el modal con validación manual
+    // Función para abrir el modal con validación manual
   const handleOpenModal = () => {
     console.log("Ejecutando handleOpenModal");
     
     // Validar campos requeridos manualmente
     const fieldsRequired: string[] = [];
     
+    // Validate required character properties
     if (!character?.pus_raza?.trim()) {
       console.log("Falta la raza");
       fieldsRequired.push('characterRace');
@@ -962,6 +1063,20 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       fieldsRequired.push('characterClass');
     }
     
+    // Validate form fields
+    const formValues = getValues();
+    if (!formValues.name?.trim()) {
+      console.log("Falta el nombre del personaje");
+      fieldsRequired.push('name');
+    }
+      // Validate stats - use our getStatTotal helper
+    const totalStatsSum = getStatTotal('total');
+    
+    if (totalStatsSum <= 0) {
+      console.log("No hay estadísticas definidas");
+      fieldsRequired.push('stats');
+    }
+    
     setEmptyRequiredFields(fieldsRequired);
     
     if (fieldsRequired.length > 0) {
@@ -969,19 +1084,25 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return;
     }
     
+    // Ensure character exists
+    if (!character) {
+      console.error("Character data is missing");
+      return;
+    }
+    
     console.log("Campos requeridos completos, preparando datos para el modal...");
 
     const newCharacter: DataCharacter = {
-      id: character!.pus_id,
-      player: character!.pus_usuario,
-      name: character!.pus_nombre,
-      class: character!.pus_clase,
-      race: character!.pus_raza,
-      job: character!.pus_trabajo,
-      level: character!.pus_nivel,
-      luckyPoints: character!.pus_puntos_suerte,
-      description: character!.pus_descripcion,
-      knowledge: character!.pus_conocimientos.split(","),
+      id: character.pus_id || '',
+      player: character.pus_usuario || '',
+      name: character.pus_nombre || '',
+      class: character.pus_clase || '',
+      race: character.pus_raza || '',
+      job: character.pus_trabajo || '',
+      level: character.pus_nivel || 1,
+      luckyPoints: character.pus_puntos_suerte || 0,
+      description: character.pus_descripcion || '',
+      knowledge: character.pus_conocimientos ? character.pus_conocimientos.split(",").filter(Boolean) : [],
       str: [
         {
           dice: inputsStatsData[0].valueDice,
@@ -1023,15 +1144,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           class: inputsStatsData[5].valueClass,
           level: inputsStatsData[5].valueLevel,
         },
-      ],
-      mainWeapon: character!.pus_arma_principal,
-      secondaryWeapon: character!.pus_arma_secundaria,
-      alignment: character!.pus_alineacion,
-      mainSkill: selectedSkillValue,
-      extraSkill: selectedExtraSkillValue,
-      skills: skillsAcquired,
-      coinsInv: coins,
-      inv: invObjects,
+      ],      mainWeapon: character.pus_arma_principal || '',
+      secondaryWeapon: character.pus_arma_secundaria || '',
+      alignment: character.pus_alineacion || '',
+      mainSkill: selectedSkillValue || '',
+      extraSkill: selectedExtraSkillValue || '',
+      skills: skillsAcquired || [],
+      coinsInv: coins || [0, 0, 0],
+      inv: invObjects || [],
     };
     console.log("Datos del personaje preparados para el modal:", newCharacter);
     setDataCharacter(newCharacter);
@@ -1039,27 +1159,27 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     onOpen();
     console.log("Modal abierto, isOpen=", isOpen);
   };
-
-  const randomRoll = () => {
-    if (character!.pus_nivel > 1) return;
+  /**
+   * Generates random dice values for character stats
+   * Only allows randomization for level 1 characters
+   */
+  const randomRoll = useCallback(() => {
+    // Prevent stat changes for characters above level 1
+    if (character?.pus_nivel > 1) {
+      alert("Solo puedes generar estadísticas aleatorias para personajes de nivel 1");
+      return;
+    }
 
     const updatedInputsStatsData = [...inputsStatsData];
-    let randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[0].valueDice = randomNumber;
-    randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[1].valueDice = randomNumber;
-    randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[2].valueDice = randomNumber;
-    randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[3].valueDice = randomNumber;
-    randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[4].valueDice = randomNumber;
-    randomNumber = Math.floor(Math.random() * 4) + 1;
-    updatedInputsStatsData[5].valueDice = randomNumber;
+    
+    // Generate random dice values for all stats (1-4)
+    for (let i = 0; i < 6; i++) {
+      const randomNumber = Math.floor(Math.random() * 4) + 1;
+      updatedInputsStatsData[i].valueDice = randomNumber;
+    }
 
     setInputsStatsData(updatedInputsStatsData);
-    return;
-  };
+  }, [character?.pus_nivel, inputsStatsData]);
 
   const getClassName = (id: string | undefined): string | undefined => {
     return optionsCharacterClass.find((elem) => elem.value === id)?.name;
@@ -1108,22 +1228,47 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       .find((skill) => skill.id === stat)
       ?.skills.find((ele) => ele.value === id)?.name;
   };
-
   async function saveData() {
-    const ID_CHARACTER: string =
-      (await Promise.resolve(uploadInfoCharacter(newRecord))) || "";
+    try {
+      // Show saving indicator
+      setLoading(true);
+      
+      // Upload character information first
+      const ID_CHARACTER: string = await withErrorHandling(
+        () => uploadInfoCharacter(newRecord),
+        "character upload"
+      ) || "";
+      
+      if (!ID_CHARACTER) {
+        throw new Error("No se pudo guardar la información básica del personaje");
+      }
 
-    Promise.all([
-      uploadStats(newRecord, ID_CHARACTER),
-      uploadSkill(ID_CHARACTER),
-      uploadInventory(ID_CHARACTER),
-    ]).finally(() => {
+      // Upload remaining data in parallel
+      await Promise.all([
+        withErrorHandling(
+          () => uploadStats(newRecord, ID_CHARACTER),
+          "stats upload"
+        ),
+        withErrorHandling(
+          () => uploadSkill(ID_CHARACTER), 
+          "skills upload"
+        ),
+        withErrorHandling(
+          () => uploadInventory(ID_CHARACTER),
+          "inventory upload"
+        ),
+      ]);
+      
+      // Update state and navigate
       setNewRecord(false);
-    });
-
-    document.documentElement.scrollTop = 0;
-    onOpenChange();
-    reloadPage(ID_CHARACTER);
+      document.documentElement.scrollTop = 0;
+      onOpenChange();
+      reloadPage(ID_CHARACTER);
+    } catch (error) {
+      handleAsyncError(error, "saving character data");
+    } finally {
+      setLoading(false);
+    }
   }
 
   const reloadPage = (characterId: string) => {
@@ -1247,36 +1392,64 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         raceValue: character?.pus_raza,
         jobValue: character?.pus_trabajo
       }
-    });
+    });      // Use our validateCharacterForm function to check for errors
+    let fieldsRequired: string[] = validateCharacterForm();
     
-    const fieldsRequired: string[] = [];
-    
-    if (!character?.pus_raza?.trim()) fieldsRequired.push('characterRace');
-    if (!character?.pus_trabajo?.trim()) fieldsRequired.push('characterJob');
-    if (!character?.pus_clase?.trim()) fieldsRequired.push('characterClass');
+    // Add additional form-specific validations
     if (!data.name?.trim()) fieldsRequired.push('name');
+    
+    // Validate numerical fields
+    if (data.level < 1 || data.level > 10) fieldsRequired.push('level');
+    if (data.luckyPoints < 0) fieldsRequired.push('luckyPoints');
+    if (data.lifePoints < 0) fieldsRequired.push('lifePoints');
+    
+    // Validate weapon fields
+    if (!data.mainWeapon?.trim()) fieldsRequired.push('mainWeapon');
     
     setEmptyRequiredFields(fieldsRequired);
     
     // Si hay campos vacíos, no enviar el formulario
     if (fieldsRequired.length > 0) {
       console.log("Required fields missing:", fieldsRequired);
-      alert("Por favor, complete todos los campos obligatorios: " + fieldsRequired.join(", "));
+      
+      // Group error messages by category
+      const basicInfoErrors = ['name', 'characterRace', 'characterClass', 'characterJob'];
+      const statsErrors = ['stats', 'level', 'luckyPoints', 'lifePoints'];
+      const weaponsErrors = ['mainWeapon', 'secondaryWeapon'];
+      
+      let errorMessage = "Por favor, complete todos los campos obligatorios:\n";
+      
+      const basicMissing = fieldsRequired.filter(field => basicInfoErrors.includes(field));
+      const statsMissing = fieldsRequired.filter(field => statsErrors.includes(field));
+      const weaponsMissing = fieldsRequired.filter(field => weaponsErrors.includes(field));
+      
+      if (basicMissing.length > 0) errorMessage += "\n- Información básica: " + basicMissing.join(", ");
+      if (statsMissing.length > 0) errorMessage += "\n- Estadísticas: " + statsMissing.join(", ");
+      if (weaponsMissing.length > 0) errorMessage += "\n- Armamento: " + weaponsMissing.join(", ");
+      
+      alert(errorMessage);
       return;
     }
+    
+    // Ensure character exists before proceeding
+    if (!character) {
+      console.error("Character data is missing");
+      return;
+    }
+    
     const newCharacter: DataCharacter = {
-      id: character!.pus_id,
-      player: character!.pus_usuario,
+      id: character.pus_id || '',
+      player: character.pus_usuario || '',
       name: data.name,
-      class: character!.pus_clase,
-      race: character!.pus_raza,
-      job: character!.pus_trabajo,
+      class: character.pus_clase || '',
+      race: character.pus_raza || '',
+      job: character.pus_trabajo || '',
       level: data.level,
-      luckyPoints: character!.pus_puntos_suerte,
-      description: data.characterDescription,
-      knowledge: character!.pus_conocimientos ? character!.pus_conocimientos.split(',').filter(Boolean) : [],
-      mainWeapon: data.mainWeapon,
-      secondaryWeapon: data.secondaryWeapon,
+      luckyPoints: character.pus_puntos_suerte || 0,
+      description: data.characterDescription || '',
+      knowledge: character.pus_conocimientos ? character.pus_conocimientos.split(',').filter(Boolean) : [],
+      mainWeapon: data.mainWeapon || '',
+      secondaryWeapon: data.secondaryWeapon || '',
       str: [
         {
           dice: inputsStatsData[0].valueDice,
@@ -1321,7 +1494,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       ],
       mainSkill: selectedSkillValue,
       extraSkill: selectedExtraSkillValue,
-      alignment: character!.pus_alineacion,
+      alignment: character.pus_alineacion || '',
       skills: skillsAcquired,
       coinsInv: coins,
       inv: invObjects,
@@ -1333,6 +1506,95 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     onOpen();
     console.log("onSubmitForm: Modal debería estar abierto ahora, isOpen=", isOpen);
   };
+
+  /**
+   * Validates an inventory object and ensures it has all required fields
+   * @param object The inventory object to validate
+   * @returns A valid inventory object with defaults for missing fields
+   */
+  const validateInventoryObject = (object: Partial<InventoryObject>): InventoryObject => {
+    return {
+      id: object.id || uuidv4(),
+      name: object.name || '',
+      description: object.description || 'Sin descripción',
+      count: object.count !== undefined ? object.count : 1,
+      readOnly: object.readOnly || false
+    };
+  };
+
+  /**
+   * Validates the character form data and returns an array of field IDs with errors
+   * @returns Array of field IDs that failed validation
+   */  const validateCharacterForm = (): string[] => {
+    let fieldsRequired: string[] = [];
+    
+    // Use our character validation utility
+    if (character) {
+      const characterErrors = validateCharacter(character);
+      // Map database field names to form field names
+      characterErrors.forEach(field => {
+        if (field === 'pus_nombre') fieldsRequired.push('name');
+        else if (field === 'pus_raza') fieldsRequired.push('characterRace');
+        else if (field === 'pus_clase') fieldsRequired.push('characterClass');
+        else if (field === 'pus_trabajo') fieldsRequired.push('characterJob');
+      });
+    } else {
+      fieldsRequired.push('character');
+    }
+    
+    // Form values validation
+    const formValues = getValues();
+    if (!formValues.name?.trim()) {
+      if (!fieldsRequired.includes('name')) fieldsRequired.push('name');
+    }
+    
+    // Validate numeric values using our safe conversion helper
+    if (safeNumberConversion(formValues.level, 0) <= 0) {
+      fieldsRequired.push('level');
+    }
+    
+    // Stats validation using our stats validation helper
+    if (!validateCharacterStats(inputsStatsData)) {
+      fieldsRequired.push('stats');
+    }
+    
+    // Additional check for total stats
+    const totalStats = inputsStatsData.reduce((sum, stat) => 
+      sum + stat.valueDice + stat.valueClass + stat.valueLevel, 0);
+    
+    if (totalStats <= 0) {
+      if (!fieldsRequired.includes('stats')) fieldsRequired.push('stats');
+    }
+    
+    return fieldsRequired;
+  };
+
+  /**
+   * Generic async function error handler with proper logging and error messaging
+   */
+  const handleAsyncError = useCallback((error: unknown, operation: string) => {
+    console.error(`Error during ${operation}:`, error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    alert(`Error during ${operation}: ${errorMessage}. Please try again later.`);
+    return null;
+  }, []);
+
+  /**
+   * Wraps an async function with error handling and loading state management
+   */
+  const withErrorHandling = useCallback(<T,>(
+    asyncFn: () => Promise<T>,
+    operation: string,
+    setLoadingState?: (loading: boolean) => void
+  ): Promise<T | null> => {
+    if (setLoadingState) setLoadingState(true);
+    
+    return asyncFn()
+      .catch(error => handleAsyncError(error, operation))
+      .finally(() => {
+        if (setLoadingState) setLoadingState(false);
+      });
+  }, [handleAsyncError]);
 
   return (
     <>
@@ -1346,9 +1608,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       >
         {/* Titulo */}
         <fieldset className="fieldset-form form-title col-span-2 md:col-span-2 lg:col-span-3 shadow-lg rounded">
-          {!newRecord && character?.sju_sistema_juego?.sju_nombre ? (
+          {!newRecord && character?.sju_sistema_juego ? (
             <h1 className="col-span-2 text-center font-bold">
-              {character.sju_sistema_juego.sju_nombre}
+              {getGameSystemProperty(character.sju_sistema_juego, 'sju_nombre', 'Sistema de Juego')}
             </h1>
           ) : (
             <FormSelectInfoPlayer
@@ -1384,7 +1646,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             className="form-lbl col-start-1 bg-grey-lighter "
           >
             Personaje
-          </label>          <input
+          </label>
+          <input
             {...register("name", { 
               required: true, 
               maxLength: 50,
@@ -1394,21 +1657,24 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             className={`form-input col-start-2 mr-2 focus:border-black focus:shadow ${
               emptyRequiredFields.includes('name') ? 'required-input' : ''
             }`}
-          /><FormSelectInfoPlayer
+          />
+          <FormSelectInfoPlayer
             id="characterClass"
             label="Clase"
             options={optionsCharacterClass}
             selectedValue={character?.pus_clase || ""}
             onSelectChange={handleCharacterClassChange}
             className={emptyRequiredFields.includes('characterClass') ? 'required-input' : ''}
-          />          <FormSelectInfoPlayer
+          />
+          <FormSelectInfoPlayer
             id="characterRace"
             label="Raza"
             options={optionsCharacterRace}
             selectedValue={character?.pus_raza || ""}
             onSelectChange={handleSelectRaceChange}
             className={emptyRequiredFields.includes('characterRace') ? 'required-input' : ''}
-          ></FormSelectInfoPlayer>          <FormSelectInfoPlayer
+          ></FormSelectInfoPlayer>
+          <FormSelectInfoPlayer
             id="characterJob"
             label="Trabajo"
             options={optionsCharacterJob}
@@ -1481,7 +1747,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             className="form-lbl-y col-start-1 md:col-start-1 col-span-5 row-start-14 md:row-start-6 bg-grey-lighter "
           >
             Descripción
-          </label>          <textarea
+          </label>
+          <textarea
             {...register("characterDescription", { 
               required: true, 
               maxLength: 500,

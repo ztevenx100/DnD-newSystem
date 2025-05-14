@@ -69,6 +69,15 @@ import {
 // Utility Functions
 import { validateNumeric } from "@shared/utils/helpers/utilConversions";
 import { normalizeUser } from "@shared/utils/helpers/userHelpers";
+import { mapSkillFields } from "./fixSkills";
+import { 
+  getCharacterProperty, 
+  setCharacterProperty, 
+  getGameSystemProperty,
+  validateCharacter,
+  validateCharacterStats,
+  safeNumberConversion
+} from "@shared/utils/helpers/characterHelpers";
 
 // Assets and Icons
 import mainBackground from "@img/webp/bg-home-02.webp";
@@ -133,20 +142,20 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     return initialCharacter
       ? {
           userName: userName,
-          name: initialCharacter.pus_nombre,
-          class: initialCharacter.pus_clase,
-          level: initialCharacter.pus_nivel,
-          luckyPoints: initialCharacter.pus_puntos_suerte,
-          lifePoints: initialCharacter.pus_vida,
-          mainWeapon: initialCharacter.pus_arma_principal,
-          secondaryWeapon: initialCharacter.pus_arma_secundaria,
-          goldCoins: initialCharacter.pus_cantidad_oro,
-          silverCoins: initialCharacter.pus_cantidad_plata,
-          bronzeCoins: initialCharacter.pus_cantidad_bronce,
-          characterDescription: initialCharacter.pus_descripcion,
-          race: initialCharacter.pus_raza,
-          job: initialCharacter.pus_trabajo,
-          alignment: initialCharacter.pus_alineacion,
+          name: getCharacterProperty(initialCharacter, 'pus_nombre', ''),
+          class: getCharacterProperty(initialCharacter, 'pus_clase', ''),
+          level: getCharacterProperty(initialCharacter, 'pus_nivel', 1),
+          luckyPoints: getCharacterProperty(initialCharacter, 'pus_puntos_suerte', 0),
+          lifePoints: getCharacterProperty(initialCharacter, 'pus_vida', 0),
+          mainWeapon: getCharacterProperty(initialCharacter, 'pus_arma_principal', ''),
+          secondaryWeapon: getCharacterProperty(initialCharacter, 'pus_arma_secundaria', ''),
+          goldCoins: getCharacterProperty(initialCharacter, 'pus_cantidad_oro', 0),
+          silverCoins: getCharacterProperty(initialCharacter, 'pus_cantidad_plata', 0),
+          bronzeCoins: getCharacterProperty(initialCharacter, 'pus_cantidad_bronce', 0),
+          characterDescription: getCharacterProperty(initialCharacter, 'pus_descripcion', ''),
+          race: getCharacterProperty(initialCharacter, 'pus_raza', ''),
+          job: getCharacterProperty(initialCharacter, 'pus_trabajo', ''),
+          alignment: getCharacterProperty(initialCharacter, 'pus_alineacion', ''),
         }
       : {
           userName: userName,
@@ -394,17 +403,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         characterSkills = await getCharacterSkills(params.id);
         console.log("Habilidades cargadas:", characterSkills);
       }
-
       (data as DBHabilidad[]).forEach((rawElem: DBHabilidad) => {
-        // Map DB fields to expected property names
-        const elem = {
-          id: rawElem.hab_id || rawElem.id || '',
-          nombre: rawElem.hab_nombre || rawElem.nombre || '',
-          sigla: rawElem.hab_siglas || rawElem.sigla || '',
-          tipo: rawElem.hab_tipo || rawElem.tipo || '',
-          estadistica_base: rawElem.had_estadistica_base || rawElem.estadistica_base || '',
-          descripcion: rawElem.hab_descripcion || rawElem.descripcion || ''
-        };
+        // Usar nuestro helper para mapear campos de manera segura
+        const elem = mapSkillFields(rawElem);
 
         if (elem.tipo === "C") {
           const existingSkill = characterSkills.find(skill => 
@@ -530,13 +531,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       // Process character data
       try {
         const characterData = { ...data[0], pus_usuario: userId };
-        
-        // Validate key fields using type-safe property access
+          // Validate key fields using type-safe property access
         const missingFields: string[] = [];
-        if (!characterData.pus_nombre) missingFields.push('pus_nombre');
-        if (!characterData.pus_clase) missingFields.push('pus_clase');
-        if (!characterData.pus_raza) missingFields.push('pus_raza');
-        if (!characterData.pus_trabajo) missingFields.push('pus_trabajo');
+        if (!getCharacterProperty(characterData, 'pus_nombre')) missingFields.push('pus_nombre');
+        if (!getCharacterProperty(characterData, 'pus_clase')) missingFields.push('pus_clase');
+        if (!getCharacterProperty(characterData, 'pus_raza')) missingFields.push('pus_raza');
+        if (!getCharacterProperty(characterData, 'pus_trabajo')) missingFields.push('pus_trabajo');
         
         if (missingFields.length > 0) {
           console.warn("Missing character fields:", missingFields);
@@ -544,22 +544,22 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         
         // Set character data in state
         setCharacter(characterData as DBPersonajesUsuario);
-        
         // Handle game system data
         if (characterData.sju_sistema_juego) {
           const gameSystem = characterData.sju_sistema_juego;
           
-          if (!gameSystem.sju_id || !gameSystem.sju_nombre) {
+          if (!getGameSystemProperty(gameSystem, 'sju_id') || 
+              !getGameSystemProperty(gameSystem, 'sju_nombre')) {
             console.warn("Game system data is incomplete:", gameSystem);
           }
           
           setSystemGame({
-            sju_id: gameSystem.sju_id || '',
-            sju_nombre: gameSystem.sju_nombre || 'Sistema Desconocido',
-            sju_descripcion: ""
+            sju_id: getGameSystemProperty(gameSystem, 'sju_id', ''),
+            sju_nombre: getGameSystemProperty(gameSystem, 'sju_nombre', 'Sistema Desconocido'),
+            sju_descripcion: getGameSystemProperty(gameSystem, 'sju_descripcion', '')
           });
         } else {
-          console.warn("No game system found for character:", characterData.pus_id);
+          console.warn("No game system found for character:", getCharacterProperty(characterData, 'pus_id'));
           // Set default game system if none found
           setSystemGame({
             sju_id: '',
@@ -780,10 +780,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     
     setCharacter((prevState) => {
       if (!prevState) return prevState;
-      const updated = { 
-        ...prevState,
-        pus_raza: value 
-      };
+      // Use the type-safe helper to update race property
+      const updated = setCharacterProperty(prevState, 'pus_raza', value);
       console.log("Updated character state with race:", updated);
       return updated;
     });
@@ -803,10 +801,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     });
       setCharacter((prevState) => {
       if (!prevState) return prevState;
-      return {
-        ...prevState,
-        pus_sistema_juego: currentSystem,
-      };
+      // Use the type-safe helper to update system game property
+      return setCharacterProperty(prevState, 'pus_sistema_juego', currentSystem);
     });
   };
   const handleSelectSkillChange = (currentSkill: string) => {
@@ -904,14 +900,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       case 'RES': knowledgeValue = "ACO"; break;
       case 'ACT': knowledgeValue = "ART"; break;
     }
-    
-    setCharacter((prevState) => {
+      setCharacter((prevState) => {
       if (!prevState) return prevState;
-      const updated = { 
-        ...prevState, 
-        pus_clase: value,
-        pus_conocimientos: knowledgeValue
-      };
+      // Usar nuestra función de utilidad para actualizar propiedades de manera segura
+      let updated = setCharacterProperty(prevState, 'pus_clase', value);
+      updated = setCharacterProperty(updated, 'pus_conocimientos', knowledgeValue);
       console.log("Updated character state with class:", updated);
       return updated;
     });
@@ -922,16 +915,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     setSelectedSkillValue(skillValue);
     handleSelectSkillChange(skillValue);
   };
-  
-  const handleCharacterJobSelectChange = (value: string) => {
+    const handleCharacterJobSelectChange = (value: string) => {
     clearValidationError('characterJob');
     console.log("Selecting job:", value);
       setCharacter((prevState) => {
       if (!prevState) return prevState;
-      const updated = { 
-        ...prevState,
-        pus_trabajo: value 
-      };
+      // Use the type-safe helper to update job property
+      const updated = setCharacterProperty(prevState, 'pus_trabajo', value);
       console.log("Updated character state with job:", updated);
       return updated;
     });
@@ -958,14 +948,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
     if (path) setCharacterImage(value);
   };
-
   const handleSelectedCheckValuesChange = (newValues: string[]) => {
-    console.log("Conocimientos seleccionados:", newValues);    setCharacter((prevState) => {
+    console.log("Conocimientos seleccionados:", newValues);
+    setCharacter((prevState) => {
       if (!prevState) return prevState;
-      const updated = {
-        ...prevState,
-        pus_conocimientos: newValues.join(","),
-      };
+      // Use the type-safe helper to update knowledge property
+      const updated = setCharacterProperty(prevState, 'pus_conocimientos', newValues.join(","));
       console.log("Estado actualizado con conocimientos:", updated);
       return updated;
     });
@@ -977,14 +965,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       )
     );
   };
+
   const [formAlignment, setFormAlignment] = useState<string>("");
     const handleAlignmentChange = (value: string) => {
     setCharacter((prevState) => {
       if (!prevState) return prevState;
-      return { 
-        ...prevState,
-        pus_alineacion: value 
-      };
+      // Use the type-safe helper to modify the property
+      return setCharacterProperty(prevState, 'pus_alineacion', value);
     });
     setFormAlignment(value);
   };
@@ -1538,32 +1525,45 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   /**
    * Validates the character form data and returns an array of field IDs with errors
    * @returns Array of field IDs that failed validation
-   */
-  const validateCharacterForm = (): string[] => {
-    const fieldsRequired: string[] = [];
+   */  const validateCharacterForm = (): string[] => {
+    let fieldsRequired: string[] = [];
     
-    // Basic required fields
-    if (!character?.pus_raza?.trim()) {
-      fieldsRequired.push('characterRace');
-    }
-    if (!character?.pus_trabajo?.trim()) {
-      fieldsRequired.push('characterJob');
-    }
-    if (!character?.pus_clase?.trim()) {
-      fieldsRequired.push('characterClass');
+    // Use our character validation utility
+    if (character) {
+      const characterErrors = validateCharacter(character);
+      // Map database field names to form field names
+      characterErrors.forEach(field => {
+        if (field === 'pus_nombre') fieldsRequired.push('name');
+        else if (field === 'pus_raza') fieldsRequired.push('characterRace');
+        else if (field === 'pus_clase') fieldsRequired.push('characterClass');
+        else if (field === 'pus_trabajo') fieldsRequired.push('characterJob');
+      });
+    } else {
+      fieldsRequired.push('character');
     }
     
+    // Form values validation
     const formValues = getValues();
     if (!formValues.name?.trim()) {
-      fieldsRequired.push('name');
+      if (!fieldsRequired.includes('name')) fieldsRequired.push('name');
     }
     
-    // Stats validation
+    // Validate numeric values using our safe conversion helper
+    if (safeNumberConversion(formValues.level, 0) <= 0) {
+      fieldsRequired.push('level');
+    }
+    
+    // Stats validation using our stats validation helper
+    if (!validateCharacterStats(inputsStatsData)) {
+      fieldsRequired.push('stats');
+    }
+    
+    // Additional check for total stats
     const totalStats = inputsStatsData.reduce((sum, stat) => 
       sum + stat.valueDice + stat.valueClass + stat.valueLevel, 0);
     
     if (totalStats <= 0) {
-      fieldsRequired.push('stats');
+      if (!fieldsRequired.includes('stats')) fieldsRequired.push('stats');
     }
     
     return fieldsRequired;
@@ -1608,9 +1608,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       >
         {/* Titulo */}
         <fieldset className="fieldset-form form-title col-span-2 md:col-span-2 lg:col-span-3 shadow-lg rounded">
-          {!newRecord && character?.sju_sistema_juego?.sju_nombre ? (
+          {!newRecord && character?.sju_sistema_juego ? (
             <h1 className="col-span-2 text-center font-bold">
-              {character.sju_sistema_juego.sju_nombre}
+              {getGameSystemProperty(character.sju_sistema_juego, 'sju_nombre', 'Sistema de Juego')}
             </h1>
           ) : (
             <FormSelectInfoPlayer

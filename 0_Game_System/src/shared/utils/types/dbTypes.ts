@@ -27,6 +27,9 @@ export interface DBPersonajesUsuario {
         email: string;
     };
     url_character_image?: string;
+    
+    // Permite acceder a las propiedades con índices de string
+    [key: string]: string | number | boolean | object | undefined;
 }
 
 export interface DBEstadisticaPersonaje {
@@ -74,6 +77,18 @@ export interface DBHabilidad {
     hab_vlr_min?: number;
     hab_vlr_solventar?: number;
     hab_turnos?: number;
+    
+    // Campos adicionales de compatibilidad
+    id?: string;
+    nombre?: string;
+    descripcion?: string;
+    tipo?: string;
+    sigla?: string;
+    estadistica_base?: string;
+    nivel?: number;
+    
+    // Permite acceder a las propiedades con índices de string
+    [key: string]: string | number | boolean | undefined;
 }
 
 // Tipos para mundo
@@ -164,7 +179,11 @@ export interface DBMision {
 export interface DBSistemaJuego {
     sju_id: string;
     sju_nombre: string;
-    sju_descripcion: string;
+    sju_descripcion?: string;
+    sju_estado?: string;
+    
+    // Allow string indexing for type safety
+    [key: string]: string | undefined;
 }
 
 export const initialPersonajesUsuario: DBPersonajesUsuario = {

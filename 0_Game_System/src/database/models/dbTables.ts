@@ -15,7 +15,9 @@ import {
     DBPersonajesUsuario, 
     DBHabilidad, 
     DBEstadisticaPersonaje, 
-    DBInventarioPersonaje 
+    DBInventarioPersonaje, 
+    DBUbicacion,
+    DBSonido
 } from '@utils/types';
 
 const TABLE_ENE:string = 'ene_enemigo';
@@ -51,7 +53,7 @@ interface OrderByClause {
  * @returns {DBEnemigo[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryEne = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBEnemigo[]>  => {
-    return getDataQuery<DBEnemigo>(TABLE_ENE, fields, where, orderBy);
+    return getDataQuery(TABLE_ENE, fields, where, orderBy) as Promise<DBEnemigo[]>;
 }
 
 /**
@@ -60,10 +62,10 @@ export const getDataQueryEne = async (fields: string, where?: WhereClause, order
  * @param {string} fields - campos de la base de datos.
  * @param {WhereClause} [where] - where de la base de datos (opcional).
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @returns {DBEstadisticaPersonaje[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryEpe = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBEstadisticaPersonaje[]>  => {
-    return getDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, fields, where, orderBy);
+    return getDataQuery(TABLE_EPE, fields, where, orderBy) as Promise<DBEstadisticaPersonaje[]>;
 }
 
 /**
@@ -75,7 +77,7 @@ export const getDataQueryEpe = async (fields: string, where?: WhereClause, order
  * @returns {DBEscenario[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryEsc = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBEscenario[]>  => {
-    return getDataQuery<DBEscenario>(TABLE_ESC, fields, where, orderBy);
+    return getDataQuery(TABLE_ESC, fields, where, orderBy) as Promise<DBEscenario[]>;
 }
 
 /**
@@ -84,10 +86,10 @@ export const getDataQueryEsc = async (fields: string, where?: WhereClause, order
  * @param {string} fields - campos de la base de datos.
  * @param {WhereClause} [where] - where de la base de datos (opcional).
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @returns {DBHabilidad[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryHab = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBHabilidad[]>  => {
-    return getDataQuery<DBHabilidad>(TABLE_HAD, fields, where, orderBy);
+    return getDataQuery(TABLE_HAD, fields, where, orderBy) as Promise<DBHabilidad[]>;
 }
 
 /**
@@ -96,10 +98,10 @@ export const getDataQueryHab = async (fields: string, where?: WhereClause, order
  * @param {string} fields - campos de la base de datos.
  * @param {WhereClause} [where] - where de la base de datos (opcional).
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @returns {DBHabilidadPersonaje[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryHpe = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBHabilidadPersonaje[]>  => {
-    return getDataQuery<DBHabilidadPersonaje>(TABLE_HPE, fields, where, orderBy);
+    return getDataQuery(TABLE_HPE, fields, where, orderBy) as Promise<DBHabilidadPersonaje[]>;
 }
 
 /**
@@ -108,10 +110,10 @@ export const getDataQueryHpe = async (fields: string, where?: WhereClause, order
  * @param {string} fields - campos de la base de datos.
  * @param {WhereClause} [where] - where de la base de datos (opcional).
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @returns {DBInventarioPersonaje[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryInp = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBInventarioPersonaje[]>  => {
-    return getDataQuery<DBInventarioPersonaje>(TABLE_INP, fields, where, orderBy);
+    return getDataQuery(TABLE_INP, fields, where, orderBy) as Promise<DBInventarioPersonaje[]>;
 }
 
 /**
@@ -123,7 +125,7 @@ export const getDataQueryInp = async (fields: string, where?: WhereClause, order
  * @returns {DBMision[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryMis = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBMision[]>  => {
-    return getDataQuery<DBMision>(TABLE_MIS, fields, where, orderBy);
+    return getDataQuery(TABLE_MIS, fields, where, orderBy) as Promise<DBMision[]>;
 }
 
 /**
@@ -135,7 +137,7 @@ export const getDataQueryMis = async (fields: string, where?: WhereClause, order
  * @returns {DBMapamundi[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryMmu = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBMapamundi[]>  => {
-    return getDataQuery<DBMapamundi>(TABLE_MMU, fields, where, orderBy);
+    return getDataQuery(TABLE_MMU, fields, where, orderBy) as Promise<DBMapamundi[]>;
 }
 
 /**
@@ -147,7 +149,7 @@ export const getDataQueryMmu = async (fields: string, where?: WhereClause, order
  * @returns {DBPersonajeNoJugable[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryPnj = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBPersonajeNoJugable[]>  => {
-    return getDataQuery<DBPersonajeNoJugable>(TABLE_PNJ, fields, where, orderBy);
+    return getDataQuery(TABLE_PNJ, fields, where, orderBy) as Promise<DBPersonajeNoJugable[]>;
 }
 
 /**
@@ -156,10 +158,10 @@ export const getDataQueryPnj = async (fields: string, where?: WhereClause, order
  * @param {string} fields - campos de la base de datos.
  * @param {WhereClause} [where] - where de la base de datos (opcional).
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @returns {DBPersonajesUsuario[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryPus = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBPersonajesUsuario[]>  => {
-    return getDataQuery<DBPersonajesUsuario>(TABLE_PUS, fields, where, orderBy);
+    return getDataQuery(TABLE_PUS, fields, where, orderBy) as Promise<DBPersonajesUsuario[]>;
 }
 
 /**
@@ -171,7 +173,7 @@ export const getDataQueryPus = async (fields: string, where?: WhereClause, order
  * @returns {DBSistemaJuego[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQuerySju = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBSistemaJuego[]>  => {
-    return getDataQuery<DBSistemaJuego>(TABLE_SJU, fields, where, orderBy);
+    return getDataQuery(TABLE_SJU, fields, where, orderBy) as Promise<DBSistemaJuego[]>;
 }
 
 /**
@@ -180,10 +182,10 @@ export const getDataQuerySju = async (fields: string, where?: WhereClause, order
  * @param {string} fields - campos de la base de datos.
  * @param {WhereClause} [where] - where de la base de datos (opcional).
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @returns {DBSonido[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQuerySon = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery(TABLE_SON, fields, where, orderBy);
+    return getDataQuery(TABLE_SON, fields, where, orderBy)as Promise<DBSonido[]>;
 }
 
 /**
@@ -195,7 +197,7 @@ export const getDataQuerySon = async (fields: string, where?: WhereClause, order
  * @returns {DBSonidoUbicacion[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQuerySub = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBSonidoUbicacion[]>  => {
-    return getDataQuery<DBSonidoUbicacion>(TABLE_SUB, fields, where, orderBy);
+    return getDataQuery(TABLE_SUB, fields, where, orderBy) as Promise<DBSonidoUbicacion[]>;
 }
 
 /**
@@ -204,10 +206,10 @@ export const getDataQuerySub = async (fields: string, where?: WhereClause, order
  * @param {string} fields - campos de la base de datos.
  * @param {WhereClause} [where] - where de la base de datos (opcional).
  * @param {OrderByClause} [orderBy] - orderBy de la base de datos (opcional).
- * @returns {any} datos obtenidos de la consulta a base de datos.
+ * @returns {DBUbicacion[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryUbi = async (fields: string, where?: WhereClause, orderBy?: OrderByClause) => {
-    return getDataQuery(TABLE_UBI, fields, where, orderBy);
+    return getDataQuery(TABLE_UBI, fields, where, orderBy) as Promise<DBUbicacion[]>;
 }
 
 /**
@@ -219,7 +221,7 @@ export const getDataQueryUbi = async (fields: string, where?: WhereClause, order
  * @returns {DBUsuario[]} datos obtenidos de la consulta a base de datos.
  */
 export const getDataQueryUsu = async (fields: string, where?: WhereClause, orderBy?: OrderByClause): Promise<DBUsuario[]>  => {
-    return getDataQuery<DBUsuario>(TABLE_USU, fields, where, orderBy);
+    return getDataQuery(TABLE_USU, fields, where, orderBy) as Promise<DBUsuario[]>;
 }
 
 /**
@@ -266,7 +268,7 @@ export const getDataQuery = async<T> (table: string, fields: string, where?: Whe
             }
         }
         
-        const { data, error } = await query.returns<T[]>();
+        const { data, error } = await query.returns();
 
         if (error) {
             console.error(`Database error when querying ${table}:`, error);
@@ -341,7 +343,7 @@ export const deleteDataQuery = async (table: string, where?: WhereClause):Promis
  * @returns {Promise<DBEstadisticaPersonaje>} datos obtenidos de la adicion a base de datos.
  */
 export const insertDataEpe = async ( data: DBEstadisticaPersonaje | DBEstadisticaPersonaje[] ): Promise<DBEstadisticaPersonaje[]> => {
-    return insertDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, data);
+    return insertDataQuery(TABLE_EPE, data) as Promise<DBEstadisticaPersonaje[]>;
 }
 
 /**
@@ -351,7 +353,7 @@ export const insertDataEpe = async ( data: DBEstadisticaPersonaje | DBEstadistic
  * @returns {Promise<DBHabilidadPersonaje>} datos obtenidos de la adicion a base de datos.
  */
 export const insertDataHpe = async ( data: DBHabilidadPersonaje | DBHabilidadPersonaje[] ): Promise<DBHabilidadPersonaje[]> => {
-    return insertDataQuery<DBHabilidadPersonaje>(TABLE_HPE, data);
+    return insertDataQuery(TABLE_HPE, data) as Promise<DBHabilidadPersonaje[]>;
 }
 
 /**
@@ -361,9 +363,17 @@ export const insertDataHpe = async ( data: DBHabilidadPersonaje | DBHabilidadPer
  * @returns {Promise<DBPersonajesUsuario>} datos obtenidos de la adicion a base de datos.
  */
 export const insertDataPus = async ( data: DBPersonajesUsuario ): Promise<DBPersonajesUsuario[]> => {
-    // quitar los Join
-    const { sju_sistema_juego, usu_usuario, ...dataWithoutJoin } = data;
-    return insertDataQuery<DBPersonajesUsuario>(TABLE_PUS, dataWithoutJoin);
+    // Remover objetos anidados (joins) que no son columnas reales en la tabla
+    const { sju_sistema_juego, usu_usuario, url_character_image, ...dataWithoutJoin } = data;
+    
+    // Log para depuración
+    console.log('Insertando personaje:', { 
+        dataId: data.pus_id,
+        withJoins: Object.keys(data),
+        withoutJoins: Object.keys(dataWithoutJoin)
+    });
+    
+    return insertDataQuery(TABLE_PUS, dataWithoutJoin) as Promise<DBPersonajesUsuario[]>;
 }
 
 /**
@@ -401,7 +411,7 @@ export const insertDataQuery = async <T>(table: string, data: object | object[])
  * @returns {Promise<DBEstadisticaPersonaje>} datos obtenidos de la actualizacion a base de datos.
  */
 export const updateDataEpe = async ( data: DBEstadisticaPersonaje, where?: WhereClause ): Promise<DBEstadisticaPersonaje[]> => {
-    return await updateDataQuery<DBEstadisticaPersonaje>(TABLE_EPE, data, where);
+    return updateDataQuery(TABLE_EPE, data, where);
 }
 
 /**
@@ -411,7 +421,7 @@ export const updateDataEpe = async ( data: DBEstadisticaPersonaje, where?: Where
  * @returns {Promise<DBHabilidadPersonaje>} datos obtenidos de la actualizacion a base de datos.
  */
 export const updateDataHpe = async ( data: DBHabilidadPersonaje, where?: WhereClause ): Promise<DBHabilidadPersonaje[]> => {
-    return await updateDataQuery<DBHabilidadPersonaje>(TABLE_HPE, data, where);
+    return updateDataQuery(TABLE_HPE, data, where);
 }
 
 /**
@@ -421,9 +431,17 @@ export const updateDataHpe = async ( data: DBHabilidadPersonaje, where?: WhereCl
  * @returns {Promise<DBPersonajesUsuario[]>} datos obtenidos de la actualizacion a base de datos.
  */
 export const updateDataPus = async ( data: DBPersonajesUsuario, where?: WhereClause ): Promise<DBPersonajesUsuario[]> => {
-    // quitar los Join
-    const { sju_sistema_juego, usu_usuario, ...dataWithoutJoin } = data;
-    return await updateDataQuery<DBPersonajesUsuario>(TABLE_PUS, dataWithoutJoin, where);
+    // Remover objetos anidados (joins) que no son columnas reales en la tabla
+    const { sju_sistema_juego, usu_usuario, url_character_image, ...dataWithoutJoin } = data;
+    
+    // Log para depuración
+    console.log('Actualizando personaje:', { 
+        dataId: data.pus_id,
+        withJoins: Object.keys(data),
+        withoutJoins: Object.keys(dataWithoutJoin)
+    });
+    
+    return updateDataQuery(TABLE_PUS, dataWithoutJoin, where);
 }
 
 /**
@@ -436,6 +454,9 @@ export const updateDataPus = async ( data: DBPersonajesUsuario, where?: WhereCla
  */
 export const updateDataQuery = async <T>(table: string, data: object, where?: WhereClause): Promise<T[]> => {
     try {
+        // Log de diagnóstico que muestra qué campos estamos intentando actualizar
+        console.log(`Actualizando tabla ${table} con campos:`, Object.keys(data));
+        
         let query = dbConnection
         .from(table)
         .update(data);
@@ -443,20 +464,30 @@ export const updateDataQuery = async <T>(table: string, data: object, where?: Wh
         if (where) {
             for (const [key, value] of Object.entries(where)) {
                 if (Array.isArray(value) && value.every(item => typeof item === 'string')) {
-                query = query.in(key, value);
+                    query = query.in(key, value);
                 } else if (typeof value === 'string') {
-                query = query.eq(key, value);
+                    query = query.eq(key, value);
                 }
             }
         }
         
         const { data: updatedData, error } = await Promise.resolve( query.select() );
         
-        if (error) throw error;
+        if (error) {
+            // Mensaje de error detallado para problemas de columnas
+            if (error.message.includes("column") && error.message.includes("does not exist")) {
+                console.error(`Error de columna inexistente en tabla ${table}:`, {
+                    error,
+                    data_fields: Object.keys(data)
+                });
+            }
+            throw error;
+        }
         
+        console.log(`Actualización exitosa en tabla ${table}, filas actualizadas:`, updatedData?.length || 0);
         return updatedData as T[];
     } catch (error) {
-        console.error('Error executing update:', error);
+        console.error(`Error executing update on table ${table}:`, error);
         throw error;
     }
 };
@@ -477,10 +508,10 @@ export const upsertDataHpe = async (data: DBHabilidadPersonaje | DBHabilidadPers
                 const { hab_habilidad, ...rest } = item;
                 return rest;
             });
-            return upsertDataQuery<DBHabilidadPersonaje>(TABLE_HPE, dataWithoutJoinArray);
+            return upsertDataQuery(TABLE_HPE, dataWithoutJoinArray) as Promise<DBHabilidadPersonaje[]>;
         } else {
             const { hab_habilidad, ...dataWithoutJoin } = data;
-            return upsertDataQuery<DBHabilidadPersonaje>(TABLE_HPE, dataWithoutJoin);
+            return upsertDataQuery(TABLE_HPE, dataWithoutJoin) as Promise<DBHabilidadPersonaje[]>;
         }
     } catch (error) {
         console.error('Error en upsertDataHpe:', error);
@@ -496,9 +527,9 @@ export const upsertDataHpe = async (data: DBHabilidadPersonaje | DBHabilidadPers
  */
 export const upsertDataInp = async ( data: DBInventarioPersonaje | DBInventarioPersonaje[] ): Promise<DBInventarioPersonaje[]> => {
     if (Array.isArray(data)) {
-        return upsertDataQuery<DBInventarioPersonaje>(TABLE_INP, data);
+        return upsertDataQuery(TABLE_INP, data) as Promise<DBInventarioPersonaje[]>;
     } else {
-        return upsertDataQuery<DBInventarioPersonaje>(TABLE_INP, data);
+        return upsertDataQuery(TABLE_INP, data) as Promise<DBInventarioPersonaje[]>;
     }
 }
 

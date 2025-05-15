@@ -175,6 +175,16 @@ export interface DBMision {
     mis_cumplido: boolean;
 }
 
+// Tipo para sonidos
+export interface DBSonido {
+    son_id: string;
+    son_nombre: string;
+    son_url: string;
+    son_duracion?: number;
+    son_tipo?: string; 
+    son_estado?: string;
+}
+
 // Tipos para sistemas de juego
 export interface DBSistemaJuego {
     sju_id: string;

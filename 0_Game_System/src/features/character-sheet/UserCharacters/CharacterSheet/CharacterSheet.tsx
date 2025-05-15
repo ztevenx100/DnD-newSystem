@@ -183,11 +183,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     defaultValues: defaultValues,
     mode: "onSubmit"
   });
-
   const [characterImage, setCharacterImage] = useState<string | undefined>(
     undefined
   );
-
   const [selectedSkillValue, setSelectedSkillValue] = useState<string>("");
   const [selectedExtraSkillValue, setSelectedExtraSkillValue] =
     useState<string>("");
@@ -197,7 +195,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     { id: "", value: "2", name: "", description: "", ring: "" },
   ]);
   const [coins, setCoins] = useState<number[]>([0, 3, 0]);
-
   const [invObjects, setInvObjects] = useState<InventoryObject[]>([]);
   const [systemGame, setSystemGame] = useState<DBSistemaJuego>({
     sju_id: "",
@@ -1230,34 +1227,67 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   };
   async function saveData() {
     try {
+      // Before we start, validate character data
+      if (!character) {
+        throw new Error("No hay datos de personaje para guardar");
+      }
+
+      // Validate essential character fields
+      const missingFields = validateCharacter(character);
+      if (missingFields.length > 0) {
+        throw new Error(`Datos incompletos del personaje: ${missingFields.join(', ')}`);
+      }
+
       // Show saving indicator
       setLoading(true);
       
-      // Upload character information first
-      const ID_CHARACTER: string = await withErrorHandling(
-        () => uploadInfoCharacter(newRecord),
-        "character upload"
-      ) || "";
+      console.log("Starting character save process", { 
+        newRecord, 
+        characterId: character.pus_id,
+        username: character.pus_usuario
+      });
       
-      if (!ID_CHARACTER) {
-        throw new Error("No se pudo guardar la información básica del personaje");
+      // Upload character information first
+      let ID_CHARACTER: string;
+      try {
+        ID_CHARACTER = await uploadInfoCharacter(newRecord) || "";
+        
+        if (!ID_CHARACTER) {
+          throw new Error("No se pudo guardar la información básica del personaje");
+        }
+        
+        console.log("Character base info saved successfully with ID:", ID_CHARACTER);
+      } catch (error) {
+        console.error("Error during character base info upload:", error);
+        throw error; // Re-throw to be caught by the outer catch
       }
 
       // Upload remaining data in parallel
-      await Promise.all([
-        withErrorHandling(
-          () => uploadStats(newRecord, ID_CHARACTER),
-          "stats upload"
-        ),
-        withErrorHandling(
-          () => uploadSkill(ID_CHARACTER), 
-          "skills upload"
-        ),
-        withErrorHandling(
-          () => uploadInventory(ID_CHARACTER),
-          "inventory upload"
-        ),
-      ]);
+      try {
+        console.log("Uploading additional character data...");
+        await Promise.all([
+          uploadStats(newRecord, ID_CHARACTER)
+            .catch(err => {
+              console.error("Stats upload failed:", err);
+              throw new Error(`Error al guardar estadísticas: ${err.message}`);
+            }),
+          uploadSkill(ID_CHARACTER)
+            .catch(err => {
+              console.error("Skills upload failed:", err);
+              throw new Error(`Error al guardar habilidades: ${err.message}`);
+            }),
+          uploadInventory(ID_CHARACTER)
+            .catch(err => {
+              console.error("Inventory upload failed:", err);
+              throw new Error(`Error al guardar inventario: ${err.message}`);
+            }),
+        ]);
+        
+        console.log("All character data saved successfully");
+      } catch (error) {
+        console.error("Error during additional character data upload:", error);
+        throw error; // Re-throw to be caught by the outer catch
+      }
       
       // Update state and navigate
       setNewRecord(false);
@@ -1265,6 +1295,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       onOpenChange();
       reloadPage(ID_CHARACTER);
     } catch (error) {
+      console.error("Error during character save:", error);
       handleAsyncError(error, "saving character data");
     } finally {
       setLoading(false);
@@ -1276,14 +1307,34 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   };
 
   async function uploadInfoCharacter(newRecord: boolean): Promise<string | undefined> {
-    if (!character) return;
+    if (!character) {
+      console.error("Character object is null or undefined");
+      throw new Error("No character data available to save");
+    }
 
-    if (!newRecord) {
-        const data = await updateCharacter(character);
-        return data?.pus_id;
-    } else {
-        const data = await insertPus(character);
-        return data?.pus_id;
+    // Validate character data before saving
+    const missingFields = validateCharacter(character);
+    if (missingFields.length > 0) {
+      console.error("Character validation failed, missing fields:", missingFields);
+      throw new Error(`Datos incompletos del personaje: ${missingFields.join(', ')}`);
+    }
+    
+    try {
+      console.log("Saving character data:", character);
+      if (!newRecord) {
+          const data = await updateCharacter(character);
+          if (!data) throw new Error("No se recibió respuesta al actualizar el personaje");
+          console.log("Character updated successfully:", data);
+          return data?.pus_id;
+      } else {
+          const data = await insertPus(character);
+          if (!data) throw new Error("No se recibió respuesta al insertar el personaje");
+          console.log("Character inserted successfully:", data);
+          return data?.pus_id;
+      }
+    } catch (error) {
+      console.error("Error saving character data:", error);
+      throw error;
     }
   }
 
@@ -1574,8 +1625,33 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
    */
   const handleAsyncError = useCallback((error: unknown, operation: string) => {
     console.error(`Error during ${operation}:`, error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    // Extract detailed error information
+    let errorMessage = 'Unknown error';
+    let errorDetails = '';
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      
+      // Extract additional details if available
+      if ('details' in error) {
+        errorDetails = (error as any).details;
+      }
+      
+      // Extract Supabase specific error details
+      if ('code' in error && 'hint' in error) {
+        errorDetails = `Code: ${(error as any).code}, Hint: ${(error as any).hint}`;
+      }
+    }
+    
+    // Log detailed error information
+    if (errorDetails) {
+      console.error(`Additional error details for ${operation}:`, errorDetails);
+    }
+    
+    // Show user-friendly error message
     alert(`Error during ${operation}: ${errorMessage}. Please try again later.`);
+    
     return null;
   }, []);
 

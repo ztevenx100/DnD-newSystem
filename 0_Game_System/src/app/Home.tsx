@@ -73,27 +73,42 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
         </div>
 
         {/* Sección de Mundo */}
-        <h2 className="world-title">El Mundo de Renascentia</h2>
-        <section className="home-section mb-8">
+        <h2 className="world-title" id="mundo">El Mundo de Renascentia</h2>
+        <section className="home-section world-section">
           <div className="world-description">
-            <p>
-              El mundo de Renascentia es un reino de fantasía medieval, dividido en dos grandes facciones: 
-              el Orden y el Caos. Estas facciones representan los dos extremos del espectro de la existencia, 
-              y su equilibrio es fundamental para la paz y la prosperidad del mundo.
-            </p>
-            <p>
-              El <strong>Orden</strong> es una facción que representa la estabilidad, la tradición y la ley. 
-              Sus miembros creen en un mundo ordenado y estructurado, y trabajan para mantener el status quo.
-            </p>
-            <p>
-              El <strong>Caos</strong> es una facción que representa el cambio, la innovación y la libertad. 
-              Sus miembros creen en un mundo en constante evolución, y trabajan para romper las reglas y desafiar el orden establecido.
-            </p>
-            <p>
-              En medio de estas dos facciones se encuentra una facción oculta llamada la <strong>Corrupción</strong>. 
-              La Corrupción es una fuerza maligna que busca destruir el equilibrio entre el Orden y el Caos. 
-              Sus miembros son inescrupulosos y no dudan en recurrir a la violencia y la destrucción para lograr sus objetivos.
-            </p>
+            <div className="world-overview">
+              <p>
+                El mundo de Renascentia es un reino de fantasía medieval, dividido en dos grandes facciones: 
+                el Orden y el Caos. Estas facciones representan los dos extremos del espectro de la existencia, 
+                y su equilibrio es fundamental para la paz y la prosperidad del mundo.
+              </p>
+            </div>
+            
+            <div className="factions-overview">
+              <div className="faction-brief order-brief">
+                <h3>El Orden</h3>
+                <p>
+                  Es una facción que representa la estabilidad, la tradición y la ley. 
+                  Sus miembros creen en un mundo ordenado y estructurado, y trabajan para mantener el status quo.
+                </p>
+              </div>
+              
+              <div className="faction-brief chaos-brief">
+                <h3>El Caos</h3>
+                <p>
+                  Es una facción que representa el cambio, la innovación y la libertad. 
+                  Sus miembros creen en un mundo en constante evolución, y trabajan para romper las reglas y desafiar el orden establecido.
+                </p>
+              </div>
+              
+              <div className="faction-brief corruption-brief">
+                <h3>La Corrupción</h3>
+                <p>
+                  Es una facción oculta que busca destruir el equilibrio entre el Orden y el Caos. 
+                  Sus miembros son inescrupulosos y no dudan en recurrir a la violencia y la destrucción para lograr sus objetivos.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
           {/* Sección de Facciones */}

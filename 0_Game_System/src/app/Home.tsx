@@ -22,15 +22,23 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
     <div className="bg-home">
       <div className="home-container">
         {/* Header Principal */}
-        <header className="home-header flex flex-col items-center justify-center">
+        <header className="home-header">
           <h1>El azar de las dos manos</h1>
-          <p className="text-xl">Un mundo donde el Orden y el Caos se enfrentan en una batalla eterna</p>
+          <p>Un mundo donde el Orden y el Caos se enfrentan en una batalla eterna</p>
         </header>
+
+        <nav className="main-nav" aria-label="Navegación principal">
+          <ul>
+            <li><a href="#sistema">Sistema de Juego</a></li>
+            <li><a href="#mundo">Mundo</a></li>
+            <li><a href="#facciones">Facciones</a></li>
+          </ul>
+        </nav>
 
         {/* Sección de Introducción */}
         <div className="intro-section">
           <div className="intro-content">
-            <div className="home-section">
+            <section className="home-section" id="sistema">
               <h2>Descripción del Sistema</h2>
               <p>
                 En el mundo de fantasía de <strong>Renascentia</strong>, dos dioses opuestos gobiernan: el Dios del Orden y el Dios del Caos. 
@@ -47,9 +55,10 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
                 A medida que avancen en la historia, los protagonistas deberán descubrir el poder de sus gemas para enfrentar las amenazas futuras y elegir qué facción 
                 es la más adecuada para ellos.
               </p>
-            </div>
+            </section>
 
             <div className="system-section">
+              <h3>Mecánica de Juego</h3>
               <p>
                 <strong>Sistema de juego:</strong> "El azar de las dos manos" utiliza un sistema mixto de dados, combinando D6 y D20. 
                 Los dados D6 se utilizan para respaldar el lanzamiento del D20, permitiendo a los jugadores realizar acciones increíbles 
@@ -57,43 +66,44 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
               </p>
             </div>
           </div>
-          
-          {/* Imagen del mundo o mapa */}
-          <div className="intro-image">
-            <img src={worldMapPlaceholder} alt="Mapa del mundo de Renascentia" className="w-full h-full object-cover rounded-lg shadow-lg" />
+            {/* Imagen del mundo o mapa */}
+          <div className="intro-image" aria-hidden="true">
+            <img src={worldMapPlaceholder} alt="" className="w-full h-full object-cover" />
           </div>
         </div>
 
         {/* Sección de Mundo */}
         <h2 className="world-title">El Mundo de Renascentia</h2>
         <section className="home-section mb-8">
-          <p>
-            El mundo de Renascentia es un reino de fantasía medieval, dividido en dos grandes facciones: 
-            el Orden y el Caos. Estas facciones representan los dos extremos del espectro de la existencia, 
-            y su equilibrio es fundamental para la paz y la prosperidad del mundo.
-          </p>
-          <p>
-            El <strong>Orden</strong> es una facción que representa la estabilidad, la tradición y la ley. 
-            Sus miembros creen en un mundo ordenado y estructurado, y trabajan para mantener el status quo.
-          </p>
-          <p>
-            El <strong>Caos</strong> es una facción que representa el cambio, la innovación y la libertad. 
-            Sus miembros creen en un mundo en constante evolución, y trabajan para romper las reglas y desafiar el orden establecido.
-          </p>
-          <p>
-            En medio de estas dos facciones se encuentra una facción oculta llamada la <strong>Corrupción</strong>. 
-            La Corrupción es una fuerza maligna que busca destruir el equilibrio entre el Orden y el Caos. 
-            Sus miembros son inescrupulosos y no dudan en recurrir a la violencia y la destrucción para lograr sus objetivos.
-          </p>
+          <div className="world-description">
+            <p>
+              El mundo de Renascentia es un reino de fantasía medieval, dividido en dos grandes facciones: 
+              el Orden y el Caos. Estas facciones representan los dos extremos del espectro de la existencia, 
+              y su equilibrio es fundamental para la paz y la prosperidad del mundo.
+            </p>
+            <p>
+              El <strong>Orden</strong> es una facción que representa la estabilidad, la tradición y la ley. 
+              Sus miembros creen en un mundo ordenado y estructurado, y trabajan para mantener el status quo.
+            </p>
+            <p>
+              El <strong>Caos</strong> es una facción que representa el cambio, la innovación y la libertad. 
+              Sus miembros creen en un mundo en constante evolución, y trabajan para romper las reglas y desafiar el orden establecido.
+            </p>
+            <p>
+              En medio de estas dos facciones se encuentra una facción oculta llamada la <strong>Corrupción</strong>. 
+              La Corrupción es una fuerza maligna que busca destruir el equilibrio entre el Orden y el Caos. 
+              Sus miembros son inescrupulosos y no dudan en recurrir a la violencia y la destrucción para lograr sus objetivos.
+            </p>
+          </div>
         </section>
-        
-        {/* Sección de Facciones */}
+          {/* Sección de Facciones */}
+        <h2 className="factions-title" id="facciones">Las Facciones de Renascentia</h2>
         <div className="factions-container">
           {/* Facción del Orden */}
-          <div className="faction-card faction-order">
-            <h2>Pueblos del Orden</h2>
-            <div className="mb-4 h-48 overflow-hidden rounded-md">
-              <img src={orderCityPlaceholder} alt="Ciudad del Orden" className="w-full h-full object-cover" />
+          <article className="faction-card faction-order">
+            <h3>Pueblos del Orden</h3>
+            <div className="image-container">
+              <img src={orderCityPlaceholder} alt="Ciudad del Orden - arquitectura organizada y monumental" />
             </div>
             <div className="faction-content">
               <p>
@@ -109,18 +119,18 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
                 El rey o la reina tiene el poder absoluto sobre el reino, manteniendo tradiciones milenarias.
               </p>
             </div>
-            <div className="faction-traits">
+            <div className="faction-traits" aria-label="Características de la facción">
               <span className="faction-trait">Estabilidad</span>
               <span className="faction-trait">Tradición</span>
               <span className="faction-trait">Prosperidad</span>
             </div>
-          </div>
+          </article>
 
           {/* Facción del Caos */}
-          <div className="faction-card faction-chaos">
-            <h2>Pueblos del Caos</h2>
-            <div className="mb-4 h-48 overflow-hidden rounded-md">
-              <img src={chaosCityPlaceholder} alt="Ciudad del Caos" className="w-full h-full object-cover" />
+          <article className="faction-card faction-chaos">
+            <h3>Pueblos del Caos</h3>
+            <div className="image-container">
+              <img src={chaosCityPlaceholder} alt="Ciudad del Caos - arquitectura orgánica y diversa" />
             </div>
             <div className="faction-content">
               <p>
@@ -136,18 +146,18 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
                 y todos los ciudadanos tienen la oportunidad de prosperar y expresar su individualidad.
               </p>
             </div>
-            <div className="faction-traits">
+            <div className="faction-traits" aria-label="Características de la facción">
               <span className="faction-trait">Libertad</span>
               <span className="faction-trait">Innovación</span>
               <span className="faction-trait">Creatividad</span>
             </div>
-          </div>
+          </article>
 
           {/* Facción de la Corrupción */}
-          <div className="faction-card faction-corruption">
-            <h2>Pueblos de la Corrupción</h2>
-            <div className="mb-4 h-48 overflow-hidden rounded-md">
-              <img src={corruptionCityPlaceholder} alt="Ciudad de la Corrupción" className="w-full h-full object-cover" />
+          <article className="faction-card faction-corruption">
+            <h3>Pueblos de la Corrupción</h3>
+            <div className="image-container">
+              <img src={corruptionCityPlaceholder} alt="Ciudad de la Corrupción - arquitectura sombría y decadente" />
             </div>
             <div className="faction-content">
               <p>
@@ -163,12 +173,12 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
                 El pueblo es sometido a constante opresión y sufrimiento para alimentar oscuros propósitos.
               </p>
             </div>
-            <div className="faction-traits">
+            <div className="faction-traits" aria-label="Características de la facción">
               <span className="faction-trait">Poder</span>
               <span className="faction-trait">Destrucción</span>
               <span className="faction-trait">Opresión</span>
             </div>
-          </div>
+          </article>
         </div>
       </div>
     </div>

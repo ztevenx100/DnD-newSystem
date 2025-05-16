@@ -371,8 +371,7 @@
   height: 100%;
   backdrop-filter: blur(4px);
   transform-style: preserve-3d;
-  animation: fadeIn 0.8s ease-out backwards;
-  opacity: 0;
+  animation: fadeIn 0.8s ease-out forwards;
 }
 
 .faction-card:nth-child(1) {

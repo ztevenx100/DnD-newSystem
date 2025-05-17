@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 
 import "./Home.css";
 import "./faction-cards.css"; // Importamos los estilos específicos para las tarjetas
+import "./map-styles.css"; // Importamos los estilos para el mapa del mundo
 import homeBackground from '@img/webp/bg-home-03.webp';
 
 // Imágenes locales para facciones
@@ -108,14 +109,20 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
               </p>
             </div>
           </div>
-            {/* Imagen del mundo o mapa */}
-          <div className="intro-image" aria-hidden="true">
+            {/* Imagen del mundo o mapa - Diseño mejorado */}
+          <div className="world-map-container" aria-labelledby="map-label">
+            {/* Esquinas decorativas */}
+            <div className="map-corner map-corner-tl" aria-hidden="true"></div>
+            <div className="map-corner map-corner-tr" aria-hidden="true"></div>
+            <div className="map-corner map-corner-bl" aria-hidden="true"></div>
+            <div className="map-corner map-corner-br" aria-hidden="true"></div>
+            
             <img 
               src={worldMapPlaceholder} 
               alt="Mapa del mundo de Renascentia" 
-              className="w-full h-full object-contain" 
               loading="lazy"
             />
+            <div className="map-label" id="map-label">Mapa del mundo de Renascentia</div>
           </div>
         </div>
 

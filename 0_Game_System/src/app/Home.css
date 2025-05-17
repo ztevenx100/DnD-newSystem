@@ -16,7 +16,8 @@
   --section-radius: 16px;
   --standard-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   --hover-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
-  --standard-transition: all 0.3s ease-in-out;
+  --standard-transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  --color-transition: color 0.2s ease, background-color 0.2s ease;
   --content-max-width: 1280px;
   --section-spacing: 4rem;
 }
@@ -51,6 +52,7 @@
 .home-header {
   background-color: rgba(23, 37, 84, 0.85);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px); /* Para Safari */
   border-radius: var(--section-radius);
   border: 2px solid;
   border-image: linear-gradient(45deg, var(--gold-accent), transparent 70%) 1;
@@ -85,6 +87,7 @@
 .main-nav {
   background-color: rgba(17, 24, 39, 0.8);
   backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px); /* Para Safari */
   padding: 1rem 0;
   border-radius: var(--card-radius);
   margin-bottom: calc(var(--section-spacing) * 0.75);
@@ -129,18 +132,28 @@
 }
 
 .main-nav a:hover, 
-.main-nav a:focus-visible {
+.main-nav a:focus-visible,
+.main-nav a:active,
+.main-nav a.active {
   color: var(--gold-light);
   outline: none;
 }
 
 .main-nav a:hover::after,
-.main-nav a:focus-visible::after {
+.main-nav a:focus-visible::after,
+.main-nav a:active::after,
+.main-nav a.active::after {
   transform: scaleX(1);
 }
 
 .main-nav a:focus-visible {
   box-shadow: 0 0 0 2px var(--gold-accent);
+}
+
+/* Clase que se puede añadir mediante JavaScript al enlace activo */
+.main-nav a.active {
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(237, 184, 61, 0.4);
 }
 
 .home-header p {
@@ -170,6 +183,7 @@
 .home-section {
   background: linear-gradient(140deg, rgba(23, 37, 84, 0.85) 30%, rgba(10, 15, 35, 0.9) 100%);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px); /* Para Safari */
   padding: 2rem;
   color: var(--text-light);
   border-radius: var(--section-radius);
@@ -214,6 +228,8 @@
   overflow: hidden;
   box-shadow: var(--standard-shadow);
   height: 100%;
+  background-color: rgba(15, 23, 42, 0.3);
+  border: 1px solid rgba(237, 184, 61, 0.2);
 }
 
 .intro-image::after {
@@ -223,6 +239,7 @@
   border-radius: var(--section-radius);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
   pointer-events: none;
+  background: radial-gradient(circle at center, rgba(237, 184, 61, 0.05), transparent 70%);
 }
 
 .intro-image:hover {
@@ -233,8 +250,9 @@
 .intro-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  transition: var(--standard-transition);    transition: var(--standard-transition);
+  object-fit: contain;
+  transition: var(--standard-transition);
+  padding: 1rem;
 }
 
 /* System Section */
@@ -310,6 +328,7 @@
   overflow: hidden;
   background-color: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px); /* Para Safari */
   transition: var(--standard-transition);
   border-top: 3px solid transparent;
 }
@@ -370,6 +389,7 @@
   flex-direction: column;
   height: 100%;
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px); /* Para Safari */
   transform-style: preserve-3d;
   animation: fadeIn 0.8s ease-out forwards;
 }
@@ -406,7 +426,8 @@
   border-top: 4px solid var(--corruption-color);
 }
 
-.faction-corruption h2 {
+.faction-corruption h2,
+.faction-corruption h3 {
   color: var(--corruption-color);
   text-shadow: 0 0 10px rgba(126, 34, 206, 0.4);
 }
@@ -415,19 +436,7 @@
   background: linear-gradient(90deg, transparent, var(--corruption-color), transparent);
 }
 
-.system-section {
-  background-color: rgba(20, 20, 40, 0.8);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-top: 1rem;
-  border-left: 4px solid var(--gold-accent);
-  color: var(--text-light);
-  transition: transform 0.2s ease;
-}
-
-.system-section:hover {
-  transform: translateY(-5px);
-}
+/* Eliminada la duplicación de .system-section */
 
 /* Mejorar legibilidad de texto */
 .home-header p {
@@ -449,8 +458,39 @@
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   position: relative;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   height: 180px;
+  background-color: rgba(15, 23, 42, 0.3);
+}
+
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Mejor para SVGs */
+  transition: transform 0.3s ease-in-out;
+  background-color: transparent;
+  border-radius: var(--card-radius);
+  display: block; /* Elimina espacio extra debajo de la imagen */
+}
+
+.image-container:hover img {
+  transform: scale(1.05);
+}
+
+/* Estilos específicos para cada tipo de imagen */
+.faction-order .image-container {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.faction-chaos .image-container {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.faction-corruption .image-container {
+  background-color: rgba(126, 34, 206, 0.1);
+  border: 1px solid rgba(126, 34, 206, 0.3);
 }
 
 .faction-card:hover .image-container {
@@ -533,6 +573,13 @@ strong, em {
   transition: all 0.3s ease;
   display: inline-block;
   cursor: default;
+  position: relative;
+  outline: none;
+}
+
+.faction-trait:focus-visible {
+  box-shadow: 0 0 0 2px var(--gold-accent);
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .faction-order .faction-trait {
@@ -605,10 +652,36 @@ strong, em {
     font-size: 1.6rem;
   }
   
+  .main-nav {
+    padding: 0.8rem;
+  }
+  
   .main-nav ul {
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+  }
+  
+  .main-nav a {
+    width: 100%;
+    text-align: center;
+    padding: 0.8rem;
+    background-color: rgba(15, 23, 42, 0.5);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: block;
+  }
+  
+  .main-nav a::after {
+    display: none;
+  }
+  
+  .main-nav a:hover,
+  .main-nav a:focus-visible,
+  .main-nav a.active {
+    background-color: rgba(237, 184, 61, 0.15);
+    border-color: var(--gold-accent);
+    color: var(--gold-light);
   }
 }
 

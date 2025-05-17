@@ -1,22 +1,64 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import "./Home.css";
 import homeBackground from '@img/webp/bg-home-03.webp';
 
-// Imagenes temporales - Reemplazar con imágenes reales
-const orderCityPlaceholder = "https://images.unsplash.com/photo-1596825205494-50489906c003?q=80&w=800&auto=format&fit=crop";
-const chaosCityPlaceholder = "https://images.unsplash.com/photo-1560269507-c4e1da5adae1?q=80&w=800&auto=format&fit=crop";
-const corruptionCityPlaceholder = "https://images.unsplash.com/photo-1618390944943-93cccf3cf231?q=80&w=800&auto=format&fit=crop";
-const worldMapPlaceholder = "https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop";
+// Imágenes locales para facciones
+import orderCityPlaceholder from '@img/placeholder/order-city.svg';
+import chaosCityPlaceholder from '@img/placeholder/chaos-city.svg';
+import corruptionCityPlaceholder from '@img/placeholder/corruption-city.svg';
+import worldMapPlaceholder from '@img/placeholder/world-map.svg';
 
 interface HomeProps {
   changeBackground: (newBackground: string) => void;
 }
 
 const Home: React.FC<HomeProps> = ({ changeBackground }) => {
+  const navLinksRef = useRef<(HTMLAnchorElement | null)[]>([]);
+  
   useEffect(() => {
     changeBackground(homeBackground);
   }, [changeBackground]);
+  
+  useEffect(() => {
+    // Función para actualizar los enlaces activos según el scroll
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 100; // Offset para mejorar la detección
+      
+      // Encuentra todas las secciones con ID
+      const sections = document.querySelectorAll('section[id], div[id]');
+      
+      // Recorre las secciones para encontrar la actual
+      sections.forEach((section) => {
+        const sectionId = section.getAttribute('id');
+        if (!sectionId) return;
+        
+        const sectionTop = (section as HTMLElement).offsetTop;
+        const sectionHeight = (section as HTMLElement).offsetHeight;
+        
+        if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+          // Elimina la clase active de todos los enlaces
+          navLinksRef.current.forEach((link) => {
+            if (link) link.classList.remove('active');
+          });
+          
+          // Añade la clase active al enlace correspondiente
+          const activeLink = navLinksRef.current.find(link => 
+            link?.getAttribute('href') === `#${sectionId}`
+          );
+          
+          if (activeLink) activeLink.classList.add('active');
+        }
+      });
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Ejecuta una vez al cargar para establecer el estado inicial
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   return (
     <div className="bg-home">
@@ -26,12 +68,11 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
           <h1>El azar de las dos manos</h1>
           <p>Un mundo donde el Orden y el Caos se enfrentan en una batalla eterna</p>
         </header>
-
         <nav className="main-nav" aria-label="Navegación principal">
           <ul>
-            <li><a href="#sistema">Sistema de Juego</a></li>
-            <li><a href="#mundo">Mundo</a></li>
-            <li><a href="#facciones">Facciones</a></li>
+            <li><a href="#sistema" ref={(el) => { if (el) navLinksRef.current[0] = el; }}>Sistema de Juego</a></li>
+            <li><a href="#mundo" ref={(el) => { if (el) navLinksRef.current[1] = el; }}>Mundo</a></li>
+            <li><a href="#facciones" ref={(el) => { if (el) navLinksRef.current[2] = el; }}>Facciones</a></li>
           </ul>
         </nav>
 
@@ -68,7 +109,12 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
           </div>
             {/* Imagen del mundo o mapa */}
           <div className="intro-image" aria-hidden="true">
-            <img src={worldMapPlaceholder} alt="" className="w-full h-full object-cover" />
+            <img 
+              src={worldMapPlaceholder} 
+              alt="Mapa del mundo de Renascentia" 
+              className="w-full h-full object-contain" 
+              loading="lazy"
+            />
           </div>
         </div>
 
@@ -118,7 +164,11 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
           <article className="faction-card faction-order">
             <h3>Pueblos del Orden</h3>
             <div className="image-container">
-              <img src={orderCityPlaceholder} alt="Ciudad del Orden - arquitectura organizada y monumental" />
+              <img 
+                src={orderCityPlaceholder} 
+                alt="Ciudad del Orden - arquitectura organizada y monumental" 
+                loading="lazy"
+              />
             </div>
             <div className="faction-content">
               <p>
@@ -134,10 +184,10 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
                 El rey o la reina tiene el poder absoluto sobre el reino, manteniendo tradiciones milenarias.
               </p>
             </div>
-            <div className="faction-traits" aria-label="Características de la facción">
-              <span className="faction-trait">Estabilidad</span>
-              <span className="faction-trait">Tradición</span>
-              <span className="faction-trait">Prosperidad</span>
+            <div className="faction-traits" aria-label="Características de la facción del Orden">
+              <span className="faction-trait" tabIndex={0} role="text">Estabilidad</span>
+              <span className="faction-trait" tabIndex={0} role="text">Tradición</span>
+              <span className="faction-trait" tabIndex={0} role="text">Prosperidad</span>
             </div>
           </article>
 
@@ -145,7 +195,11 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
           <article className="faction-card faction-chaos">
             <h3>Pueblos del Caos</h3>
             <div className="image-container">
-              <img src={chaosCityPlaceholder} alt="Ciudad del Caos - arquitectura orgánica y diversa" />
+              <img 
+                src={chaosCityPlaceholder} 
+                alt="Ciudad del Caos - arquitectura orgánica y diversa" 
+                loading="lazy"
+              />
             </div>
             <div className="faction-content">
               <p>
@@ -161,10 +215,10 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
                 y todos los ciudadanos tienen la oportunidad de prosperar y expresar su individualidad.
               </p>
             </div>
-            <div className="faction-traits" aria-label="Características de la facción">
-              <span className="faction-trait">Libertad</span>
-              <span className="faction-trait">Innovación</span>
-              <span className="faction-trait">Creatividad</span>
+            <div className="faction-traits" aria-label="Características de la facción del Caos">
+              <span className="faction-trait" tabIndex={0} role="text">Libertad</span>
+              <span className="faction-trait" tabIndex={0} role="text">Innovación</span>
+              <span className="faction-trait" tabIndex={0} role="text">Creatividad</span>
             </div>
           </article>
 
@@ -172,7 +226,11 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
           <article className="faction-card faction-corruption">
             <h3>Pueblos de la Corrupción</h3>
             <div className="image-container">
-              <img src={corruptionCityPlaceholder} alt="Ciudad de la Corrupción - arquitectura sombría y decadente" />
+              <img 
+                src={corruptionCityPlaceholder} 
+                alt="Ciudad de la Corrupción - arquitectura sombría y decadente" 
+                loading="lazy"
+              />
             </div>
             <div className="faction-content">
               <p>
@@ -188,10 +246,10 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
                 El pueblo es sometido a constante opresión y sufrimiento para alimentar oscuros propósitos.
               </p>
             </div>
-            <div className="faction-traits" aria-label="Características de la facción">
-              <span className="faction-trait">Poder</span>
-              <span className="faction-trait">Destrucción</span>
-              <span className="faction-trait">Opresión</span>
+            <div className="faction-traits" aria-label="Características de la facción de la Corrupción">
+              <span className="faction-trait" tabIndex={0} role="text">Poder</span>
+              <span className="faction-trait" tabIndex={0} role="text">Destrucción</span>
+              <span className="faction-trait" tabIndex={0} role="text">Opresión</span>
             </div>
           </article>
         </div>

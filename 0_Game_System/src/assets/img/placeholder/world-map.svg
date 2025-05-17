@@ -1,0 +1,13 @@
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#0f172a"/>
+  <text x="50%" y="50%" font-family="Arial" font-size="30" fill="#f8f9fa" text-anchor="middle">Mapa del Mundo</text>
+  
+  <!-- Continente del Orden -->
+  <path d="M100,100 Q250,50 300,150 Q350,200 400,150 Q450,100 500,150 Q550,200 600,150 Q650,120 700,200 L700,300 Q650,350 550,300 Q450,250 350,300 Q250,350 150,300 L100,200 Z" fill="#172554" stroke="#3b82f6" stroke-width="3"/>
+  
+  <!-- Continente del Caos -->
+  <path d="M200,220 Q300,180 400,220 Q500,250 600,220 L650,300 Q600,320 500,300 Q400,280 300,300 Q250,310 200,300 Z" fill="#7f1d1d" stroke="#ef4444" stroke-width="2"/>
+  
+  <!-- Región Corrupta -->
+  <circle cx="450" cy="250" r="30" fill="#581c87" stroke="#7e22ce" stroke-width="2"/>
+</svg>

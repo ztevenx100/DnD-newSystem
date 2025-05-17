@@ -339,33 +339,40 @@
 }
 
 .faction-brief h3 {
-  margin-bottom: 0.75rem;
-  font-size: 1.4rem;
-  font-weight: 600;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 0.6rem;
+  letter-spacing: 0.5px;
 }
 
-.order-brief {
-  border-color: var(--order-color);
+/* Adding decorative underline for faction brief headings */
+.faction-brief h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  transition: width 0.3s ease;
 }
 
-.order-brief h3 {
-  color: var(--order-color);
+/* Hover effect for faction brief heading underlines */
+.faction-brief:hover h3::after {
+  width: 70px;
 }
 
-.chaos-brief {
-  border-color: var(--chaos-color);
+.order-brief h3::after {
+  background-color: var(--order-color);
 }
 
-.chaos-brief h3 {
-  color: var(--chaos-color);
+.chaos-brief h3::after {
+  background-color: var(--chaos-color);
 }
 
-.corruption-brief {
-  border-color: var(--corruption-color);
-}
-
-.corruption-brief h3 {
-  color: var(--corruption-color);
+.corruption-brief h3::after {
+  background-color: var(--corruption-color);
 }
 
 /* Factions Section */
@@ -410,30 +417,158 @@
   transform: translateY(-10px) rotateX(2deg);
   box-shadow: var(--hover-shadow);
 }
-/* Faction-specific styles */
-.faction-order {
-  background: linear-gradient(145deg, rgba(23, 37, 84, 0.85), rgba(30, 58, 138, 0.75));
-  border-top: 4px solid var(--order-color);
+
+/* Estilos simples y directos para los títulos de facción */
+.faction-card h3 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  padding: 0.5rem 0 0.8rem 0;
+  margin-bottom: 1.2rem;
+  text-align: center;
+  opacity: 1; /* Siempre visible */
+  visibility: visible;
 }
 
-.faction-chaos {
-  background: linear-gradient(145deg, rgba(76, 29, 29, 0.85), rgba(127, 29, 29, 0.75));
-  border-top: 4px solid var(--chaos-color);
+/* Corregir visibilidad de spans en los h3 */
+.faction-card h3 {
+  /* Aseguramos que el span sea visible */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  text-align: center;
+  margin-bottom: 1.2rem;
 }
 
-.faction-corruption {
-  background: linear-gradient(145deg, rgba(54, 29, 77, 0.85), rgba(91, 33, 128, 0.75));
-  border-top: 4px solid var(--corruption-color);
+.faction-card h3 span {
+  position: relative;
+  z-index: 5; /* Mayor z-index para estar siempre visible */
+  color: inherit;
+  text-shadow: inherit;
+  display: block;
+  visibility: visible !important; /* Forzar visibilidad */
 }
 
-.faction-corruption h2,
-.faction-corruption h3 {
-  color: var(--corruption-color);
-  text-shadow: 0 0 10px rgba(126, 34, 206, 0.4);
+/* Ajustamos los pseudoelementos para que no tapen el texto */
+.faction-order h3::before,
+.faction-chaos h3::before,
+.faction-corruption h3::before {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 2px;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
 }
 
-.faction-corruption h2:after {
-  background: linear-gradient(90deg, transparent, var(--corruption-color), transparent);
+.faction-order h3::after,
+.faction-chaos h3::after,
+.faction-corruption h3::after {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 2px;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+/* Efectos hover para los pseudoelementos */
+.faction-card:hover h3::before {
+  width: 50px;
+}
+
+.faction-card:hover h3::after {
+  width: 100px;
+}
+
+.faction-order h3 {
+  color: var(--order-color);
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+  animation-delay: 0.4s;
+}
+
+.faction-order h3::after,
+.faction-order h3::before {
+  background-color: var(--order-color);
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 2px;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 0;
+  opacity: 0.8;
+}
+
+/* Chaos faction specific heading styles */
+.faction-chaos h3 {
+  color: var(--chaos-color);
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+  animation-delay: 0.6s;
+}
+
+.faction-chaos h3::after,
+.faction-chaos h3::before {
+  background-color: var(--chaos-color);
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 2px;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 0;
+  opacity: 0.8;
+}
+
+/* Corruption faction already has styles, but adding the decorative lines */
+.faction-corruption h3::after,
+.faction-corruption h3::before {
+  background-color: var(--corruption-color);
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 2px;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 0;
+  opacity: 0.8;
+}
+
+/* Add thematic faction symbols next to headings */
+.faction-card h3 {
+  /* Add to existing styles */
+  display: inline-block;
+  position: relative;
+  margin: 0 auto 1.2rem;
+}
+
+/* Create thematic symbols with pseudo-elements */
+.faction-card h3 span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Efectos de brillo específicos para cada facción */
+.faction-order h3 span {
+  text-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+.faction-chaos h3 span {
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+}
+
+.faction-corruption h3 span {
+  text-shadow: 0 0 8px rgba(126, 34, 206, 0.5);
 }
 
 /* Eliminada la duplicación de .system-section */
@@ -647,9 +782,10 @@ strong, em {
     max-width: 500px;
     margin: 0 auto;
   }
-  
-  .faction-card h3 {
-    font-size: 1.6rem;
+    .faction-card h3 {
+    font-size: 1.5rem;
+    padding-bottom: 0.6rem;
+    margin-bottom: 1rem;
   }
   
   .main-nav {
@@ -706,5 +842,52 @@ strong, em {
   
   .home-section {
     padding: 1.5rem;
+  }
+}
+
+/* Accessibility enhancements */
+@media (prefers-reduced-motion: reduce) {
+  .faction-card h3,
+  .faction-brief h3 {
+    animation: none;
+    transition: none;
+  }
+  
+  .faction-card h3::before,
+  .faction-card h3::after,
+  .faction-brief h3::after {
+    transition: none;
+  }
+  
+  .faction-card:hover h3 {
+    transform: none;
+  }
+}
+
+/* High contrast mode improvements */
+@media (forced-colors: active) {
+  .faction-card h3,
+  .faction-brief h3 {
+    border-bottom: 2px solid CanvasText;
+  }
+  
+  .faction-card h3::before,
+  .faction-card h3::after,
+  .faction-brief h3::after {
+    background-color: CanvasText;
+  }
+}
+
+/* Añadir animación explícita para encabezados */
+@keyframes headingReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+    visibility: hidden;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
   }
 }

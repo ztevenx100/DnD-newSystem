@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
 import "./Home.css";
+import "./faction-cards.css"; // Importamos los estilos específicos para las tarjetas
 import homeBackground from '@img/webp/bg-home-03.webp';
 
 // Imágenes locales para facciones
@@ -132,23 +133,21 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
             
             <div className="factions-overview">
               <div className="faction-brief order-brief">
-                <h3>El Orden</h3>
+                <h3><span>El Orden</span></h3>
                 <p>
                   Es una facción que representa la estabilidad, la tradición y la ley. 
                   Sus miembros creen en un mundo ordenado y estructurado, y trabajan para mantener el status quo.
                 </p>
               </div>
-              
               <div className="faction-brief chaos-brief">
-                <h3>El Caos</h3>
+                <h3><span>El Caos</span></h3>
                 <p>
                   Es una facción que representa el cambio, la innovación y la libertad. 
                   Sus miembros creen en un mundo en constante evolución, y trabajan para romper las reglas y desafiar el orden establecido.
                 </p>
               </div>
-              
-              <div className="faction-brief corruption-brief">
-                <h3>La Corrupción</h3>
+                <div className="faction-brief corruption-brief">
+                <h3><span>La Corrupción</span></h3>
                 <p>
                   Es una facción oculta que busca destruir el equilibrio entre el Orden y el Caos. 
                   Sus miembros son inescrupulosos y no dudan en recurrir a la violencia y la destrucción para lograr sus objetivos.
@@ -162,7 +161,7 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
         <div className="factions-container">
           {/* Facción del Orden */}
           <article className="faction-card faction-order">
-            <h3>Pueblos del Orden</h3>
+            <h3><span>Pueblos del Orden</span></h3>
             <div className="image-container">
               <img 
                 src={orderCityPlaceholder} 
@@ -193,7 +192,7 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
 
           {/* Facción del Caos */}
           <article className="faction-card faction-chaos">
-            <h3>Pueblos del Caos</h3>
+            <h3><span>Pueblos del Caos</span></h3>
             <div className="image-container">
               <img 
                 src={chaosCityPlaceholder} 
@@ -224,7 +223,7 @@ const Home: React.FC<HomeProps> = ({ changeBackground }) => {
 
           {/* Facción de la Corrupción */}
           <article className="faction-card faction-corruption">
-            <h3>Pueblos de la Corrupción</h3>
+            <h3><span>Pueblos de la Corrupción</span></h3>
             <div className="image-container">
               <img 
                 src={corruptionCityPlaceholder} 

@@ -1,0 +1,66 @@
+/* Estilos específicos para las tarjetas de facción - Solución limpia */
+
+/**
+ * Este archivo CSS específico para las tarjetas de facción sobrescribe
+ * cualquier estilo existente en Home.css que pudiera estar causando
+ * problemas de visualización de los encabezados h3
+ */
+
+/* RESET: Eliminamos todas las reglas que puedan estar interfiriendo */
+.faction-card h3,
+.faction-card h3::before,
+.faction-card h3::after,
+.faction-card h3 span {
+  animation: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Estilos base para los encabezados */
+.faction-card h3 {
+  position: relative;
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  text-align: center;
+  margin: 0 0 1.5rem 0;
+  padding: 0.5rem 0;
+  display: block;
+  width: 100%;
+}
+
+/* Estilo para el texto dentro del span */
+.faction-card h3 span {
+  position: relative;
+  display: inline-block;
+  padding: 0 1rem 0.5rem;
+  z-index: 10;
+  border-bottom: 2px solid;
+}
+
+/* Estilos específicos por facción */
+.faction-order h3 span {
+  color: var(--order-color, #3b82f6);
+  border-color: var(--order-color, #3b82f6);
+  text-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+.faction-chaos h3 span {
+  color: var(--chaos-color, #ef4444);
+  border-color: var(--chaos-color, #ef4444);
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+}
+
+.faction-corruption h3 span {
+  color: var(--corruption-color, #7e22ce);
+  border-color: var(--corruption-color, #7e22ce);
+  text-shadow: 0 0 8px rgba(126, 34, 206, 0.5);
+}
+
+/* Efecto hover mejorado para los encabezados */
+.faction-card:hover h3 span {
+  padding: 0 1.5rem 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}

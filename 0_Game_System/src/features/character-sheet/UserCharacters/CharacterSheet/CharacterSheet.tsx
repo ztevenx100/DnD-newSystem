@@ -128,15 +128,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   };
   
   const normalizedUser = normalizeUser(loaderData?.user);
-  
-  const safeData = {
+    const safeData = {
     user: normalizedUser,
     character: loaderData?.character
   };
   
   const { user, character: initialCharacter } = safeData;
 
-  const userName = user.usu_nombre;
+  // Evitar potenciales errores si user es nulo o undefined
+  const userName = user?.usu_nombre || '';
 
   const defaultValues = useMemo(() => {
     return initialCharacter
@@ -174,7 +174,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           job: "",
           alignment: "",
         };
-  }, [initialCharacter, userName]);  const {
+  }, [initialCharacter, userName]);
+  const {
     register,
     handleSubmit,
     setValue,
@@ -256,24 +257,33 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   
   /**
    * Helper function to calculate the total value of a stat from inputsStatsData
-   * Uses the cached totalStats when possible
+   * Uses the cached totalStats when possible to avoid recalculations
    */
   const getStatTotal = useCallback((statId: string): number => {
-    switch(statId) {
-      case 'STR': return totalStats.str;
-      case 'INT': return totalStats.int;
-      case 'DEX': return totalStats.dex;
-      case 'CON': return totalStats.con;
-      case 'PER': return totalStats.per;
-      case 'CHA': return totalStats.cha;
-      case 'total': return totalStats.total;
-      default: {
-        // Fallback calculation if statId doesn't match
-        const stat = inputsStatsData.find(s => s.id === statId);
-        if (!stat) return 0;
-        return stat.valueDice + stat.valueClass + stat.valueLevel;
-      }
+    // Usar un objeto de mapeo para evitar el switch/case y mejorar la legibilidad
+    const statsMap: Record<string, number | undefined> = {
+      'STR': totalStats.str,
+      'INT': totalStats.int,
+      'DEX': totalStats.dex,
+      'CON': totalStats.con,
+      'PER': totalStats.per,
+      'CHA': totalStats.cha,
+      'total': totalStats.total
+    };
+
+    // Buscar primero en el mapa para rendimiento óptimo
+    const mappedValue = statsMap[statId];
+    if (mappedValue !== undefined) {
+      return mappedValue;
     }
+
+    // Fallback calculation solo si es necesario
+    const stat = inputsStatsData.find(s => s.id === statId);
+    if (!stat) return 0;
+    
+    // Calculamos y cacheamos el resultado para futuras llamadas
+    const calculatedValue = stat.valueDice + stat.valueClass + stat.valueLevel;
+    return calculatedValue;
   }, [totalStats, inputsStatsData]);
 
   interface DataCharacter {
@@ -430,8 +440,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           }
         } else if (elem.tipo === "R") {
           const existingRingSkill = characterSkills.find(skill => 
-            skill.hpe_campo.startsWith("skillRing") && skill.hpe_habilidad === elem.id);
-            if (existingRingSkill) {
+          skill.hpe_campo.startsWith("skillRing") && skill.hpe_habilidad === elem.id);
+          if (existingRingSkill) {
             const ringNumber = existingRingSkill.hpe_campo.replace("skillRing", "");
             
             handleSelectedTypeRingSkillChange(ringNumber, elem.estadistica_base);
@@ -596,7 +606,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   }, [getSkills]);
 
   useEffect(() => {
-    changeBackground(mainBackground);    const loadInfo = async () => {
+    changeBackground(mainBackground);
+    const loadInfo = async () => {
       document.documentElement.scrollTop = 0;
       const isNewRecord = params.id === null || params.id === undefined;
       setNewRecord(isNewRecord);
@@ -926,23 +937,41 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     // Use optional chaining to avoid non-null assertion
     updStatsPoints(character?.pus_clase || '', value);
   };
-
+  /**
+   * Maneja el cambio de imagen del personaje
+   * 
+   * Esta función se encarga de subir la imagen seleccionada al almacenamiento
+   * y actualizar la URL de la imagen en el estado del componente
+   * 
+   * @param value - URL de la imagen seleccionada
+   * @param file - Archivo de imagen seleccionado
+   * @returns {Promise<void>}
+   */
   const handleCharacterImageFileChange = async (value: string, file: File) => {
-    if (!user || !params.id) return;
+    if (!user || !params.id) {
+      console.log("No se puede subir la imagen: Usuario o ID de personaje no disponibles");
+      return;
+    }
 
     if (!user.id) {
       console.error("User ID is undefined");
       return;
     }
 
+    // Subir la imagen al almacenamiento
     const { path, error } = await addStorageCharacter(
       user.id,
       params.id,
       file
     );
 
-    if (error) alert(error);
+    if (error) {
+      // Mostrar error al usuario
+      alert(`Error al subir la imagen: ${error}`);
+      return;
+    }
 
+    // Actualizar la URL de la imagen en el estado
     if (path) setCharacterImage(value);
   };
   const handleSelectedCheckValuesChange = (newValues: string[]) => {
@@ -972,13 +1001,29 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     });
     setFormAlignment(value);
   };
-
   const handleCoinsChange = (index: number, value: string) => {
     const numericValue = validateNumeric(value);
     const updatedCoins = [...coins];
     updatedCoins[index] = numericValue;
     setCoins(updatedCoins);
-  };  /**
+  };
+  
+  /**
+   * Validates an inventory object and ensures it has all required fields
+   * @param object The inventory object to validate
+   * @returns A valid inventory object with defaults for missing fields
+   */
+  const validateInventoryObject = (object: Partial<InventoryObject>): InventoryObject => {
+    return {
+      id: object.id || uuidv4(),
+      name: object.name || '',
+      description: object.description || 'Sin descripción',
+      count: object.count !== undefined ? object.count : 1,
+      readOnly: object.readOnly || false
+    };
+  };
+
+  /**
    * Validates an inventory object and returns null if valid, or an error message if invalid
    */
   const validateInventoryItem = useCallback((name: string, count: number): string | null => {
@@ -1039,11 +1084,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setEmptyRequiredFields(prev => prev.filter(field => field !== fieldId));
     }
   };
-    // Función para abrir el modal con validación manual
-  const handleOpenModal = () => {
-    console.log("Ejecutando handleOpenModal");
-    
-    // Validar campos requeridos manualmente
+    // Función para abrir el modal con validación manual  
+  /**
+   * Valida los campos requeridos para abrir el modal
+   * @returns array de strings con los campos que faltan
+   */
+  const validateRequiredFields = (): string[] => {
     const fieldsRequired: string[] = [];
     
     // Validate required character properties
@@ -1066,30 +1112,27 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       console.log("Falta el nombre del personaje");
       fieldsRequired.push('name');
     }
-      // Validate stats - use our getStatTotal helper
-    const totalStatsSum = getStatTotal('total');
     
+    // Validate stats - use our getStatTotal helper
+    const totalStatsSum = getStatTotal('total');
     if (totalStatsSum <= 0) {
       console.log("No hay estadísticas definidas");
       fieldsRequired.push('stats');
     }
     
-    setEmptyRequiredFields(fieldsRequired);
-    
-    if (fieldsRequired.length > 0) {
-      alert("Por favor, complete todos los campos obligatorios: " + fieldsRequired.join(", "));
-      return;
-    }
-    
-    // Ensure character exists
+    return fieldsRequired;
+  };
+  
+  /**
+   * Prepara los datos del personaje para el modal
+   * @returns Un objeto DataCharacter con todos los datos del personaje
+   */
+  const prepareCharacterData = (): DataCharacter => {
     if (!character) {
-      console.error("Character data is missing");
-      return;
+      throw new Error("Character data is missing");
     }
     
-    console.log("Campos requeridos completos, preparando datos para el modal...");
-
-    const newCharacter: DataCharacter = {
+    return {
       id: character.pus_id || '',
       player: character.pus_usuario || '',
       name: character.pus_nombre || '',
@@ -1141,7 +1184,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           class: inputsStatsData[5].valueClass,
           level: inputsStatsData[5].valueLevel,
         },
-      ],      mainWeapon: character.pus_arma_principal || '',
+      ],
+      mainWeapon: character.pus_arma_principal || '',
       secondaryWeapon: character.pus_arma_secundaria || '',
       alignment: character.pus_alineacion || '',
       mainSkill: selectedSkillValue || '',
@@ -1150,11 +1194,43 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       coinsInv: coins || [0, 0, 0],
       inv: invObjects || [],
     };
-    console.log("Datos del personaje preparados para el modal:", newCharacter);
-    setDataCharacter(newCharacter);
-    console.log("Abriendo modal...");
-    onOpen();
-    console.log("Modal abierto, isOpen=", isOpen);
+  };
+
+  /**
+   * Abre el modal para guardar el personaje, validando primero
+   * que todos los campos requeridos estén completos
+   */
+  const handleOpenModal = () => {
+    console.log("Ejecutando handleOpenModal");
+    
+    // Validar campos requeridos
+    const fieldsRequired = validateRequiredFields();
+    setEmptyRequiredFields(fieldsRequired);
+    
+    if (fieldsRequired.length > 0) {
+      alert("Por favor, complete todos los campos obligatorios: " + fieldsRequired.join(", "));
+      return;
+    }
+    
+    // Ensure character exists
+    if (!character) {
+      console.error("Character data is missing");
+      return;
+    }
+    
+    console.log("Campos requeridos completos, preparando datos para el modal...");
+
+    try {
+      const newCharacter = prepareCharacterData();
+      console.log("Datos del personaje preparados para el modal:", newCharacter);
+      setDataCharacter(newCharacter);
+      console.log("Abriendo modal...");
+      onOpen();
+      console.log("Modal abierto, isOpen=", isOpen);
+    } catch (error) {
+      console.error("Error preparing character data:", error);
+      alert("Error al preparar los datos del personaje");
+    }
   };
   /**
    * Generates random dice values for character stats
@@ -1558,25 +1634,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     console.log("onSubmitForm: Modal debería estar abierto ahora, isOpen=", isOpen);
   };
 
-  /**
-   * Validates an inventory object and ensures it has all required fields
-   * @param object The inventory object to validate
-   * @returns A valid inventory object with defaults for missing fields
-   */
-  const validateInventoryObject = (object: Partial<InventoryObject>): InventoryObject => {
-    return {
-      id: object.id || uuidv4(),
-      name: object.name || '',
-      description: object.description || 'Sin descripción',
-      count: object.count !== undefined ? object.count : 1,
-      readOnly: object.readOnly || false
-    };
-  };
-
-  /**
+    /**
    * Validates the character form data and returns an array of field IDs with errors
    * @returns Array of field IDs that failed validation
-   */  const validateCharacterForm = (): string[] => {
+   */const validateCharacterForm = (): string[] => {
     let fieldsRequired: string[] = [];
     
     // Use our character validation utility
@@ -1621,7 +1682,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   };
 
   /**
-   * Generic async function error handler with proper logging and error messaging
+   * Generic async function error handler with proper logging and user-friendly messaging
    */
   const handleAsyncError = useCallback((error: unknown, operation: string) => {
     console.error(`Error during ${operation}:`, error);
@@ -1629,6 +1690,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     // Extract detailed error information
     let errorMessage = 'Unknown error';
     let errorDetails = '';
+    let userFriendlyMessage = '';
     
     if (error instanceof Error) {
       errorMessage = error.message;
@@ -1640,7 +1702,28 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       
       // Extract Supabase specific error details
       if ('code' in error && 'hint' in error) {
-        errorDetails = `Code: ${(error as any).code}, Hint: ${(error as any).hint}`;
+        const code = (error as any).code;
+        const hint = (error as any).hint;
+        errorDetails = `Code: ${code}, Hint: ${hint}`;
+        
+        // Generate user-friendly messages for common Supabase errors
+        switch(code) {
+          case '23505': 
+            userFriendlyMessage = 'Ya existe un registro con esa información.';
+            break;
+          case '42501':
+            userFriendlyMessage = 'No tienes permisos para realizar esta acción.';
+            break;
+          case '23503':
+            userFriendlyMessage = 'No se puede eliminar porque otros registros dependen de este.';
+            break;
+          // Add more specific error cases as needed
+        }
+      }
+      
+      // Network error handling
+      if (errorMessage.includes('network') || errorMessage.includes('NetworkError')) {
+        userFriendlyMessage = 'Hay un problema de conexión. Por favor, verifica tu conexión a internet.';
       }
     }
     
@@ -1649,8 +1732,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       console.error(`Additional error details for ${operation}:`, errorDetails);
     }
     
+    // Use specific message if available, otherwise construct a generic one
+    if (!userFriendlyMessage) {
+      userFriendlyMessage = `Error durante ${operation}: ${errorMessage}. Por favor, inténtalo de nuevo.`;
+    }
+    
     // Show user-friendly error message
-    alert(`Error during ${operation}: ${errorMessage}. Please try again later.`);
+    alert(userFriendlyMessage);
     
     return null;
   }, []);
@@ -1846,20 +1934,21 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         </fieldset>
 
         {/* Estadisticas del personaje */}
-        <fieldset className="fieldset-form stats-player row-span-3 col-span-1 col-start-1 bg-white shadow-lg rounded">
-          <legend>Estadisticas del personaje</legend>
+        <fieldset className="fieldset-form stats-player row-span-3 col-span-1 col-start-1 bg-white shadow-lg rounded" aria-labelledby="stats-heading">
+          <legend id="stats-heading" className="text-lg font-semibold">Estadísticas del personaje</legend>
           <header className="stats-player-header col-span-3 col-start-3">
             <Tooltip
               className="bg-dark text-light px-2 py-1"
               placement="top"
-              content={"Estadisticas al azar"}
+              content={"Generar estadísticas aleatorias"}
             >
               <button
                 type="button"
                 className="btn-save-character"
                 onClick={randomRoll}
+                aria-label="Generar estadísticas aleatorias"
               >
-                <SvgD4Roll className="btn-roll" width={30} height={30} />
+                <SvgD4Roll className="btn-roll" width={30} height={30} aria-hidden="true" />
               </button>
             </Tooltip>
           </header>
@@ -2018,12 +2107,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         </fieldset>
 
         {/* Inventario */}
-        <fieldset className="fieldset-form inventory-player row-span-3 col-span-1 col-start-1 lg:col-start-3 lg:row-start-3 bg-white shadow-lg rounded">
-          <legend>Inventario</legend>
+        <fieldset className="fieldset-form inventory-player row-span-3 col-span-1 col-start-1 lg:col-start-3 lg:row-start-3 bg-white shadow-lg rounded" aria-labelledby="inventory-heading">
+          <legend id="inventory-heading" className="text-lg font-semibold">Inventario</legend>
 
           <label
             htmlFor="goldCoins"
-            className="form-lbl col-span-3 mb-1 bg-grey-lighter "
+            className="form-lbl col-span-3 mb-1 bg-grey-lighter font-medium"
           >
             Monedero
           </label>

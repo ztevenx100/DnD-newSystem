@@ -1084,11 +1084,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setEmptyRequiredFields(prev => prev.filter(field => field !== fieldId));
     }
   };
-    // Función para abrir el modal con validación manual
-  const handleOpenModal = () => {
-    console.log("Ejecutando handleOpenModal");
-    
-    // Validar campos requeridos manualmente
+    // Función para abrir el modal con validación manual  
+  /**
+   * Valida los campos requeridos para abrir el modal
+   * @returns array de strings con los campos que faltan
+   */
+  const validateRequiredFields = (): string[] => {
     const fieldsRequired: string[] = [];
     
     // Validate required character properties
@@ -1111,30 +1112,27 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       console.log("Falta el nombre del personaje");
       fieldsRequired.push('name');
     }
-      // Validate stats - use our getStatTotal helper
-    const totalStatsSum = getStatTotal('total');
     
+    // Validate stats - use our getStatTotal helper
+    const totalStatsSum = getStatTotal('total');
     if (totalStatsSum <= 0) {
       console.log("No hay estadísticas definidas");
       fieldsRequired.push('stats');
     }
     
-    setEmptyRequiredFields(fieldsRequired);
-    
-    if (fieldsRequired.length > 0) {
-      alert("Por favor, complete todos los campos obligatorios: " + fieldsRequired.join(", "));
-      return;
-    }
-    
-    // Ensure character exists
+    return fieldsRequired;
+  };
+  
+  /**
+   * Prepara los datos del personaje para el modal
+   * @returns Un objeto DataCharacter con todos los datos del personaje
+   */
+  const prepareCharacterData = (): DataCharacter => {
     if (!character) {
-      console.error("Character data is missing");
-      return;
+      throw new Error("Character data is missing");
     }
     
-    console.log("Campos requeridos completos, preparando datos para el modal...");
-
-    const newCharacter: DataCharacter = {
+    return {
       id: character.pus_id || '',
       player: character.pus_usuario || '',
       name: character.pus_nombre || '',
@@ -1196,11 +1194,43 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       coinsInv: coins || [0, 0, 0],
       inv: invObjects || [],
     };
-    console.log("Datos del personaje preparados para el modal:", newCharacter);
-    setDataCharacter(newCharacter);
-    console.log("Abriendo modal...");
-    onOpen();
-    console.log("Modal abierto, isOpen=", isOpen);
+  };
+
+  /**
+   * Abre el modal para guardar el personaje, validando primero
+   * que todos los campos requeridos estén completos
+   */
+  const handleOpenModal = () => {
+    console.log("Ejecutando handleOpenModal");
+    
+    // Validar campos requeridos
+    const fieldsRequired = validateRequiredFields();
+    setEmptyRequiredFields(fieldsRequired);
+    
+    if (fieldsRequired.length > 0) {
+      alert("Por favor, complete todos los campos obligatorios: " + fieldsRequired.join(", "));
+      return;
+    }
+    
+    // Ensure character exists
+    if (!character) {
+      console.error("Character data is missing");
+      return;
+    }
+    
+    console.log("Campos requeridos completos, preparando datos para el modal...");
+
+    try {
+      const newCharacter = prepareCharacterData();
+      console.log("Datos del personaje preparados para el modal:", newCharacter);
+      setDataCharacter(newCharacter);
+      console.log("Abriendo modal...");
+      onOpen();
+      console.log("Modal abierto, isOpen=", isOpen);
+    } catch (error) {
+      console.error("Error preparing character data:", error);
+      alert("Error al preparar los datos del personaje");
+    }
   };
   /**
    * Generates random dice values for character stats

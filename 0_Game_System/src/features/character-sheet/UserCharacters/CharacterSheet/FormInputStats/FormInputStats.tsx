@@ -1,47 +1,86 @@
-import React, { ChangeEvent } from 'react';
-
-import { Tooltip } from "@nextui-org/react"
-
+import React, { ChangeEvent, useState, useEffect } from 'react';
+import { Tooltip } from "@nextui-org/react";
 import { InputStats } from '@/shared/utils/types/typesCharacterSheet';
 
+/**
+ * Props para el componente FormInputStats
+ * @interface InputNumberProps
+ * @property {InputStats} inputStats - Datos de la estadística a mostrar
+ * @property {function} onSelectedValuesChange - Función a llamar cuando cambian los valores
+ */
 interface InputNumberProps {
     inputStats: InputStats;
     onSelectedValuesChange: (newInputStats: InputStats) => void;
 }
 
-const FormInputStats: React.FC<InputNumberProps> = ({inputStats,  onSelectedValuesChange})  => {
-  let sum = inputStats.valueDice + inputStats.valueClass + inputStats.valueLevel;
+/**
+ * Componente para mostrar y editar los valores de estadísticas de un personaje
+ * Muestra un campo con el total y campos para dado, clase y nivel
+ */
+const FormInputStats: React.FC<InputNumberProps> = ({inputStats, onSelectedValuesChange}) => {
+  // Mantener el total como estado para actualizarlo cuando cambien los valores
+  const [sum, setSum] = useState<number>(
+    inputStats.valueDice + inputStats.valueClass + inputStats.valueLevel
+  );
+  
+  // Actualizar la suma cuando cambie alguno de los valores
+  useEffect(() => {
+    setSum(inputStats.valueDice + inputStats.valueClass + inputStats.valueLevel);
+  }, [inputStats.valueDice, inputStats.valueClass, inputStats.valueLevel]);
 
-  function validateNumeric(value:string, valueDefault?: number): number{
-    if(isNaN(Number(value))){
-       alert('Valor no numerico');
-       return valueDefault||0;
-    } else if (value === '') {
-       return valueDefault||0;
-    } else {
-       return parseInt(value);
+  /**
+   * Valida y convierte un valor a número
+   * @param {string} value - Valor a validar
+   * @param {number} [valueDefault] - Valor por defecto si no es válido
+   * @returns {number} - Valor numérico validado
+   */
+  function validateNumeric(value: string, valueDefault: number = 0): number {
+    // Si está vacío, usar valor por defecto
+    if (value === '') {
+      return valueDefault;
     }
+    
+    // Convertir a número y validar
+    const num = Number(value);
+    if (isNaN(num)) {
+      alert('El valor debe ser numérico');
+      return valueDefault;
+    }
+    
+    // Asegurar que el valor sea un entero no negativo
+    return Math.max(0, Math.floor(num));
   }
 
-    const handleInputChange = (index: number, value: string) => {
-        let numericValue = validateNumeric(value);
-        switch (index) {
-            case 0:
-                inputStats.valueDice = numericValue;
-                break;
-            case 1:
-                inputStats.valueClass = numericValue;
-                break;
-            case 2:
-                inputStats.valueLevel = numericValue;
-                break;
-        
-            default:
-                break;
-        }
-        onSelectedValuesChange(inputStats);
-        sum = inputStats.valueDice + inputStats.valueClass + inputStats.valueLevel;
-    };
+  /**
+   * Maneja los cambios en los inputs de estadísticas
+   * @param {number} index - Índice del tipo de valor (0: dado, 1: clase, 2: nivel)
+   * @param {string} value - Nuevo valor como string
+   */
+  const handleInputChange = (index: number, value: string) => {
+    const numericValue = validateNumeric(value);
+    // Crear una copia del objeto para mantener la inmutabilidad
+    const updatedStats = { ...inputStats };
+    
+    // Actualizar la propiedad correspondiente
+    switch (index) {
+      case 0:
+        updatedStats.valueDice = numericValue;
+        break;
+      case 1:
+        updatedStats.valueClass = numericValue;
+        break;
+      case 2:
+        updatedStats.valueLevel = numericValue;
+        break;
+      default:
+        return; // No hacer nada si el índice es inválido
+    }
+    
+    // Actualizar la suma y notificar el cambio
+    const newSum = updatedStats.valueDice + updatedStats.valueClass + updatedStats.valueLevel;
+    setSum(newSum);
+    onSelectedValuesChange(updatedStats);
+  };
 
     return (
         <>

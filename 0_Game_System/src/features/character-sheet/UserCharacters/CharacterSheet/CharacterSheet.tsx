@@ -782,34 +782,57 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       );
       
    };*/
+  /**
+   * Maneja el cambio en la selección de raza del personaje
+   * 
+   * @param value - ID de la raza seleccionada
+   */
    const handleSelectRaceChange = (value: string) => {
+    // Limpiar cualquier error de validación previo
     clearValidationError('characterRace');
     console.log("Selecting race:", value);
     
+    // Actualizar la raza en el estado del personaje
     setCharacter((prevState) => {
       if (!prevState) return prevState;
-      // Use the type-safe helper to update race property
+      
+      // Usar el helper con tipado seguro para actualizar la propiedad
       const updated = setCharacterProperty(prevState, 'pus_raza', value);
       console.log("Updated character state with race:", updated);
       return updated;
     });
   };
-
+  /**
+   * Maneja el cambio en la selección del sistema de juego
+   * 
+   * @param currentSystem - ID del sistema de juego seleccionado
+   */
   const handleSystemGameChange = (currentSystem: string = "") => {
-    if (!currentSystem) return;
+    // Validación de entrada
+    if (!currentSystem) {
+      return;
+    }
+    
+    // Buscar la opción correspondiente al sistema seleccionado
     const option = SystemGameList.filter((elem) => elem.value === currentSystem);
-    if (option.length === 0) return;
+    if (option.length === 0) {
+      return;
+    }
     
     console.log("Cambiando sistema de juego:", currentSystem, option[0].name);
     
+    // Actualizar el estado del sistema de juego
     setSystemGame({
       sju_id: option[0].value,
       sju_nombre: option[0].name,
       sju_descripcion: systemGame.sju_descripcion
     });
-      setCharacter((prevState) => {
+    
+    // Actualizar el sistema de juego en el estado del personaje
+    setCharacter((prevState) => {
       if (!prevState) return prevState;
-      // Use the type-safe helper to update system game property
+      
+      // Usar el helper con tipado seguro para actualizar la propiedad
       return setCharacterProperty(prevState, 'pus_sistema_juego', currentSystem);
     });
   };
@@ -827,6 +850,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     
     if (option.length > 0) {
       console.log("Found matching option for skillClass:", option[0]);
+      
+      // Actualizar el valor seleccionado
+      setSelectedSkillValue(currentSkill);
+      
+      // Actualizar el campo de habilidad
       setFieldSkill((prevItems) =>
         prevItems.map((item) =>
           item.field === "skillClass"
@@ -834,26 +862,37 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             : item
         )
       );
-      setSelectedSkillValue(currentSkill);
     } else {
       console.warn("No matching option found for skillClass:", currentSkill);
     }
   };
-
+  /**
+   * Maneja el cambio en la selección de habilidades extra
+   * 
+   * @param currentSkill - ID de la habilidad extra seleccionada
+   */
   const handleSelectExtraSkillChange = (currentSkill: string) => {
     console.log("handleSelectExtraSkillChange called with:", currentSkill);
+    
+    // Manejo del caso de valor vacío
     if (!currentSkill) {
       console.log("Empty extra skill value, skipping update");
       setSelectedExtraSkillValue("");
       return;
     }
     
+    // Buscar la opción correspondiente al valor seleccionado
     const option = optionsSkillExtra.filter(
       (skill) => skill.value === currentSkill
     );
     
     if (option.length > 0) {
       console.log("Found matching option for skillExtra:", option[0]);
+      
+      // Actualizar el valor seleccionado
+      setSelectedExtraSkillValue(currentSkill);
+      
+      // Actualizar el campo de habilidad extra
       setFieldSkill((prevItems) =>
         prevItems.map((item) =>
           item.field === "skillExtra"
@@ -861,37 +900,61 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             : item
         )
       );
-      setSelectedExtraSkillValue(currentSkill);
     } else {
       console.warn("No matching option found for skillExtra:", currentSkill);
     }
   };
-
+  /**
+   * Actualiza los puntos de estadísticas basados en la clase y trabajo seleccionados
+   * 
+   * @param selectedClass - Clase seleccionada del personaje
+   * @param selectedJob - Trabajo seleccionado del personaje
+   */
   const updStatsPoints = (selectedClass: string, selectedJob: string): void => {
     const updatedInputsStatsData = [...inputsStatsData];
-    const extraPoints =
-      optionsCharacterJob.find((option) => option.value === selectedJob)
-        ?.extraPoint || "";
+    
+    // Obtener puntos extra del trabajo seleccionado
+    const extraPoints = optionsCharacterJob.find(
+      (option) => option.value === selectedJob
+    )?.extraPoint || "";
 
-    updatedInputsStatsData[0].valueClass =
-      (selectedClass === "WAR" ? 2 : 0) + (extraPoints.includes("STR") ? 1 : 0);
-    updatedInputsStatsData[1].valueClass =
-      (selectedClass === "MAG" ? 2 : 0) + (extraPoints.includes("INT") ? 1 : 0);
-    updatedInputsStatsData[2].valueClass =
-      (selectedClass === "SCO" ? 2 : 0) + (extraPoints.includes("DEX") ? 1 : 0);
-    updatedInputsStatsData[3].valueClass =
-      (selectedClass === "MED" ? 2 : 0) + (extraPoints.includes("CON") ? 1 : 0);
-    updatedInputsStatsData[4].valueClass =
-      (selectedClass === "RES" ? 2 : 0) + (extraPoints.includes("PER") ? 1 : 0);
-    updatedInputsStatsData[5].valueClass =
-      (selectedClass === "ACT" ? 2 : 0) + (extraPoints.includes("CHA") ? 1 : 0);
+    // Mapeo de clases a sus estadísticas principales
+    const classStatBonuses = {
+      "WAR": "STR", // Guerrero - Fuerza
+      "MAG": "INT", // Mago - Inteligencia
+      "SCO": "DEX", // Explorador - Destreza
+      "MED": "CON", // Médico - Constitución
+      "RES": "PER", // Investigador - Percepción
+      "ACT": "CHA"  // Artista - Carisma
+    };
+    
+    // Resetear todos los bonos de clase
+    for (let i = 0; i < updatedInputsStatsData.length; i++) {
+      // Calcular bono de clase (2 si es la estadística principal de la clase, 0 en caso contrario)
+      const classBonus = classStatBonuses[selectedClass as keyof typeof classStatBonuses] === updatedInputsStatsData[i].id ? 2 : 0;
+      
+      // Calcular bono de trabajo (1 si el trabajo incluye esta estadística, 0 en caso contrario)
+      const jobBonus = extraPoints.includes(updatedInputsStatsData[i].id) ? 1 : 0;
+      
+      // Asignar el valor total
+      updatedInputsStatsData[i].valueClass = classBonus + jobBonus;
+    }
 
     setInputsStatsData(updatedInputsStatsData);
   };
-  
+    /**
+   * Maneja el cambio en la selección de clase del personaje
+   * 
+   * Esta función actualiza la clase del personaje, asigna el conocimiento correspondiente,
+   * actualiza los puntos de estadísticas y selecciona la habilidad principal según la clase
+   *
+   * @param value - ID de la clase seleccionada
+   */
   const handleCharacterClassChange = (value: string) => {
+    // Limpiar cualquier error de validación previo
     clearValidationError('characterClass');
     
+    // Buscar la opción de clase seleccionada
     const selectedOption = optionsCharacterClass.find(
       (option) => option.value === value
     );
@@ -908,8 +971,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       case 'RES': knowledgeValue = "ACO"; break;
       case 'ACT': knowledgeValue = "ART"; break;
     }
-      setCharacter((prevState) => {
+    
+    // Actualizar los datos del personaje
+    setCharacter((prevState) => {
       if (!prevState) return prevState;
+      
       // Usar nuestra función de utilidad para actualizar propiedades de manera segura
       let updated = setCharacterProperty(prevState, 'pus_clase', value);
       updated = setCharacterProperty(updated, 'pus_conocimientos', knowledgeValue);
@@ -917,24 +983,38 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return updated;
     });
 
-    // Use optional chaining to avoid non-null assertion
+    // Actualizar puntos de estadísticas basados en la clase y trabajo
     updStatsPoints(value, character?.pus_trabajo || '');
+    
+    // Seleccionar y actualizar la habilidad principal según la clase
     const skillValue = selectedOption?.mainStat ? "S" + selectedOption.mainStat : "";
     setSelectedSkillValue(skillValue);
     handleSelectSkillChange(skillValue);
   };
-    const handleCharacterJobSelectChange = (value: string) => {
+  /**
+   * Maneja el cambio en la selección de trabajo/profesión del personaje
+   * 
+   * Esta función actualiza el trabajo del personaje y ajusta los puntos de estadísticas
+   * basados en la combinación de clase y trabajo seleccionados
+   *
+   * @param value - ID del trabajo seleccionado
+   */
+  const handleCharacterJobSelectChange = (value: string) => {
+    // Limpiar cualquier error de validación previo
     clearValidationError('characterJob');
     console.log("Selecting job:", value);
-      setCharacter((prevState) => {
+    
+    // Actualizar el trabajo en el estado del personaje
+    setCharacter((prevState) => {
       if (!prevState) return prevState;
-      // Use the type-safe helper to update job property
+      
+      // Usar la función helper con tipado seguro para actualizar la propiedad
       const updated = setCharacterProperty(prevState, 'pus_trabajo', value);
       console.log("Updated character state with job:", updated);
       return updated;
     });
     
-    // Use optional chaining to avoid non-null assertion
+    // Actualizar puntos de estadísticas basados en la clase y trabajo
     updStatsPoints(character?.pus_clase || '', value);
   };
   /**
@@ -991,21 +1071,43 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       )
     );
   };
-
   const [formAlignment, setFormAlignment] = useState<string>("");
-    const handleAlignmentChange = (value: string) => {
+  
+  /**
+   * Actualiza la alineación del personaje y aplica efectos visuales
+   * basados en la alineación seleccionada
+   * 
+   * @param value - Alineación seleccionada ('O' para Orden, 'C' para Caos)
+   */
+  const handleAlignmentChange = (value: string) => {
+    // Actualizar la alineación en el estado del personaje
     setCharacter((prevState) => {
       if (!prevState) return prevState;
-      // Use the type-safe helper to modify the property
+      
+      // Usar el helper con tipado seguro para modificar la propiedad
       return setCharacterProperty(prevState, 'pus_alineacion', value);
     });
+    
+    // Actualizar la variable de estado que controla la clase CSS para efectos visuales
     setFormAlignment(value);
   };
+  
+  /**
+   * Actualiza la cantidad de monedas en el inventario
+   * 
+   * @param index - Índice del tipo de moneda (0: oro, 1: plata, 2: bronce)
+   * @param value - Valor ingresado por el usuario
+   */
   const handleCoinsChange = (index: number, value: string) => {
+    // Validar y convertir el valor a número
     const numericValue = validateNumeric(value);
-    const updatedCoins = [...coins];
-    updatedCoins[index] = numericValue;
-    setCoins(updatedCoins);
+    
+    // Actualizar el estado de monedas
+    setCoins((prevCoins) => {
+      const updatedCoins = [...prevCoins];
+      updatedCoins[index] = numericValue;
+      return updatedCoins;
+    });
   };
   
   /**
@@ -1501,7 +1603,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     upsertDataInp(saveItems);
     deleteItemInventory(deleteItems);
   }
-  
+    /**
+   * Handles the form submission, performing validations and preparing data for saving
+   * @param data The form data submitted
+   */
   const onSubmitForm = (data: CharacterForm) => {
     console.log("Form submission data:", {
       formData: data,
@@ -1519,40 +1624,77 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         raceValue: character?.pus_raza,
         jobValue: character?.pus_trabajo
       }
-    });      // Use our validateCharacterForm function to check for errors
+    });
+    
+    // Using our validateCharacterForm function for comprehensive validation
     let fieldsRequired: string[] = validateCharacterForm();
     
-    // Add additional form-specific validations
-    if (!data.name?.trim()) fieldsRequired.push('name');
+    // Add form-specific validations ensuring all numeric values are valid
+    if (!data.name?.trim()) {
+      fieldsRequired.push('name');
+    }
     
-    // Validate numerical fields
-    if (data.level < 1 || data.level > 10) fieldsRequired.push('level');
-    if (data.luckyPoints < 0) fieldsRequired.push('luckyPoints');
-    if (data.lifePoints < 0) fieldsRequired.push('lifePoints');
+    // Validate numerical fields with proper type conversion
+    const level = safeNumberConversion(data.level, 0);
+    const luckyPoints = safeNumberConversion(data.luckyPoints, 0);
+    const lifePoints = safeNumberConversion(data.lifePoints, 0);
     
-    // Validate weapon fields
-    if (!data.mainWeapon?.trim()) fieldsRequired.push('mainWeapon');
+    if (level < 1 || level > 10) {
+      fieldsRequired.push('level');
+    }
     
+    if (luckyPoints < 0) {
+      fieldsRequired.push('luckyPoints');
+    }
+    
+    if (lifePoints < 0) {
+      fieldsRequired.push('lifePoints');
+    }
+    
+    // Validate equipment fields
+    if (!data.mainWeapon?.trim()) {
+      fieldsRequired.push('mainWeapon');
+    }
+    
+    // Check if character stats are properly initialized
+    if (!validateCharacterStats(inputsStatsData)) {
+      fieldsRequired.push('stats');
+    }
+    
+    // Remove duplicate entries if any
+    fieldsRequired = [...new Set(fieldsRequired)];
+    
+    // Update state with validation errors
     setEmptyRequiredFields(fieldsRequired);
     
-    // Si hay campos vacíos, no enviar el formulario
+    // If there are validation errors, stop form processing and show error message
     if (fieldsRequired.length > 0) {
       console.log("Required fields missing:", fieldsRequired);
       
-      // Group error messages by category
+      // Group error messages by category for better user experience
       const basicInfoErrors = ['name', 'characterRace', 'characterClass', 'characterJob'];
       const statsErrors = ['stats', 'level', 'luckyPoints', 'lifePoints'];
       const weaponsErrors = ['mainWeapon', 'secondaryWeapon'];
+      const skillsErrors = ['mainSkill', 'extraSkill'];
       
       let errorMessage = "Por favor, complete todos los campos obligatorios:\n";
       
       const basicMissing = fieldsRequired.filter(field => basicInfoErrors.includes(field));
       const statsMissing = fieldsRequired.filter(field => statsErrors.includes(field));
       const weaponsMissing = fieldsRequired.filter(field => weaponsErrors.includes(field));
+      const skillsMissing = fieldsRequired.filter(field => skillsErrors.includes(field));
+      const otherMissing = fieldsRequired.filter(field => 
+        !basicInfoErrors.includes(field) && 
+        !statsErrors.includes(field) && 
+        !weaponsErrors.includes(field) &&
+        !skillsErrors.includes(field)
+      );
       
       if (basicMissing.length > 0) errorMessage += "\n- Información básica: " + basicMissing.join(", ");
       if (statsMissing.length > 0) errorMessage += "\n- Estadísticas: " + statsMissing.join(", ");
       if (weaponsMissing.length > 0) errorMessage += "\n- Armamento: " + weaponsMissing.join(", ");
+      if (skillsMissing.length > 0) errorMessage += "\n- Habilidades: " + skillsMissing.join(", ");
+      if (otherMissing.length > 0) errorMessage += "\n- Otros campos: " + otherMissing.join(", ");
       
       alert(errorMessage);
       return;
@@ -1561,9 +1703,26 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     // Ensure character exists before proceeding
     if (!character) {
       console.error("Character data is missing");
+      alert("Error: No se encontraron datos del personaje. Por favor, intenta nuevamente.");
       return;
     }
     
+    // Update character state with form values
+    const updatedCharacter = {
+      ...character,
+      pus_nombre: data.name,
+      pus_nivel: data.level,
+      pus_puntos_suerte: data.luckyPoints,
+      pus_vida: data.lifePoints,
+      pus_arma_principal: data.mainWeapon,
+      pus_arma_secundaria: data.secondaryWeapon,
+      pus_descripcion: data.characterDescription,
+      pus_cantidad_oro: data.goldCoins,
+      pus_cantidad_plata: data.silverCoins,
+      pus_cantidad_bronce: data.bronzeCoins
+    };
+    
+    // Prepare character data for the modal
     const newCharacter: DataCharacter = {
       id: character.pus_id || '',
       player: character.pus_usuario || '',
@@ -1572,7 +1731,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       race: character.pus_raza || '',
       job: character.pus_trabajo || '',
       level: data.level,
-      luckyPoints: character.pus_puntos_suerte || 0,
+      luckyPoints: data.luckyPoints,
       description: data.characterDescription || '',
       knowledge: character.pus_conocimientos ? character.pus_conocimientos.split(',').filter(Boolean) : [],
       mainWeapon: data.mainWeapon || '',
@@ -1627,6 +1786,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       inv: invObjects,
     };
     
+    // Update the character state with the form values
+    setCharacter(updatedCharacter);
+    
     console.log("onSubmitForm: Preparando datos para el modal", newCharacter);
     setDataCharacter(newCharacter);
     console.log("onSubmitForm: Abriendo modal...");
@@ -1637,13 +1799,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     /**
    * Validates the character form data and returns an array of field IDs with errors
    * @returns Array of field IDs that failed validation
-   */const validateCharacterForm = (): string[] => {
+   */
+  const validateCharacterForm = (): string[] => {
     let fieldsRequired: string[] = [];
     
-    // Use our character validation utility
+    // Use our character validation utility for base character properties
     if (character) {
       const characterErrors = validateCharacter(character);
-      // Map database field names to form field names
+      
+      // Map database field names to form field names for UI validation
       characterErrors.forEach(field => {
         if (field === 'pus_nombre') fieldsRequired.push('name');
         else if (field === 'pus_raza') fieldsRequired.push('characterRace');
@@ -1652,33 +1816,64 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       });
     } else {
       fieldsRequired.push('character');
+      return fieldsRequired; // Exit early if character doesn't exist
     }
     
-    // Form values validation
+    // Validate form field values from form state
     const formValues = getValues();
+    
+    // Check basic required text fields
     if (!formValues.name?.trim()) {
       if (!fieldsRequired.includes('name')) fieldsRequired.push('name');
     }
     
-    // Validate numeric values using our safe conversion helper
-    if (safeNumberConversion(formValues.level, 0) <= 0) {
+    // Validate character level with proper type safety
+    const level = safeNumberConversion(formValues.level);
+    if (level < 1 || level > 10) {
       fieldsRequired.push('level');
     }
     
-    // Stats validation using our stats validation helper
+    // Validate other numeric values
+    const luckyPoints = safeNumberConversion(formValues.luckyPoints);
+    if (luckyPoints < 0) {
+      fieldsRequired.push('luckyPoints');
+    }
+    
+    const lifePoints = safeNumberConversion(formValues.lifePoints);
+    if (lifePoints < 0) {
+      fieldsRequired.push('lifePoints');
+    }
+    
+    // Validate required weapons
+    if (!formValues.mainWeapon?.trim()) {
+      fieldsRequired.push('mainWeapon');
+    }
+    
+    // Validate stats using our stats validation helper
     if (!validateCharacterStats(inputsStatsData)) {
       fieldsRequired.push('stats');
+    } else {
+      // Additional check for total stats to ensure character has some abilities
+      const totalStats = inputsStatsData.reduce((sum, stat) => 
+        sum + stat.valueDice + stat.valueClass + stat.valueLevel, 0);
+      
+      if (totalStats <= 0) {
+        if (!fieldsRequired.includes('stats')) fieldsRequired.push('stats');
+      }
     }
     
-    // Additional check for total stats
-    const totalStats = inputsStatsData.reduce((sum, stat) => 
-      sum + stat.valueDice + stat.valueClass + stat.valueLevel, 0);
-    
-    if (totalStats <= 0) {
-      if (!fieldsRequired.includes('stats')) fieldsRequired.push('stats');
+    // Validate selected skills
+    if (!selectedSkillValue) {
+      fieldsRequired.push('mainSkill');
     }
     
-    return fieldsRequired;
+    // Validate character description if it's a required field
+    if (formValues.characterDescription?.trim() === '') {
+      fieldsRequired.push('description');
+    }
+    
+    // Remove any duplicate entries
+    return [...new Set(fieldsRequired)];
   };
 
   /**

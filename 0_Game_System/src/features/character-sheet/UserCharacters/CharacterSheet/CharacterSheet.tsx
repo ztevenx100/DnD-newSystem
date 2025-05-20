@@ -76,7 +76,8 @@ import {
   getGameSystemProperty,
   validateCharacter,
   validateCharacterStats,
-  safeNumberConversion
+  safeNumberConversion,
+  validateCharacterAttributes
 } from "@shared/utils/helpers/characterHelpers";
 
 // Assets and Icons
@@ -347,7 +348,17 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setInvObjects(updatedInvObjects);
     }
   }, [invObjects, params.id]);
-
+  /**
+   * Maneja el cambio en la selección de una habilidad para un anillo específico
+   * 
+   * Esta función actualiza el estado cuando el usuario selecciona una habilidad diferente
+   * para uno de los anillos de habilidad del personaje
+   * 
+   * @param id - ID/índice del anillo que está siendo modificado
+   * @param ring - Tipo de anillo seleccionado
+   * @param skill - ID de la habilidad seleccionada
+   * @param stat - Estadística base asociada a la habilidad
+   */
   const handleSelectedRingSkillChange = useCallback((
     id: string,
     ring: string,
@@ -355,6 +366,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     stat: string
   ) => {
     console.log('handleSelectedRingSkillChange', {id, ring, skill, stat});
+    
+    // Validar entradas
+    if (!id || !ring || !skill) {
+      console.warn('ID, ring o skill inválidos en handleSelectedRingSkillChange', {id, ring, skill});
+      return;
+    }
+    
+    // Actualizar la habilidad seleccionada para este anillo
     setSkillsAcquired((prevItems) =>
       prevItems.map((item) =>
         item.value === id
@@ -362,13 +381,32 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           : item
       )
     );
+    
+    // Limpiar cualquier error de validación relacionado con este anillo
+    clearValidationError(`ringSkill${id}`);
   }, []);
-
+  /**
+   * Maneja el cambio en el tipo de habilidad del anillo seleccionado
+   * 
+   * Esta función actualiza la lista de habilidades disponibles para un anillo específico
+   * basándose en el tipo de habilidad seleccionado, y reinicia la selección actual
+   * 
+   * @param id - ID/índice del anillo que está siendo modificado
+   * @param type - Tipo de habilidad seleccionado para el anillo
+   */
   const handleSelectedTypeRingSkillChange = useCallback(async (
     id: string,
     type: string
   ) => {
     console.log('handleSelectedTypeRingSkillChange', {id, type});
+    
+    // Validar entradas
+    if (!id || !type) {
+      console.warn('ID o tipo de habilidad inválido', {id, type});
+      return;
+    }
+    
+    // Actualizar la lista de habilidades disponibles para este anillo
     setSkillsRingList(prevList => {
       const newList = [...prevList];
       const skills = skillsTypes.find(option => option.id === type)?.skills || [];
@@ -380,22 +418,32 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           skillsTypes.map(s => ({ id: s.id, numSkills: s.skills.length })));
       }
       
-      newList[Number(id)] = {
-        ...newList[Number(id)],
+      // Actualizar las habilidades disponibles para este anillo
+      const ringIndex = Number(id);
+      if (isNaN(ringIndex) || ringIndex < 0 || ringIndex >= newList.length) {
+        console.error(`Índice de anillo inválido: ${id}`);
+        return prevList;
+      }
+      
+      newList[ringIndex] = {
+        ...newList[ringIndex],
         skills: skills
       };
       
-      // Reset the skill selection when changing the skill type
-      setSkillsAcquired(prev => 
-        prev.map((item) => 
-          item.value === id
-            ? { ...item, name: "", id: "", ring: type }
-            : item
-        )
-      );
-      
       return newList;
     });
+    
+    // Reiniciar la selección de habilidad cuando se cambia el tipo
+    setSkillsAcquired(prev => 
+      prev.map((item) => 
+        item.value === id
+          ? { ...item, name: "", id: "", ring: type }
+          : item
+      )
+    );
+    
+    // Limpiar cualquier error de validación relacionado con este anillo
+    clearValidationError(`ringSkill${id}`);
   }, [skillsTypes]);
 
   const getSkills = useCallback(async () => {
@@ -771,17 +819,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     }
   }
 
-  /*const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const { name, value } = e.target;
-      
-      setCharacter(
-         prevState => ({
-            ...prevState!,
-            [name]: value
-         })
-      );
-      
-   };*/
   /**
    * Maneja el cambio en la selección de raza del personaje
    * 
@@ -836,14 +873,25 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return setCharacterProperty(prevState, 'pus_sistema_juego', currentSystem);
     });
   };
+  /**
+   * Maneja el cambio en la selección de habilidad principal del personaje
+   * 
+   * Esta función actualiza la habilidad principal del personaje, actualizando
+   * el estado correspondiente y los campos relacionados en el formulario
+   *
+   * @param currentSkill - ID de la habilidad seleccionada
+   */
   const handleSelectSkillChange = (currentSkill: string) => {
     console.log("handleSelectSkillChange called with:", currentSkill);
+    
+    // Manejo del caso de valor vacío
     if (!currentSkill) {
       console.log("Empty skill value, skipping update");
       setSelectedSkillValue("");
       return;
     }
     
+    // Buscar la opción correspondiente al valor seleccionado
     const option = optionsSkillClass.filter(
       (skill) => skill.value === currentSkill
     );
@@ -854,7 +902,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       // Actualizar el valor seleccionado
       setSelectedSkillValue(currentSkill);
       
-      // Actualizar el campo de habilidad
+      // Actualizar el campo de habilidad en el estado
       setFieldSkill((prevItems) =>
         prevItems.map((item) =>
           item.field === "skillClass"
@@ -862,6 +910,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             : item
         )
       );
+      
+      // Limpiar cualquier error de validación relacionado con la habilidad
+      clearValidationError('skillClass');
     } else {
       console.warn("No matching option found for skillClass:", currentSkill);
     }
@@ -907,19 +958,37 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   /**
    * Actualiza los puntos de estadísticas basados en la clase y trabajo seleccionados
    * 
-   * @param selectedClass - Clase seleccionada del personaje
-   * @param selectedJob - Trabajo seleccionado del personaje
+   * Esta función calcula y asigna los bonos de estadísticas según la clase y trabajo
+   * del personaje. Cada clase tiene una estadística principal que recibe +2 puntos,
+   * y cada trabajo puede proporcionar +1 punto en ciertas estadísticas.
+   * 
+   * @param selectedClass - Código de la clase seleccionada del personaje
+   * @param selectedJob - Código del trabajo seleccionado del personaje
    */
   const updStatsPoints = (selectedClass: string, selectedJob: string): void => {
+    console.log("Actualizando puntos de estadísticas para", { 
+      clase: selectedClass, 
+      trabajo: selectedJob 
+    });
+    
+    // Validación de entradas
+    if (!selectedClass && !selectedJob) {
+      console.warn("No se ha seleccionado clase ni trabajo, omitiendo actualización");
+      return;
+    }
+    
     const updatedInputsStatsData = [...inputsStatsData];
     
     // Obtener puntos extra del trabajo seleccionado
-    const extraPoints = optionsCharacterJob.find(
-      (option) => option.value === selectedJob
-    )?.extraPoint || "";
+    const jobOption = optionsCharacterJob.find(option => option.value === selectedJob);
+    const extraPoints = jobOption?.extraPoint || "";
+    
+    if (selectedJob && !jobOption) {
+      console.warn(`Trabajo seleccionado "${selectedJob}" no encontrado en opciones`);
+    }
 
     // Mapeo de clases a sus estadísticas principales
-    const classStatBonuses = {
+    const classStatBonuses: Record<string, string> = {
       "WAR": "STR", // Guerrero - Fuerza
       "MAG": "INT", // Mago - Inteligencia
       "SCO": "DEX", // Explorador - Destreza
@@ -928,19 +997,37 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       "ACT": "CHA"  // Artista - Carisma
     };
     
-    // Resetear todos los bonos de clase
-    for (let i = 0; i < updatedInputsStatsData.length; i++) {
+    // Identificar la estadística principal para la clase seleccionada
+    const primaryStat = selectedClass ? classStatBonuses[selectedClass] : null;
+    if (selectedClass && !primaryStat) {
+      console.warn(`Clase seleccionada "${selectedClass}" no tiene estadística principal definida`);
+    }
+    
+    // Actualizar bonos para cada estadística
+    updatedInputsStatsData.forEach((stat, index) => {
       // Calcular bono de clase (2 si es la estadística principal de la clase, 0 en caso contrario)
-      const classBonus = classStatBonuses[selectedClass as keyof typeof classStatBonuses] === updatedInputsStatsData[i].id ? 2 : 0;
+      const classBonus = (primaryStat && stat.id === primaryStat) ? 2 : 0;
       
       // Calcular bono de trabajo (1 si el trabajo incluye esta estadística, 0 en caso contrario)
-      const jobBonus = extraPoints.includes(updatedInputsStatsData[i].id) ? 1 : 0;
+      const jobBonus = extraPoints.includes(stat.id) ? 1 : 0;
       
-      // Asignar el valor total
-      updatedInputsStatsData[i].valueClass = classBonus + jobBonus;
-    }
+      // Asignar el valor total y registrar el cambio
+      const previousValue = updatedInputsStatsData[index].valueClass;
+      updatedInputsStatsData[index].valueClass = classBonus + jobBonus;
+      
+      if (previousValue !== updatedInputsStatsData[index].valueClass) {
+        console.log(`Estadística ${stat.id} actualizada:`, {
+          anterior: previousValue,
+          nuevo: updatedInputsStatsData[index].valueClass,
+          bonoClase: classBonus,
+          bonoTrabajo: jobBonus
+        });
+      }
+    });
 
+    // Actualizar el estado con los nuevos valores
     setInputsStatsData(updatedInputsStatsData);
+    console.log("Estadísticas actualizadas correctamente");
   };
     /**
    * Maneja el cambio en la selección de clase del personaje
@@ -1064,12 +1151,31 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return updated;
     });
   };
+  /**
+   * Handles changes to character stats and validates them
+   * 
+   * @param newInputStats - Updated stat values
+   */
   const handleStatsInputChange = (newInputStats: InputStats) => {
+    // Update state with new stat values
     setInputsStatsData((prevItems) =>
       prevItems.map((item) =>
         item.id === newInputStats.id ? { ...item, ...newInputStats } : item
       )
     );
+    
+    // Validate the updated stat (no alerts during input to avoid excessive popups)
+    const validationResult = validateSingleStat(newInputStats.id, false);
+    
+    // If validation failed, add a warning to the console
+    if (!validationResult.isValid) {
+      console.warn(`Stat validation issue: ${validationResult.message}`);
+    } else {
+      // Clear any validation errors for stats if this stat is now valid
+      clearValidationError('stats');
+    }
+    
+    return validationResult.isValid;
   };
   const [formAlignment, setFormAlignment] = useState<string>("");
   
@@ -1186,7 +1292,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setEmptyRequiredFields(prev => prev.filter(field => field !== fieldId));
     }
   };
-    // Función para abrir el modal con validación manual  
+
   /**
    * Valida los campos requeridos para abrir el modal
    * @returns array de strings con los campos que faltan
@@ -1334,27 +1440,295 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       alert("Error al preparar los datos del personaje");
     }
   };
-  /**
-   * Generates random dice values for character stats
-   * Only allows randomization for level 1 characters
+   /**
+   * Generate random stats for a character based on class and balanced distribution
+   * 
+   * This function creates a set of balanced random stats that favor the primary
+   * and secondary attributes based on character class.
+   * 
+   * @param generationType - Optional parameter to control randomization style:
+   *   - 'balanced' (default): Generates stats that favor class preferences
+   *   - 'heroic': Generates higher stats across the board
+   *   - 'standard': Completely random stats within normal range
+   * @returns Boolean indicating if stats were successfully generated
    */
-  const randomRoll = useCallback(() => {
+const randomRoll = useCallback((generationType: 'balanced' | 'heroic' | 'standard' = 'balanced'): boolean => {
     // Prevent stat changes for characters above level 1
-    if (character?.pus_nivel > 1) {
-      alert("Solo puedes generar estadísticas aleatorias para personajes de nivel 1");
-      return;
+    if (character?.pus_nivel && character.pus_nivel > 1) {
+      alert("Random stats can only be generated for level 1 characters");
+      return false;
     }
 
-    const updatedInputsStatsData = [...inputsStatsData];
+    // Check if character class is selected
+    if (!character?.pus_clase) {
+      alert("Please select a character class before generating random stats");
+      return false;
+    }
+
+    try {
+      // Create a copy of stats data to modify
+      const updatedInputsStatsData = [...inputsStatsData];
+      
+      // Define the primary and secondary stats for each class
+      const classAttributes: Record<string, {primary: number, secondary: number, name: string}> = {
+        'WAR': { primary: 0, secondary: 3, name: 'Warrior' },    // STR, CON
+        'MAG': { primary: 1, secondary: 4, name: 'Mage' },       // INT, PER
+        'SCO': { primary: 2, secondary: 4, name: 'Scout' },      // DEX, PER
+        'MED': { primary: 3, secondary: 1, name: 'Medic' },      // CON, INT
+        'RES': { primary: 4, secondary: 1, name: 'Researcher' }, // PER, INT
+        'ACT': { primary: 5, secondary: 2, name: 'Artist' }      // CHA, DEX
+      };
+      
+      // Get character class data
+      let classData = classAttributes[character.pus_clase];
+      if (!classData) {
+        console.warn(`Unknown character class: ${character.pus_clase}`);
+        // If class not found, use random primary and secondary stats
+        const primaryStat = Math.floor(Math.random() * 6);
+        let secondaryStat;
+        do {
+          secondaryStat = Math.floor(Math.random() * 6);
+        } while (secondaryStat === primaryStat);
+        
+        classData = { primary: primaryStat, secondary: secondaryStat, name: 'Unknown' };
+      }
+      
+      console.log(`Generating ${generationType} stats for ${classData.name} class`);
+      
+      // Total points to distribute
+      let totalPoints;
+      switch (generationType) {
+        case 'heroic':
+          totalPoints = 18 + Math.floor(Math.random() * 3); // 18-20 points
+          break;
+        case 'standard':
+          totalPoints = 12 + Math.floor(Math.random() * 5); // 12-16 points
+          break;
+        case 'balanced':
+        default:
+          totalPoints = 14 + Math.floor(Math.random() * 4); // 14-17 points
+      }
+      
+      // Initialize stats with minimum values
+      for (let i = 0; i < updatedInputsStatsData.length; i++) {
+        updatedInputsStatsData[i].valueDice = 1;
+      }
+      
+      // Remaining points to distribute after minimum allocation
+      let remainingPoints = totalPoints - 6; // 6 stats with minimum 1 each
+      
+      // Distribution weights based on generation type
+      const weights = {
+        primary: generationType === 'balanced' ? 0.5 : (generationType === 'heroic' ? 0.4 : 0.33),
+        secondary: generationType === 'balanced' ? 0.3 : (generationType === 'heroic' ? 0.3 : 0.27),
+        other: generationType === 'balanced' ? 0.2 : (generationType === 'heroic' ? 0.3 : 0.4)
+      };
+      
+      // Distribute primary stat points (approx 40-50% of remaining)
+      const primaryPoints = Math.round(remainingPoints * weights.primary);
+      updatedInputsStatsData[classData.primary].valueDice += primaryPoints;
+      remainingPoints -= primaryPoints;
+      
+      // Distribute secondary stat points (approx 25-30% of remaining)
+      const secondaryPoints = Math.round(remainingPoints * weights.secondary);
+      updatedInputsStatsData[classData.secondary].valueDice += secondaryPoints;
+      remainingPoints -= secondaryPoints;
+      
+      // Random distribution of remaining points
+      while (remainingPoints > 0) {
+        // Randomly select a stat, with lower probability for primary/secondary
+        let statIndex;
+        const roll = Math.random();
+        
+        if (roll < 0.6) { // 60% chance to improve a tertiary stat
+          // Select a random stat that is neither primary nor secondary
+          const tertiaryIndices = [0, 1, 2, 3, 4, 5].filter(
+            i => i !== classData.primary && i !== classData.secondary
+          );
+          statIndex = tertiaryIndices[Math.floor(Math.random() * tertiaryIndices.length)];
+        } else if (roll < 0.85) { // 25% chance for secondary
+          statIndex = classData.secondary;
+        } else { // 15% chance for primary
+          statIndex = classData.primary;
+        }
+        
+        // Add a point if it doesn't exceed the maximum (6 for heroic, 5 otherwise)
+        const maxStatValue = generationType === 'heroic' ? 6 : 5;
+        if (updatedInputsStatsData[statIndex].valueDice < maxStatValue) {
+          updatedInputsStatsData[statIndex].valueDice += 1;
+          remainingPoints--;
+        }
+      }
+      
+      // Final validation to ensure no stat exceeds maximum values
+      for (let i = 0; i < updatedInputsStatsData.length; i++) {
+        const maxValue = i === classData.primary ? 6 : 5;
+        if (updatedInputsStatsData[i].valueDice > maxValue) {
+          console.warn(`Stat ${updatedInputsStatsData[i].id} exceeded maximum value. Capping at ${maxValue}.`);
+          updatedInputsStatsData[i].valueDice = maxValue;
+        }
+      }
+      
+      // Update state with new values
+      setInputsStatsData(updatedInputsStatsData);
+      
+      // Show informative message
+      console.log("Generated random stats:", 
+        updatedInputsStatsData.map(stat => `${stat.id}: ${stat.valueDice}`).join(', '),
+        `(Total: ${updatedInputsStatsData.reduce((sum, stat) => sum + stat.valueDice, 0)})`
+      );
+      
+      // Validate all stats after generation
+      let allValid = true;
+      const statIds = ['STR', 'INT', 'DEX', 'CON', 'PER', 'CHA'];
+      
+      statIds.forEach(statId => {
+        const validationResult = validateSingleStat(statId);
+        if (!validationResult.isValid) {
+          allValid = false;
+          console.warn(`Generated stat validation issue for ${statId}: ${validationResult.message}`);
+        }
+      });
+      
+      // Clear validation errors if all stats are valid
+      if (allValid) {
+        clearValidationError('stats');
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error generating random stats:", error);
+      alert("An error occurred while generating random stats. Please try again.");
+      return false;
+    }
+  }, [character?.pus_clase, character?.pus_nivel, inputsStatsData, clearValidationError]);
+
+  /**
+   * Handle changes to character level and adjust stats accordingly
+   * 
+   * This function updates the character level and calculates stat bonuses 
+   * that should be applied or removed based on level milestones (3, 6, 9)
+   * 
+   * @param newLevel - New character level (1-10)
+   * @returns Boolean indicating if the change was successful
+   */
+const handleLevelChange = useCallback((newLevel: number): boolean => {
+    // Validate the new level with proper error messaging
+    if (isNaN(newLevel)) {
+      console.error("Invalid level value: Not a number");
+      alert("Character level must be a number between 1 and 10");
+      return false;
+    }
     
-    // Generate random dice values for all stats (1-4)
-    for (let i = 0; i < 6; i++) {
-      const randomNumber = Math.floor(Math.random() * 4) + 1;
-      updatedInputsStatsData[i].valueDice = randomNumber;
+    if (newLevel < 1 || newLevel > 10) {
+      console.error(`Level value out of valid range: ${newLevel}`);
+      alert("Character level must be between 1 and 10");
+      return false;
     }
 
-    setInputsStatsData(updatedInputsStatsData);
-  }, [character?.pus_nivel, inputsStatsData]);
+    const previousLevel = character?.pus_nivel || 1;
+    
+    // If level hasn't changed, do nothing
+    if (previousLevel === newLevel) {
+      return true;
+    }
+    
+    console.log(`Changing level from ${previousLevel} to ${newLevel}`);
+    
+    // Update level in character state
+    setCharacter(prevState => {
+      if (!prevState) return initialPersonajesUsuario; // Return initial state instead of undefined
+      return {...prevState, pus_nivel: newLevel};
+    });
+    
+    try {
+      // If leveling up, adjust statistics with appropriate bonuses
+      if (newLevel > previousLevel) {
+        // Create a copy of current stats data to modify
+        const updatedStatsData = [...inputsStatsData];
+        
+        // Class to primary stat mapping for efficient lookup
+        const classToPrimaryStat: Record<string, number> = {
+          'WAR': 0, // STR
+          'MAG': 1, // INT
+          'SCO': 2, // DEX
+          'MED': 3, // CON
+          'RES': 4, // PER
+          'ACT': 5  // CHA
+        };
+        
+        // Get the primary stat index for this character's class
+        const characterClass = character?.pus_clase || '';
+        const primaryStatIndex = classToPrimaryStat[characterClass];
+        
+        if (primaryStatIndex === undefined) {
+          console.warn(`Unknown character class: ${characterClass}. Stat bonuses not applied.`);
+        } else {
+          // Calculate milestone level bonuses
+          // At levels 3, 6, and 9, the character gains +1 to primary stat
+          const previousMilestones = Math.floor((previousLevel - 1) / 3);
+          const newMilestones = Math.floor((newLevel - 1) / 3);
+          const bonusToAdd = newMilestones - previousMilestones;
+          
+          if (bonusToAdd > 0) {
+            // Add the bonuses to the primary stat
+            updatedStatsData[primaryStatIndex].valueLevel += bonusToAdd;
+            console.log(`Level ${newLevel}: Added +${bonusToAdd} to ${updatedStatsData[primaryStatIndex].id} (primary stat for ${characterClass})`);
+            
+            // Extra validation to ensure we don't exceed the maximum allowed bonus
+            if (updatedStatsData[primaryStatIndex].valueLevel > 3) {
+              console.warn(`Primary stat bonus exceeded maximum value. Capping at 3.`);
+              updatedStatsData[primaryStatIndex].valueLevel = 3;
+            }
+          }
+        }
+        
+        // Update state with new stats
+        setInputsStatsData(updatedStatsData);
+      } 
+      // If leveling down, reduce stat bonuses accordingly
+      else if (newLevel < previousLevel) {
+        const updatedStatsData = [...inputsStatsData];
+        
+        // Class to primary stat mapping (same as above)
+        const classToPrimaryStat: Record<string, number> = {
+          'WAR': 0, // STR
+          'MAG': 1, // INT
+          'SCO': 2, // DEX
+          'MED': 3, // CON
+          'RES': 4, // PER
+          'ACT': 5  // CHA
+        };
+        
+        // Get the primary stat index for this character's class
+        const characterClass = character?.pus_clase || '';
+        const primaryStatIndex = classToPrimaryStat[characterClass];
+        
+        if (primaryStatIndex !== undefined) {
+          // Calculate how many milestone bonuses the character should now have
+          const newMilestoneBonus = Math.floor((newLevel - 1) / 3);
+          
+          // If current bonus exceeds what the character should have, adjust it
+          if (updatedStatsData[primaryStatIndex].valueLevel > newMilestoneBonus) {
+            const oldBonus = updatedStatsData[primaryStatIndex].valueLevel;
+            updatedStatsData[primaryStatIndex].valueLevel = newMilestoneBonus;
+            console.log(`Reduced level bonus for ${updatedStatsData[primaryStatIndex].id} from ${oldBonus} to ${newMilestoneBonus}`);
+          }
+        }
+        
+        // Update state with adjusted stats
+        setInputsStatsData(updatedStatsData);
+      }
+      
+      // Clear any validation errors related to the level field
+      clearValidationError('level');
+      return true;
+    } catch (error) {
+      console.error("Error updating character stats for level change:", error);
+      alert("An error occurred while updating character stats. Please try again.");
+      return false;
+    }
+  }, [character?.pus_clase, character?.pus_nivel, inputsStatsData, clearValidationError]);
 
   const getClassName = (id: string | undefined): string | undefined => {
     return optionsCharacterClass.find((elem) => elem.value === id)?.name;
@@ -1603,7 +1977,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     upsertDataInp(saveItems);
     deleteItemInventory(deleteItems);
   }
-    /**
+  /**
    * Handles the form submission, performing validations and preparing data for saving
    * @param data The form data submitted
    */
@@ -1625,71 +1999,56 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         jobValue: character?.pus_trabajo
       }
     });
+    const basicInfoErrors = ['name', 'characterRace', 'characterClass', 'characterJob'];
+    const statsErrors = ['stats', 'level', 'luckyPoints', 'lifePoints'];
+    const weaponsErrors = ['mainWeapon', 'secondaryWeapon'];
+    const skillsErrors = ['mainSkill', 'extraSkill'];
     
-    // Using our validateCharacterForm function for comprehensive validation
     let fieldsRequired: string[] = validateCharacterForm();
+    let errorMessage = "Por favor, complete todos los campos obligatorios:\n";
     
-    // Add form-specific validations ensuring all numeric values are valid
-    if (!data.name?.trim()) {
-      fieldsRequired.push('name');
+    // Update character object with form values
+    const updatedCharacter = character ? {...character} : undefined;
+    if (updatedCharacter) {
+      updatedCharacter.pus_nombre = data.name;
+      updatedCharacter.pus_nivel = data.level;
+      updatedCharacter.pus_puntos_suerte = data.luckyPoints;
+      updatedCharacter.pus_vida = data.lifePoints;
+      updatedCharacter.pus_arma_principal = data.mainWeapon;
+      updatedCharacter.pus_arma_secundaria = data.secondaryWeapon;
+      updatedCharacter.pus_cantidad_oro = data.goldCoins;
+      updatedCharacter.pus_cantidad_plata = data.silverCoins;
+      updatedCharacter.pus_cantidad_bronce = data.bronzeCoins;
+      updatedCharacter.pus_descripcion = data.characterDescription;
     }
     
-    // Validate numerical fields with proper type conversion
-    const level = safeNumberConversion(data.level, 0);
-    const luckyPoints = safeNumberConversion(data.luckyPoints, 0);
-    const lifePoints = safeNumberConversion(data.lifePoints, 0);
+    // Use our enhanced validation function for comprehensive assessment
+    const validationResults = validateCharacterAttributes(
+      updatedCharacter, 
+      inputsStatsData, 
+      skillsAcquired,
+      invObjects
+    );
     
-    if (level < 1 || level > 10) {
-      fieldsRequired.push('level');
+    // Process validation results with our new feedback function
+    const feedbackResult = showValidationFeedback(validationResults);
+    
+    // If validation failed, stop form processing
+    if (!feedbackResult.success) {
+      return;
     }
-    
-    if (luckyPoints < 0) {
-      fieldsRequired.push('luckyPoints');
-    }
-    
-    if (lifePoints < 0) {
-      fieldsRequired.push('lifePoints');
-    }
-    
-    // Validate equipment fields
-    if (!data.mainWeapon?.trim()) {
-      fieldsRequired.push('mainWeapon');
-    }
-    
-    // Check if character stats are properly initialized
-    if (!validateCharacterStats(inputsStatsData)) {
-      fieldsRequired.push('stats');
-    }
-    
-    // Remove duplicate entries if any
-    fieldsRequired = [...new Set(fieldsRequired)];
-    
-    // Update state with validation errors
-    setEmptyRequiredFields(fieldsRequired);
-    
-    // If there are validation errors, stop form processing and show error message
+      
+    const basicMissing = fieldsRequired.filter(field => basicInfoErrors.includes(field));
+    const statsMissing = fieldsRequired.filter(field => statsErrors.includes(field));
+    const weaponsMissing = fieldsRequired.filter(field => weaponsErrors.includes(field));
+    const skillsMissing = fieldsRequired.filter(field => skillsErrors.includes(field));
+    const otherMissing = fieldsRequired.filter(field => 
+      !basicInfoErrors.includes(field) && 
+      !statsErrors.includes(field) && 
+      !weaponsErrors.includes(field) &&
+      !skillsErrors.includes(field)
+    );
     if (fieldsRequired.length > 0) {
-      console.log("Required fields missing:", fieldsRequired);
-      
-      // Group error messages by category for better user experience
-      const basicInfoErrors = ['name', 'characterRace', 'characterClass', 'characterJob'];
-      const statsErrors = ['stats', 'level', 'luckyPoints', 'lifePoints'];
-      const weaponsErrors = ['mainWeapon', 'secondaryWeapon'];
-      const skillsErrors = ['mainSkill', 'extraSkill'];
-      
-      let errorMessage = "Por favor, complete todos los campos obligatorios:\n";
-      
-      const basicMissing = fieldsRequired.filter(field => basicInfoErrors.includes(field));
-      const statsMissing = fieldsRequired.filter(field => statsErrors.includes(field));
-      const weaponsMissing = fieldsRequired.filter(field => weaponsErrors.includes(field));
-      const skillsMissing = fieldsRequired.filter(field => skillsErrors.includes(field));
-      const otherMissing = fieldsRequired.filter(field => 
-        !basicInfoErrors.includes(field) && 
-        !statsErrors.includes(field) && 
-        !weaponsErrors.includes(field) &&
-        !skillsErrors.includes(field)
-      );
-      
       if (basicMissing.length > 0) errorMessage += "\n- Información básica: " + basicMissing.join(", ");
       if (statsMissing.length > 0) errorMessage += "\n- Estadísticas: " + statsMissing.join(", ");
       if (weaponsMissing.length > 0) errorMessage += "\n- Armamento: " + weaponsMissing.join(", ");
@@ -1706,21 +2065,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       alert("Error: No se encontraron datos del personaje. Por favor, intenta nuevamente.");
       return;
     }
-    
-    // Update character state with form values
-    const updatedCharacter = {
-      ...character,
-      pus_nombre: data.name,
-      pus_nivel: data.level,
-      pus_puntos_suerte: data.luckyPoints,
-      pus_vida: data.lifePoints,
-      pus_arma_principal: data.mainWeapon,
-      pus_arma_secundaria: data.secondaryWeapon,
-      pus_descripcion: data.characterDescription,
-      pus_cantidad_oro: data.goldCoins,
-      pus_cantidad_plata: data.silverCoins,
-      pus_cantidad_bronce: data.bronzeCoins
-    };
     
     // Prepare character data for the modal
     const newCharacter: DataCharacter = {
@@ -1786,8 +2130,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       inv: invObjects,
     };
     
-    // Update the character state with the form values
-    setCharacter(updatedCharacter);
+    // Only update character if updatedCharacter is not undefined
+    if (updatedCharacter) {
+      setCharacter(updatedCharacter);
+    }
     
     console.log("onSubmitForm: Preparando datos para el modal", newCharacter);
     setDataCharacter(newCharacter);
@@ -1810,8 +2156,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       // Map database field names to form field names for UI validation
       characterErrors.forEach(field => {
         if (field === 'pus_nombre') fieldsRequired.push('name');
-        else if (field === 'pus_raza') fieldsRequired.push('characterRace');
         else if (field === 'pus_clase') fieldsRequired.push('characterClass');
+        else if (field === 'pus_raza') fieldsRequired.push('characterRace');
         else if (field === 'pus_trabajo') fieldsRequired.push('characterJob');
       });
     } else {
@@ -1848,8 +2194,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     if (!formValues.mainWeapon?.trim()) {
       fieldsRequired.push('mainWeapon');
     }
-    
-    // Validate stats using our stats validation helper
+    // Validate stats using our detailed stats validation helper
+    // First check overall stats
     if (!validateCharacterStats(inputsStatsData)) {
       fieldsRequired.push('stats');
     } else {
@@ -1860,6 +2206,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       if (totalStats <= 0) {
         if (!fieldsRequired.includes('stats')) fieldsRequired.push('stats');
       }
+      
+      // Then validate each stat individually for more detailed feedback
+      const statIds = ['STR', 'INT', 'DEX', 'CON', 'PER', 'CHA'];
+      statIds.forEach(statId => {
+        const result = validateSingleStat(statId);
+        if (!result.isValid && !fieldsRequired.includes('stats')) {
+          fieldsRequired.push('stats');
+          console.warn(`Stat validation failed for ${statId}: ${result.message}`);
+        }
+      });
     }
     
     // Validate selected skills
@@ -1875,6 +2231,133 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     // Remove any duplicate entries
     return [...new Set(fieldsRequired)];
   };
+
+  /**
+   * Displays user-friendly validation feedback based on validation results
+   * Groups errors by category and creates a well-structured message
+   * 
+   * @param validationResults The detailed validation results
+   * @param showAlerts Whether to display alert boxes (default true)
+   * @returns Object with validation summary
+   */
+  const showValidationFeedback = useCallback((
+    validationResults: {
+      isValid: boolean,
+      errors: Record<string, string>,
+      warnings: Record<string, string>
+    },
+    showAlerts = true
+  ) => {
+    // Early return if validation passed
+    if (validationResults.isValid && Object.keys(validationResults.warnings).length === 0) {
+      return { success: true };
+    }
+    
+    // Track fields that have errors for form highlighting
+    const fieldsWithErrors: string[] = [];
+    
+    // Group errors by category for better user experience
+    const errorGroups: Record<string, string[]> = {
+      'Basic Information': [],
+      'Character Stats': [],
+      'Equipment': [],
+      'Skills': [],
+      'Other': []
+    };
+
+    // Process all errors
+    Object.entries(validationResults.errors).forEach(([field, message]) => {
+      if (field.startsWith('pus_')) {
+        // Map database field names to UI field names
+        switch(field) {
+          case 'pus_nombre':
+            fieldsWithErrors.push('name');
+            errorGroups['Basic Information'].push(message);
+            break;
+          case 'pus_clase':
+            fieldsWithErrors.push('characterClass');
+            errorGroups['Basic Information'].push(message);
+            break;
+          case 'pus_raza':
+            fieldsWithErrors.push('characterRace');
+            errorGroups['Basic Information'].push(message);
+            break;
+          case 'pus_trabajo':
+            fieldsWithErrors.push('characterJob');
+            errorGroups['Basic Information'].push(message);
+            break;
+          case 'pus_nivel':
+            fieldsWithErrors.push('level');
+            errorGroups['Character Stats'].push(message);
+            break;
+          case 'pus_puntos_suerte':
+            fieldsWithErrors.push('luckyPoints');
+            errorGroups['Character Stats'].push(message);
+            break;
+          case 'pus_vida':
+            fieldsWithErrors.push('lifePoints');
+            errorGroups['Character Stats'].push(message);
+            break;
+          case 'pus_arma_principal':
+            fieldsWithErrors.push('mainWeapon');
+            errorGroups['Equipment'].push(message);
+            break;
+          default:
+            errorGroups['Other'].push(message);
+        }
+      } else if (field === 'stats' || field.startsWith('stat_')) {
+        fieldsWithErrors.push('stats');
+        errorGroups['Character Stats'].push(message);
+      } else if (field.startsWith('skill')) {
+        fieldsWithErrors.push(field);
+        errorGroups['Skills'].push(message);
+      } else {
+        // Default case for other errors
+        errorGroups['Other'].push(message);
+      }
+    });
+
+    // Process warnings (less severe than errors)
+    const warningMessages: string[] = [];
+    Object.values(validationResults.warnings).forEach(message => {
+      warningMessages.push(message);
+    });
+
+    // Build comprehensive error message
+    let errorMessage = "Please fix the following issues before saving:\n\n";
+    
+    Object.entries(errorGroups).forEach(([group, messages]) => {
+      if (messages.length > 0) {
+        errorMessage += `${group}:\n`;
+        messages.forEach(msg => {
+          errorMessage += `• ${msg}\n`;
+        });
+        errorMessage += '\n';
+      }
+    });
+
+    // Add warnings if any exist
+    if (warningMessages.length > 0) {
+      errorMessage += "\nWarnings (you can still save with warnings):\n";
+      warningMessages.forEach(msg => {
+        errorMessage += `• ${msg}\n`;
+      });
+    }
+
+    // Show alert if requested
+    if (showAlerts && Object.keys(validationResults.errors).length > 0) {
+      alert(errorMessage);
+    }
+
+    // Set empty required fields for UI highlighting
+    setEmptyRequiredFields(fieldsWithErrors);
+
+    return {
+      success: false,
+      errorMessage,
+      fieldsWithErrors
+    };
+  }, []);
 
   /**
    * Generic async function error handler with proper logging and user-friendly messaging
@@ -1954,6 +2437,62 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         if (setLoadingState) setLoadingState(false);
       });
   }, [handleAsyncError]);
+
+  /**
+   * Validates a specific character stat and provides detailed feedback
+   * Can be used for individual stat validation during character creation/editing
+   * 
+   * @param statId - The ID of the stat to validate (e.g., 'STR', 'INT')
+   * @param showAlert - Whether to display alerts for validation issues
+   * @returns Object with validation status and messages
+   */
+  const validateSingleStat = useCallback((statId: string, showAlert = false): {
+    isValid: boolean;
+    message?: string;
+    totalValue: number;
+  } => {
+    // Find the stat in the inputsStatsData array
+    const stat = inputsStatsData.find(s => s.id === statId);
+    
+    if (!stat) {
+      const errorMsg = `Stat "${statId}" not found`;
+      if (showAlert) alert(errorMsg);
+      return { isValid: false, message: errorMsg, totalValue: 0 };
+    }
+    
+    // Calculate total value
+    const totalValue = stat.valueDice + stat.valueClass + stat.valueLevel;
+    
+    // Validate dice value range (1-10)
+    if (typeof stat.valueDice !== 'number' || isNaN(stat.valueDice) || stat.valueDice < 1 || stat.valueDice > 10) {
+      const errorMsg = `${stat.label}: Base value must be between 1 and 10`;
+      if (showAlert) alert(errorMsg);
+      return { isValid: false, message: errorMsg, totalValue };
+    }
+    
+    // Validate class bonus range (0-3)
+    if (typeof stat.valueClass !== 'number' || isNaN(stat.valueClass) || stat.valueClass < 0 || stat.valueClass > 3) {
+      const errorMsg = `${stat.label}: Class bonus must be between 0 and 3`;
+      if (showAlert) alert(errorMsg);
+      return { isValid: false, message: errorMsg, totalValue };
+    }
+    
+    // Validate level bonus range (0-5)
+    if (typeof stat.valueLevel !== 'number' || isNaN(stat.valueLevel) || stat.valueLevel < 0 || stat.valueLevel > 5) {
+      const errorMsg = `${stat.label}: Level bonus must be between 0 and 5`;
+      if (showAlert) alert(errorMsg);
+      return { isValid: false, message: errorMsg, totalValue };
+    }
+    
+    // Validate total maximum (typically should not exceed 15-18)
+    if (totalValue > 18) {
+      const warningMsg = `${stat.label}: Total value ${totalValue} is unusually high`;
+      console.warn(warningMsg);
+      // This is just a warning, not a validation failure
+    }
+    
+    return { isValid: true, totalValue };
+  }, [inputsStatsData]);
 
   return (
     <>
@@ -2056,10 +2595,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               max:10, 
               onChange: (e) => {
                 const levelValue = parseInt(e.target.value) || 0;
-                setCharacter(prevState => ({
-                  ...prevState!,
-                  pus_nivel: levelValue
-                }));
+                handleLevelChange(levelValue);
               }
             })}
             placeholder="Nivel"
@@ -2131,21 +2667,38 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         {/* Estadisticas del personaje */}
         <fieldset className="fieldset-form stats-player row-span-3 col-span-1 col-start-1 bg-white shadow-lg rounded" aria-labelledby="stats-heading">
           <legend id="stats-heading" className="text-lg font-semibold">Estadísticas del personaje</legend>
-          <header className="stats-player-header col-span-3 col-start-3">
-            <Tooltip
-              className="bg-dark text-light px-2 py-1"
-              placement="top"
-              content={"Generar estadísticas aleatorias"}
-            >
-              <button
-                type="button"
-                className="btn-save-character"
-                onClick={randomRoll}
-                aria-label="Generar estadísticas aleatorias"
+          <header className="stats-player-header col-span-3 col-start-3 flex items-center gap-2">
+            <div className="relative group">
+              <Tooltip
+                className="bg-dark text-light px-2 py-1"
+                placement="top"
+                content={"Generar estadísticas aleatorias"}
               >
-                <SvgD4Roll className="btn-roll" width={30} height={30} aria-hidden="true" />
-              </button>
-            </Tooltip>
+                <button
+                  type="button"
+                  className="btn-save-character"
+                  onClick={() => {
+                    const generationType = document.getElementById('statGenerationType') as HTMLSelectElement;
+                    randomRoll(generationType?.value as 'balanced' | 'heroic' | 'standard' || 'balanced');
+                  }}
+                  aria-label="Generar estadísticas aleatorias"
+                >
+                  <SvgD4Roll className="btn-roll" width={30} height={30} aria-hidden="true" />
+                </button>
+              </Tooltip>
+              
+              {/* Generation type dropdown */}
+              <select 
+                id="statGenerationType"
+                className="absolute top-full right-0 mt-1 py-1 px-2 text-xs bg-white border border-gray-300 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"
+                aria-label="Tipo de generación"
+                defaultValue="balanced"
+              >
+                <option value="balanced">Equilibrado</option>
+                <option value="heroic">Heroico</option>
+                <option value="standard">Estándar</option>
+              </select>
+            </div>
           </header>
 
           {/* STRENGTH */}

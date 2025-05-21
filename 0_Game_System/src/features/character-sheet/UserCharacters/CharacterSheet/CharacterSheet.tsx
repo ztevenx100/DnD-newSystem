@@ -118,6 +118,32 @@ interface CharacterForm {
   race: string;
   job: string;
   alignment: string;
+  // Campos para estadísticas
+  strDice: number;
+  strClass: number;
+  strLevel: number;
+  intDice: number;
+  intClass: number;
+  intLevel: number;
+  dexDice: number;
+  dexClass: number;
+  dexLevel: number;
+  conDice: number;
+  conClass: number;
+  conLevel: number;
+  perDice: number;
+  perClass: number;
+  perLevel: number;
+  chaDice: number;
+  chaClass: number;
+  chaLevel: number;
+  // Campos para inventario
+  newObjectName: string;
+  newObjectDescription: string;
+  newObjectCount: number;
+  // Campos para habilidades
+  skillClass: string;
+  skillExtra: string;
 }
 
 const CharacterSheet: React.FC<CharacterSheetProps> = ({
@@ -157,6 +183,20 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           race: getCharacterProperty(initialCharacter, 'pus_raza', ''),
           job: getCharacterProperty(initialCharacter, 'pus_trabajo', ''),
           alignment: getCharacterProperty(initialCharacter, 'pus_alineacion', ''),
+          // Valores predeterminados para estadísticas
+          strDice: 1, strClass: 0, strLevel: 0,
+          intDice: 1, intClass: 0, intLevel: 0,
+          dexDice: 1, dexClass: 0, dexLevel: 0,
+          conDice: 1, conClass: 0, conLevel: 0,
+          perDice: 1, perClass: 0, perLevel: 0,
+          chaDice: 1, chaClass: 0, chaLevel: 0,
+          // Valores predeterminados para inventario
+          newObjectName: "",
+          newObjectDescription: "",
+          newObjectCount: 1,
+          // Valores predeterminados para habilidades
+          skillClass: "",
+          skillExtra: ""
         }
       : {
           userName: userName,
@@ -174,6 +214,20 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           race: "",
           job: "",
           alignment: "",
+          // Valores predeterminados para estadísticas
+          strDice: 1, strClass: 0, strLevel: 0,
+          intDice: 1, intClass: 0, intLevel: 0,
+          dexDice: 1, dexClass: 0, dexLevel: 0,
+          conDice: 1, conClass: 0, conLevel: 0,
+          perDice: 1, perClass: 0, perLevel: 0,
+          chaDice: 1, chaClass: 0, chaLevel: 0,
+          // Valores predeterminados para inventario
+          newObjectName: "",
+          newObjectDescription: "",
+          newObjectCount: 1,
+          // Valores predeterminados para habilidades
+          skillClass: "",
+          skillExtra: ""
         };
   }, [initialCharacter, userName]);
   const {
@@ -188,15 +242,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const [characterImage, setCharacterImage] = useState<string | undefined>(
     undefined
   );
-  const [selectedSkillValue, setSelectedSkillValue] = useState<string>("");
-  const [selectedExtraSkillValue, setSelectedExtraSkillValue] =
-    useState<string>("");
+  // Mantenemos estos estados por ahora para compatibilidad con el código existente
+  // pero eventualmente podrían migrar completamente a React Hook Form
   const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([
     { id: "", value: "0", name: "", description: "", ring: "" },
     { id: "", value: "1", name: "", description: "", ring: "" },
     { id: "", value: "2", name: "", description: "", ring: "" },
   ]);
-  const [coins, setCoins] = useState<number[]>([0, 3, 0]);
+
   const [invObjects, setInvObjects] = useState<InventoryObject[]>([]);
   const [systemGame, setSystemGame] = useState<DBSistemaJuego>({
     sju_id: "",
@@ -211,10 +264,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const [fieldSkill, setFieldSkill] = useState<SkillFields[]>([
     { id: "", skill: "", field: "skillClass" },
     { id: "", skill: "", field: "skillExtra" },
-  ]);
-  const [newObjectName, setNewObjectName] = useState<string>("");
-  const [newObjectDescription, setNewObjectDescription] = useState<string>("");
-  const [newObjectCount, setNewObjectCount] = useState<number>(1);
+  ]);  // Eliminamos los estados manuales para el inventario y usamos React Hook Form
   const [SystemGameList, setSystemGameList] = useState<Option[]>([]);
   const [deleteItems, setDeleteItems] = useState<string[]>([]);
 
@@ -467,7 +517,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             skill.hpe_campo === "skillClass" && skill.hpe_habilidad === elem.id);
           
           if (existingSkill) {
-            setSelectedSkillValue(elem.sigla);
+            setValue("skillClass", elem.sigla);
             const classSkill = updatedFieldSkill.find(skill => skill.field === "skillClass");
             if (classSkill) {
               classSkill.id = elem.sigla;
@@ -479,7 +529,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             skill.hpe_campo === "skillExtra" && skill.hpe_habilidad === elem.id);
           
           if (existingSkill) {
-            setSelectedExtraSkillValue(elem.sigla);
+            setValue("skillExtra", elem.sigla);
             const extraSkill = updatedFieldSkill.find(skill => skill.field === "skillExtra");
             if (extraSkill) {
               extraSkill.id = elem.sigla;
@@ -512,7 +562,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setSkillsAcquired(updatedSkills);
       setFieldSkill(updatedFieldSkill);
     }
-  }, [params.id, handleSelectedTypeRingSkillChange]);
+  }, [params.id, handleSelectedTypeRingSkillChange, setValue]);
 
   const getCharacterImage = useCallback(async () => {
     if (!user || !params.id) return;
@@ -549,9 +599,43 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         return item;
       });
       
+      // Actualizar el estado local
       setInputsStatsData(updatedInputsStatsData);
+      
+      // Sincronizar con React Hook Form
+      if (data.length >= 6) {
+        // STR
+        setValue("strDice", data[0].epe_num_dado);
+        setValue("strClass", data[0].epe_num_clase);
+        setValue("strLevel", data[0].epe_num_nivel);
+        
+        // INT
+        setValue("intDice", data[1].epe_num_dado);
+        setValue("intClass", data[1].epe_num_clase);
+        setValue("intLevel", data[1].epe_num_nivel);
+        
+        // DEX
+        setValue("dexDice", data[2].epe_num_dado);
+        setValue("dexClass", data[2].epe_num_clase);
+        setValue("dexLevel", data[2].epe_num_nivel);
+        
+        // CON
+        setValue("conDice", data[3].epe_num_dado);
+        setValue("conClass", data[3].epe_num_clase);
+        setValue("conLevel", data[3].epe_num_nivel);
+        
+        // PER
+        setValue("perDice", data[4].epe_num_dado);
+        setValue("perClass", data[4].epe_num_clase);
+        setValue("perLevel", data[4].epe_num_nivel);
+        
+        // CHA
+        setValue("chaDice", data[5].epe_num_dado);
+        setValue("chaClass", data[5].epe_num_clase);
+        setValue("chaLevel", data[5].epe_num_nivel);
+      }
     }
-  }, [params.id]);
+  }, [params.id, inputsStatsData, setValue]);
   const getInfoCharacter = useCallback(async () => {
     try {
       if (!user || !user.id) {
@@ -887,7 +971,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     // Manejo del caso de valor vacío
     if (!currentSkill) {
       console.log("Empty skill value, skipping update");
-      setSelectedSkillValue("");
+      setValue("skillClass", "");
       return;
     }
     
@@ -899,10 +983,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     if (option.length > 0) {
       console.log("Found matching option for skillClass:", option[0]);
       
-      // Actualizar el valor seleccionado
-      setSelectedSkillValue(currentSkill);
+      // Actualizar el valor en React Hook Form
+      setValue("skillClass", currentSkill);
       
-      // Actualizar el campo de habilidad en el estado
+      // Actualizar el campo de habilidad en el estado para compatibilidad con código existente
       setFieldSkill((prevItems) =>
         prevItems.map((item) =>
           item.field === "skillClass"
@@ -928,7 +1012,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     // Manejo del caso de valor vacío
     if (!currentSkill) {
       console.log("Empty extra skill value, skipping update");
-      setSelectedExtraSkillValue("");
+      setValue("skillExtra", "");
       return;
     }
     
@@ -940,10 +1024,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     if (option.length > 0) {
       console.log("Found matching option for skillExtra:", option[0]);
       
-      // Actualizar el valor seleccionado
-      setSelectedExtraSkillValue(currentSkill);
+      // Actualizar el valor en React Hook Form
+      setValue("skillExtra", currentSkill);
       
-      // Actualizar el campo de habilidad extra
+      // Actualizar el campo de habilidad extra para compatibilidad con código existente
       setFieldSkill((prevItems) =>
         prevItems.map((item) =>
           item.field === "skillExtra"
@@ -1027,6 +1111,31 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
     // Actualizar el estado con los nuevos valores
     setInputsStatsData(updatedInputsStatsData);
+    
+    // Actualizar también los valores en React Hook Form
+    updatedInputsStatsData.forEach((stat) => {
+      switch (stat.id) {
+        case 'STR':
+          setValue("strClass", stat.valueClass);
+          break;
+        case 'INT':
+          setValue("intClass", stat.valueClass);
+          break;
+        case 'DEX':
+          setValue("dexClass", stat.valueClass);
+          break;
+        case 'CON':
+          setValue("conClass", stat.valueClass);
+          break;
+        case 'PER':
+          setValue("perClass", stat.valueClass);
+          break;
+        case 'CHA':
+          setValue("chaClass", stat.valueClass);
+          break;
+      }
+    });
+    
     console.log("Estadísticas actualizadas correctamente");
   };
     /**
@@ -1072,10 +1181,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
     // Actualizar puntos de estadísticas basados en la clase y trabajo
     updStatsPoints(value, character?.pus_trabajo || '');
-    
     // Seleccionar y actualizar la habilidad principal según la clase
     const skillValue = selectedOption?.mainStat ? "S" + selectedOption.mainStat : "";
-    setSelectedSkillValue(skillValue);
+    setValue("skillClass", skillValue);
     handleSelectSkillChange(skillValue);
   };
   /**
@@ -1164,6 +1272,40 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       )
     );
     
+    // Actualizar también los valores en React Hook Form
+    switch (newInputStats.id) {
+      case 'STR':
+        setValue("strDice", newInputStats.valueDice);
+        setValue("strClass", newInputStats.valueClass);
+        setValue("strLevel", newInputStats.valueLevel);
+        break;
+      case 'INT':
+        setValue("intDice", newInputStats.valueDice);
+        setValue("intClass", newInputStats.valueClass);
+        setValue("intLevel", newInputStats.valueLevel);
+        break;
+      case 'DEX':
+        setValue("dexDice", newInputStats.valueDice);
+        setValue("dexClass", newInputStats.valueClass);
+        setValue("dexLevel", newInputStats.valueLevel);
+        break;
+      case 'CON':
+        setValue("conDice", newInputStats.valueDice);
+        setValue("conClass", newInputStats.valueClass);
+        setValue("conLevel", newInputStats.valueLevel);
+        break;
+      case 'PER':
+        setValue("perDice", newInputStats.valueDice);
+        setValue("perClass", newInputStats.valueClass);
+        setValue("perLevel", newInputStats.valueLevel);
+        break;
+      case 'CHA':
+        setValue("chaDice", newInputStats.valueDice);
+        setValue("chaClass", newInputStats.valueClass);
+        setValue("chaLevel", newInputStats.valueLevel);
+        break;
+    }
+    
     // Validate the updated stat (no alerts during input to avoid excessive popups)
     const validationResult = validateSingleStat(newInputStats.id, false);
     
@@ -1177,9 +1319,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     
     return validationResult.isValid;
   };
-  const [formAlignment, setFormAlignment] = useState<string>("");
-  
-  /**
+  // Ya no necesitamos un estado separado para la alineación
+    /**
    * Actualiza la alineación del personaje y aplica efectos visuales
    * basados en la alineación seleccionada
    * 
@@ -1194,12 +1335,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return setCharacterProperty(prevState, 'pus_alineacion', value);
     });
     
-    // Actualizar la variable de estado que controla la clase CSS para efectos visuales
-    setFormAlignment(value);
+    // Actualizar en React Hook Form
+    setValue("alignment", value);
   };
   
   /**
-   * Actualiza la cantidad de monedas en el inventario
+   * Maneja el cambio del valor de las monedas directamente usando React Hook Form
    * 
    * @param index - Índice del tipo de moneda (0: oro, 1: plata, 2: bronce)
    * @param value - Valor ingresado por el usuario
@@ -1208,12 +1349,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     // Validar y convertir el valor a número
     const numericValue = validateNumeric(value);
     
-    // Actualizar el estado de monedas
-    setCoins((prevCoins) => {
-      const updatedCoins = [...prevCoins];
-      updatedCoins[index] = numericValue;
-      return updatedCoins;
-    });
+    // Actualizar directamente en el formulario en lugar de usar estado separado
+    if (index === 0) {
+      setValue("goldCoins", numericValue);
+    } else if (index === 1) {
+      setValue("silverCoins", numericValue);
+    } else if (index === 2) {
+      setValue("bronzeCoins", numericValue);
+    }
   };
   
   /**
@@ -1243,14 +1386,20 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     }
     return null;
   }, []);
-
   const handleAddObject = useCallback(() => {
+    // Obtener valores desde React Hook Form en lugar de estados locales
+    const newObjectName = getValues("newObjectName");
+    const newObjectDescription = getValues("newObjectDescription");
+    const newObjectCount = getValues("newObjectCount");
+    
     const errorMessage = validateInventoryItem(newObjectName, newObjectCount);
     if (errorMessage) {
       alert(errorMessage);
       document.getElementById("objectName")?.focus();
       return;
-    }    // Use our validateInventoryObject function to ensure object has all required fields
+    }    
+    
+    // Use our validateInventoryObject function to ensure object has all required fields
     const newObject = validateInventoryObject({
       id: uuidv4(),
       name: newObjectName.trim(),
@@ -1260,10 +1409,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     });
 
     setInvObjects((prev) => [...prev, newObject]);
-    setNewObjectName("");
-    setNewObjectDescription("");
-    setNewObjectCount(1);
-  }, [newObjectName, newObjectCount, newObjectDescription, validateInventoryItem]);
+    
+    // Reset form fields using React Hook Form
+    setValue("newObjectName", "");
+    setValue("newObjectDescription", "");
+    setValue("newObjectCount", 1);
+  }, [getValues, setValue, validateInventoryItem]);
 
   const handleDeleteObject = useCallback(async (id: string) => {
     setInvObjects((prevObjects) => prevObjects.filter((obj) => obj.id !== id));
@@ -1280,10 +1431,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       )
     );
   }, []);
-
   const handleNewCount = (value: string) => {
     const numericValue = validateNumeric(value, 1);
-    setNewObjectCount(numericValue);
+    setValue("newObjectCount", numericValue);
   };
   const [emptyRequiredFields, setEmptyRequiredFields] = useState<string[]>([]);
 
@@ -1396,10 +1546,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       mainWeapon: character.pus_arma_principal || '',
       secondaryWeapon: character.pus_arma_secundaria || '',
       alignment: character.pus_alineacion || '',
-      mainSkill: selectedSkillValue || '',
-      extraSkill: selectedExtraSkillValue || '',
+      mainSkill: getValues("skillClass") || '',
+      extraSkill: getValues("skillExtra") || '',
       skills: skillsAcquired || [],
-      coinsInv: coins || [0, 0, 0],
+      coinsInv: [
+        getValues("goldCoins") || 0,
+        getValues("silverCoins") || 0,
+        getValues("bronzeCoins") || 0
+      ],
       inv: invObjects || [],
     };
   };
@@ -1571,6 +1725,42 @@ const randomRoll = useCallback((generationType: 'balanced' | 'heroic' | 'standar
       
       // Update state with new values
       setInputsStatsData(updatedInputsStatsData);
+      
+      // Update React Hook Form values for each stat
+      updatedInputsStatsData.forEach((stat) => {
+        switch (stat.id) {
+          case 'STR':
+            setValue("strDice", stat.valueDice);
+            setValue("strClass", stat.valueClass);
+            setValue("strLevel", stat.valueLevel);
+            break;
+          case 'INT':
+            setValue("intDice", stat.valueDice);
+            setValue("intClass", stat.valueClass);
+            setValue("intLevel", stat.valueLevel);
+            break;
+          case 'DEX':
+            setValue("dexDice", stat.valueDice);
+            setValue("dexClass", stat.valueClass);
+            setValue("dexLevel", stat.valueLevel);
+            break;
+          case 'CON':
+            setValue("conDice", stat.valueDice);
+            setValue("conClass", stat.valueClass);
+            setValue("conLevel", stat.valueLevel);
+            break;
+          case 'PER':
+            setValue("perDice", stat.valueDice);
+            setValue("perClass", stat.valueClass);
+            setValue("perLevel", stat.valueLevel);
+            break;
+          case 'CHA':
+            setValue("chaDice", stat.valueDice);
+            setValue("chaClass", stat.valueClass);
+            setValue("chaLevel", stat.valueLevel);
+            break;
+        }
+      });
       
       // Show informative message
       console.log("Generated random stats:", 
@@ -2122,11 +2312,15 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
           level: inputsStatsData[5].valueLevel,
         },
       ],
-      mainSkill: selectedSkillValue,
-      extraSkill: selectedExtraSkillValue,
+      mainSkill: data.skillClass || '',
+      extraSkill: data.skillExtra || '',
       alignment: character.pus_alineacion || '',
       skills: skillsAcquired,
-      coinsInv: coins,
+      coinsInv: [
+        data.goldCoins || 0,
+        data.silverCoins || 0, 
+        data.bronzeCoins || 0
+      ],
       inv: invObjects,
     };
     
@@ -2153,7 +2347,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
     if (character) {
       const characterErrors = validateCharacter(character);
       
-      // Map database field names to form field names for UI validation
+      // Map database field names to UI field names for validation
       characterErrors.forEach(field => {
         if (field === 'pus_nombre') fieldsRequired.push('name');
         else if (field === 'pus_clase') fieldsRequired.push('characterClass');
@@ -2217,12 +2411,10 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
         }
       });
     }
-    
     // Validate selected skills
-    if (!selectedSkillValue) {
+    if (!formValues.skillClass) {
       fieldsRequired.push('mainSkill');
     }
-    
     // Validate character description if it's a required field
     if (formValues.characterDescription?.trim() === '') {
       fieldsRequired.push('description');
@@ -2500,7 +2692,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       <form
         id="form-sheet"
         className={`form-sheet min-h-screen grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 md:gap-x-4 p-4 ${
-          formAlignment === 'O' ? 'orden' : formAlignment === 'C' ? 'caos' : ''
+          getValues("alignment") === 'O' ? 'orden' : getValues("alignment") === 'C' ? 'caos' : ''
         }`}
         onSubmit={handleSubmit(onSubmitForm)}
       >
@@ -2752,8 +2944,8 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
             list="wearons"
           />
           <datalist id="wearons">
-            {listWearpons?.map((elem, index) => (
-              <option key={index} value={elem}>
+            {listWearpons?.map((elem) => (
+              <option key={elem} value={elem}>
                 {elem}
               </option>
             ))}
@@ -2774,7 +2966,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
             id="skillClass"
             label="Habilidad innata"
             options={optionsSkillClass}
-            selectedValue={selectedSkillValue}
+            selectedValue={getValues("skillClass")}
             onSelectChange={handleSelectSkillChange}
           ></FormSelectInfoPlayer>
 
@@ -2785,7 +2977,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
             id="skillExtra"
             label="Habilidad extra"
             options={optionsSkillExtra}
-            selectedValue={selectedExtraSkillValue}
+            selectedValue={getValues("skillExtra")}
             onSelectChange={handleSelectExtraSkillChange}
           ></FormSelectInfoPlayer>
 
@@ -2804,6 +2996,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
               <select
                 id="alignment"
                 className="form-input mr-2"
+                {...register("alignment")}
                 onChange={(e) => handleAlignmentChange(e.target.value)}
               >
                 <option value="" />
@@ -2951,16 +3144,15 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
             id="objectName"
             placeholder="Objeto"
             className="form-input ml-2 col-span-2 row-span-1 focus:border-black focus:shadow"
-            value={newObjectName}
+            {...register("newObjectName")}
             maxLength={50}
-            onChange={(e) => setNewObjectName(e.target.value)}
           />
           <input
             type="text"
             id="objectCount"
             placeholder="Cantidad"
             className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
-            value={newObjectCount}
+            {...register("newObjectCount")}
             maxLength={2}
             onChange={(e) => handleNewCount(e.target.value)}
           />
@@ -2969,9 +3161,8 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
             id="objectDescription"
             placeholder="Descripción"
             className="form-input mx-2 col-span-3 row-span-2 focus:border-black focus:shadow"
-            value={newObjectDescription}
+            {...register("newObjectDescription")}
             maxLength={100}
-            onChange={(e) => setNewObjectDescription(e.target.value)}
           />
           <button
             type="button"

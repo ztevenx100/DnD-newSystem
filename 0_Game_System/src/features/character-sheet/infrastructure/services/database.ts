@@ -78,15 +78,13 @@ export const getGameSystem = async () => {
 
 export const getListHad = async () => {
     try {
-        console.log("Getting skills data from database");
         let result = await getDataQueryHab('*', { hab_tipo: ['C','E','R'] });
         
         if (!result || result.length === 0) {
             result = await getDataQuery<DBHabilidad>(TABLE_HAD, '*', { tipo: ['C','E','R'] });
         }
         
-        console.log("Skills data result:", result ? `Found ${result.length} skills` : "No skills found");
-          if (!result || result.length === 0) {
+        if (!result || result.length === 0) {
             result = [
                 { id: '1', nombre: 'Ataque Brutal', sigla: 'AB', tipo: 'C', estadistica_base: 'STR', 
                   hab_id: '1', hab_nombre: 'Ataque Brutal', hab_siglas: 'AB', hab_tipo: 'C', had_estadistica_base: 'STR' } as DBHabilidad,
@@ -100,7 +98,6 @@ export const getListHad = async () => {
                 { id: '4', nombre: 'Curación', sigla: 'CU', tipo: 'E', estadistica_base: 'CON',
                   hab_id: '4', hab_nombre: 'Curación', hab_siglas: 'CU', hab_tipo: 'E', had_estadistica_base: 'CON' } as DBHabilidad,
                 
-                // Habilidades de Anillo para cada estadística base
                 { id: '5', nombre: 'Anillo de Fuerza', sigla: 'RF', tipo: 'R', estadistica_base: 'STR',
                   hab_id: '5', hab_nombre: 'Anillo de Fuerza', hab_siglas: 'RF', hab_tipo: 'R', had_estadistica_base: 'STR' } as DBHabilidad,
                 

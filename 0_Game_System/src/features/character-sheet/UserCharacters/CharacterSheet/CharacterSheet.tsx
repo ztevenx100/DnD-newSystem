@@ -1,7 +1,7 @@
 import React, { useState, ChangeEvent, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, useLoaderData } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 
 // NextUI Components
 import {
@@ -118,7 +118,7 @@ interface CharacterForm {
   race: string;
   job: string;
   alignment: string;
-  // Campos para estadísticas
+  // Campos para estadísticas (mantener para compatibilidad temporal)
   strDice: number;
   strClass: number;
   strLevel: number;
@@ -137,10 +137,41 @@ interface CharacterForm {
   chaDice: number;
   chaClass: number;
   chaLevel: number;
-  // Campos para inventario
+  
+  // Nueva estructura con arrays para formularios
+  // Estadísticas como array estructurado
+  stats: {
+    id: string;
+    label: string;
+    description: string;
+    valueDice: number;
+    valueClass: number;
+    valueLevel: number;
+  }[];
+  
+  // Inventario
+  inventory: {
+    id: string;
+    name: string;
+    description: string;
+    count: number;
+    readOnly: boolean;
+  }[];
+  
+  // Habilidades
+  skills: {
+    id: string;
+    value: string;
+    name: string;
+    description: string;
+    ring: string;
+  }[];
+  
+  // Campos para inventario (para añadir nuevo elemento)
   newObjectName: string;
   newObjectDescription: string;
   newObjectCount: number;
+  
   // Campos para habilidades
   skillClass: string;
   skillExtra: string;
@@ -230,27 +261,188 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           skillExtra: ""
         };
   }, [initialCharacter, userName]);
+  
+  // Añadimos valores iniciales para los arrays de la nueva estructura
+  const extendedDefaultValues = useMemo(() => {
+    return {
+      ...defaultValues,
+      // Inicializar arrays para React Hook Form
+      stats: [
+        { id: 'STR', label: 'Fuerza', description: 'Fuerza física y potencia muscular', valueDice: 1, valueClass: 0, valueLevel: 0 },
+        { id: 'INT', label: 'Inteligencia', description: 'Capacidad mental y conocimiento', valueDice: 1, valueClass: 0, valueLevel: 0 },
+        { id: 'DEX', label: 'Destreza', description: 'Agilidad y precisión', valueDice: 1, valueClass: 0, valueLevel: 0 },
+        { id: 'CON', label: 'Constitución', description: 'Resistencia y salud', valueDice: 1, valueClass: 0, valueLevel: 0 },
+        { id: 'PER', label: 'Percepción', description: 'Atención y observación', valueDice: 1, valueClass: 0, valueLevel: 0 },
+        { id: 'CHA', label: 'Carisma', description: 'Personalidad y liderazgo', valueDice: 1, valueClass: 0, valueLevel: 0 }
+      ],
+      inventory: [],
+      skills: [
+        { id: "", value: "0", name: "", description: "", ring: "" },
+        { id: "", value: "1", name: "", description: "", ring: "" },
+        { id: "", value: "2", name: "", description: "", ring: "" },
+      ]
+    };
+  }, [defaultValues]);
+  
   const {
     register,
     handleSubmit,
     setValue,
-    getValues
+    getValues,
+    control,
+    formState: { errors }
   } = useForm<CharacterForm>({
-    defaultValues: defaultValues,
+    defaultValues: extendedDefaultValues,
     mode: "onSubmit"
   });
+  
+  // State to track empty required fields for validation
+  const [emptyRequiredFields, setEmptyRequiredFields] = useState<string[]>([]);
+  
+  // Function to clear validation errors for a field
+  const clearValidationError = (fieldId: string) => {
+    if (emptyRequiredFields.includes(fieldId)) {
+      setEmptyRequiredFields((prev) =>
+        prev.filter((field) => field !== fieldId)
+      );
+    }
+  };
+
+  // Initialize stats data state
+  const [inputsStatsData, setInputsStatsData] = useState<InputStats[]>([
+    { id: 'STR', label: 'Fuerza', description: 'Fuerza física y potencia muscular', valueDice: 1, valueClass: 0, valueLevel: 0 },
+    { id: 'INT', label: 'Inteligencia', description: 'Capacidad mental y conocimiento', valueDice: 1, valueClass: 0, valueLevel: 0 },
+    { id: 'DEX', label: 'Destreza', description: 'Agilidad y precisión', valueDice: 1, valueClass: 0, valueLevel: 0 },
+    { id: 'CON', label: 'Constitución', description: 'Resistencia y salud', valueDice: 1, valueClass: 0, valueLevel: 0 },
+    { id: 'PER', label: 'Percepción', description: 'Atención y observación', valueDice: 1, valueClass: 0, valueLevel: 0 },
+    { id: 'CHA', label: 'Carisma', description: 'Personalidad y liderazgo', valueDice: 1, valueClass: 0, valueLevel: 0 }
+  ]);
+
+  /**
+   * Validates a specific character stat and provides detailed feedback
+   * Can be used for individual stat validation during character creation/editing
+   * 
+   * @param statId - The ID of the stat to validate (e.g., 'STR', 'INT')
+   * @param showAlert - Whether to display alerts for validation issues
+   * @returns Object with validation status and messages
+   */
+  const validateSingleStat = useCallback((statId: string, showAlert = false): {
+    isValid: boolean;
+    message?: string;
+    totalValue: number;
+  } => {
+    // Find the stat in the inputsStatsData array
+    const stat = inputsStatsData.find(s => s.id === statId);
+    
+    if (!stat) {
+      const errorMsg = `Stat "${statId}" not found`;
+      if (showAlert) alert(errorMsg);
+      return { isValid: false, message: errorMsg, totalValue: 0 };
+    }
+    
+    // Calculate total value
+    const totalValue = stat.valueDice + stat.valueClass + stat.valueLevel;
+    
+    // Validate dice value range (1-10)
+    if (typeof stat.valueDice !== 'number' || isNaN(stat.valueDice) || stat.valueDice < 1 || stat.valueDice > 10) {
+      const errorMsg = `${stat.label}: Base value must be between 1 and 10`;
+      if (showAlert) alert(errorMsg);
+      return { isValid: false, message: errorMsg, totalValue };
+    }
+    
+    // Validate class bonus range (0-3)
+    if (typeof stat.valueClass !== 'number' || isNaN(stat.valueClass) || stat.valueClass < 0 || stat.valueClass > 3) {
+      const errorMsg = `${stat.label}: Class bonus must be between 0 and 3`;
+      if (showAlert) alert(errorMsg);
+      return { isValid: false, message: errorMsg, totalValue };
+    }
+    
+    // Validate level bonus range (0-5)
+    if (typeof stat.valueLevel !== 'number' || isNaN(stat.valueLevel) || stat.valueLevel < 0 || stat.valueLevel > 5) {
+      const errorMsg = `${stat.label}: Level bonus must be between 0 and 5`;
+      if (showAlert) alert(errorMsg);
+      return { isValid: false, message: errorMsg, totalValue };
+    }
+    
+    // Validate total maximum (typically should not exceed 15-18)
+    if (totalValue > 18) {
+      const warningMsg = `${stat.label}: Total value ${totalValue} is unusually high`;
+      console.warn(warningMsg);
+      // This is just a warning, not a validation failure
+    }
+    
+    return { isValid: true, totalValue };
+  }, [inputsStatsData]);
+    // Usar useFieldArray para gestionar los arrays en el formulario
+  const { 
+    fields: _statsFields, // Usando prefijo _ para indicar que es intencionalmente no utilizada
+    update: updateStats
+  } = useFieldArray({
+    control,
+    name: "stats"
+  });
+  
+  const { 
+    fields: inventoryFields,
+    append: appendInventory,
+    remove: removeInventory,
+    update: updateInventory
+  } = useFieldArray({
+    control,
+    name: "inventory",
+    rules: {
+      // Add validation rules for the array as a whole
+      validate: {
+        notEmpty: (value) => 
+          (value && value.length > 0) || 
+          "El inventario no puede estar vacío. Debe tener al menos un objeto.",
+        validItems: (value) => {
+          if (!value || value.length === 0) return true;
+          
+          // Check each item for valid name and count
+          const invalidItems = value.filter(item => {
+            // Name must not be empty
+            if (!item.name?.trim()) return true;
+            
+            // Count must be a positive number
+            if (!item.count || typeof item.count !== 'number' || item.count < 1 || item.count > 99) 
+              return true;
+            
+            // Description shouldn't be too long if present
+            if (item.description && item.description.length > 200)
+              return true;
+              
+            return false;
+          });
+          
+          return invalidItems.length === 0 || 
+            `${invalidItems.length} objeto(s) del inventario tienen datos inválidos. Verifica nombres y cantidades.`;
+        }
+      }
+    }
+  });
+  
+  const { 
+    fields: _skillsFields, // Usando prefijo _ para indicar que es intencionalmente no utilizada
+    update: updateSkills
+  } = useFieldArray({
+    control,
+    name: "skills"
+  });
+  
   const [characterImage, setCharacterImage] = useState<string | undefined>(
     undefined
   );
-  // Mantenemos estos estados por ahora para compatibilidad con el código existente
-  // pero eventualmente podrían migrar completamente a React Hook Form
+  // Mantenemos estos estados por ahora para compatibilidad con el código existente,
+  // pero deberían migrarse completamente a React Hook Form. 
+  // TODO: Migrar estos estados a React Hook Form para mantener una única fuente de verdad
+  // Prioridad: skillsAcquired, inputsStatsData
   const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([
     { id: "", value: "0", name: "", description: "", ring: "" },
     { id: "", value: "1", name: "", description: "", ring: "" },
     { id: "", value: "2", name: "", description: "", ring: "" },
   ]);
 
-  const [invObjects, setInvObjects] = useState<InventoryObject[]>([]);
   const [systemGame, setSystemGame] = useState<DBSistemaJuego>({
     sju_id: "",
     sju_nombre: "",
@@ -283,15 +475,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   );
   const navigate = useNavigate();
   const params = useParams();
-
-  const [inputsStatsData, setInputsStatsData] = useState<InputStats[]>([
-    { id: 'STR', label: 'Fuerza', description: 'Fuerza física y potencia muscular', valueDice: 1, valueClass: 0, valueLevel: 0 },
-    { id: 'INT', label: 'Inteligencia', description: 'Capacidad mental y conocimiento', valueDice: 1, valueClass: 0, valueLevel: 0 },
-    { id: 'DEX', label: 'Destreza', description: 'Agilidad y precisión', valueDice: 1, valueClass: 0, valueLevel: 0 },
-    { id: 'CON', label: 'Constitución', description: 'Resistencia y salud', valueDice: 1, valueClass: 0, valueLevel: 0 },
-    { id: 'PER', label: 'Percepción', description: 'Atención y observación', valueDice: 1, valueClass: 0, valueLevel: 0 },
-    { id: 'CHA', label: 'Carisma', description: 'Personalidad y liderazgo', valueDice: 1, valueClass: 0, valueLevel: 0 }
-  ]);
 
   // Calculate total stats with useMemo to optimize performance
   const totalStats = useMemo(() => {
@@ -366,43 +549,78 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
   const [dataCharacter, setDataCharacter] = useState<DataCharacter>();
 
-  const getInventory = useCallback(async () => {
-    const updatedInvObjects = [...invObjects];
+  /**
+   * Carga los objetos del inventario desde la base de datos y los configura
+   * tanto en el estado local como en React Hook Form.
+   * 
+   * Esta función es parte del proceso de migración y actualiza ambos sistemas
+   * para mantener la compatibilidad mientras se completa la transición.
+   */
+const getInventory = useCallback(async () => {
+    // Check if we already have inventory data
+    const currentInventory = getValues("inventory") || [];
+    if (currentInventory.length !== 0) return;
 
-    if (updatedInvObjects.length !== 0) return;
+    try {
+      // For new characters, add a default item
+      if (params.id === null || params.id === undefined) {
+        const defaultItem = {
+          id: uuidv4(),
+          name: "Gema",
+          description: "Articulo del elegido",
+          count: 1,
+          readOnly: true,
+        };
+        
+        // Add to React Hook Form
+        appendInventory(defaultItem);
+        
+        console.log("Objeto inicial añadido a nuevo personaje");
+        return;
+      }
 
-    if (params.id === null || params.id === undefined) {
-      updatedInvObjects.push({
-        id: uuidv4(),
-        name: "Gema",
-        description: "Articulo del elegido",
-        count: 1,
-        readOnly: true,
-      });
-      setInvObjects(updatedInvObjects);
-      return;
-    }
+      // For existing characters, load data from the database
+      const data = await getCharacterInventory(params.id);
 
-    const data = await getCharacterInventory(params.id);
-
-    if (data !== null) {
-      data.forEach((elem: DBInventarioPersonaje) => {
-        updatedInvObjects.push({
+      if (data !== null && Array.isArray(data)) {
+        const formattedInventory = data.map((elem: DBInventarioPersonaje) => ({
           id: elem.inp_id,
           name: elem.inp_nombre,
           description: elem.inp_descripcion,
           count: elem.inp_cantidad,
           readOnly: false,
+        }));
+        
+        // Clear any existing inventory data in the form
+        setValue("inventory", []);
+        
+        // Add each item to the form
+        formattedInventory.forEach(item => {
+          appendInventory(item);
         });
-      });
-      setInvObjects(updatedInvObjects);
+        
+        console.log(`Inventario cargado: ${formattedInventory.length} objetos`);
+      } else {
+        console.log("No se encontraron objetos en el inventario");
+      }
+    } catch (error) {
+      console.error("Error al cargar el inventario:", error);
     }
-  }, [invObjects, params.id]);
+  }, [params.id, appendInventory, getValues, setValue]);
   /**
    * Maneja el cambio en la selección de una habilidad para un anillo específico
    * 
    * Esta función actualiza el estado cuando el usuario selecciona una habilidad diferente
    * para uno de los anillos de habilidad del personaje
+   * 
+   * @param id - ID/índice del anillo que está siendo modificado
+   * @param ring - Tipo de anillo seleccionado
+   * @param skill - ID de la habilidad seleccionada
+   * @param stat - Estadística base asociada a la habilidad
+   *//**
+   * Maneja el cambio en la selección de una habilidad para un anillo específico
+   * Actualiza tanto el estado local como React Hook Form para mantener
+   * la consistencia durante la migración.
    * 
    * @param id - ID/índice del anillo que está siendo modificado
    * @param ring - Tipo de anillo seleccionado
@@ -423,23 +641,57 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return;
     }
     
-    // Actualizar la habilidad seleccionada para este anillo
-    setSkillsAcquired((prevItems) =>
-      prevItems.map((item) =>
-        item.value === id
-          ? { ...item, name: skill, ring: ring, stat: stat, id: skill }
-          : item
-      )
-    );
-    
-    // Limpiar cualquier error de validación relacionado con este anillo
-    clearValidationError(`ringSkill${id}`);
-  }, []);
+    try {
+      // 1. Actualizar el estado local (enfoque anterior)
+      setSkillsAcquired((prevItems) =>
+        prevItems.map((item) =>
+          item.value === id
+            ? { ...item, name: skill, ring: ring, stat: stat, id: skill }
+            : item
+        )
+      );
+      
+      // 2. Actualizar React Hook Form (nuevo enfoque)
+      const formSkills = getValues("skills") || [];
+      const skillIndex = parseInt(id, 10);
+      
+      // Verificar que el índice sea válido
+      if (!isNaN(skillIndex) && skillIndex >= 0 && skillIndex < formSkills.length) {
+        // Crear objeto de habilidad actualizado
+        const updatedSkill = {
+          ...formSkills[skillIndex],
+          id: skill,
+          value: id,
+          name: skill,
+          ring: ring,
+          stat: stat
+        };
+        
+        // Actualizar la habilidad en el array
+        updateSkills(skillIndex, updatedSkill);
+        console.log(`Habilidad de anillo ${id} actualizada en React Hook Form`);
+      } else {
+        console.warn(`Índice de habilidad ${id} fuera de rango o inválido para React Hook Form`);
+      }
+      
+      // Limpiar cualquier error de validación relacionado con este anillo
+      clearValidationError(`ringSkill${id}`);
+    } catch (error) {
+      console.error("Error al actualizar la habilidad del anillo:", error);
+    }
+  }, [getValues, updateSkills, clearValidationError]);
   /**
    * Maneja el cambio en el tipo de habilidad del anillo seleccionado
    * 
    * Esta función actualiza la lista de habilidades disponibles para un anillo específico
    * basándose en el tipo de habilidad seleccionado, y reinicia la selección actual
+   * 
+   * @param id - ID/índice del anillo que está siendo modificado
+   * @param type - Tipo de habilidad seleccionado para el anillo
+   *//**
+   * Maneja el cambio en el tipo de habilidad del anillo seleccionado
+   * Actualiza tanto el estado local como React Hook Form para mantener
+   * la consistencia durante la migración.
    * 
    * @param id - ID/índice del anillo que está siendo modificado
    * @param type - Tipo de habilidad seleccionado para el anillo
@@ -456,45 +708,71 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return;
     }
     
-    // Actualizar la lista de habilidades disponibles para este anillo
-    setSkillsRingList(prevList => {
-      const newList = [...prevList];
-      const skills = skillsTypes.find(option => option.id === type)?.skills || [];
-      console.log('New skills for ring', id, ':', skills.map(s => s.name).join(', '));
+    try {
+      // 1. Actualizar la lista de habilidades disponibles para este anillo (estado local)
+      setSkillsRingList(prevList => {
+        const newList = [...prevList];
+        const skills = skillsTypes.find(option => option.id === type)?.skills || [];
+        console.log('New skills for ring', id, ':', skills.map(s => s.name).join(', '));
+        
+        // Log para depuración 
+        if (skills.length === 0) {
+          console.warn(`No se encontraron habilidades para el tipo ${type}. skillsTypes contiene:`, 
+            skillsTypes.map(s => ({ id: s.id, numSkills: s.skills.length })));
+        }
+        
+        // Actualizar las habilidades disponibles para este anillo
+        const ringIndex = Number(id);
+        if (isNaN(ringIndex) || ringIndex < 0 || ringIndex >= newList.length) {
+          console.error(`Índice de anillo inválido: ${id}`);
+          return prevList;
+        }
+        
+        newList[ringIndex] = {
+          ...newList[ringIndex],
+          skills: skills
+        };
+        
+        return newList;
+      });
       
-      // Log para depuración 
-      if (skills.length === 0) {
-        console.warn(`No se encontraron habilidades para el tipo ${type}. skillsTypes contiene:`, 
-          skillsTypes.map(s => ({ id: s.id, numSkills: s.skills.length })));
+      // 2. Reiniciar la selección de habilidad en el estado local
+      setSkillsAcquired(prev => 
+        prev.map((item) => 
+          item.value === id
+            ? { ...item, name: "", id: "", ring: type }
+            : item
+        )
+      );
+      
+      // 3. Actualizar React Hook Form (nuevo enfoque)
+      const formSkills = getValues("skills") || [];
+      const skillIndex = parseInt(id, 10);
+      
+      // Verificar que el índice sea válido
+      if (!isNaN(skillIndex) && skillIndex >= 0 && skillIndex < formSkills.length) {
+        // Crear objeto de habilidad reiniciado
+        const updatedSkill = {
+          ...formSkills[skillIndex],
+          id: "",
+          value: id,
+          name: "",
+          ring: type
+        };
+        
+        // Actualizar la habilidad en el array
+        updateSkills(skillIndex, updatedSkill);
+        console.log(`Tipo de habilidad de anillo ${id} actualizado a ${type} en React Hook Form`);
+      } else {
+        console.warn(`Índice de habilidad ${id} fuera de rango o inválido para React Hook Form`);
       }
       
-      // Actualizar las habilidades disponibles para este anillo
-      const ringIndex = Number(id);
-      if (isNaN(ringIndex) || ringIndex < 0 || ringIndex >= newList.length) {
-        console.error(`Índice de anillo inválido: ${id}`);
-        return prevList;
-      }
-      
-      newList[ringIndex] = {
-        ...newList[ringIndex],
-        skills: skills
-      };
-      
-      return newList;
-    });
-    
-    // Reiniciar la selección de habilidad cuando se cambia el tipo
-    setSkillsAcquired(prev => 
-      prev.map((item) => 
-        item.value === id
-          ? { ...item, name: "", id: "", ring: type }
-          : item
-      )
-    );
-    
-    // Limpiar cualquier error de validación relacionado con este anillo
-    clearValidationError(`ringSkill${id}`);
-  }, [skillsTypes]);
+      // Limpiar cualquier error de validación relacionado con este anillo
+      clearValidationError(`ringSkill${id}`);
+    } catch (error) {
+      console.error("Error al cambiar el tipo de habilidad del anillo:", error);
+    }
+  }, [skillsTypes, getValues, updateSkills, clearValidationError]);
 
   const getSkills = useCallback(async () => {
     const data = await getListHad();
@@ -506,10 +784,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       let characterSkills: DBHabilidadPersonaje[] = [];
       if (params.id) {
         characterSkills = await getCharacterSkills(params.id);
-        console.log("Habilidades cargadas:", characterSkills);
       }
       (data as DBHabilidad[]).forEach((rawElem: DBHabilidad) => {
-        // Usar nuestro helper para mapear campos de manera segura
         const elem = mapSkillFields(rawElem);
 
         if (elem.tipo === "C") {
@@ -581,61 +857,80 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     }
   }, [user, params.id]);
 
+  /**
+   * Carga las estadísticas del personaje desde la base de datos y las configura
+   * tanto en el estado local como en React Hook Form.
+   */
   const getStats = useCallback(async () => {
     if (params.id === null || params.id === undefined) return;
 
-    const data = await getCharacterStats(params.id);
-
-    if (data !== null) {
-      const updatedInputsStatsData = inputsStatsData.map((item, index) => {
-        if (index < data.length) {
-          return {
-            ...item,
-            valueDice: data[index].epe_num_dado,
-            valueClass: data[index].epe_num_clase,
-            valueLevel: data[index].epe_num_nivel
-          };
+    try {
+      const data = await getCharacterStats(params.id);
+      if (data !== null && Array.isArray(data)) {
+        
+        // 1. Actualizar el estado local (enfoque anterior)
+        const updatedInputsStatsData = inputsStatsData.map((item, index) => {
+          if (index < data.length) {
+            return {
+              ...item,
+              valueDice: data[index].epe_num_dado,
+              valueClass: data[index].epe_num_clase,
+              valueLevel: data[index].epe_num_nivel
+            };
+          }
+          return item;
+        });
+        
+        setInputsStatsData(updatedInputsStatsData);
+        
+        // 2. Actualizar React Hook Form - Campos individuales (para compatibilidad)
+        if (data.length >= 6) {
+          setValue("strDice", data[0].epe_num_dado);
+          setValue("strClass", data[0].epe_num_clase);
+          setValue("strLevel", data[0].epe_num_nivel);
+          setValue("intDice", data[1].epe_num_dado);
+          setValue("intClass", data[1].epe_num_clase);
+          setValue("intLevel", data[1].epe_num_nivel);
+          setValue("dexDice", data[2].epe_num_dado);
+          setValue("dexClass", data[2].epe_num_clase);
+          setValue("dexLevel", data[2].epe_num_nivel);
+          setValue("conDice", data[3].epe_num_dado);
+          setValue("conClass", data[3].epe_num_clase);
+          setValue("conLevel", data[3].epe_num_nivel);
+          setValue("perDice", data[4].epe_num_dado);
+          setValue("perClass", data[4].epe_num_clase);
+          setValue("perLevel", data[4].epe_num_nivel);
+          setValue("chaDice", data[5].epe_num_dado);
+          setValue("chaClass", data[5].epe_num_clase);
+          setValue("chaLevel", data[5].epe_num_nivel);
         }
-        return item;
-      });
-      
-      // Actualizar el estado local
-      setInputsStatsData(updatedInputsStatsData);
-      
-      // Sincronizar con React Hook Form
-      if (data.length >= 6) {
-        // STR
-        setValue("strDice", data[0].epe_num_dado);
-        setValue("strClass", data[0].epe_num_clase);
-        setValue("strLevel", data[0].epe_num_nivel);
         
-        // INT
-        setValue("intDice", data[1].epe_num_dado);
-        setValue("intClass", data[1].epe_num_clase);
-        setValue("intLevel", data[1].epe_num_nivel);
+        // 3. Actualizar React Hook Form - Array de estadísticas (nuevo enfoque)
+        const formStats = getValues("stats") || [];
         
-        // DEX
-        setValue("dexDice", data[2].epe_num_dado);
-        setValue("dexClass", data[2].epe_num_clase);
-        setValue("dexLevel", data[2].epe_num_nivel);
-        
-        // CON
-        setValue("conDice", data[3].epe_num_dado);
-        setValue("conClass", data[3].epe_num_clase);
-        setValue("conLevel", data[3].epe_num_nivel);
-        
-        // PER
-        setValue("perDice", data[4].epe_num_dado);
-        setValue("perClass", data[4].epe_num_clase);
-        setValue("perLevel", data[4].epe_num_nivel);
-        
-        // CHA
-        setValue("chaDice", data[5].epe_num_dado);
-        setValue("chaClass", data[5].epe_num_clase);
-        setValue("chaLevel", data[5].epe_num_nivel);
+        if (formStats.length === 6 && data.length >= 6) {
+          data.forEach((stat, index) => {
+            if (index < 6) {
+              const updatedStat = {
+                ...formStats[index],
+                valueDice: stat.epe_num_dado,
+                valueClass: stat.epe_num_clase,
+                valueLevel: stat.epe_num_nivel
+              };
+              
+              updateStats(index, updatedStat);
+            }
+          });
+          
+          console.log("Estadísticas actualizadas en React Hook Form");
+        } else {
+          console.warn("No se pudo actualizar el array de estadísticas: longitud incorrecta");
+        }
       }
+    } catch (error) {
+      console.error("Error al cargar las estadísticas:", error);
     }
-  }, [params.id, inputsStatsData, setValue]);
+  }, [params.id, inputsStatsData, setValue, getValues, updateStats]);
   const getInfoCharacter = useCallback(async () => {
     try {
       if (!user || !user.id) {
@@ -645,7 +940,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       
       const userId = user.id;
       
-      // For new characters, just initialize with defaults
       if (params.id === null || params.id === undefined) {
         setCharacter({
           ...initialPersonajesUsuario,
@@ -655,7 +949,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         return;
       }
 
-      // Fetch character data with error handling
       const data = await withErrorHandling(
         () => getCharacter(params.id!), 
         "fetching character data"
@@ -699,7 +992,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           });
         } else {
           console.warn("No game system found for character:", getCharacterProperty(characterData, 'pus_id'));
-          // Set default game system if none found
           setSystemGame({
             sju_id: '',
             sju_nombre: 'Sistema por defecto',
@@ -716,15 +1008,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   }, [params.id, user]);
   
   useEffect(() => {
-    /*console.log("Actualizando valores de formulario desde character:", {
-      nombre: character?.pus_nombre,
-      descripcion: character?.pus_descripcion,
-      clase: character?.pus_clase,
-      raza: character?.pus_raza,
-      trabajo: character?.pus_trabajo,
-      usuario: user?.usu_nombre
-    });*/
-    
     if (character?.pus_nombre) setValue("name", character.pus_nombre);
     if (character?.pus_descripcion) setValue("characterDescription", character.pus_descripcion);
     if (character?.pus_clase) setValue("class", character.pus_clase);
@@ -746,16 +1029,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setLoading(true);
       
       try {
-        // Load initial data sequentially for better error handling
-        console.log("Cargando datos iniciales...");
-        
-        // First fetch skill data which is needed for all characters
         await withErrorHandling(
           () => getListSkill(),
           "loading skill data"
         );
-        
-        // For existing characters, fetch character data
         if (!isNewRecord) {
           await withErrorHandling(
             () => getInfoCharacter(),
@@ -763,13 +1040,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           );
         }
         
-        // Load support data
         await withErrorHandling(
           () => getGameSystemList(),
           "loading game systems"
         );
         
-        // Load optional data like character image
         if (!isNewRecord) {
           await withErrorHandling(
             () => getCharacterImage(),
@@ -777,7 +1052,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           );
         }
         
-        // Load remaining character data in parallel
         if (!isNewRecord) {
           await Promise.all([
             withErrorHandling(() => getStats(), "loading character stats"),
@@ -806,7 +1080,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         const otherSkills: SkillTypes[] = [];
         
         (data as DBHabilidad[]).forEach((rawElem) => {
-          // Create consistent field mappings regardless of database field names
           const elem = {
             id: rawElem.hab_id || rawElem.id || '',
             nombre: rawElem.hab_nombre || rawElem.nombre || '',
@@ -815,8 +1088,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             estadistica_base: rawElem.had_estadistica_base || rawElem.estadistica_base || '',
             descripcion: rawElem.hab_descripcion || rawElem.descripcion || ''
           };
-          
-          /*console.log("Mapped skill fields:", elem);*/
           
           if (!elem || !elem.tipo || !elem.id || !elem.sigla || !elem.nombre) {
             console.warn("Skipping invalid skill data:", elem);
@@ -865,7 +1136,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           }
         });
         
-        // Only update state if we actually have options
         if (updatedOptionsSkillClass.length > 0) {
           setOptionsSkillClass(updatedOptionsSkillClass);
         } else {
@@ -909,15 +1179,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
    * @param value - ID de la raza seleccionada
    */
    const handleSelectRaceChange = (value: string) => {
-    // Limpiar cualquier error de validación previo
     clearValidationError('characterRace');
     console.log("Selecting race:", value);
     
-    // Actualizar la raza en el estado del personaje
     setCharacter((prevState) => {
       if (!prevState) return prevState;
-      
-      // Usar el helper con tipado seguro para actualizar la propiedad
       const updated = setCharacterProperty(prevState, 'pus_raza', value);
       console.log("Updated character state with race:", updated);
       return updated;
@@ -929,12 +1195,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
    * @param currentSystem - ID del sistema de juego seleccionado
    */
   const handleSystemGameChange = (currentSystem: string = "") => {
-    // Validación de entrada
     if (!currentSystem) {
       return;
     }
     
-    // Buscar la opción correspondiente al sistema seleccionado
     const option = SystemGameList.filter((elem) => elem.value === currentSystem);
     if (option.length === 0) {
       return;
@@ -942,21 +1206,18 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     
     console.log("Cambiando sistema de juego:", currentSystem, option[0].name);
     
-    // Actualizar el estado del sistema de juego
     setSystemGame({
       sju_id: option[0].value,
       sju_nombre: option[0].name,
       sju_descripcion: systemGame.sju_descripcion
     });
     
-    // Actualizar el sistema de juego en el estado del personaje
     setCharacter((prevState) => {
       if (!prevState) return prevState;
-      
-      // Usar el helper con tipado seguro para actualizar la propiedad
       return setCharacterProperty(prevState, 'pus_sistema_juego', currentSystem);
     });
   };
+
   /**
    * Maneja el cambio en la selección de habilidad principal del personaje
    * 
@@ -966,27 +1227,18 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
    * @param currentSkill - ID de la habilidad seleccionada
    */
   const handleSelectSkillChange = (currentSkill: string) => {
-    console.log("handleSelectSkillChange called with:", currentSkill);
-    
-    // Manejo del caso de valor vacío
     if (!currentSkill) {
-      console.log("Empty skill value, skipping update");
       setValue("skillClass", "");
       return;
     }
     
-    // Buscar la opción correspondiente al valor seleccionado
     const option = optionsSkillClass.filter(
       (skill) => skill.value === currentSkill
     );
     
     if (option.length > 0) {
-      console.log("Found matching option for skillClass:", option[0]);
-      
-      // Actualizar el valor en React Hook Form
       setValue("skillClass", currentSkill);
       
-      // Actualizar el campo de habilidad en el estado para compatibilidad con código existente
       setFieldSkill((prevItems) =>
         prevItems.map((item) =>
           item.field === "skillClass"
@@ -995,39 +1247,30 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         )
       );
       
-      // Limpiar cualquier error de validación relacionado con la habilidad
       clearValidationError('skillClass');
     } else {
       console.warn("No matching option found for skillClass:", currentSkill);
     }
   };
+
   /**
    * Maneja el cambio en la selección de habilidades extra
    * 
    * @param currentSkill - ID de la habilidad extra seleccionada
    */
   const handleSelectExtraSkillChange = (currentSkill: string) => {
-    console.log("handleSelectExtraSkillChange called with:", currentSkill);
-    
-    // Manejo del caso de valor vacío
     if (!currentSkill) {
-      console.log("Empty extra skill value, skipping update");
       setValue("skillExtra", "");
       return;
     }
     
-    // Buscar la opción correspondiente al valor seleccionado
     const option = optionsSkillExtra.filter(
       (skill) => skill.value === currentSkill
     );
     
     if (option.length > 0) {
-      console.log("Found matching option for skillExtra:", option[0]);
-      
-      // Actualizar el valor en React Hook Form
       setValue("skillExtra", currentSkill);
       
-      // Actualizar el campo de habilidad extra para compatibilidad con código existente
       setFieldSkill((prevItems) =>
         prevItems.map((item) =>
           item.field === "skillExtra"
@@ -1039,6 +1282,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       console.warn("No matching option found for skillExtra:", currentSkill);
     }
   };
+
   /**
    * Actualiza los puntos de estadísticas basados en la clase y trabajo seleccionados
    * 
@@ -1055,15 +1299,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       trabajo: selectedJob 
     });
     
-    // Validación de entradas
     if (!selectedClass && !selectedJob) {
       console.warn("No se ha seleccionado clase ni trabajo, omitiendo actualización");
       return;
     }
     
     const updatedInputsStatsData = [...inputsStatsData];
-    
-    // Obtener puntos extra del trabajo seleccionado
     const jobOption = optionsCharacterJob.find(option => option.value === selectedJob);
     const extraPoints = jobOption?.extraPoint || "";
     
@@ -1081,7 +1322,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       "ACT": "CHA"  // Artista - Carisma
     };
     
-    // Identificar la estadística principal para la clase seleccionada
     const primaryStat = selectedClass ? classStatBonuses[selectedClass] : null;
     if (selectedClass && !primaryStat) {
       console.warn(`Clase seleccionada "${selectedClass}" no tiene estadística principal definida`);
@@ -1089,13 +1329,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     
     // Actualizar bonos para cada estadística
     updatedInputsStatsData.forEach((stat, index) => {
-      // Calcular bono de clase (2 si es la estadística principal de la clase, 0 en caso contrario)
       const classBonus = (primaryStat && stat.id === primaryStat) ? 2 : 0;
-      
-      // Calcular bono de trabajo (1 si el trabajo incluye esta estadística, 0 en caso contrario)
       const jobBonus = extraPoints.includes(stat.id) ? 1 : 0;
-      
-      // Asignar el valor total y registrar el cambio
       const previousValue = updatedInputsStatsData[index].valueClass;
       updatedInputsStatsData[index].valueClass = classBonus + jobBonus;
       
@@ -1138,7 +1373,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     
     console.log("Estadísticas actualizadas correctamente");
   };
-    /**
+  /**
    * Maneja el cambio en la selección de clase del personaje
    * 
    * Esta función actualiza la clase del personaje, asigna el conocimiento correspondiente,
@@ -1249,6 +1484,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     // Actualizar la URL de la imagen en el estado
     if (path) setCharacterImage(value);
   };
+
   const handleSelectedCheckValuesChange = (newValues: string[]) => {
     console.log("Conocimientos seleccionados:", newValues);
     setCharacter((prevState) => {
@@ -1259,68 +1495,98 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return updated;
     });
   };
+
   /**
    * Handles changes to character stats and validates them
+   * Esta función mantiene sincronizados los estados locales y React Hook Form,
+   * lo que es un ejemplo del patrón que debería aplicarse a todas las actualizaciones.
+   * En una implementación ideal, solo usaríamos React Hook Form.
    * 
    * @param newInputStats - Updated stat values
+   * @returns True if validation passed, false otherwise
+   *//**
+   * Handles changes to character stats and validates them
+   * Esta función mantiene sincronizados los estados locales y React Hook Form,
+   * actualizando ambos sistemas como parte del proceso de migración.
+   * 
+   * @param newInputStats - Updated stat values
+   * @returns True if validation passed, false otherwise
    */
-  const handleStatsInputChange = (newInputStats: InputStats) => {
-    // Update state with new stat values
-    setInputsStatsData((prevItems) =>
-      prevItems.map((item) =>
-        item.id === newInputStats.id ? { ...item, ...newInputStats } : item
-      )
-    );
-    
-    // Actualizar también los valores en React Hook Form
-    switch (newInputStats.id) {
-      case 'STR':
-        setValue("strDice", newInputStats.valueDice);
-        setValue("strClass", newInputStats.valueClass);
-        setValue("strLevel", newInputStats.valueLevel);
-        break;
-      case 'INT':
-        setValue("intDice", newInputStats.valueDice);
-        setValue("intClass", newInputStats.valueClass);
-        setValue("intLevel", newInputStats.valueLevel);
-        break;
-      case 'DEX':
-        setValue("dexDice", newInputStats.valueDice);
-        setValue("dexClass", newInputStats.valueClass);
-        setValue("dexLevel", newInputStats.valueLevel);
-        break;
-      case 'CON':
-        setValue("conDice", newInputStats.valueDice);
-        setValue("conClass", newInputStats.valueClass);
-        setValue("conLevel", newInputStats.valueLevel);
-        break;
-      case 'PER':
-        setValue("perDice", newInputStats.valueDice);
-        setValue("perClass", newInputStats.valueClass);
-        setValue("perLevel", newInputStats.valueLevel);
-        break;
-      case 'CHA':
-        setValue("chaDice", newInputStats.valueDice);
-        setValue("chaClass", newInputStats.valueClass);
-        setValue("chaLevel", newInputStats.valueLevel);
-        break;
+  const handleStatsInputChange = useCallback((newInputStats: InputStats): boolean => {
+    // Validate the stats values
+    if (newInputStats.valueDice < 1 || newInputStats.valueDice > 6) {
+      console.warn(`Invalid dice value for ${newInputStats.id}: ${newInputStats.valueDice}`);
+      return false;
     }
     
-    // Validate the updated stat (no alerts during input to avoid excessive popups)
-    const validationResult = validateSingleStat(newInputStats.id, false);
-    
-    // If validation failed, add a warning to the console
-    if (!validationResult.isValid) {
-      console.warn(`Stat validation issue: ${validationResult.message}`);
-    } else {
-      // Clear any validation errors for stats if this stat is now valid
-      clearValidationError('stats');
+    try {
+      // Clear any previous validation errors
+      clearValidationError(`stat${newInputStats.id}`);
+      
+      // 1. Update local state (traditional approach)
+      setInputsStatsData((prevItems) =>
+        prevItems.map((item) =>
+          item.id === newInputStats.id ? { ...item, ...newInputStats } : item
+        )
+      );
+      
+      // 2. Update React Hook Form individual fields (for compatibility)
+      // Using a mapping for better maintainability
+      const statMapping: Record<string, {dice: string, class: string, level: string}> = {
+        'STR': {dice: "strDice", class: "strClass", level: "strLevel"},
+        'INT': {dice: "intDice", class: "intClass", level: "intLevel"},
+        'DEX': {dice: "dexDice", class: "dexClass", level: "dexLevel"},
+        'CON': {dice: "conDice", class: "conClass", level: "conLevel"},
+        'PER': {dice: "perDice", class: "perClass", level: "perLevel"},
+        'CHA': {dice: "chaDice", class: "chaClass", level: "chaLevel"},
+      };
+      
+      // Find the matching fields for this stat
+      const fields = statMapping[newInputStats.id];
+      if (fields) {
+        setValue(fields.dice as keyof CharacterForm, newInputStats.valueDice);
+        setValue(fields.class as keyof CharacterForm, newInputStats.valueClass);
+        setValue(fields.level as keyof CharacterForm, newInputStats.valueLevel);
+      }
+      
+      // 3. Update React Hook Form stats array (new approach)
+      const formStats = getValues("stats") || [];
+      const statIndex = formStats.findIndex(stat => stat.id === newInputStats.id);
+      
+      if (statIndex !== -1) {
+        // Create updated stat object
+        const updatedStat = {
+          ...formStats[statIndex],
+          valueDice: newInputStats.valueDice,
+          valueClass: newInputStats.valueClass,
+          valueLevel: newInputStats.valueLevel
+        };
+        
+        // Update the stat in the field array
+        updateStats(statIndex, updatedStat);
+      } else {
+        console.warn(`Stat with ID ${newInputStats.id} not found in form stats array`);
+      }
+      
+      // Validate the updated stat (no alerts during input to avoid excessive popups)
+      const validationResult = validateSingleStat(newInputStats.id, false);
+      
+      // If validation failed, add a warning to the console
+      if (!validationResult.isValid) {
+        console.warn(`Stat validation issue: ${validationResult.message}`);
+      } else {
+        // Clear any validation errors for stats if this stat is now valid
+        clearValidationError('stats');
+      }
+      
+      return validationResult.isValid;
+    } catch (error) {
+      console.error("Error updating stats:", error);
+      return false;
     }
-    
-    return validationResult.isValid;
-  };
-  // Ya no necesitamos un estado separado para la alineación
-    /**
+  }, [clearValidationError, getValues, setValue, updateStats, validateSingleStat]);
+  
+  /**
    * Actualiza la alineación del personaje y aplica efectos visuales
    * basados en la alineación seleccionada
    * 
@@ -1365,82 +1631,160 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
    * @returns A valid inventory object with defaults for missing fields
    */
   const validateInventoryObject = (object: Partial<InventoryObject>): InventoryObject => {
+    // Ensure all required fields exist with default values if missing
     return {
       id: object.id || uuidv4(),
-      name: object.name || '',
-      description: object.description || 'Sin descripción',
-      count: object.count !== undefined ? object.count : 1,
-      readOnly: object.readOnly || false
+      name: object.name?.trim() || "Item sin nombre",
+      description: object.description?.trim() || "Sin descripción",
+      count: typeof object.count === 'number' ? object.count : 1,
+      readOnly: object.readOnly || false,
     };
   };
 
   /**
-   * Validates an inventory object and returns null if valid, or an error message if invalid
+   * Validates a new inventory item before adding it to the inventory
+   * @param name The item name to validate
+   * @param count The item count to validate
+   * @returns Error message or null if validation passes
    */
-  const validateInventoryItem = useCallback((name: string, count: number): string | null => {
-    if (!name.trim()) {
-      return "El nombre del objeto es obligatorio";
+  const validateInventoryItem = useCallback((name: string, count: number | string): string | null => {
+    // Trim name to check if it's empty
+    const nameValue = typeof name === 'string' ? name.trim() : '';
+    
+    // Validate name
+    if (!nameValue) {
+      return "El nombre del objeto no puede estar vacío";
     }
-    if (isNaN(count) || count < 1) {
-      return "La cantidad debe ser un número mayor a 0";
+    
+    // Validate length
+    if (nameValue.length > 50) {
+      return "El nombre del objeto no puede tener más de 50 caracteres";
     }
+    
+    // Validate count is a positive number
+    const countValue = typeof count === 'number' ? count : parseInt(String(count), 10);
+    if (isNaN(countValue) || countValue < 1) {
+      return "La cantidad debe ser un número positivo";
+    }
+    if (countValue > 99) {
+      return "La cantidad no puede ser mayor a 99";
+    }
+    
+    // All validations passed
     return null;
   }, []);
-  const handleAddObject = useCallback(() => {
-    // Obtener valores desde React Hook Form en lugar de estados locales
-    const newObjectName = getValues("newObjectName");
-    const newObjectDescription = getValues("newObjectDescription");
-    const newObjectCount = getValues("newObjectCount");
+  /**
+   * Añade un nuevo objeto al inventario
+   * 
+   * IMPLEMENTACIÓN HÍBRIDA: Esta función muestra el patrón de sincronización
+   * entre el estado local y React Hook Form, manteniendo ambos sistemas actualizados.
+   * 
+   * NOTA SOBRE LA MIGRACIÓN:
+   * - En la implementación actual: Mantiene sincronizados ambos enfoques (estado local y RHF)
+   * - En la implementación ideal: Usaríamos solo React Hook Form con useFieldArray
+   */
+  /**
+   * Añade un nuevo objeto al inventario usando React Hook Form's field array
+   * Esta es la versión migrada que usa exclusivamente React Hook Form
+   * - No más dependencia del estado local (setInvObjects)
+   * - Toda la gestión de datos a través de React Hook Form
+   */  const handleAddObject = useCallback(() => {
+    console.log("Añadiendo nuevo objeto al inventario usando React Hook Form");
     
-    const errorMessage = validateInventoryItem(newObjectName, newObjectCount);
-    if (errorMessage) {
-      alert(errorMessage);
-      document.getElementById("objectName")?.focus();
-      return;
-    }    
-    
-    // Use our validateInventoryObject function to ensure object has all required fields
-    const newObject = validateInventoryObject({
-      id: uuidv4(),
-      name: newObjectName.trim(),
-      description: newObjectDescription.trim(),
-      count: newObjectCount,
-      readOnly: false,
-    });
+    try {
+      // 1. Obtener valores desde React Hook Form
+      const newObjectName = getValues("newObjectName");
+      const newObjectDescription = getValues("newObjectDescription");
+      const newObjectCount = getValues("newObjectCount");
+      
+      // 2. Validar los datos del objeto
+      const errorMessage = validateInventoryItem(newObjectName, newObjectCount);
+      if (errorMessage) {
+        console.warn("Validación fallida:", errorMessage);
+        alert(errorMessage);
+        document.getElementById("objectName")?.focus();
+        return;
+      }    
+      
+      // 3. Crear un objeto válido y bien formateado
+      const newObject = validateInventoryObject({
+        id: uuidv4(),
+        name: newObjectName.trim(),
+        description: newObjectDescription.trim() || "Sin descripción",
+        count: typeof newObjectCount === 'number' ? newObjectCount : 1,
+        readOnly: false,
+      });
+      
+      console.log("Nuevo objeto creado:", newObject);
 
-    setInvObjects((prev) => [...prev, newObject]);
-    
-    // Reset form fields using React Hook Form
-    setValue("newObjectName", "");
-    setValue("newObjectDescription", "");
-    setValue("newObjectCount", 1);
-  }, [getValues, setValue, validateInventoryItem]);
-
-  const handleDeleteObject = useCallback(async (id: string) => {
-    setInvObjects((prevObjects) => prevObjects.filter((obj) => obj.id !== id));
-    setDeleteItems((prevItems) => [...prevItems, id]);
-  }, []);
-
-  const handleEditCount = useCallback((id: string, newCount: string) => {
-    // Convert input string to a valid number with default value of 1
-    const numericValue = validateNumeric(newCount, 1);
-    
-    setInvObjects((prevObjects) =>
-      prevObjects.map((obj) =>
-        obj.id === id ? { ...obj, count: numericValue } : obj
-      )
-    );
-  }, []);
+      // 4. Actualizar el formulario usando useFieldArray
+      appendInventory(newObject);
+      
+      // 5. Limpiar los campos del formulario usando React Hook Form
+      setValue("newObjectName", "");
+      setValue("newObjectDescription", "");
+      setValue("newObjectCount", 1);
+      
+      console.log("Objeto añadido correctamente");
+    } catch (error) {
+      console.error("Error al añadir objeto al inventario:", error);
+      alert("No se pudo añadir el objeto. Por favor, inténtalo de nuevo.");
+    }
+  }, [getValues, setValue, appendInventory, validateInventoryItem]);
+/**
+   * Elimina un objeto del inventario usando React Hook Form
+   * 
+   * @param id - ID del objeto a eliminar
+   */  const handleDeleteObject = useCallback(async (id: string) => {
+    try {
+      // 1. Encontrar el índice del objeto en el array de inventario
+      const formInventory = getValues("inventory");
+      const objectIndex = formInventory.findIndex(obj => obj.id === id);
+      
+      // 2. Si se encuentra el objeto, eliminarlo usando removeInventory
+      if (objectIndex !== -1) {
+        removeInventory(objectIndex);
+        console.log(`Objeto con ID ${id} eliminado del formulario`);
+      } else {
+        console.warn(`No se encontró el objeto con ID ${id} en el formulario`);
+      }
+      
+      // 3. Registrar el ID para eliminación en la base de datos
+      setDeleteItems((prevItems) => [...prevItems, id]);
+    } catch (error) {
+      console.error("Error al eliminar objeto del inventario:", error);
+      alert("No se pudo eliminar el objeto. Por favor, inténtalo de nuevo.");
+    }
+  }, [getValues, removeInventory]);
+/**
+   * Actualiza la cantidad de un objeto en el inventario usando React Hook Form
+   * 
+   * @param id - ID del objeto a editar
+   * @param newCount - Nueva cantidad como string
+   */  const handleEditCount = useCallback((id: string, newCount: string) => {
+    try {
+      // 1. Convertir el valor de entrada a un número válido con valor predeterminado de 1
+      const numericValue = validateNumeric(newCount, 1);
+      
+      // 2. Encontrar el índice del objeto en el array de inventario de React Hook Form
+      const formInventory = getValues("inventory");
+      const objectIndex = formInventory.findIndex(obj => obj.id === id);
+      
+      // 3. Si se encuentra el objeto, actualizar su cantidad usando el método update
+      if (objectIndex !== -1) {
+        const updatedObject = { ...formInventory[objectIndex], count: numericValue };
+        updateInventory(objectIndex, updatedObject);
+        console.log(`Cantidad del objeto ${id} actualizada a ${numericValue} en el formulario`);
+      } else {
+        console.warn(`No se encontró el objeto con ID ${id} en el formulario para actualizar su cantidad`);
+      }
+    } catch (error) {
+      console.error("Error al actualizar la cantidad del objeto:", error);
+    }
+  }, [getValues, updateInventory]);
   const handleNewCount = (value: string) => {
     const numericValue = validateNumeric(value, 1);
     setValue("newObjectCount", numericValue);
-  };
-  const [emptyRequiredFields, setEmptyRequiredFields] = useState<string[]>([]);
-
-  const clearValidationError = (fieldId: string) => {
-    if (emptyRequiredFields.includes(fieldId)) {
-      setEmptyRequiredFields(prev => prev.filter(field => field !== fieldId));
-    }
   };
 
   /**
@@ -1554,7 +1898,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         getValues("silverCoins") || 0,
         getValues("bronzeCoins") || 0
       ],
-      inv: invObjects || [],
+      inv: getValues("inventory") || [],
     };
   };
 
@@ -1593,7 +1937,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       console.error("Error preparing character data:", error);
       alert("Error al preparar los datos del personaje");
     }
-  };
+ };
    /**
    * Generate random stats for a character based on class and balanced distribution
    * 
@@ -2153,14 +2497,17 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
   async function uploadInventory(characterId: string) {
     if (characterId === "") return;
 
+    // Use inventory data from React Hook Form instead of local state
+    const inventoryItems = getValues("inventory") || [];
+    
     const saveItems: DBInventarioPersonaje[] = [];
-    for (let index = 0; index < invObjects.length; index++) {
+    for (let index = 0; index < inventoryItems.length; index++) {
       saveItems.push({
-        inp_id: invObjects[index].id,
+        inp_id: inventoryItems[index].id,
         inp_personaje: characterId,
-        inp_nombre: invObjects[index].name,
-        inp_descripcion: invObjects[index].description,
-        inp_cantidad: invObjects[index].count,
+        inp_nombre: inventoryItems[index].name,
+        inp_descripcion: inventoryItems[index].description,
+        inp_cantidad: inventoryItems[index].count,
       });
     }
 
@@ -2211,13 +2558,12 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       updatedCharacter.pus_cantidad_bronce = data.bronzeCoins;
       updatedCharacter.pus_descripcion = data.characterDescription;
     }
-    
-    // Use our enhanced validation function for comprehensive assessment
+      // Use our enhanced validation function for comprehensive assessment
     const validationResults = validateCharacterAttributes(
       updatedCharacter, 
       inputsStatsData, 
       skillsAcquired,
-      invObjects
+      getValues("inventory") || []
     );
     
     // Process validation results with our new feedback function
@@ -2321,7 +2667,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
         data.silverCoins || 0, 
         data.bronzeCoins || 0
       ],
-      inv: invObjects,
+      inv: getValues("inventory") || [],
     };
     
     // Only update character if updatedCharacter is not undefined
@@ -2629,62 +2975,6 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
         if (setLoadingState) setLoadingState(false);
       });
   }, [handleAsyncError]);
-
-  /**
-   * Validates a specific character stat and provides detailed feedback
-   * Can be used for individual stat validation during character creation/editing
-   * 
-   * @param statId - The ID of the stat to validate (e.g., 'STR', 'INT')
-   * @param showAlert - Whether to display alerts for validation issues
-   * @returns Object with validation status and messages
-   */
-  const validateSingleStat = useCallback((statId: string, showAlert = false): {
-    isValid: boolean;
-    message?: string;
-    totalValue: number;
-  } => {
-    // Find the stat in the inputsStatsData array
-    const stat = inputsStatsData.find(s => s.id === statId);
-    
-    if (!stat) {
-      const errorMsg = `Stat "${statId}" not found`;
-      if (showAlert) alert(errorMsg);
-      return { isValid: false, message: errorMsg, totalValue: 0 };
-    }
-    
-    // Calculate total value
-    const totalValue = stat.valueDice + stat.valueClass + stat.valueLevel;
-    
-    // Validate dice value range (1-10)
-    if (typeof stat.valueDice !== 'number' || isNaN(stat.valueDice) || stat.valueDice < 1 || stat.valueDice > 10) {
-      const errorMsg = `${stat.label}: Base value must be between 1 and 10`;
-      if (showAlert) alert(errorMsg);
-      return { isValid: false, message: errorMsg, totalValue };
-    }
-    
-    // Validate class bonus range (0-3)
-    if (typeof stat.valueClass !== 'number' || isNaN(stat.valueClass) || stat.valueClass < 0 || stat.valueClass > 3) {
-      const errorMsg = `${stat.label}: Class bonus must be between 0 and 3`;
-      if (showAlert) alert(errorMsg);
-      return { isValid: false, message: errorMsg, totalValue };
-    }
-    
-    // Validate level bonus range (0-5)
-    if (typeof stat.valueLevel !== 'number' || isNaN(stat.valueLevel) || stat.valueLevel < 0 || stat.valueLevel > 5) {
-      const errorMsg = `${stat.label}: Level bonus must be between 0 and 5`;
-      if (showAlert) alert(errorMsg);
-      return { isValid: false, message: errorMsg, totalValue };
-    }
-    
-    // Validate total maximum (typically should not exceed 15-18)
-    if (totalValue > 18) {
-      const warningMsg = `${stat.label}: Total value ${totalValue} is unusually high`;
-      console.warn(warningMsg);
-      // This is just a warning, not a validation failure
-    }
-    
-    return { isValid: true, totalValue };
-  }, [inputsStatsData]);
 
   return (
     <>
@@ -3104,7 +3394,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
             Bolsa
           </label>
           {/* Listado de objetos */}
-          {invObjects.map((elem) => (
+          {inventoryFields.map((elem) => (
             <Tooltip
               className="bg-dark text-light px-2 py-1"
               key={"object" + elem.id}
@@ -3142,17 +3432,28 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
           <input
             type="text"
             id="objectName"
-            placeholder="Objeto"
-            className="form-input ml-2 col-span-2 row-span-1 focus:border-black focus:shadow"
-            {...register("newObjectName")}
+            placeholder="Nuevo objeto"
+            className={`form-input col-span-2 focus:border-black focus:shadow ${errors.newObjectName ? 'border-red-500' : ''}`}
+            {...register("newObjectName", {
+              maxLength: {
+                value: 50,
+                message: "El nombre no puede exceder 50 caracteres"
+              }
+            })}
             maxLength={50}
           />
           <input
             type="text"
             id="objectCount"
             placeholder="Cantidad"
-            className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
-            {...register("newObjectCount")}
+            className={`form-input mr-2 col-span-1 focus:border-black focus:shadow ${errors.newObjectCount ? 'border-red-500' : ''}`}
+            {...register("newObjectCount", {
+              validate: value => {
+                const numValue = Number(value);
+                return (!isNaN(numValue) && numValue > 0 && numValue <= 99) || 
+                  "La cantidad debe ser un número entre 1 y 99";
+              }
+            })}
             maxLength={2}
             onChange={(e) => handleNewCount(e.target.value)}
           />
@@ -3160,9 +3461,14 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
             type="text"
             id="objectDescription"
             placeholder="Descripción"
-            className="form-input mx-2 col-span-3 row-span-2 focus:border-black focus:shadow"
-            {...register("newObjectDescription")}
-            maxLength={100}
+            className={`form-input mx-2 col-span-3 row-span-2 focus:border-black focus:shadow ${errors.newObjectDescription ? 'border-red-500' : ''}`}
+            {...register("newObjectDescription", {
+              maxLength: {
+                value: 200,
+                message: "La descripción no puede exceder 200 caracteres"
+              }
+            })}
+            maxLength={200}
           />
           <button
             type="button"
@@ -3268,7 +3574,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
                         </td>
                       </tr>
                       <tr>
-                        <td>Constitucion</td>
+                        <td>Constitución</td>
                         <td>
                           {(dataCharacter?.con[0].dice || 0) +
                             (dataCharacter?.con[0].class || 0) +

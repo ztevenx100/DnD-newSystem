@@ -4,6 +4,7 @@ import App from './App.tsx'
 import 'virtual:uno.css'
 import './fonts.css'  // Import the fonts
 import './index.css'
+import './shared/styles/text-truncate.css'  // Utilidades para truncado de texto
 
 // Test database connection on startup
 import { checkDatabaseConnection } from './database/utils/dbConnectionTest';

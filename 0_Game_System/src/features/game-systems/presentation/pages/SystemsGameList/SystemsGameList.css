@@ -16,4 +16,213 @@
     background-color: #e0e0e0;
     color: #1a1a1a;
     font-weight: 600;
-} 
+}
+
+/* Nuevos estilos para el diseño mejorado */
+/* La clase line-clamp-2 ahora se importa desde shared/styles/text-truncate.css */
+
+/* Animación para los cards al hacer hover */
+@keyframes pulse-shadow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(242, 175, 41, 0.2);
+        transform: translateY(0);
+    }
+    70% {
+        box-shadow: 0 10px 20px rgba(242, 175, 41, 0.2);
+        transform: translateY(-5px);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(242, 175, 41, 0);
+        transform: translateY(0);
+    }
+}
+
+.hover\:shadow-lg:hover {
+    animation: pulse-shadow 1.5s infinite;
+    border-color: rgba(242, 175, 41, 0.3) !important;
+}
+
+/* Animación para el botón principal */
+@keyframes button-glow {
+    0% {
+        box-shadow: 0 4px 6px rgba(242, 175, 41, 0.25);
+    }
+    50% {
+        box-shadow: 0 6px 15px rgba(242, 175, 41, 0.4);
+    }
+    100% {
+        box-shadow: 0 4px 6px rgba(242, 175, 41, 0.25);
+    }
+}
+
+.hover\:scale-105:hover {
+    animation: button-glow 2s infinite;
+}
+
+/* Mejoras para campos resaltados */
+input[type="text"]::placeholder,
+input::placeholder {
+    color: #9ca3af;
+    opacity: 0.7;
+}
+
+.nextui-input-wrapper {
+    background-color: white !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+/* Mejora la interacción del botón */
+.nextui-button.shadow {
+    transition: transform 0.2s, box-shadow 0.3s;
+}
+
+.nextui-button.shadow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(242, 175, 41, 0.3);
+}
+
+/* Estilos mejorados para el input de búsqueda */
+.search-input-container {
+    position: relative;
+    transform-origin: center;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.search-input-container:focus-within {
+    transform: scale(1.01);
+}
+
+.search-input {
+    padding: 12px 16px 12px 48px;
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+    backdrop-filter: blur(5px);
+    border-radius: 9999px !important;
+    box-shadow: 0 4px 12px rgba(242, 175, 41, 0.1);
+}
+
+.search-input input {
+    font-weight: 400;
+    transition: all 0.2s ease;
+    caret-color: #F2AF29;
+}
+
+.search-input input::placeholder {
+    color: #9ca3af;
+    font-weight: 400;
+    opacity: 0.8;
+    letter-spacing: 0.01em;
+    transition: opacity 0.2s ease;
+}
+
+.search-input:focus-within input::placeholder {
+    opacity: 0.6;
+}
+
+.search-wrapper {
+    background-color: white !important;
+    box-shadow: 0 4px 12px rgba(242, 175, 41, 0.08);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid #f0f0f0 !important;
+}
+
+.search-wrapper:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(242, 175, 41, 0.15);
+    border-color: rgba(242, 175, 41, 0.3) !important;
+}
+
+.search-wrapper:focus-within {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(242, 175, 41, 0.2);
+    border-color: #F2AF29 !important;
+}
+
+.search-clear-button {
+    color: #F2AF29;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    transform-origin: center;
+}
+
+.search-clear-button:hover {
+    opacity: 1;
+    transform: scale(1.15) rotate(90deg);
+}
+
+.search-icon {
+    transition: all 0.3s ease;
+    stroke-width: 2.5;
+}
+
+.search-input:focus-within .search-icon {
+    transform: scale(1.15);
+    stroke: #F2AF29;
+    stroke-width: 2.8;
+}
+
+/* Efecto de animación para la búsqueda */
+@keyframes search-pulse {
+    0% { stroke-width: 2.5; }
+    50% { stroke-width: 3; }
+    100% { stroke-width: 2.5; }
+}
+
+.search-input-container:focus-within .search-icon {
+    animation: search-pulse 2s infinite ease-in-out;
+}
+
+/* Animación para los resultados de búsqueda */
+@keyframes fade-slide-in {
+    0% {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.grid > .card {
+    animation: fade-slide-in 0.4s ease-out;
+    animation-fill-mode: both;
+}
+
+/* Añade un retraso escalonado para cada tarjeta */
+.grid > .card:nth-child(1) { animation-delay: 0.05s; }
+.grid > .card:nth-child(2) { animation-delay: 0.1s; }
+.grid > .card:nth-child(3) { animation-delay: 0.15s; }
+.grid > .card:nth-child(4) { animation-delay: 0.2s; }
+.grid > .card:nth-child(5) { animation-delay: 0.25s; }
+.grid > .card:nth-child(6) { animation-delay: 0.3s; }
+.grid > .card:nth-child(n+7) { animation-delay: 0.35s; }
+
+/* Mejora la descripción del input de búsqueda */
+.nextui-input-description {
+    font-size: 0.8rem;
+    color: #F2AF29;
+    margin-top: 0.5rem;
+    transition: all 0.3s ease;
+    animation: fade-slide-in 0.3s ease-out;
+}
+
+/* Mejora los mensajes de resultados vacíos */
+.text-center.py-20 {
+    animation: fade-slide-in 0.5s ease-out;
+}
+
+/* Estilos móviles */
+@media (max-width: 640px) {
+    .search-input {
+        padding: 10px 14px 10px 40px;
+        font-size: 0.95rem;
+    }
+}
+
+/* Clase alternativa para truncar texto (compatible con más navegadores) */
+.truncate-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

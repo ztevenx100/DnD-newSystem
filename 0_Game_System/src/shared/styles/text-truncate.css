@@ -1,0 +1,70 @@
+/* 
+   Utilidades para truncar texto de manera compatible con diferentes navegadores
+   Estas clases pueden ser importadas en cualquier componente que necesite truncar texto
+*/
+
+/* Clase para truncar en una línea (compatible con todos los navegadores) */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Clases para truncar en múltiples líneas específicas */
+.line-clamp-1,
+.line-clamp-2,
+.line-clamp-3,
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-1 {
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  max-height: 1.5em;
+}
+
+.line-clamp-2 {
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  max-height: 3em;
+}
+
+.line-clamp-3 {
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  max-height: 4.5em;
+}
+
+.line-clamp-4 {
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  max-height: 6em;
+}
+
+/* Para navegadores que no soportan -webkit-line-clamp, 
+   agregamos respaldo usando height y max-height */
+@supports not ((-webkit-line-clamp: 2) or (line-clamp: 2)) {
+  .line-clamp-1,
+  .line-clamp-2,
+  .line-clamp-3,
+  .line-clamp-4 {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .line-clamp-1::after,
+  .line-clamp-2::after,
+  .line-clamp-3::after,
+  .line-clamp-4::after {
+    content: "...";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: white;
+    padding-left: 3px;
+  }
+}

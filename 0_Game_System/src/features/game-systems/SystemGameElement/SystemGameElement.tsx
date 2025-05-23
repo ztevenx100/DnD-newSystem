@@ -74,30 +74,9 @@ const SystemGameElement: React.FC = () => {
                     </button>
                 </div>
 
-                {isLoading ? (
-                    <div className="flex justify-center items-center py-20">
-                        <Spinner size="lg" color="warning" />
-                    </div>
-                ) : error ? (
-                    <div className="text-center py-10">
-                        <div className="bg-red-50 text-red-500 rounded-lg p-6 inline-flex flex-col items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-3">
-                                <circle cx="12" cy="12" r="10" />
-                                <line x1="12" y1="8" x2="12" y2="12" />
-                                <line x1="12" y1="16" x2="12.01" y2="16" />
-                            </svg>
-                            <h3 className="text-lg font-semibold mb-2">Error</h3>
-                            <p>{error}</p>
-                            <Button 
-                                className="mt-4" 
-                                color="primary"
-                                onClick={() => navigate('/SystemsGameList')}
-                            >
-                                Volver a la lista
-                            </Button>
-                        </div>
-                    </div>
-                ) : game ? (
+                {isLoading && <LoadingState />}
+                {error && <ErrorState error={error} navigate={navigate} />}
+                {game && <GameState game={game} />}
                     <div className="animate-fade-in">
                         {/* Encabezado */}
                         <div className="game-header mb-8">

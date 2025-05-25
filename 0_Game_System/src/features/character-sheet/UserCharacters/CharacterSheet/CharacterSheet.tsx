@@ -550,11 +550,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const [dataCharacter, setDataCharacter] = useState<DataCharacter>();
 
   /**
-   * Carga los objetos del inventario desde la base de datos y los configura
-   * tanto en el estado local como en React Hook Form.
+   * Carga los objetos del inventario desde la base de datos y los configura en React Hook Form.
    * 
-   * Esta función es parte del proceso de migración y actualiza ambos sistemas
-   * para mantener la compatibilidad mientras se completa la transición.
+   * Esta función utiliza exclusivamente React Hook Form para gestionar el inventario,
+   * siguiendo el patrón de tener una única fuente de verdad para los datos.
+   * 
+   * @returns {Promise<void>}
    */
 const getInventory = useCallback(async () => {
     // Check if we already have inventory data
@@ -594,12 +595,31 @@ const getInventory = useCallback(async () => {
         // Clear any existing inventory data in the form
         setValue("inventory", []);
         
-        // Add each item to the form
-        formattedInventory.forEach(item => {
-          appendInventory(item);
-        });
-        
-        console.log(`Inventario cargado: ${formattedInventory.length} objetos`);
+        // Add each item to the form using batch approach for performance
+        if (formattedInventory.length > 0) {
+          // Añadir elementos en batch si hay muchos
+          if (formattedInventory.length > 10) {
+            // Procesar en lotes para evitar problemas de rendimiento
+            const batchSize = 10;
+            for (let i = 0; i < formattedInventory.length; i += batchSize) {
+              const batch = formattedInventory.slice(i, i + batchSize);
+              batch.forEach(item => {
+                appendInventory(item);
+              });
+              // Opcional: Podríamos añadir un pequeño retraso entre lotes para UI responsiva
+              // await new Promise(resolve => setTimeout(resolve, 10));
+            }
+          } else {
+            // Si son pocos elementos, añadirlos directamente
+            formattedInventory.forEach(item => {
+              appendInventory(item);
+            });
+          }
+          
+          console.log(`Inventario cargado: ${formattedInventory.length} objetos`);
+        } else {
+          console.log("No se encontraron objetos en el inventario");
+        }
       } else {
         console.log("No se encontraron objetos en el inventario");
       }
@@ -612,15 +632,6 @@ const getInventory = useCallback(async () => {
    * 
    * Esta función actualiza el estado cuando el usuario selecciona una habilidad diferente
    * para uno de los anillos de habilidad del personaje
-   * 
-   * @param id - ID/índice del anillo que está siendo modificado
-   * @param ring - Tipo de anillo seleccionado
-   * @param skill - ID de la habilidad seleccionada
-   * @param stat - Estadística base asociada a la habilidad
-   *//**
-   * Maneja el cambio en la selección de una habilidad para un anillo específico
-   * Actualiza tanto el estado local como React Hook Form para mantener
-   * la consistencia durante la migración.
    * 
    * @param id - ID/índice del anillo que está siendo modificado
    * @param ring - Tipo de anillo seleccionado
@@ -642,16 +653,7 @@ const getInventory = useCallback(async () => {
     }
     
     try {
-      // 1. Actualizar el estado local (enfoque anterior)
-      setSkillsAcquired((prevItems) =>
-        prevItems.map((item) =>
-          item.value === id
-            ? { ...item, name: skill, ring: ring, stat: stat, id: skill }
-            : item
-        )
-      );
-      
-      // 2. Actualizar React Hook Form (nuevo enfoque)
+      // 1. Actualizar React Hook Form (fuente principal de verdad)
       const formSkills = getValues("skills") || [];
       const skillIndex = parseInt(id, 10);
       
@@ -672,7 +674,17 @@ const getInventory = useCallback(async () => {
         console.log(`Habilidad de anillo ${id} actualizada en React Hook Form`);
       } else {
         console.warn(`Índice de habilidad ${id} fuera de rango o inválido para React Hook Form`);
+        return; // Salir si no se puede actualizar React Hook Form
       }
+      
+      // 2. Actualizar el estado local (solo para compatibilidad temporal)
+      setSkillsAcquired((prevItems) =>
+        prevItems.map((item) =>
+          item.value === id
+            ? { ...item, name: skill, ring: ring, stat: stat, id: skill }
+            : item
+        )
+      );
       
       // Limpiar cualquier error de validación relacionado con este anillo
       clearValidationError(`ringSkill${id}`);
@@ -682,16 +694,11 @@ const getInventory = useCallback(async () => {
   }, [getValues, updateSkills, clearValidationError]);
   /**
    * Maneja el cambio en el tipo de habilidad del anillo seleccionado
+   * Actualiza tanto el estado local como React Hook Form para mantener
+   * la consistencia durante la migración.
    * 
    * Esta función actualiza la lista de habilidades disponibles para un anillo específico
    * basándose en el tipo de habilidad seleccionado, y reinicia la selección actual
-   * 
-   * @param id - ID/índice del anillo que está siendo modificado
-   * @param type - Tipo de habilidad seleccionado para el anillo
-   *//**
-   * Maneja el cambio en el tipo de habilidad del anillo seleccionado
-   * Actualiza tanto el estado local como React Hook Form para mantener
-   * la consistencia durante la migración.
    * 
    * @param id - ID/índice del anillo que está siendo modificado
    * @param type - Tipo de habilidad seleccionado para el anillo
@@ -709,7 +716,30 @@ const getInventory = useCallback(async () => {
     }
     
     try {
-      // 1. Actualizar la lista de habilidades disponibles para este anillo (estado local)
+      // 1. Actualizar React Hook Form (fuente principal de verdad)
+      const formSkills = getValues("skills") || [];
+      const skillIndex = parseInt(id, 10);
+      
+      // Verificar que el índice sea válido
+      if (!isNaN(skillIndex) && skillIndex >= 0 && skillIndex < formSkills.length) {
+        // Crear objeto de habilidad reiniciado
+        const updatedSkill = {
+          ...formSkills[skillIndex],
+          id: "",
+          value: id,
+          name: "",
+          ring: type
+        };
+        
+        // Actualizar la habilidad en el array
+        updateSkills(skillIndex, updatedSkill);
+        console.log(`Tipo de habilidad de anillo ${id} actualizado a ${type} en React Hook Form`);
+      } else {
+        console.warn(`Índice de habilidad ${id} fuera de rango o inválido para React Hook Form`);
+        return; // Salir si no se puede actualizar React Hook Form
+      }
+      
+      // 2. Actualizar la lista de habilidades disponibles para este anillo (estado local)
       setSkillsRingList(prevList => {
         const newList = [...prevList];
         const skills = skillsTypes.find(option => option.id === type)?.skills || [];
@@ -736,7 +766,7 @@ const getInventory = useCallback(async () => {
         return newList;
       });
       
-      // 2. Reiniciar la selección de habilidad en el estado local
+      // 3. Reiniciar la selección de habilidad en el estado local (compatibilidad temporal)
       setSkillsAcquired(prev => 
         prev.map((item) => 
           item.value === id
@@ -744,28 +774,6 @@ const getInventory = useCallback(async () => {
             : item
         )
       );
-      
-      // 3. Actualizar React Hook Form (nuevo enfoque)
-      const formSkills = getValues("skills") || [];
-      const skillIndex = parseInt(id, 10);
-      
-      // Verificar que el índice sea válido
-      if (!isNaN(skillIndex) && skillIndex >= 0 && skillIndex < formSkills.length) {
-        // Crear objeto de habilidad reiniciado
-        const updatedSkill = {
-          ...formSkills[skillIndex],
-          id: "",
-          value: id,
-          name: "",
-          ring: type
-        };
-        
-        // Actualizar la habilidad en el array
-        updateSkills(skillIndex, updatedSkill);
-        console.log(`Tipo de habilidad de anillo ${id} actualizado a ${type} en React Hook Form`);
-      } else {
-        console.warn(`Índice de habilidad ${id} fuera de rango o inválido para React Hook Form`);
-      }
       
       // Limpiar cualquier error de validación relacionado con este anillo
       clearValidationError(`ringSkill${id}`);
@@ -859,29 +867,37 @@ const getInventory = useCallback(async () => {
 
   /**
    * Carga las estadísticas del personaje desde la base de datos y las configura
-   * tanto en el estado local como en React Hook Form.
+   * dando prioridad a React Hook Form como fuente principal de verdad.
    */
   const getStats = useCallback(async () => {
     if (params.id === null || params.id === undefined) return;
 
     try {
       const data = await getCharacterStats(params.id);
+      
       if (data !== null && Array.isArray(data)) {
+        // 1. Actualizar React Hook Form - Array de estadísticas (enfoque principal)
+        const formStats = getValues("stats") || [];
         
-        // 1. Actualizar el estado local (enfoque anterior)
-        const updatedInputsStatsData = inputsStatsData.map((item, index) => {
-          if (index < data.length) {
-            return {
-              ...item,
-              valueDice: data[index].epe_num_dado,
-              valueClass: data[index].epe_num_clase,
-              valueLevel: data[index].epe_num_nivel
-            };
-          }
-          return item;
-        });
-        
-        setInputsStatsData(updatedInputsStatsData);
+        if (formStats.length === 6 && data.length >= 6) {
+          data.forEach((stat, index) => {
+            if (index < 6) {
+              const updatedStat = {
+                ...formStats[index],
+                valueDice: stat.epe_num_dado,
+                valueClass: stat.epe_num_clase,
+                valueLevel: stat.epe_num_nivel
+              };
+              
+              updateStats(index, updatedStat);
+            }
+          });
+          
+          console.log("Estadísticas actualizadas en React Hook Form");
+        } else {
+          console.warn("No se pudo actualizar el array de estadísticas: longitud incorrecta");
+          return; // Salir si no se puede actualizar React Hook Form
+        }
         
         // 2. Actualizar React Hook Form - Campos individuales (para compatibilidad)
         if (data.length >= 6) {
@@ -905,27 +921,23 @@ const getInventory = useCallback(async () => {
           setValue("chaLevel", data[5].epe_num_nivel);
         }
         
-        // 3. Actualizar React Hook Form - Array de estadísticas (nuevo enfoque)
-        const formStats = getValues("stats") || [];
+        // 3. Actualizar el estado local (para compatibilidad temporal)
+        const updatedInputsStatsData = inputsStatsData.map((item, index) => {
+          if (index < data.length) {
+            return {
+              ...item,
+              valueDice: data[index].epe_num_dado,
+              valueClass: data[index].epe_num_clase,
+              valueLevel: data[index].epe_num_nivel
+            };
+          }
+          return item;
+        });
         
-        if (formStats.length === 6 && data.length >= 6) {
-          data.forEach((stat, index) => {
-            if (index < 6) {
-              const updatedStat = {
-                ...formStats[index],
-                valueDice: stat.epe_num_dado,
-                valueClass: stat.epe_num_clase,
-                valueLevel: stat.epe_num_nivel
-              };
-              
-              updateStats(index, updatedStat);
-            }
-          });
-          
-          console.log("Estadísticas actualizadas en React Hook Form");
-        } else {
-          console.warn("No se pudo actualizar el array de estadísticas: longitud incorrecta");
-        }
+        setInputsStatsData(updatedInputsStatsData);
+        console.log("Estado local de estadísticas actualizado para compatibilidad");
+      } else {
+        console.warn("No se encontraron datos de estadísticas para cargar");
       }
     } catch (error) {
       console.error("Error al cargar las estadísticas:", error);
@@ -1499,15 +1511,7 @@ const getInventory = useCallback(async () => {
   /**
    * Handles changes to character stats and validates them
    * Esta función mantiene sincronizados los estados locales y React Hook Form,
-   * lo que es un ejemplo del patrón que debería aplicarse a todas las actualizaciones.
-   * En una implementación ideal, solo usaríamos React Hook Form.
-   * 
-   * @param newInputStats - Updated stat values
-   * @returns True if validation passed, false otherwise
-   *//**
-   * Handles changes to character stats and validates them
-   * Esta función mantiene sincronizados los estados locales y React Hook Form,
-   * actualizando ambos sistemas como parte del proceso de migración.
+   * dando prioridad a React Hook Form como fuente principal de verdad.
    * 
    * @param newInputStats - Updated stat values
    * @returns True if validation passed, false otherwise
@@ -1523,12 +1527,26 @@ const getInventory = useCallback(async () => {
       // Clear any previous validation errors
       clearValidationError(`stat${newInputStats.id}`);
       
-      // 1. Update local state (traditional approach)
-      setInputsStatsData((prevItems) =>
-        prevItems.map((item) =>
-          item.id === newInputStats.id ? { ...item, ...newInputStats } : item
-        )
-      );
+      // 1. Actualizar React Hook Form stats array (fuente principal de verdad)
+      const formStats = getValues("stats") || [];
+      const statIndex = formStats.findIndex(stat => stat.id === newInputStats.id);
+      
+      if (statIndex !== -1) {
+        // Create updated stat object
+        const updatedStat = {
+          ...formStats[statIndex],
+          valueDice: newInputStats.valueDice,
+          valueClass: newInputStats.valueClass,
+          valueLevel: newInputStats.valueLevel
+        };
+        
+        // Update the stat in the field array
+        updateStats(statIndex, updatedStat);
+        console.log(`Estadística ${newInputStats.id} actualizada en React Hook Form`);
+      } else {
+        console.warn(`Stat with ID ${newInputStats.id} not found in form stats array`);
+        return false; // Salir si no se puede actualizar React Hook Form
+      }
       
       // 2. Update React Hook Form individual fields (for compatibility)
       // Using a mapping for better maintainability
@@ -1549,24 +1567,12 @@ const getInventory = useCallback(async () => {
         setValue(fields.level as keyof CharacterForm, newInputStats.valueLevel);
       }
       
-      // 3. Update React Hook Form stats array (new approach)
-      const formStats = getValues("stats") || [];
-      const statIndex = formStats.findIndex(stat => stat.id === newInputStats.id);
-      
-      if (statIndex !== -1) {
-        // Create updated stat object
-        const updatedStat = {
-          ...formStats[statIndex],
-          valueDice: newInputStats.valueDice,
-          valueClass: newInputStats.valueClass,
-          valueLevel: newInputStats.valueLevel
-        };
-        
-        // Update the stat in the field array
-        updateStats(statIndex, updatedStat);
-      } else {
-        console.warn(`Stat with ID ${newInputStats.id} not found in form stats array`);
-      }
+      // 3. Update local state (compatibilidad temporal)
+      setInputsStatsData((prevItems) =>
+        prevItems.map((item) =>
+          item.id === newInputStats.id ? { ...item, ...newInputStats } : item
+        )
+      );
       
       // Validate the updated stat (no alerts during input to avoid excessive popups)
       const validationResult = validateSingleStat(newInputStats.id, false);

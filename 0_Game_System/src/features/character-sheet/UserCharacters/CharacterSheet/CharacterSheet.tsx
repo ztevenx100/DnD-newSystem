@@ -1,7 +1,13 @@
-import React, { useState, ChangeEvent, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, useLoaderData } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useForm, useFieldArray } from "react-hook-form";
+import { yupResolver } from '@hookform/resolvers/yup';
+
+// Custom hooks
+import { characterSchema } from "@features/character-sheet/hooks/useCharacterFormValidation";
+import useRingSkills from "@features/character-sheet/hooks/useRingSkills";
+import { CharacterForm } from "@features/character-sheet/types/characterForm";
 
 // NextUI Components
 import {
@@ -102,81 +108,6 @@ interface CharacterSheetProps {
   changeBackground: (newBackground: string) => void;
 }
 
-interface CharacterForm {
-  userName: string;
-  name: string;
-  class: string;
-  level: number;
-  luckyPoints: number;
-  lifePoints: number;
-  mainWeapon: string;
-  secondaryWeapon: string;
-  goldCoins: number;
-  silverCoins: number;
-  bronzeCoins: number;
-  characterDescription: string;
-  race: string;
-  job: string;
-  alignment: string;
-  // Campos para estadísticas (mantener para compatibilidad temporal)
-  strDice: number;
-  strClass: number;
-  strLevel: number;
-  intDice: number;
-  intClass: number;
-  intLevel: number;
-  dexDice: number;
-  dexClass: number;
-  dexLevel: number;
-  conDice: number;
-  conClass: number;
-  conLevel: number;
-  perDice: number;
-  perClass: number;
-  perLevel: number;
-  chaDice: number;
-  chaClass: number;
-  chaLevel: number;
-  
-  // Nueva estructura con arrays para formularios
-  // Estadísticas como array estructurado
-  stats: {
-    id: string;
-    label: string;
-    description: string;
-    valueDice: number;
-    valueClass: number;
-    valueLevel: number;
-  }[];
-  
-  // Inventario
-  inventory: {
-    id: string;
-    name: string;
-    description: string;
-    count: number;
-    readOnly: boolean;
-  }[];
-  
-  // Habilidades
-  skills: {
-    id: string;
-    value: string;
-    name: string;
-    description: string;
-    ring: string;
-  }[];
-  
-  // Campos para inventario (para añadir nuevo elemento)
-  newObjectName: string;
-  newObjectDescription: string;
-  newObjectCount: number;
-  
-  // Campos para habilidades
-  skillClass: string;
-  skillExtra: string;
-}
-
 const CharacterSheet: React.FC<CharacterSheetProps> = ({
   changeBackground,
 }) => {
@@ -214,6 +145,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           race: getCharacterProperty(initialCharacter, 'pus_raza', ''),
           job: getCharacterProperty(initialCharacter, 'pus_trabajo', ''),
           alignment: getCharacterProperty(initialCharacter, 'pus_alineacion', ''),
+          knowledge: getCharacterProperty(initialCharacter, 'pus_conocimientos', ''),
           // Valores predeterminados para estadísticas
           strDice: 1, strClass: 0, strLevel: 0,
           intDice: 1, intClass: 0, intLevel: 0,
@@ -245,6 +177,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           race: "",
           job: "",
           alignment: "",
+          knowledge: "",
           // Valores predeterminados para estadísticas
           strDice: 1, strClass: 0, strLevel: 0,
           intDice: 1, intClass: 0, intLevel: 0,
@@ -281,8 +214,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         { id: "", value: "1", name: "", description: "", ring: "" },
         { id: "", value: "2", name: "", description: "", ring: "" },
       ]
-    };
+    }
   }, [defaultValues]);
+  
+  const methods = useForm<CharacterForm>({
+    defaultValues: extendedDefaultValues,
+    mode: "onSubmit",
+    resolver: yupResolver(characterSchema)
+  });
+  
+  const ringSkills = useRingSkills(methods);
   
   const {
     register,
@@ -291,10 +232,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     getValues,
     control,
     formState: { errors }
-  } = useForm<CharacterForm>({
-    defaultValues: extendedDefaultValues,
-    mode: "onSubmit"
-  });
+  } = methods;
   
   // State to track empty required fields for validation
   const [emptyRequiredFields, setEmptyRequiredFields] = useState<string[]>([]);
@@ -307,16 +245,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       );
     }
   };
-
-  // Initialize stats data state
-  const [inputsStatsData, setInputsStatsData] = useState<InputStats[]>([
+  // MIGRATION: Local state removed - using React Hook Form as single source of truth
+  // Default stats data for fallback scenarios only
+  const defaultStatsData: InputStats[] = [
     { id: 'STR', label: 'Fuerza', description: 'Fuerza física y potencia muscular', valueDice: 1, valueClass: 0, valueLevel: 0 },
     { id: 'INT', label: 'Inteligencia', description: 'Capacidad mental y conocimiento', valueDice: 1, valueClass: 0, valueLevel: 0 },
     { id: 'DEX', label: 'Destreza', description: 'Agilidad y precisión', valueDice: 1, valueClass: 0, valueLevel: 0 },
     { id: 'CON', label: 'Constitución', description: 'Resistencia y salud', valueDice: 1, valueClass: 0, valueLevel: 0 },
     { id: 'PER', label: 'Percepción', description: 'Atención y observación', valueDice: 1, valueClass: 0, valueLevel: 0 },
     { id: 'CHA', label: 'Carisma', description: 'Personalidad y liderazgo', valueDice: 1, valueClass: 0, valueLevel: 0 }
-  ]);
+  ];
 
   /**
    * Validates a specific character stat and provides detailed feedback
@@ -331,8 +269,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     message?: string;
     totalValue: number;
   } => {
-    // Find the stat in the inputsStatsData array
-    const stat = inputsStatsData.find(s => s.id === statId);
+    // Use our helper function to get the most current stats data
+    const characterStats = getInputStatsFromForm();
+    const stat = characterStats.find(s => s.id === statId);
     
     if (!stat) {
       const errorMsg = `Stat "${statId}" not found`;
@@ -372,7 +311,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     }
     
     return { isValid: true, totalValue };
-  }, [inputsStatsData]);
+  }, [getValues]);
     // Usar useFieldArray para gestionar los arrays en el formulario
   const { 
     fields: _statsFields, // Usando prefijo _ para indicar que es intencionalmente no utilizada
@@ -421,10 +360,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       }
     }
   });
-  
-  const { 
-    fields: _skillsFields, // Usando prefijo _ para indicar que es intencionalmente no utilizada
-    update: updateSkills
+    const { 
+    fields: _skillsFields // Usando prefijo _ para indicar que es intencionalmente no utilizada
   } = useFieldArray({
     control,
     name: "skills"
@@ -436,12 +373,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   // Mantenemos estos estados por ahora para compatibilidad con el código existente,
   // pero deberían migrarse completamente a React Hook Form. 
   // TODO: Migrar estos estados a React Hook Form para mantener una única fuente de verdad
-  // Prioridad: skillsAcquired, inputsStatsData
-  const [skillsAcquired, setSkillsAcquired] = useState<SkillsAcquired[]>([
+  // MIGRATION: Local state removed - using React Hook Form as single source of truth
+  // Default skills data for fallback scenarios only
+  const defaultSkillsData: SkillsAcquired[] = [
     { id: "", value: "0", name: "", description: "", ring: "" },
     { id: "", value: "1", name: "", description: "", ring: "" },
     { id: "", value: "2", name: "", description: "", ring: "" },
-  ]);
+  ];
 
   const [systemGame, setSystemGame] = useState<DBSistemaJuego>({
     sju_id: "",
@@ -474,27 +412,36 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     initialPersonajesUsuario
   );
   const navigate = useNavigate();
-  const params = useParams();
-
-  // Calculate total stats with useMemo to optimize performance
+  const params = useParams();  // Calculate total stats with useMemo to optimize performance
   const totalStats = useMemo(() => {
+    const totalFormStats = getValues("stats") || [];
+    if (totalFormStats.length < 6) return { str: 0, int: 0, dex: 0, con: 0, per: 0, cha: 0, total: 0 };    
+    const getStatById = (id: string) => totalFormStats.find(s => s.id === id);
+    
+    const strStat = getStatById('STR');
+    const intStat = getStatById('INT');
+    const dexStat = getStatById('DEX');
+    const conStat = getStatById('CON');
+    const perStat = getStatById('PER');
+    const chaStat = getStatById('CHA');
+    
     return {
-      str: inputsStatsData[0].valueDice + inputsStatsData[0].valueClass + inputsStatsData[0].valueLevel,
-      int: inputsStatsData[1].valueDice + inputsStatsData[1].valueClass + inputsStatsData[1].valueLevel,
-      dex: inputsStatsData[2].valueDice + inputsStatsData[2].valueClass + inputsStatsData[2].valueLevel,
-      con: inputsStatsData[3].valueDice + inputsStatsData[3].valueClass + inputsStatsData[3].valueLevel,
-      per: inputsStatsData[4].valueDice + inputsStatsData[4].valueClass + inputsStatsData[4].valueLevel,
-      cha: inputsStatsData[5].valueDice + inputsStatsData[5].valueClass + inputsStatsData[5].valueLevel,
-      total: inputsStatsData.reduce((sum, stat) => sum + stat.valueDice + stat.valueClass + stat.valueLevel, 0)
+      str: strStat ? strStat.valueDice + strStat.valueClass + strStat.valueLevel : 0,
+      int: intStat ? intStat.valueDice + intStat.valueClass + intStat.valueLevel : 0,
+      dex: dexStat ? dexStat.valueDice + dexStat.valueClass + dexStat.valueLevel : 0,
+      con: conStat ? conStat.valueDice + conStat.valueClass + conStat.valueLevel : 0,
+      per: perStat ? perStat.valueDice + perStat.valueClass + perStat.valueLevel : 0,
+      cha: chaStat ? chaStat.valueDice + chaStat.valueClass + chaStat.valueLevel : 0,
+      total: totalFormStats.reduce((sum: number, stat: any) => sum + stat.valueDice + stat.valueClass + stat.valueLevel, 0)
     };
-  }, [inputsStatsData]);
+  }, [getValues]);
   
   /**
-   * Helper function to calculate the total value of a stat from inputsStatsData
+   * Helper function to calculate the total value of a stat from React Hook Form data
    * Uses the cached totalStats when possible to avoid recalculations
    */
   const getStatTotal = useCallback((statId: string): number => {
-    // Usar un objeto de mapeo para evitar el switch/case y mejorar la legibilidad
+    // Use a mapping object to avoid switch/case and improve readability
     const statsMap: Record<string, number | undefined> = {
       'STR': totalStats.str,
       'INT': totalStats.int,
@@ -505,20 +452,20 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       'total': totalStats.total
     };
 
-    // Buscar primero en el mapa para rendimiento óptimo
+    // Look up in the map first for optimal performance
     const mappedValue = statsMap[statId];
     if (mappedValue !== undefined) {
       return mappedValue;
     }
-
-    // Fallback calculation solo si es necesario
-    const stat = inputsStatsData.find(s => s.id === statId);
+    // Fallback calculation only if necessary
+    const fallbackFormStats = getValues("stats") || [];
+    const stat = fallbackFormStats.find(s => s.id === statId);
     if (!stat) return 0;
     
-    // Calculamos y cacheamos el resultado para futuras llamadas
+    // Calculate and return the result
     const calculatedValue = stat.valueDice + stat.valueClass + stat.valueLevel;
     return calculatedValue;
-  }, [totalStats, inputsStatsData]);
+  }, [totalStats, getValues]);
 
   interface DataCharacter {
     id: string;
@@ -629,9 +576,11 @@ const getInventory = useCallback(async () => {
   }, [params.id, appendInventory, getValues, setValue]);
   /**
    * Maneja el cambio en la selección de una habilidad para un anillo específico
+   * Actualiza la habilidad seleccionada usando el hook useRingSkills
    * 
-   * Esta función actualiza el estado cuando el usuario selecciona una habilidad diferente
-   * para uno de los anillos de habilidad del personaje
+   * MIGRATION STATUS: Fully migrated to use useRingSkills hook
+   * - Uses ringSkills.setRingSkillName for direct updates
+   * - Maintains legacy state update for backward compatibility
    * 
    * @param id - ID/índice del anillo que está siendo modificado
    * @param ring - Tipo de anillo seleccionado
@@ -651,54 +600,27 @@ const getInventory = useCallback(async () => {
       console.warn('ID, ring o skill inválidos en handleSelectedRingSkillChange', {id, ring, skill});
       return;
     }
-    
     try {
-      // 1. Actualizar React Hook Form (fuente principal de verdad)
-      const formSkills = getValues("skills") || [];
-      const skillIndex = parseInt(id, 10);
+      // 1. Actualizar usando el hook useRingSkills (fuente principal de verdad)
+      ringSkills.setRingSkillName(id, skill, ring, stat);
+      console.log(`Habilidad de anillo ${id} actualizada en React Hook Form usando ringSkills hook`);
       
-      // Verificar que el índice sea válido
-      if (!isNaN(skillIndex) && skillIndex >= 0 && skillIndex < formSkills.length) {
-        // Crear objeto de habilidad actualizado
-        const updatedSkill = {
-          ...formSkills[skillIndex],
-          id: skill,
-          value: id,
-          name: skill,
-          ring: ring,
-          stat: stat
-        };
-        
-        // Actualizar la habilidad en el array
-        updateSkills(skillIndex, updatedSkill);
-        console.log(`Habilidad de anillo ${id} actualizada en React Hook Form`);
-      } else {
-        console.warn(`Índice de habilidad ${id} fuera de rango o inválido para React Hook Form`);
-        return; // Salir si no se puede actualizar React Hook Form
-      }
-      
-      // 2. Actualizar el estado local (solo para compatibilidad temporal)
-      setSkillsAcquired((prevItems) =>
-        prevItems.map((item) =>
-          item.value === id
-            ? { ...item, name: skill, ring: ring, stat: stat, id: skill }
-            : item
-        )
-      );
+      // MIGRATION: Removed local state update - using React Hook Form as single source of truth
       
       // Limpiar cualquier error de validación relacionado con este anillo
       clearValidationError(`ringSkill${id}`);
     } catch (error) {
       console.error("Error al actualizar la habilidad del anillo:", error);
     }
-  }, [getValues, updateSkills, clearValidationError]);
+  }, [ringSkills, clearValidationError]);
   /**
    * Maneja el cambio en el tipo de habilidad del anillo seleccionado
-   * Actualiza tanto el estado local como React Hook Form para mantener
-   * la consistencia durante la migración.
+   * Actualiza el tipo de anillo usando el hook useRingSkills
    * 
-   * Esta función actualiza la lista de habilidades disponibles para un anillo específico
-   * basándose en el tipo de habilidad seleccionado, y reinicia la selección actual
+   * MIGRATION STATUS: Fully migrated to use useRingSkills hook
+   * - Uses ringSkills.updateRingType for direct updates
+   * - Updates local skill list for compatibility with current UI
+   * - Preserves local state update temporarily
    * 
    * @param id - ID/índice del anillo que está siendo modificado
    * @param type - Tipo de habilidad seleccionado para el anillo
@@ -716,30 +638,12 @@ const getInventory = useCallback(async () => {
     }
     
     try {
-      // 1. Actualizar React Hook Form (fuente principal de verdad)
-      const formSkills = getValues("skills") || [];
-      const skillIndex = parseInt(id, 10);
-      
-      // Verificar que el índice sea válido
-      if (!isNaN(skillIndex) && skillIndex >= 0 && skillIndex < formSkills.length) {
-        // Crear objeto de habilidad reiniciado
-        const updatedSkill = {
-          ...formSkills[skillIndex],
-          id: "",
-          value: id,
-          name: "",
-          ring: type
-        };
-        
-        // Actualizar la habilidad en el array
-        updateSkills(skillIndex, updatedSkill);
-        console.log(`Tipo de habilidad de anillo ${id} actualizado a ${type} en React Hook Form`);
-      } else {
-        console.warn(`Índice de habilidad ${id} fuera de rango o inválido para React Hook Form`);
-        return; // Salir si no se puede actualizar React Hook Form
-      }
+      // 1. Actualizar usando el hook useRingSkills (fuente principal de verdad)
+      ringSkills.updateRingType(id, type);
+      console.log(`Tipo de habilidad de anillo ${id} actualizado a ${type} usando ringSkills hook`);
       
       // 2. Actualizar la lista de habilidades disponibles para este anillo (estado local)
+      // Este paso es necesario para mantener la UI actualizada con las opciones disponibles
       setSkillsRingList(prevList => {
         const newList = [...prevList];
         const skills = skillsTypes.find(option => option.id === type)?.skills || [];
@@ -766,28 +670,20 @@ const getInventory = useCallback(async () => {
         return newList;
       });
       
-      // 3. Reiniciar la selección de habilidad en el estado local (compatibilidad temporal)
-      setSkillsAcquired(prev => 
-        prev.map((item) => 
-          item.value === id
-            ? { ...item, name: "", id: "", ring: type }
-            : item
-        )
-      );
+      // MIGRATION: Removed local state update - using React Hook Form as single source of truth
       
       // Limpiar cualquier error de validación relacionado con este anillo
       clearValidationError(`ringSkill${id}`);
     } catch (error) {
       console.error("Error al cambiar el tipo de habilidad del anillo:", error);
     }
-  }, [skillsTypes, getValues, updateSkills, clearValidationError]);
-
+  }, [skillsTypes, ringSkills, clearValidationError]);
   const getSkills = useCallback(async () => {
     const data = await getListHad();
     
     if (data !== null) {
       const updatedFieldSkill = fieldSkill.map(item => ({...item}));
-      const updatedSkills = skillsAcquired.map(item => ({...item}));
+      // MIGRATION: Removed updatedSkills array - using React Hook Form through ringSkills hook
 
       let characterSkills: DBHabilidadPersonaje[] = [];
       if (params.id) {
@@ -828,22 +724,13 @@ const getInventory = useCallback(async () => {
             
             handleSelectedTypeRingSkillChange(ringNumber, elem.estadistica_base);
             
-            const ringIndex = Number(ringNumber);
-            if (ringIndex >= 0 && ringIndex < updatedSkills.length) {
-              updatedSkills[ringIndex] = {
-                id: elem.id,
-                value: ringNumber,
-                name: elem.sigla,
-                description: elem.descripcion || "",
-                ring: elem.estadistica_base,
-                stat: elem.estadistica_base
-              };
-            }
+            // MIGRATION: Use React Hook Form through ringSkills hook instead of local state
+            ringSkills.setRingSkillName(ringNumber, elem.sigla, elem.estadistica_base, elem.estadistica_base);
           }
         }
       });
       
-      setSkillsAcquired(updatedSkills);
+      // MIGRATION: Removed local state update - using React Hook Form as single source of truth
       setFieldSkill(updatedFieldSkill);
     }
   }, [params.id, handleSelectedTypeRingSkillChange, setValue]);
@@ -877,13 +764,13 @@ const getInventory = useCallback(async () => {
       
       if (data !== null && Array.isArray(data)) {
         // 1. Actualizar React Hook Form - Array de estadísticas (enfoque principal)
-        const formStats = getValues("stats") || [];
+        const getStatsFormStats = getValues("stats") || [];
         
-        if (formStats.length === 6 && data.length >= 6) {
+        if (getStatsFormStats.length === 6 && data.length >= 6) {
           data.forEach((stat, index) => {
             if (index < 6) {
               const updatedStat = {
-                ...formStats[index],
+                ...getStatsFormStats[index],
                 valueDice: stat.epe_num_dado,
                 valueClass: stat.epe_num_clase,
                 valueLevel: stat.epe_num_nivel
@@ -921,28 +808,15 @@ const getInventory = useCallback(async () => {
           setValue("chaLevel", data[5].epe_num_nivel);
         }
         
-        // 3. Actualizar el estado local (para compatibilidad temporal)
-        const updatedInputsStatsData = inputsStatsData.map((item, index) => {
-          if (index < data.length) {
-            return {
-              ...item,
-              valueDice: data[index].epe_num_dado,
-              valueClass: data[index].epe_num_clase,
-              valueLevel: data[index].epe_num_nivel
-            };
-          }
-          return item;
-        });
-        
-        setInputsStatsData(updatedInputsStatsData);
-        console.log("Estado local de estadísticas actualizado para compatibilidad");
+        // MIGRATION: Removed local state update - using React Hook Form as single source of truth
+        console.log("React Hook Form estadísticas actualizadas desde la base de datos");
       } else {
         console.warn("No se encontraron datos de estadísticas para cargar");
       }
     } catch (error) {
       console.error("Error al cargar las estadísticas:", error);
     }
-  }, [params.id, inputsStatsData, setValue, getValues, updateStats]);
+  }, [params.id, setValue, getValues, updateStats]);
   const getInfoCharacter = useCallback(async () => {
     try {
       if (!user || !user.id) {
@@ -1386,9 +1260,9 @@ const getInventory = useCallback(async () => {
     }
     
     // 1. Primero actualizar React Hook Form (fuente principal de verdad)
-    const formStats = getValues("stats") || [];
+    const handleStatsFormStats = getValues("stats") || [];
     
-    formStats.forEach((stat, index) => {
+    handleStatsFormStats.forEach((stat, index) => {
       const classBonus = (primaryStat && stat.id === primaryStat) ? 2 : 0;
       const jobBonus = extraPoints.includes(stat.id) ? 1 : 0;
       const newClassValue = classBonus + jobBonus;
@@ -1412,7 +1286,7 @@ const getInventory = useCallback(async () => {
     });
     
     // 2. Actualizar campos individuales en React Hook Form (compatibilidad)
-    formStats.forEach((stat) => {
+    handleStatsFormStats.forEach((stat: any) => {
       switch (stat.id) {
         case 'STR':
           setValue("strClass", stat.valueClass);
@@ -1435,25 +1309,8 @@ const getInventory = useCallback(async () => {
       }
     });
     
-    // 3. Actualizar el estado local (compatibilidad temporal)
-    const updatedInputsStatsData = [...inputsStatsData];
-    
-    updatedInputsStatsData.forEach((stat, index) => {
-      const classBonus = (primaryStat && stat.id === primaryStat) ? 2 : 0;
-      const jobBonus = extraPoints.includes(stat.id) ? 1 : 0;
-      const previousValue = updatedInputsStatsData[index].valueClass;
-      updatedInputsStatsData[index].valueClass = classBonus + jobBonus;
-      
-      if (previousValue !== updatedInputsStatsData[index].valueClass) {
-        console.log(`Estadística ${stat.id} actualizada en estado local:`, {
-          anterior: previousValue,
-          nuevo: updatedInputsStatsData[index].valueClass
-        });
-      }
-    });
-    
-    setInputsStatsData(updatedInputsStatsData);
-    console.log("Estadísticas actualizadas correctamente");
+    // MIGRATION: Removed local state update - using React Hook Form as single source of truth
+    console.log("Estadísticas actualizadas correctamente en React Hook Form");
   };
   /**
    * Maneja el cambio en la selección de clase del personaje
@@ -1587,9 +1444,9 @@ const getInventory = useCallback(async () => {
     
     // Construir una cadena separada por comas con los conocimientos seleccionados
     const knowledgeString = newValues.join(',');
-      // 1. Actualizar en React Hook Form (fuente principal de verdad)
-    // Verificamos si "knowledgeField" o propiedad similar existe en CharacterForm
-    // Si no existe en el formulario, solo actualizamos el estado local
+    
+    // 1. Actualizar en React Hook Form (fuente principal de verdad)
+    setValue("knowledge", knowledgeString);
     
     // 2. Actualizar el estado local del personaje (compatibilidad temporal)
     setCharacter((prevState) => {
@@ -1622,15 +1479,14 @@ const getInventory = useCallback(async () => {
     try {
       // Clear any previous validation errors
       clearValidationError(`stat${newInputStats.id}`);
-      
       // 1. Actualizar React Hook Form stats array (fuente principal de verdad)
-      const formStats = getValues("stats") || [];
-      const statIndex = formStats.findIndex(stat => stat.id === newInputStats.id);
+      const updateFormStats = getValues("stats") || [];
+      const statIndex = updateFormStats.findIndex(stat => stat.id === newInputStats.id);
       
       if (statIndex !== -1) {
         // Create updated stat object
         const updatedStat = {
-          ...formStats[statIndex],
+          ...updateFormStats[statIndex],
           valueDice: newInputStats.valueDice,
           valueClass: newInputStats.valueClass,
           valueLevel: newInputStats.valueLevel
@@ -1663,12 +1519,7 @@ const getInventory = useCallback(async () => {
         setValue(fields.level as keyof CharacterForm, newInputStats.valueLevel);
       }
       
-      // 3. Update local state (compatibilidad temporal)
-      setInputsStatsData((prevItems) =>
-        prevItems.map((item) =>
-          item.id === newInputStats.id ? { ...item, ...newInputStats } : item
-        )
-      );
+      // MIGRATION: Removed local state update - using React Hook Form as single source of truth
       
       // Validate the updated stat (no alerts during input to avoid excessive popups)
       const validationResult = validateSingleStat(newInputStats.id, false);
@@ -1715,25 +1566,6 @@ const getInventory = useCallback(async () => {
     clearValidationError('alignment');
   };
   
-  /**
-   * Maneja el cambio del valor de las monedas directamente usando React Hook Form
-   * 
-   * @param index - Índice del tipo de moneda (0: oro, 1: plata, 2: bronce)
-   * @param value - Valor ingresado por el usuario
-   */
-  const handleCoinsChange = (index: number, value: string) => {
-    // Validar y convertir el valor a número
-    const numericValue = validateNumeric(value);
-    
-    // Actualizar directamente en el formulario en lugar de usar estado separado
-    if (index === 0) {
-      setValue("goldCoins", numericValue);
-    } else if (index === 1) {
-      setValue("silverCoins", numericValue);
-    } else if (index === 2) {
-      setValue("bronzeCoins", numericValue);
-    }
-  };
   
   /**
    * Validates an inventory object and ensures it has all required fields
@@ -1937,78 +1769,90 @@ const getInventory = useCallback(async () => {
   
   /**
    * Prepara los datos del personaje para el modal
+   * Usando nuestros helpers para acceder a la versión más actualizada de los datos
    * @returns Un objeto DataCharacter con todos los datos del personaje
    */
   const prepareCharacterData = (): DataCharacter => {
     if (!character) {
-      throw new Error("Character data is missing");
+      console.error("Character data is missing");
+      throw new Error("No character data available");
     }
+    
+    // Obtener datos de formulario con fallback al estado local
+    const formValues = getValues();
+    const characterStats = getInputStatsFromForm();
+    
+    // Procesar conocimientos desde el formulario o del personaje
+    const knowledgeStr = formValues.knowledge || character.pus_conocimientos || '';
+    const knowledgeArray = typeof knowledgeStr === 'string' 
+      ? knowledgeStr.split(',').filter(Boolean)
+      : Array.isArray(knowledgeStr) ? knowledgeStr : [];
     
     return {
       id: character.pus_id || '',
       player: character.pus_usuario || '',
-      name: character.pus_nombre || '',
-      class: character.pus_clase || '',
-      race: character.pus_raza || '',
-      job: character.pus_trabajo || '',
-      level: character.pus_nivel || 1,
-      luckyPoints: character.pus_puntos_suerte || 0,
-      description: character.pus_descripcion || '',
-      knowledge: character.pus_conocimientos ? character.pus_conocimientos.split(",").filter(Boolean) : [],
+      name: formValues.name || character.pus_nombre || '',
+      class: formValues.class || character.pus_clase || '',
+      race: formValues.race || character.pus_raza || '',
+      job: formValues.job || character.pus_trabajo || '',
+      level: formValues.level || character.pus_nivel || 1,
+      luckyPoints: formValues.luckyPoints || character.pus_puntos_suerte || 0,
+      description: formValues.characterDescription || character.pus_descripcion || '',
+      knowledge: knowledgeArray,
       str: [
         {
-          dice: inputsStatsData[0].valueDice,
-          class: inputsStatsData[0].valueClass,
-          level: inputsStatsData[0].valueLevel,
+          dice: characterStats[0].valueDice,
+          class: characterStats[0].valueClass,
+          level: characterStats[0].valueLevel,
         },
       ],
       int: [
         {
-          dice: inputsStatsData[1].valueDice,
-          class: inputsStatsData[1].valueClass,
-          level: inputsStatsData[1].valueLevel,
+          dice: characterStats[1].valueDice,
+          class: characterStats[1].valueClass,
+          level: characterStats[1].valueLevel,
         },
       ],
       dex: [
         {
-          dice: inputsStatsData[2].valueDice,
-          class: inputsStatsData[2].valueClass,
-          level: inputsStatsData[2].valueLevel,
+          dice: characterStats[2].valueDice,
+          class: characterStats[2].valueClass,
+          level: characterStats[2].valueLevel,
         },
       ],
       con: [
         {
-          dice: inputsStatsData[3].valueDice,
-          class: inputsStatsData[3].valueClass,
-          level: inputsStatsData[3].valueLevel,
+          dice: characterStats[3].valueDice,
+          class: characterStats[3].valueClass,
+          level: characterStats[3].valueLevel,
         },
       ],
       per: [
         {
-          dice: inputsStatsData[4].valueDice,
-          class: inputsStatsData[4].valueClass,
-          level: inputsStatsData[4].valueLevel,
+          dice: characterStats[4].valueDice,
+          class: characterStats[4].valueClass,
+          level: characterStats[4].valueLevel,
         },
       ],
       cha: [
         {
-          dice: inputsStatsData[5].valueDice,
-          class: inputsStatsData[5].valueClass,
-          level: inputsStatsData[5].valueLevel,
+          dice: characterStats[5].valueDice,
+          class: characterStats[5].valueClass,
+          level: characterStats[5].valueLevel,
         },
       ],
-      mainWeapon: character.pus_arma_principal || '',
-      secondaryWeapon: character.pus_arma_secundaria || '',
-      alignment: character.pus_alineacion || '',
-      mainSkill: getValues("skillClass") || '',
-      extraSkill: getValues("skillExtra") || '',
-      skills: skillsAcquired || [],
+      mainWeapon: formValues.mainWeapon || character.pus_arma_principal || '',
+      secondaryWeapon: formValues.secondaryWeapon || character.pus_arma_secundaria || '',
+      alignment: formValues.alignment || character.pus_alineacion || '',
+      mainSkill: formValues.skillClass || '',
+      extraSkill: formValues.skillExtra || '',
+      skills: getSkillsAcquiredFromForm(),
       coinsInv: [
-        getValues("goldCoins") || 0,
-        getValues("silverCoins") || 0,
-        getValues("bronzeCoins") || 0
+        Number(formValues.goldCoins) || 0,
+        Number(formValues.silverCoins) || 0,
+        Number(formValues.bronzeCoins) || 0
       ],
-      inv: getValues("inventory") || [],
+      inv: formValues.inventory || [],
     };
   };
 
@@ -2187,8 +2031,8 @@ const randomRoll = useCallback((generationType: 'balanced' | 'heroic' | 'standar
           newStatValues[statId] = maxValue;
         }
       }
-        // First update React Hook Form (primary source of truth)
-      // Actualizar cada campo directamente con su valor específico
+      // Update React Hook Form (single source of truth)
+      // 1. Update legacy individual fields (for backward compatibility)
       setValue("strDice", newStatValues['STR']);
       setValue("intDice", newStatValues['INT']);
       setValue("dexDice", newStatValues['DEX']);
@@ -2196,27 +2040,20 @@ const randomRoll = useCallback((generationType: 'balanced' | 'heroic' | 'standar
       setValue("perDice", newStatValues['PER']);
       setValue("chaDice", newStatValues['CHA']);
       
-      // Also update the stats array in React Hook Form
-      const formStats = getValues("stats") || [];
-      if (formStats.length >= 6) {
+      // 2. Update the stats array in React Hook Form (primary source)
+      const rollStatsFormStats = getValues("stats") || [];
+      if (rollStatsFormStats.length >= 6) {
         // Update each stat in the stats array
-        for (let i = 0; i < formStats.length; i++) {
+        for (let i = 0; i < rollStatsFormStats.length; i++) {
           const statId = statIdMap[i];
-          if (statId && formStats[i]) {
+          if (statId && rollStatsFormStats[i]) {
             updateStats(i, {
-              ...formStats[i],
+              ...rollStatsFormStats[i],
               valueDice: newStatValues[statId]
             });
           }
         }
       }
-      
-      // Then update local state data for temporary compatibility
-      const updatedInputsStatsData = [...inputsStatsData];
-      updatedInputsStatsData.forEach(stat => {
-        stat.valueDice = newStatValues[stat.id];
-      });
-      setInputsStatsData(updatedInputsStatsData);
       
       // Show informative message
       console.log("Generated random stats:", 
@@ -2247,7 +2084,7 @@ const randomRoll = useCallback((generationType: 'balanced' | 'heroic' | 'standar
       alert("An error occurred while generating random stats. Please try again.");
       return false;
     }
-  }, [character?.pus_clase, character?.pus_nivel, inputsStatsData, setValue, clearValidationError]);
+  }, [character?.pus_clase, character?.pus_nivel, setValue, getValues, updateStats, validateSingleStat, clearValidationError]);
 
   /**
    * Handle changes to character level and adjust stats accordingly
@@ -2323,14 +2160,10 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       if (bonusDifference === 0) {
         console.log("No milestone changes, no stat adjustments needed");
         clearValidationError('level');
-        return true;
-      }
-      
-      // Create a copy of current stats data to modify (for local state)
-      const updatedStatsData = [...inputsStatsData];
-        // Get current level bonus from local state or default to 0
-      // (Más seguro que usar getValues con un string dinámico)
-      const currentBonus = updatedStatsData[primaryStat.index].valueLevel || 0;
+        return true;      }
+        // MIGRATION: Get current level bonus from React Hook Form instead of local state
+      const levelFormStats = getValues("stats") || [];
+      const currentBonus = levelFormStats[primaryStat.index]?.valueLevel || 0;
       
       // Calculate new level bonus (ensure it stays within valid range 0-3)
       const newBonus = Math.max(0, Math.min(3, currentBonus + bonusDifference));
@@ -2365,17 +2198,15 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       }
       
       // Also update the stats array in React Hook Form if it exists
-      const formStats = getValues("stats") || [];
-      if (formStats.length > primaryStat.index) {
+      const levelUpdateFormStats = getValues("stats") || [];
+      if (levelUpdateFormStats.length > primaryStat.index) {
         updateStats(primaryStat.index, {
-          ...formStats[primaryStat.index],
+          ...levelUpdateFormStats[primaryStat.index],
           valueLevel: newBonus
         });
       }
       
-      // Then update local state (for temporary compatibility)
-      updatedStatsData[primaryStat.index].valueLevel = newBonus;
-      setInputsStatsData(updatedStatsData);
+      // MIGRATION: Removed local state update - using React Hook Form as single source of truth
       
       // Clear any validation errors related to the level field
       clearValidationError('level');
@@ -2385,7 +2216,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       alert("An error occurred while updating character stats. Please try again.");
       return false;
     }
-  }, [character?.pus_clase, character?.pus_nivel, inputsStatsData, setValue, getValues, clearValidationError]);
+  }, [character?.pus_clase, character?.pus_nivel, setValue, getValues, clearValidationError]);
 
   const getClassName = (id: string | undefined): string | undefined => {
     return optionsCharacterClass.find((elem) => elem.value === id)?.name;
@@ -2455,7 +2286,15 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       // This ensures we're saving what's in the form rather than possibly stale local state
       if (character) {
         character.pus_nombre = formValues.name;
-        character.pus_nivel = Number(formValues.level);
+        character.pus_nivel = formValues.level;
+        character.pus_suerte = formValues.luckyPoints;
+        character.pus_vida = formValues.lifePoints;
+        character.pus_arma_principal = formValues.mainWeapon;
+        character.pus_arma_secundaria = formValues.secondaryWeapon;
+        character.pus_cantidad_oro = formValues.goldCoins;
+        character.pus_cantidad_plata = formValues.silverCoins;
+        character.pus_cantidad_bronce = formValues.bronzeCoins;
+        character.pus_descripcion = formValues.characterDescription;
       }
 
       // Validate essential character fields
@@ -2613,70 +2452,34 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
    */
   async function uploadStats(isNewCharacter: boolean, characterId: string) {
     if (characterId === "") return;
-
-    const formValues = getValues();
     
-    // Map of stat IDs to their corresponding form field names
-    const statFieldMap = [
-      { id: 'STR', label: 'Fuerza', dice: "strDice", class: "strClass", level: "strLevel" },
-      { id: 'INT', label: 'Inteligencia', dice: "intDice", class: "intClass", level: "intLevel" },
-      { id: 'DEX', label: 'Destreza', dice: "dexDice", class: "dexClass", level: "dexLevel" },
-      { id: 'CON', label: 'Constitución', dice: "conDice", class: "conClass", level: "conLevel" },
-      { id: 'PER', label: 'Percepción', dice: "perDice", class: "perClass", level: "perLevel" },
-      { id: 'CHA', label: 'Carisma', dice: "chaDice", class: "chaClass", level: "chaLevel" }
-    ];
+    // Get stats using our helper function (uses React Hook Form as primary source)
+    const characterStats = getInputStatsFromForm();
     
-    // Build stat records using React Hook Form values or local state as fallback
+    // Map of stat IDs to their labels for building database records
+    const statLabels = {
+      'STR': 'Fuerza',
+      'INT': 'Inteligencia',
+      'DEX': 'Destreza',
+      'CON': 'Constitución',
+      'PER': 'Percepción',
+      'CHA': 'Carisma'
+    };
+    
+    // Build stat records using our helper to get the most up-to-date stats
     const buildStats = () => {
       const stats: DBEstadisticaPersonaje[] = [];
-        statFieldMap.forEach((stat, index) => {
-        // Use type-safe approach to access form values based on stat ID
-        let dice = inputsStatsData[index]?.valueDice || 0;
-        let classValue = inputsStatsData[index]?.valueClass || 0;
-        let level = inputsStatsData[index]?.valueLevel || 0;
-        
-        // Use a switch statement for type safety when accessing form values
-        switch (stat.id) {
-          case 'STR':
-            dice = Number(formValues.strDice) || dice;
-            classValue = Number(formValues.strClass) || classValue;
-            level = Number(formValues.strLevel) || level;
-            break;
-          case 'INT':
-            dice = Number(formValues.intDice) || dice;
-            classValue = Number(formValues.intClass) || classValue;
-            level = Number(formValues.intLevel) || level;
-            break;
-          case 'DEX':
-            dice = Number(formValues.dexDice) || dice;
-            classValue = Number(formValues.dexClass) || classValue;
-            level = Number(formValues.dexLevel) || level;
-            break;
-          case 'CON':
-            dice = Number(formValues.conDice) || dice;
-            classValue = Number(formValues.conClass) || classValue;
-            level = Number(formValues.conLevel) || level;
-            break;
-          case 'PER':
-            dice = Number(formValues.perDice) || dice;
-            classValue = Number(formValues.perClass) || classValue;
-            level = Number(formValues.perLevel) || level;
-            break;
-          case 'CHA':
-            dice = Number(formValues.chaDice) || dice;
-            classValue = Number(formValues.chaClass) || classValue;
-            level = Number(formValues.chaLevel) || level;
-            break;
-        }
-          
+      
+      // Use the helper function to get current stat values
+      characterStats.forEach(stat => {
         stats.push({
           epe_id: uuidv4(),
           epe_personaje: characterId,
           epe_sigla: stat.id,
-          epe_nombre: stat.label,
-          epe_num_dado: dice,
-          epe_num_clase: classValue,
-          epe_num_nivel: level,
+          epe_nombre: statLabels[stat.id as keyof typeof statLabels] || stat.label,
+          epe_num_dado: stat.valueDice,
+          epe_num_clase: stat.valueClass,
+          epe_num_nivel: stat.valueLevel,
         });
       });
       
@@ -2746,15 +2549,17 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       console.warn("No extra skill found for character");
     }
 
-    // Add ring skills (use local state for now, as these are more complex)
-    // In a future iteration, these should be moved to React Hook Form
-    for (let index = 0; index < skillsAcquired.length; index++) {
-      if (!skillsAcquired[index].id) continue;
+    // Add ring skills - use our helper to get the most up-to-date data
+    const characterSkills = getSkillsAcquiredFromForm();
+    
+    // Process and save ring skills
+    for (let index = 0; index < characterSkills.length; index++) {
+      if (!characterSkills[index].id) continue;
       saveSkill.push({
         hpe_id: uuidv4(),
         hpe_personaje: characterId,
-        hpe_habilidad: skillsAcquired[index].id,
-        hpe_campo: "skillRing" + skillsAcquired[index].value,
+        hpe_habilidad: characterSkills[index].id,
+        hpe_campo: "skillRing" + characterSkills[index].value,
         hpe_alineacion: formValues.alignment || null,
       });
     }
@@ -2785,6 +2590,12 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
   }
   /**
    * Handles the form submission, performing validations and preparing data for saving
+   * 
+   * MIGRATION STATUS: Fully migrated to use React Hook Form validation
+   * - Leverages Yup schema validation through React Hook Form resolver
+   * - Uses ringSkills hook to get the most up-to-date skill data
+   * - Provides better error feedback with categorized errors
+   * 
    * @param data The form data submitted
    */
   const onSubmitForm = (data: CharacterForm) => {
@@ -2796,20 +2607,37 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
         raza: character?.pus_raza,
         trabajo: character?.pus_trabajo,
         userName: user?.usu_nombre
-      },
-      fieldValues: {
-        nameValue: getValues("name"),
-        userNameValue: getValues("userName"),
-        classValue: character?.pus_clase,
-        raceValue: character?.pus_raza,
-        jobValue: character?.pus_trabajo
       }
     });
+    
+    // Error categories for better UI feedback
     const basicInfoErrors = ['name', 'characterRace', 'characterClass', 'characterJob'];
     const statsErrors = ['stats', 'level', 'luckyPoints', 'lifePoints'];
     const weaponsErrors = ['mainWeapon', 'secondaryWeapon'];
-    const skillsErrors = ['mainSkill', 'extraSkill'];
+    const skillsErrors = ['mainSkill', 'extraSkill', 'ringSkills', 'ringSkill0', 'ringSkill1', 'ringSkill2'];
     
+    // Check for React Hook Form validation errors first
+    if (Object.keys(errors).length > 0) {
+      console.log("React Hook Form validation errors:", errors);
+      
+      // Map React Hook Form errors to our validation structure
+      const validationResult = {
+        isValid: false,
+        errors: Object.entries(errors).reduce((acc, [key, error]) => {
+          if (error && error.message) {
+            acc[key] = error.message as string;
+          }
+          return acc;
+        }, {} as Record<string, string>),
+        warnings: {}
+      };
+      
+      // Use our existing feedback mechanism for consistency
+      showValidationFeedback(validationResult);
+      return; // Stop form submission if there are React Hook Form errors
+    }
+    
+    // As backup, use our existing validation for additional checks
     let fieldsRequired: string[] = validateCharacterForm();
     let errorMessage = "Por favor, complete todos los campos obligatorios:\n";
     
@@ -2818,7 +2646,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
     if (updatedCharacter) {
       updatedCharacter.pus_nombre = data.name;
       updatedCharacter.pus_nivel = data.level;
-      updatedCharacter.pus_puntos_suerte = data.luckyPoints;
+      updatedCharacter.pus_suerte = data.luckyPoints;
       updatedCharacter.pus_vida = data.lifePoints;
       updatedCharacter.pus_arma_principal = data.mainWeapon;
       updatedCharacter.pus_arma_secundaria = data.secondaryWeapon;
@@ -2827,11 +2655,11 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       updatedCharacter.pus_cantidad_bronce = data.bronzeCoins;
       updatedCharacter.pus_descripcion = data.characterDescription;
     }
-      // Use our enhanced validation function for comprehensive assessment
+    // Use our enhanced validation function for comprehensive assessment with helper functions
     const validationResults = validateCharacterAttributes(
       updatedCharacter, 
-      inputsStatsData, 
-      skillsAcquired,
+      getInputStatsFromForm(),
+      getSkillsAcquiredFromForm(),
       getValues("inventory") || []
     );
     
@@ -2887,50 +2715,50 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       secondaryWeapon: data.secondaryWeapon || '',
       str: [
         {
-          dice: inputsStatsData[0].valueDice,
-          class: inputsStatsData[0].valueClass,
-          level: inputsStatsData[0].valueLevel,
+          dice: getInputStatsFromForm()[0]?.valueDice || defaultStatsData[0].valueDice,
+          class: getInputStatsFromForm()[0]?.valueClass || defaultStatsData[0].valueClass,
+          level: getInputStatsFromForm()[0]?.valueLevel || defaultStatsData[0].valueLevel,
         },
       ],
       int: [
         {
-          dice: inputsStatsData[1].valueDice,
-          class: inputsStatsData[1].valueClass,
-          level: inputsStatsData[1].valueLevel,
+          dice: getInputStatsFromForm()[1]?.valueDice || defaultStatsData[1].valueDice,
+          class: getInputStatsFromForm()[1]?.valueClass || defaultStatsData[1].valueClass,
+          level: getInputStatsFromForm()[1]?.valueLevel || defaultStatsData[1].valueLevel,
         },
       ],
       dex: [
         {
-          dice: inputsStatsData[2].valueDice,
-          class: inputsStatsData[2].valueClass,
-          level: inputsStatsData[2].valueLevel,
+          dice: getInputStatsFromForm()[2]?.valueDice || defaultStatsData[2].valueDice,
+          class: getInputStatsFromForm()[2]?.valueClass || defaultStatsData[2].valueClass,
+          level: getInputStatsFromForm()[2]?.valueLevel || defaultStatsData[2].valueLevel,
         },
       ],
       con: [
         {
-          dice: inputsStatsData[3].valueDice,
-          class: inputsStatsData[3].valueClass,
-          level: inputsStatsData[3].valueLevel,
+          dice: getInputStatsFromForm()[3]?.valueDice || defaultStatsData[3].valueDice,
+          class: getInputStatsFromForm()[3]?.valueClass || defaultStatsData[3].valueClass,
+          level: getInputStatsFromForm()[3]?.valueLevel || defaultStatsData[3].valueLevel,
         },
       ],
       per: [
         {
-          dice: inputsStatsData[4].valueDice,
-          class: inputsStatsData[4].valueClass,
-          level: inputsStatsData[4].valueLevel,
+          dice: getInputStatsFromForm()[4]?.valueDice || defaultStatsData[4].valueDice,
+          class: getInputStatsFromForm()[4]?.valueClass || defaultStatsData[4].valueClass,
+          level: getInputStatsFromForm()[4]?.valueLevel || defaultStatsData[4].valueLevel,
         },
       ],
       cha: [
         {
-          dice: inputsStatsData[5].valueDice,
-          class: inputsStatsData[5].valueClass,
-          level: inputsStatsData[5].valueLevel,
+          dice: getInputStatsFromForm()[5]?.valueDice || defaultStatsData[5].valueDice,
+          class: getInputStatsFromForm()[5]?.valueClass || defaultStatsData[5].valueClass,
+          level: getInputStatsFromForm()[5]?.valueLevel || defaultStatsData[5].valueLevel,
         },
       ],
       mainSkill: data.skillClass || '',
       extraSkill: data.skillExtra || '',
       alignment: character.pus_alineacion || '',
-      skills: skillsAcquired,
+      skills: ringSkills.getSkillsFromForm(),
       coinsInv: [
         data.goldCoins || 0,
         data.silverCoins || 0, 
@@ -2951,16 +2779,40 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
     console.log("onSubmitForm: Modal debería estar abierto ahora, isOpen=", isOpen);
   };
 
-    /**
-   * Validates the character form data and returns an array of field IDs with errors
-   * @returns Array of field IDs that failed validation
+  /**
+   * Validates the character form data, checking all required fields and constraints
+   * 
+   * MIGRATION STATUS: Refactored to use React Hook Form as primary source of truth
+   * - Uses form values as main source of validation
+   * - Uses helper functions like getInputStatsFromForm
+   * 
+   * @returns Array of field names with validation errors
    */
   const validateCharacterForm = (): string[] => {
     let fieldsRequired: string[] = [];
     
+    // Get form values from React Hook Form (primary source of truth)
+    const formValues = getValues();
+    
+    // Create a character object using form values with fallback to local state
+    const tempCharacter = character ? { ...character } : {} as DBPersonajesUsuario;
+    
+    // Update character fields with form values
+    tempCharacter.pus_nombre = formValues.name;
+    tempCharacter.pus_clase = formValues.class;
+    tempCharacter.pus_raza = formValues.race;
+    tempCharacter.pus_trabajo = formValues.job;
+    tempCharacter.pus_nivel = Number(formValues.level);
+    tempCharacter.pus_suerte = Number(formValues.luckyPoints);
+    tempCharacter.pus_vida = Number(formValues.lifePoints);
+    tempCharacter.pus_arma_principal = formValues.mainWeapon;
+    tempCharacter.pus_arma_secundaria = formValues.secondaryWeapon;
+    tempCharacter.pus_descripcion = formValues.characterDescription;
+    tempCharacter.pus_alineacion = formValues.alignment;
+    
     // Use our character validation utility for base character properties
     if (character) {
-      const characterErrors = validateCharacter(character);
+      const characterErrors = validateCharacter(tempCharacter);
       
       // Map database field names to UI field names for validation
       characterErrors.forEach(field => {
@@ -2971,11 +2823,9 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       });
     } else {
       fieldsRequired.push('character');
-      return fieldsRequired; // Exit early if character doesn't exist
+      // Only exit early if we don't have a character object, to allow partial validation
+      return fieldsRequired;
     }
-    
-    // Validate form field values from form state
-    const formValues = getValues();
     
     // Check basic required text fields
     if (!formValues.name?.trim()) {
@@ -3003,13 +2853,15 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
     if (!formValues.mainWeapon?.trim()) {
       fieldsRequired.push('mainWeapon');
     }
-    // Validate stats using our detailed stats validation helper
+    // Validate stats using our helper function to get most current stats data
+    const statsToValidate = getInputStatsFromForm();
+    
     // First check overall stats
-    if (!validateCharacterStats(inputsStatsData)) {
+    if (!validateCharacterStats(statsToValidate)) {
       fieldsRequired.push('stats');
     } else {
       // Additional check for total stats to ensure character has some abilities
-      const totalStats = inputsStatsData.reduce((sum, stat) => 
+      const totalStats = statsToValidate.reduce((sum, stat) => 
         sum + stat.valueDice + stat.valueClass + stat.valueLevel, 0);
       
       if (totalStats <= 0) {
@@ -3026,10 +2878,20 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
         }
       });
     }
-    // Validate selected skills
+    
+    // Validate selected skills using helper function to get consistent data
+    const skills = getSkillsAcquiredFromForm();
     if (!formValues.skillClass) {
       fieldsRequired.push('mainSkill');
     }
+    
+    // Check if ring skills are properly assigned (if they should be)
+    const ringSkillsWithoutName = skills.filter(skill => skill.ring && !skill.name);
+    if (ringSkillsWithoutName.length > 0) {
+      fieldsRequired.push('ringSkills');
+      console.warn('Missing ring skill names:', ringSkillsWithoutName.map(s => s.value).join(', '));
+    }
+    
     // Validate character description if it's a required field
     if (formValues.characterDescription?.trim() === '') {
       fieldsRequired.push('description');
@@ -3038,10 +2900,50 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
     // Remove any duplicate entries
     return [...new Set(fieldsRequired)];
   };
+  
+  /**
+   * Helper function to get InputStats array from React Hook Form data
+   * This ensures that all code that previously used inputsStatsData can work
+   * with React Hook Form's data as the source of truth
+   * 
+   * MIGRATION STATUS: Updated to use defaultStatsData fallback instead of removed local state
+   */
+  const getInputStatsFromForm = useCallback((): InputStats[] => {
+    const inputStatsFormStats = getValues("stats") || [];
+    if (inputStatsFormStats.length < 6) return defaultStatsData; // Fallback to default data
+    
+    return inputStatsFormStats.map(stat => ({
+      id: stat.id,
+      label: stat.label,
+      description: stat.description,
+      valueDice: stat.valueDice,
+      valueClass: stat.valueClass,
+      valueLevel: stat.valueLevel
+    }));
+  }, [getValues, defaultStatsData]);
+
+  /**
+   * Get the skills from React Hook Form and ensure they are properly formatted
+   * This is now a simple wrapper around our custom hook
+   * 
+   * MIGRATION STATUS: Fully migrated to use useRingSkills hook
+   * - Uses the ring skills hook as the sole source of truth
+   * - Maintains compatibility with code expecting this function
+   * 
+   * @returns Array of skills from the form
+   */
+  const getSkillsAcquiredFromForm = useCallback((): SkillsAcquired[] => {
+    return ringSkills.getSkillsFromForm();
+  }, [ringSkills]);
 
   /**
    * Displays user-friendly validation feedback based on validation results
    * Groups errors by category and creates a well-structured message
+   * 
+   * MIGRATION STATUS: Enhanced to better support React Hook Form validation
+   * - Shows more detailed errors by category
+   * - Provides better error highlighting using field names from React Hook Form
+   * - Adds support for both errors and warnings
    * 
    * @param validationResults The detailed validation results
    * @param showAlerts Whether to display alert boxes (default true)
@@ -3075,7 +2977,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
     // Process all errors
     Object.entries(validationResults.errors).forEach(([field, message]) => {
       if (field.startsWith('pus_')) {
-        // Map database field names to UI field names
+        // Map database field names to UI field names and React Hook Form fields
         switch(field) {
           case 'pus_nombre':
             fieldsWithErrors.push('name');
@@ -3109,29 +3011,67 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
             fieldsWithErrors.push('mainWeapon');
             errorGroups['Equipment'].push(message);
             break;
+          case 'pus_conocimientos':
+            fieldsWithErrors.push('knowledge');
+            errorGroups['Basic Information'].push(message);
+            break;
           default:
-            errorGroups['Other'].push(message);
+            errorGroups['Other'].push(`${field}: ${message}`);
         }
       } else if (field === 'stats' || field.startsWith('stat_')) {
         fieldsWithErrors.push('stats');
         errorGroups['Character Stats'].push(message);
-      } else if (field.startsWith('skill')) {
-        fieldsWithErrors.push(field);
+      } else if (field.startsWith('skill') || field === 'ringSkills' || field.startsWith('skills.')) {
+        // Handle both legacy skill errors and React Hook Form skill array errors
+        if (field.startsWith('skills.')) {
+          // Extract index from array path (e.g., skills.0.name -> 0)
+          const match = field.match(/skills\.(\d+)/);
+          if (match && match[1]) {
+            fieldsWithErrors.push(`ringSkill${match[1]}`);
+          } else {
+            fieldsWithErrors.push('ringSkills');
+          }
+        } else {
+          fieldsWithErrors.push(field);
+        }
         errorGroups['Skills'].push(message);
+      } else if (field.startsWith('inv_') || field.startsWith('inventory.')) {
+        fieldsWithErrors.push('inventory');
+        errorGroups['Equipment'].push(message);
       } else {
         // Default case for other errors
-        errorGroups['Other'].push(message);
+        errorGroups['Other'].push(`${field}: ${message}`);
       }
     });
 
     // Process warnings (less severe than errors)
     const warningMessages: string[] = [];
-    Object.values(validationResults.warnings).forEach(message => {
-      warningMessages.push(message);
+    Object.entries(validationResults.warnings).forEach(([field, message]) => {
+      // Categorize warnings similar to errors but don't mark fields as errors
+      if (field.startsWith('pus_')) {
+        switch(field) {
+          // Similar mapping pattern as errors
+          case 'pus_nombre':
+          case 'pus_clase':
+          case 'pus_raza':
+          case 'pus_trabajo':
+            warningMessages.push(`Basic Information: ${message}`);
+            break;
+          case 'pus_nivel':
+          case 'pus_puntos_suerte':
+          case 'pus_vida':
+            warningMessages.push(`Character Stats: ${message}`);
+            break;
+          default:
+            warningMessages.push(`${field}: ${message}`);
+        }
+      } else {
+        warningMessages.push(`${field}: ${message}`);
+      }
     });
 
     // Build comprehensive error message
-    let errorMessage = "Please fix the following issues before saving:\n\n";
+    let errorMessage = "Por favor, corrija los siguientes problemas antes de guardar:\n\n";
     
     Object.entries(errorGroups).forEach(([group, messages]) => {
       if (messages.length > 0) {
@@ -3145,7 +3085,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
 
     // Add warnings if any exist
     if (warningMessages.length > 0) {
-      errorMessage += "\nWarnings (you can still save with warnings):\n";
+      errorMessage += "\nAdvertencias (todavía puedes guardar con advertencias):\n";
       warningMessages.forEach(msg => {
         errorMessage += `• ${msg}\n`;
       });
@@ -3156,7 +3096,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       alert(errorMessage);
     }
 
-    // Set empty required fields for UI highlighting
+    // Set empty required fields for UI highlighting in the form
     setEmptyRequiredFields(fieldsWithErrors);
 
     return {
@@ -3454,37 +3394,37 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
 
           {/* STRENGTH */}
           <FormInputStats
-            inputStats={inputsStatsData[0]}
+            inputStats={getValues("stats")[0] || defaultStatsData[0]}
             onSelectedValuesChange={handleStatsInputChange}
           />
 
           {/* INTELLIGENCE */}
           <FormInputStats
-            inputStats={inputsStatsData[1]}
+            inputStats={getValues("stats")[1] || defaultStatsData[1]}
             onSelectedValuesChange={handleStatsInputChange}
           />
 
           {/* DEXTERITY */}
           <FormInputStats
-            inputStats={inputsStatsData[2]}
+            inputStats={getValues("stats")[2] || defaultStatsData[2]}
             onSelectedValuesChange={handleStatsInputChange}
           />
 
           {/* CONSTITUTION */}
           <FormInputStats
-            inputStats={inputsStatsData[3]}
+            inputStats={getValues("stats")[3] || defaultStatsData[3]}
             onSelectedValuesChange={handleStatsInputChange}
           />
 
           {/* PERCEPTION */}
           <FormInputStats
-            inputStats={inputsStatsData[4]}
+            inputStats={getValues("stats")[4] || defaultStatsData[4]}
             onSelectedValuesChange={handleStatsInputChange}
           />
 
           {/* CHARISMA */}
           <FormInputStats
-            inputStats={inputsStatsData[5]}
+            inputStats={getValues("stats")[5] || defaultStatsData[5]}
             onSelectedValuesChange={handleStatsInputChange}
           />
         </fieldset>
@@ -3574,7 +3514,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
                 levelEvaluated={3}
                 ringTypes={optionsRingTypes}
                 skillList={skillsRingList[0]}
-                values={skillsAcquired[0]}
+                values={getValues("skills")[0] || defaultSkillsData[0]}
                 onSelectChange={handleSelectedRingSkillChange}
                 onSelectTypeChange={handleSelectedTypeRingSkillChange}
               />
@@ -3585,7 +3525,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
                 levelEvaluated={6}
                 ringTypes={optionsRingTypes}
                 skillList={skillsRingList[1]}
-                values={skillsAcquired[1]}
+                values={getValues("skills")[1] || defaultSkillsData[1]}
                 onSelectChange={handleSelectedRingSkillChange}
                 onSelectTypeChange={handleSelectedTypeRingSkillChange}
               />
@@ -3596,7 +3536,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
                 levelEvaluated={9}
                 ringTypes={optionsRingTypes}
                 skillList={skillsRingList[2]}
-                values={skillsAcquired[2]}
+                values={getValues("skills")[2] || defaultSkillsData[2]}
                 onSelectChange={handleSelectedRingSkillChange}
                 onSelectTypeChange={handleSelectedTypeRingSkillChange}
               />
@@ -3635,28 +3575,49 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
             Bronce
           </label>
           <input
-            {...register("goldCoins", { required: true, maxLength: 3 })}
+            {...register("goldCoins", { 
+              required: true, 
+              maxLength: 3,
+              onChange: (e) => {
+                const numericValue = validateNumeric(e.target.value);
+                setValue("goldCoins", numericValue);
+                clearValidationError('goldCoins');
+              }
+            })}
             placeholder="Oro"
-            className="form-input ml-2 col-span-1 focus:border-black focus:shadow"
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              handleCoinsChange(0, e.target.value)
-            }
+            className={`form-input ml-2 col-span-1 focus:border-black focus:shadow ${
+              emptyRequiredFields.includes('goldCoins') ? 'required-input' : ''
+            }`}
           />
           <input
-            {...register("silverCoins", { required: true, maxLength: 3 })}
+            {...register("silverCoins", { 
+              required: true, 
+              maxLength: 3,
+              onChange: (e) => {
+                const numericValue = validateNumeric(e.target.value);
+                setValue("silverCoins", numericValue);
+                clearValidationError('silverCoins');
+              }
+            })}
             placeholder="Plata"
-            className="form-input col-span-1 focus:border-black focus:shadow"
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              handleCoinsChange(1, e.target.value)
-            }
+            className={`form-input col-span-1 focus:border-black focus:shadow ${
+              emptyRequiredFields.includes('silverCoins') ? 'required-input' : ''
+            }`}
           />
           <input
-            {...register("bronzeCoins", { required: true, maxLength: 3 })}
+            {...register("bronzeCoins", { 
+              required: true, 
+              maxLength: 3,
+              onChange: (e) => {
+                const numericValue = validateNumeric(e.target.value);
+                setValue("bronzeCoins", numericValue);
+                clearValidationError('bronzeCoins');
+              }
+            })}
             placeholder="Bronce"
-            className="form-input mr-2 col-span-1 focus:border-black focus:shadow"
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              handleCoinsChange(2, e.target.value)
-            }
+            className={`form-input mr-2 col-span-1 focus:border-black focus:shadow ${
+              emptyRequiredFields.includes('bronzeCoins') ? 'required-input' : ''
+            }`}
           />
 
           <label className="form-lbl mb-1 col-span-3 bg-grey-lighter ">

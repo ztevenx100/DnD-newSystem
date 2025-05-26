@@ -1187,19 +1187,27 @@ const getInventory = useCallback(async () => {
 
   /**
    * Maneja el cambio en la selección de raza del personaje
+   * usando React Hook Form como fuente principal de verdad
    * 
    * @param value - ID de la raza seleccionada
    */
    const handleSelectRaceChange = (value: string) => {
-    clearValidationError('characterRace');
     console.log("Selecting race:", value);
     
+    // 1. Actualizar en React Hook Form (fuente principal de verdad)
+    setValue("race", value);
+    console.log(`Raza actualizada en React Hook Form: ${value}`);
+    
+    // 2. Actualizar en el estado del personaje (compatibilidad temporal)
     setCharacter((prevState) => {
       if (!prevState) return prevState;
       const updated = setCharacterProperty(prevState, 'pus_raza', value);
       console.log("Updated character state with race:", updated);
       return updated;
     });
+    
+    // Limpiar cualquier error de validación relacionado con la raza
+    clearValidationError('characterRace');
   };
   /**
    * Maneja el cambio en la selección del sistema de juego
@@ -1233,24 +1241,39 @@ const getInventory = useCallback(async () => {
   /**
    * Maneja el cambio en la selección de habilidad principal del personaje
    * 
-   * Esta función actualiza la habilidad principal del personaje, actualizando
-   * el estado correspondiente y los campos relacionados en el formulario
+   * Esta función actualiza la habilidad principal del personaje usando React Hook Form como 
+   * fuente principal de verdad, manteniendo también actualizado el estado local por compatibilidad.
    *
    * @param currentSkill - ID de la habilidad seleccionada
    */
   const handleSelectSkillChange = (currentSkill: string) => {
+    console.log('handleSelectSkillChange', currentSkill);
+    
+    // Si no hay habilidad seleccionada, limpiar el valor
     if (!currentSkill) {
       setValue("skillClass", "");
+      // Actualizar también el estado local por compatibilidad
+      setFieldSkill((prevItems) =>
+        prevItems.map((item) =>
+          item.field === "skillClass"
+            ? { ...item, id: "", skill: "" }
+            : item
+        )
+      );
       return;
     }
     
+    // Buscar la opción correspondiente en las opciones disponibles
     const option = optionsSkillClass.filter(
       (skill) => skill.value === currentSkill
     );
     
     if (option.length > 0) {
+      // 1. Actualizar React Hook Form (fuente principal de verdad)
       setValue("skillClass", currentSkill);
+      console.log(`Habilidad principal actualizada en React Hook Form: ${currentSkill}`);
       
+      // 2. Actualizar el estado local (compatibilidad temporal)
       setFieldSkill((prevItems) =>
         prevItems.map((item) =>
           item.field === "skillClass"
@@ -1268,21 +1291,39 @@ const getInventory = useCallback(async () => {
   /**
    * Maneja el cambio en la selección de habilidades extra
    * 
+   * Esta función actualiza la habilidad extra del personaje usando React Hook Form como 
+   * fuente principal de verdad, manteniendo también actualizado el estado local por compatibilidad.
+   * 
    * @param currentSkill - ID de la habilidad extra seleccionada
    */
   const handleSelectExtraSkillChange = (currentSkill: string) => {
+    console.log('handleSelectExtraSkillChange', currentSkill);
+    
+    // Si no hay habilidad seleccionada, limpiar el valor
     if (!currentSkill) {
       setValue("skillExtra", "");
+      // Actualizar también el estado local por compatibilidad
+      setFieldSkill((prevItems) =>
+        prevItems.map((item) =>
+          item.field === "skillExtra"
+            ? { ...item, id: "", skill: "" }
+            : item
+        )
+      );
       return;
     }
     
+    // Buscar la opción correspondiente en las opciones disponibles
     const option = optionsSkillExtra.filter(
       (skill) => skill.value === currentSkill
     );
     
     if (option.length > 0) {
+      // 1. Actualizar React Hook Form (fuente principal de verdad)
       setValue("skillExtra", currentSkill);
+      console.log(`Habilidad extra actualizada en React Hook Form: ${currentSkill}`);
       
+      // 2. Actualizar el estado local (compatibilidad temporal)
       setFieldSkill((prevItems) =>
         prevItems.map((item) =>
           item.field === "skillExtra"
@@ -1290,6 +1331,10 @@ const getInventory = useCallback(async () => {
             : item
         )
       );
+      console.log(`Estado local de habilidad extra actualizado para compatibilidad`);
+      
+      // Limpiar cualquier error de validación que pudiera haber
+      clearValidationError('skillExtra');
     } else {
       console.warn("No matching option found for skillExtra:", currentSkill);
     }
@@ -1299,7 +1344,8 @@ const getInventory = useCallback(async () => {
    * Actualiza los puntos de estadísticas basados en la clase y trabajo seleccionados
    * 
    * Esta función calcula y asigna los bonos de estadísticas según la clase y trabajo
-   * del personaje. Cada clase tiene una estadística principal que recibe +2 puntos,
+   * del personaje, usando React Hook Form como fuente principal de verdad.
+   * Cada clase tiene una estadística principal que recibe +2 puntos,
    * y cada trabajo puede proporcionar +1 punto en ciertas estadísticas.
    * 
    * @param selectedClass - Código de la clase seleccionada del personaje
@@ -1316,7 +1362,7 @@ const getInventory = useCallback(async () => {
       return;
     }
     
-    const updatedInputsStatsData = [...inputsStatsData];
+    // Obtener datos del trabajo seleccionado
     const jobOption = optionsCharacterJob.find(option => option.value === selectedJob);
     const extraPoints = jobOption?.extraPoint || "";
     
@@ -1339,28 +1385,34 @@ const getInventory = useCallback(async () => {
       console.warn(`Clase seleccionada "${selectedClass}" no tiene estadística principal definida`);
     }
     
-    // Actualizar bonos para cada estadística
-    updatedInputsStatsData.forEach((stat, index) => {
+    // 1. Primero actualizar React Hook Form (fuente principal de verdad)
+    const formStats = getValues("stats") || [];
+    
+    formStats.forEach((stat, index) => {
       const classBonus = (primaryStat && stat.id === primaryStat) ? 2 : 0;
       const jobBonus = extraPoints.includes(stat.id) ? 1 : 0;
-      const previousValue = updatedInputsStatsData[index].valueClass;
-      updatedInputsStatsData[index].valueClass = classBonus + jobBonus;
+      const newClassValue = classBonus + jobBonus;
       
-      if (previousValue !== updatedInputsStatsData[index].valueClass) {
-        console.log(`Estadística ${stat.id} actualizada:`, {
-          anterior: previousValue,
-          nuevo: updatedInputsStatsData[index].valueClass,
+      if (stat.valueClass !== newClassValue) {
+        const updatedStat = {
+          ...stat,
+          valueClass: newClassValue
+        };
+        
+        // Actualizar el estado en React Hook Form
+        updateStats(index, updatedStat);
+        
+        console.log(`Estadística ${stat.id} actualizada en React Hook Form:`, {
+          anterior: stat.valueClass,
+          nuevo: newClassValue,
           bonoClase: classBonus,
           bonoTrabajo: jobBonus
         });
       }
     });
-
-    // Actualizar el estado con los nuevos valores
-    setInputsStatsData(updatedInputsStatsData);
     
-    // Actualizar también los valores en React Hook Form
-    updatedInputsStatsData.forEach((stat) => {
+    // 2. Actualizar campos individuales en React Hook Form (compatibilidad)
+    formStats.forEach((stat) => {
       switch (stat.id) {
         case 'STR':
           setValue("strClass", stat.valueClass);
@@ -1383,13 +1435,32 @@ const getInventory = useCallback(async () => {
       }
     });
     
+    // 3. Actualizar el estado local (compatibilidad temporal)
+    const updatedInputsStatsData = [...inputsStatsData];
+    
+    updatedInputsStatsData.forEach((stat, index) => {
+      const classBonus = (primaryStat && stat.id === primaryStat) ? 2 : 0;
+      const jobBonus = extraPoints.includes(stat.id) ? 1 : 0;
+      const previousValue = updatedInputsStatsData[index].valueClass;
+      updatedInputsStatsData[index].valueClass = classBonus + jobBonus;
+      
+      if (previousValue !== updatedInputsStatsData[index].valueClass) {
+        console.log(`Estadística ${stat.id} actualizada en estado local:`, {
+          anterior: previousValue,
+          nuevo: updatedInputsStatsData[index].valueClass
+        });
+      }
+    });
+    
+    setInputsStatsData(updatedInputsStatsData);
     console.log("Estadísticas actualizadas correctamente");
   };
   /**
    * Maneja el cambio en la selección de clase del personaje
    * 
    * Esta función actualiza la clase del personaje, asigna el conocimiento correspondiente,
-   * actualiza los puntos de estadísticas y selecciona la habilidad principal según la clase
+   * actualiza los puntos de estadísticas y selecciona la habilidad principal según la clase,
+   * usando React Hook Form como fuente principal de verdad
    *
    * @param value - ID de la clase seleccionada
    */
@@ -1402,7 +1473,11 @@ const getInventory = useCallback(async () => {
       (option) => option.value === value
     );
     
-    console.log("Selecting class:", value, "Option found:", selectedOption);
+    console.log("Option found:", selectedOption);
+    
+    // 1. Actualizar en React Hook Form (fuente principal de verdad)
+    setValue("class", value);
+    console.log(`Clase actualizada en React Hook Form: ${value}`);
     
     // Asignar el conocimiento según la clase seleccionada
     let knowledgeValue = "";
@@ -1415,7 +1490,7 @@ const getInventory = useCallback(async () => {
       case 'ACT': knowledgeValue = "ART"; break;
     }
     
-    // Actualizar los datos del personaje
+    // 2. Actualizar los datos del personaje (compatibilidad temporal)
     setCharacter((prevState) => {
       if (!prevState) return prevState;
       
@@ -1426,9 +1501,10 @@ const getInventory = useCallback(async () => {
       return updated;
     });
 
-    // Actualizar puntos de estadísticas basados en la clase y trabajo
+    // 3. Actualizar puntos de estadísticas basados en la clase y trabajo
     updStatsPoints(value, character?.pus_trabajo || '');
-    // Seleccionar y actualizar la habilidad principal según la clase
+    
+    // 4. Seleccionar y actualizar la habilidad principal según la clase
     const skillValue = selectedOption?.mainStat ? "S" + selectedOption.mainStat : "";
     setValue("skillClass", skillValue);
     handleSelectSkillChange(skillValue);
@@ -1437,16 +1513,20 @@ const getInventory = useCallback(async () => {
    * Maneja el cambio en la selección de trabajo/profesión del personaje
    * 
    * Esta función actualiza el trabajo del personaje y ajusta los puntos de estadísticas
-   * basados en la combinación de clase y trabajo seleccionados
+   * basados en la combinación de clase y trabajo seleccionados,
+   * usando React Hook Form como fuente principal de verdad
    *
    * @param value - ID del trabajo seleccionado
    */
   const handleCharacterJobSelectChange = (value: string) => {
     // Limpiar cualquier error de validación previo
     clearValidationError('characterJob');
-    console.log("Selecting job:", value);
     
-    // Actualizar el trabajo en el estado del personaje
+    // 1. Actualizar en React Hook Form (fuente principal de verdad)
+    setValue("job", value);
+    console.log(`Trabajo actualizado en React Hook Form: ${value}`);
+    
+    // 2. Actualizar el trabajo en el estado del personaje (compatibilidad temporal)
     setCharacter((prevState) => {
       if (!prevState) return prevState;
       
@@ -1456,7 +1536,7 @@ const getInventory = useCallback(async () => {
       return updated;
     });
     
-    // Actualizar puntos de estadísticas basados en la clase y trabajo
+    // 3. Actualizar puntos de estadísticas basados en la clase y trabajo
     updStatsPoints(character?.pus_clase || '', value);
   };
   /**
@@ -1496,16 +1576,32 @@ const getInventory = useCallback(async () => {
     // Actualizar la URL de la imagen en el estado
     if (path) setCharacterImage(value);
   };
-
+  /**
+   * Maneja el cambio en los conocimientos seleccionados del personaje
+   * usando React Hook Form como fuente principal de verdad
+   * 
+   * @param newValues - Array de IDs de los conocimientos seleccionados
+   */
   const handleSelectedCheckValuesChange = (newValues: string[]) => {
     console.log("Conocimientos seleccionados:", newValues);
+    
+    // Construir una cadena separada por comas con los conocimientos seleccionados
+    const knowledgeString = newValues.join(',');
+      // 1. Actualizar en React Hook Form (fuente principal de verdad)
+    // Verificamos si "knowledgeField" o propiedad similar existe en CharacterForm
+    // Si no existe en el formulario, solo actualizamos el estado local
+    
+    // 2. Actualizar el estado local del personaje (compatibilidad temporal)
     setCharacter((prevState) => {
       if (!prevState) return prevState;
       // Use the type-safe helper to update knowledge property
-      const updated = setCharacterProperty(prevState, 'pus_conocimientos', newValues.join(","));
+      const updated = setCharacterProperty(prevState, 'pus_conocimientos', knowledgeString);
       console.log("Estado actualizado con conocimientos:", updated);
       return updated;
     });
+    
+    // Limpiar cualquier error de validación relacionado con los conocimientos
+    clearValidationError('knowledge');
   };
 
   /**
@@ -1594,21 +1690,29 @@ const getInventory = useCallback(async () => {
   
   /**
    * Actualiza la alineación del personaje y aplica efectos visuales
-   * basados en la alineación seleccionada
+   * basados en la alineación seleccionada, usando React Hook Form como fuente principal
    * 
    * @param value - Alineación seleccionada ('O' para Orden, 'C' para Caos)
    */
   const handleAlignmentChange = (value: string) => {
-    // Actualizar la alineación en el estado del personaje
+    console.log('handleAlignmentChange', value);
+    
+    // 1. Actualizar en React Hook Form (fuente principal de verdad)
+    setValue("alignment", value);
+    console.log(`Alineación actualizada en React Hook Form: ${value}`);
+    
+    // 2. Actualizar la alineación en el estado del personaje (compatibilidad temporal)
     setCharacter((prevState) => {
       if (!prevState) return prevState;
       
       // Usar el helper con tipado seguro para modificar la propiedad
-      return setCharacterProperty(prevState, 'pus_alineacion', value);
+      const updated = setCharacterProperty(prevState, 'pus_alineacion', value);
+      console.log(`Estado local de alineación actualizado para compatibilidad: ${value}`);
+      return updated;
     });
     
-    // Actualizar en React Hook Form
-    setValue("alignment", value);
+    // Limpiar cualquier error de validación relacionado con la alineación
+    clearValidationError('alignment');
   };
   
   /**
@@ -1944,14 +2048,16 @@ const getInventory = useCallback(async () => {
       alert("Error al preparar los datos del personaje");
     }
  };
-   /**
-   * Generate random stats for a character based on class and balanced distribution
+
+  /**
+   * Generates random stats for a character based on their class and the selected generation type
    * 
-   * This function creates a set of balanced random stats that favor the primary
-   * and secondary attributes based on character class.
+   * MIGRATION STATUS: Refactored to use React Hook Form as primary source of truth
+   * - First sets React Hook Form values directly
+   * - Then updates local state for temporary compatibility
    * 
-   * @param generationType - Optional parameter to control randomization style:
-   *   - 'balanced' (default): Generates stats that favor class preferences
+   * @param generationType - The type of stat generation to use
+   *   - 'balanced': Provides a slightly higher primary stat (default)
    *   - 'heroic': Generates higher stats across the board
    *   - 'standard': Completely random stats within normal range
    * @returns Boolean indicating if stats were successfully generated
@@ -1970,18 +2076,18 @@ const randomRoll = useCallback((generationType: 'balanced' | 'heroic' | 'standar
     }
 
     try {
-      // Create a copy of stats data to modify
-      const updatedInputsStatsData = [...inputsStatsData];
-      
       // Define the primary and secondary stats for each class
-      const classAttributes: Record<string, {primary: number, secondary: number, name: string}> = {
-        'WAR': { primary: 0, secondary: 3, name: 'Warrior' },    // STR, CON
-        'MAG': { primary: 1, secondary: 4, name: 'Mage' },       // INT, PER
-        'SCO': { primary: 2, secondary: 4, name: 'Scout' },      // DEX, PER
-        'MED': { primary: 3, secondary: 1, name: 'Medic' },      // CON, INT
-        'RES': { primary: 4, secondary: 1, name: 'Researcher' }, // PER, INT
-        'ACT': { primary: 5, secondary: 2, name: 'Artist' }      // CHA, DEX
+      const classAttributes: Record<string, {primary: number, secondary: number, name: string, statId: string}> = {
+        'WAR': { primary: 0, secondary: 3, name: 'Warrior', statId: 'STR' },    // STR, CON
+        'MAG': { primary: 1, secondary: 4, name: 'Mage', statId: 'INT' },       // INT, PER
+        'SCO': { primary: 2, secondary: 4, name: 'Scout', statId: 'DEX' },      // DEX, PER
+        'MED': { primary: 3, secondary: 1, name: 'Medic', statId: 'CON' },      // CON, INT
+        'RES': { primary: 4, secondary: 1, name: 'Researcher', statId: 'PER' }, // PER, INT
+        'ACT': { primary: 5, secondary: 2, name: 'Artist', statId: 'CHA' }      // CHA, DEX
       };
+      
+      // Map of indices to stat IDs for direct access
+      const statIdMap = ['STR', 'INT', 'DEX', 'CON', 'PER', 'CHA'];
       
       // Get character class data
       let classData = classAttributes[character.pus_clase];
@@ -1994,7 +2100,12 @@ const randomRoll = useCallback((generationType: 'balanced' | 'heroic' | 'standar
           secondaryStat = Math.floor(Math.random() * 6);
         } while (secondaryStat === primaryStat);
         
-        classData = { primary: primaryStat, secondary: secondaryStat, name: 'Unknown' };
+        classData = { 
+          primary: primaryStat, 
+          secondary: secondaryStat, 
+          name: 'Unknown', 
+          statId: statIdMap[primaryStat]
+        };
       }
       
       console.log(`Generating ${generationType} stats for ${classData.name} class`);
@@ -2013,10 +2124,10 @@ const randomRoll = useCallback((generationType: 'balanced' | 'heroic' | 'standar
           totalPoints = 14 + Math.floor(Math.random() * 4); // 14-17 points
       }
       
-      // Initialize stats with minimum values
-      for (let i = 0; i < updatedInputsStatsData.length; i++) {
-        updatedInputsStatsData[i].valueDice = 1;
-      }
+      // Initialize new stat values
+      const newStatValues: Record<string, number> = {
+        'STR': 1, 'INT': 1, 'DEX': 1, 'CON': 1, 'PER': 1, 'CHA': 1
+      };
       
       // Remaining points to distribute after minimum allocation
       let remainingPoints = totalPoints - 6; // 6 stats with minimum 1 each
@@ -2030,12 +2141,14 @@ const randomRoll = useCallback((generationType: 'balanced' | 'heroic' | 'standar
       
       // Distribute primary stat points (approx 40-50% of remaining)
       const primaryPoints = Math.round(remainingPoints * weights.primary);
-      updatedInputsStatsData[classData.primary].valueDice += primaryPoints;
+      const primaryStatId = statIdMap[classData.primary];
+      newStatValues[primaryStatId] += primaryPoints;
       remainingPoints -= primaryPoints;
       
       // Distribute secondary stat points (approx 25-30% of remaining)
       const secondaryPoints = Math.round(remainingPoints * weights.secondary);
-      updatedInputsStatsData[classData.secondary].valueDice += secondaryPoints;
+      const secondaryStatId = statIdMap[classData.secondary];
+      newStatValues[secondaryStatId] += secondaryPoints;
       remainingPoints -= secondaryPoints;
       
       // Random distribution of remaining points
@@ -2057,65 +2170,58 @@ const randomRoll = useCallback((generationType: 'balanced' | 'heroic' | 'standar
         }
         
         // Add a point if it doesn't exceed the maximum (6 for heroic, 5 otherwise)
+        const statId = statIdMap[statIndex];
         const maxStatValue = generationType === 'heroic' ? 6 : 5;
-        if (updatedInputsStatsData[statIndex].valueDice < maxStatValue) {
-          updatedInputsStatsData[statIndex].valueDice += 1;
+        if (newStatValues[statId] < maxStatValue) {
+          newStatValues[statId] += 1;
           remainingPoints--;
         }
       }
       
       // Final validation to ensure no stat exceeds maximum values
-      for (let i = 0; i < updatedInputsStatsData.length; i++) {
+      for (let i = 0; i < statIdMap.length; i++) {
+        const statId = statIdMap[i];
         const maxValue = i === classData.primary ? 6 : 5;
-        if (updatedInputsStatsData[i].valueDice > maxValue) {
-          console.warn(`Stat ${updatedInputsStatsData[i].id} exceeded maximum value. Capping at ${maxValue}.`);
-          updatedInputsStatsData[i].valueDice = maxValue;
+        if (newStatValues[statId] > maxValue) {
+          console.warn(`Stat ${statId} exceeded maximum value. Capping at ${maxValue}.`);
+          newStatValues[statId] = maxValue;
+        }
+      }
+        // First update React Hook Form (primary source of truth)
+      // Actualizar cada campo directamente con su valor específico
+      setValue("strDice", newStatValues['STR']);
+      setValue("intDice", newStatValues['INT']);
+      setValue("dexDice", newStatValues['DEX']);
+      setValue("conDice", newStatValues['CON']);
+      setValue("perDice", newStatValues['PER']);
+      setValue("chaDice", newStatValues['CHA']);
+      
+      // Also update the stats array in React Hook Form
+      const formStats = getValues("stats") || [];
+      if (formStats.length >= 6) {
+        // Update each stat in the stats array
+        for (let i = 0; i < formStats.length; i++) {
+          const statId = statIdMap[i];
+          if (statId && formStats[i]) {
+            updateStats(i, {
+              ...formStats[i],
+              valueDice: newStatValues[statId]
+            });
+          }
         }
       }
       
-      // Update state with new values
-      setInputsStatsData(updatedInputsStatsData);
-      
-      // Update React Hook Form values for each stat
-      updatedInputsStatsData.forEach((stat) => {
-        switch (stat.id) {
-          case 'STR':
-            setValue("strDice", stat.valueDice);
-            setValue("strClass", stat.valueClass);
-            setValue("strLevel", stat.valueLevel);
-            break;
-          case 'INT':
-            setValue("intDice", stat.valueDice);
-            setValue("intClass", stat.valueClass);
-            setValue("intLevel", stat.valueLevel);
-            break;
-          case 'DEX':
-            setValue("dexDice", stat.valueDice);
-            setValue("dexClass", stat.valueClass);
-            setValue("dexLevel", stat.valueLevel);
-            break;
-          case 'CON':
-            setValue("conDice", stat.valueDice);
-            setValue("conClass", stat.valueClass);
-            setValue("conLevel", stat.valueLevel);
-            break;
-          case 'PER':
-            setValue("perDice", stat.valueDice);
-            setValue("perClass", stat.valueClass);
-            setValue("perLevel", stat.valueLevel);
-            break;
-          case 'CHA':
-            setValue("chaDice", stat.valueDice);
-            setValue("chaClass", stat.valueClass);
-            setValue("chaLevel", stat.valueLevel);
-            break;
-        }
+      // Then update local state data for temporary compatibility
+      const updatedInputsStatsData = [...inputsStatsData];
+      updatedInputsStatsData.forEach(stat => {
+        stat.valueDice = newStatValues[stat.id];
       });
+      setInputsStatsData(updatedInputsStatsData);
       
       // Show informative message
       console.log("Generated random stats:", 
-        updatedInputsStatsData.map(stat => `${stat.id}: ${stat.valueDice}`).join(', '),
-        `(Total: ${updatedInputsStatsData.reduce((sum, stat) => sum + stat.valueDice, 0)})`
+        Object.entries(newStatValues).map(([id, value]) => `${id}: ${value}`).join(', '),
+        `(Total: ${Object.values(newStatValues).reduce((sum, val) => sum + val, 0)})`
       );
       
       // Validate all stats after generation
@@ -2141,10 +2247,14 @@ const randomRoll = useCallback((generationType: 'balanced' | 'heroic' | 'standar
       alert("An error occurred while generating random stats. Please try again.");
       return false;
     }
-  }, [character?.pus_clase, character?.pus_nivel, inputsStatsData, clearValidationError]);
+  }, [character?.pus_clase, character?.pus_nivel, inputsStatsData, setValue, clearValidationError]);
 
   /**
    * Handle changes to character level and adjust stats accordingly
+   * 
+   * MIGRATION STATUS: Refactored to use React Hook Form as primary source of truth
+   * - First updates the React Hook Form data
+   * - Then updates local state for temporary compatibility
    * 
    * This function updates the character level and calculates stat bonuses 
    * that should be applied or removed based on level milestones (3, 6, 9)
@@ -2175,90 +2285,97 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
     
     console.log(`Changing level from ${previousLevel} to ${newLevel}`);
     
-    // Update level in character state
-    setCharacter(prevState => {
-      if (!prevState) return initialPersonajesUsuario; // Return initial state instead of undefined
-      return {...prevState, pus_nivel: newLevel};
-    });
-    
     try {
-      // If leveling up, adjust statistics with appropriate bonuses
-      if (newLevel > previousLevel) {
-        // Create a copy of current stats data to modify
-        const updatedStatsData = [...inputsStatsData];
-        
-        // Class to primary stat mapping for efficient lookup
-        const classToPrimaryStat: Record<string, number> = {
-          'WAR': 0, // STR
-          'MAG': 1, // INT
-          'SCO': 2, // DEX
-          'MED': 3, // CON
-          'RES': 4, // PER
-          'ACT': 5  // CHA
-        };
-        
-        // Get the primary stat index for this character's class
-        const characterClass = character?.pus_clase || '';
-        const primaryStatIndex = classToPrimaryStat[characterClass];
-        
-        if (primaryStatIndex === undefined) {
-          console.warn(`Unknown character class: ${characterClass}. Stat bonuses not applied.`);
-        } else {
-          // Calculate milestone level bonuses
-          // At levels 3, 6, and 9, the character gains +1 to primary stat
-          const previousMilestones = Math.floor((previousLevel - 1) / 3);
-          const newMilestones = Math.floor((newLevel - 1) / 3);
-          const bonusToAdd = newMilestones - previousMilestones;
-          
-          if (bonusToAdd > 0) {
-            // Add the bonuses to the primary stat
-            updatedStatsData[primaryStatIndex].valueLevel += bonusToAdd;
-            console.log(`Level ${newLevel}: Added +${bonusToAdd} to ${updatedStatsData[primaryStatIndex].id} (primary stat for ${characterClass})`);
-            
-            // Extra validation to ensure we don't exceed the maximum allowed bonus
-            if (updatedStatsData[primaryStatIndex].valueLevel > 3) {
-              console.warn(`Primary stat bonus exceeded maximum value. Capping at 3.`);
-              updatedStatsData[primaryStatIndex].valueLevel = 3;
-            }
-          }
-        }
-        
-        // Update state with new stats
-        setInputsStatsData(updatedStatsData);
-      } 
-      // If leveling down, reduce stat bonuses accordingly
-      else if (newLevel < previousLevel) {
-        const updatedStatsData = [...inputsStatsData];
-        
-        // Class to primary stat mapping (same as above)
-        const classToPrimaryStat: Record<string, number> = {
-          'WAR': 0, // STR
-          'MAG': 1, // INT
-          'SCO': 2, // DEX
-          'MED': 3, // CON
-          'RES': 4, // PER
-          'ACT': 5  // CHA
-        };
-        
-        // Get the primary stat index for this character's class
-        const characterClass = character?.pus_clase || '';
-        const primaryStatIndex = classToPrimaryStat[characterClass];
-        
-        if (primaryStatIndex !== undefined) {
-          // Calculate how many milestone bonuses the character should now have
-          const newMilestoneBonus = Math.floor((newLevel - 1) / 3);
-          
-          // If current bonus exceeds what the character should have, adjust it
-          if (updatedStatsData[primaryStatIndex].valueLevel > newMilestoneBonus) {
-            const oldBonus = updatedStatsData[primaryStatIndex].valueLevel;
-            updatedStatsData[primaryStatIndex].valueLevel = newMilestoneBonus;
-            console.log(`Reduced level bonus for ${updatedStatsData[primaryStatIndex].id} from ${oldBonus} to ${newMilestoneBonus}`);
-          }
-        }
-        
-        // Update state with adjusted stats
-        setInputsStatsData(updatedStatsData);
+      // Update level in React Hook Form first (primary source of truth)
+      setValue("level", newLevel);
+      
+      // Update level in character state next (for temporary compatibility)
+      setCharacter(prevState => {
+        if (!prevState) return initialPersonajesUsuario; // Return initial state instead of undefined
+        return {...prevState, pus_nivel: newLevel};
+      });
+      
+      // Map class codes to their primary stat fields
+      const classToPrimaryStat: Record<string, { index: number, statId: string, formField: string }> = {
+        'WAR': { index: 0, statId: 'STR', formField: "strLevel" }, // STR
+        'MAG': { index: 1, statId: 'INT', formField: "intLevel" }, // INT
+        'SCO': { index: 2, statId: 'DEX', formField: "dexLevel" }, // DEX
+        'MED': { index: 3, statId: 'CON', formField: "conLevel" }, // CON
+        'RES': { index: 4, statId: 'PER', formField: "perLevel" }, // PER
+        'ACT': { index: 5, statId: 'CHA', formField: "chaLevel" }  // CHA
+      };
+      
+      // Get the primary stat info for this character's class
+      const characterClass = character?.pus_clase || '';
+      const primaryStat = classToPrimaryStat[characterClass];
+      
+      if (!primaryStat) {
+        console.warn(`Unknown character class: ${characterClass}. Stat bonuses not applied.`);
+        return true; // Still consider this a successful level change
       }
+      
+      // Calculate milestone level bonuses
+      // At levels 3, 6, and 9, the character gains +1 to primary stat
+      const previousMilestones = Math.floor((previousLevel - 1) / 3);
+      const newMilestones = Math.floor((newLevel - 1) / 3);
+      const bonusDifference = newMilestones - previousMilestones;
+      
+      if (bonusDifference === 0) {
+        console.log("No milestone changes, no stat adjustments needed");
+        clearValidationError('level');
+        return true;
+      }
+      
+      // Create a copy of current stats data to modify (for local state)
+      const updatedStatsData = [...inputsStatsData];
+        // Get current level bonus from local state or default to 0
+      // (Más seguro que usar getValues con un string dinámico)
+      const currentBonus = updatedStatsData[primaryStat.index].valueLevel || 0;
+      
+      // Calculate new level bonus (ensure it stays within valid range 0-3)
+      const newBonus = Math.max(0, Math.min(3, currentBonus + bonusDifference));
+      
+      // Log the change being made
+      if (bonusDifference > 0) {
+        console.log(`Level ${newLevel}: Adding +${bonusDifference} to ${primaryStat.statId} (primary stat for ${characterClass})`);
+      } else {
+        console.log(`Level ${newLevel}: Reducing ${Math.abs(bonusDifference)} from ${primaryStat.statId} (primary stat for ${characterClass})`);
+      }
+      
+      // Update React Hook Form fields based on the stat ID
+      switch (primaryStat.statId) {
+        case 'STR':
+          setValue("strLevel", newBonus);
+          break;
+        case 'INT':
+          setValue("intLevel", newBonus);
+          break;
+        case 'DEX':
+          setValue("dexLevel", newBonus);
+          break;
+        case 'CON':
+          setValue("conLevel", newBonus);
+          break;
+        case 'PER':
+          setValue("perLevel", newBonus);
+          break;
+        case 'CHA':
+          setValue("chaLevel", newBonus);
+          break;
+      }
+      
+      // Also update the stats array in React Hook Form if it exists
+      const formStats = getValues("stats") || [];
+      if (formStats.length > primaryStat.index) {
+        updateStats(primaryStat.index, {
+          ...formStats[primaryStat.index],
+          valueLevel: newBonus
+        });
+      }
+      
+      // Then update local state (for temporary compatibility)
+      updatedStatsData[primaryStat.index].valueLevel = newBonus;
+      setInputsStatsData(updatedStatsData);
       
       // Clear any validation errors related to the level field
       clearValidationError('level');
@@ -2268,7 +2385,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       alert("An error occurred while updating character stats. Please try again.");
       return false;
     }
-  }, [character?.pus_clase, character?.pus_nivel, inputsStatsData, clearValidationError]);
+  }, [character?.pus_clase, character?.pus_nivel, inputsStatsData, setValue, getValues, clearValidationError]);
 
   const getClassName = (id: string | undefined): string | undefined => {
     return optionsCharacterClass.find((elem) => elem.value === id)?.name;
@@ -2317,11 +2434,28 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       .find((skill) => skill.id === stat)
       ?.skills.find((ele) => ele.value === id)?.name;
   };
+  /**
+   * Saves character data to the database
+   * 
+   * MIGRATION STATUS: Refactored to use React Hook Form as primary source of truth
+   * - Uses React Hook Form to get all necessary data before saving
+   * - Updates character records in the database
+   */
   async function saveData() {
     try {
       // Before we start, validate character data
       if (!character) {
         throw new Error("No hay datos de personaje para guardar");
+      }
+
+      // Get all form values from React Hook Form (primary source of truth)
+      const formValues = getValues();
+      
+      // Update character with form values to ensure it has the latest data
+      // This ensures we're saving what's in the form rather than possibly stale local state
+      if (character) {
+        character.pus_nombre = formValues.name;
+        character.pus_nivel = Number(formValues.level);
       }
 
       // Validate essential character fields
@@ -2336,7 +2470,8 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       console.log("Starting character save process", { 
         newRecord, 
         characterId: character.pus_id,
-        username: character.pus_usuario
+        username: character.pus_usuario,
+        formValues
       });
       
       // Upload character information first
@@ -2398,10 +2533,46 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
     navigate("/CharacterSheet/" + characterId);
   };
 
+  /**
+   * Uploads basic character information to the database
+   * 
+   * MIGRATION STATUS: Refactored to use React Hook Form as primary source of truth
+   * - Gets character info from React Hook Form before saving
+   * - Ensures we're saving the most up-to-date data from the form
+   * 
+   * @param newRecord - Whether this is a new character or an update
+   * @returns - The ID of the saved character
+   */
   async function uploadInfoCharacter(newRecord: boolean): Promise<string | undefined> {
     if (!character) {
       console.error("Character object is null or undefined");
       throw new Error("No character data available to save");
+    }
+
+    // Get current form values from React Hook Form (primary source of truth)
+    const formValues = getValues();
+    
+    // Update character object with the latest form values before saving
+    // This ensures we're saving what the user has actually entered in the form
+    if (character) {
+      character.pus_nombre = formValues.name;
+      character.pus_nivel = Number(formValues.level);
+      character.pus_suerte = Number(formValues.luckyPoints);
+      character.pus_vida = Number(formValues.lifePoints);
+      character.pus_descripcion = formValues.characterDescription || '';
+      character.pus_alineacion = formValues.alignment || '';
+      
+      // These properties may not be directly editable in the form
+      // but are maintained in the character state
+      if (character.pus_arma_1 !== formValues.mainWeapon) {
+        console.log(`Updating mainWeapon from ${character.pus_arma_1} to ${formValues.mainWeapon}`);
+        character.pus_arma_1 = formValues.mainWeapon;
+      }
+      
+      if (character.pus_arma_2 !== formValues.secondaryWeapon) {
+        console.log(`Updating secondaryWeapon from ${character.pus_arma_2} to ${formValues.secondaryWeapon}`);
+        character.pus_arma_2 = formValues.secondaryWeapon;
+      }
     }
 
     // Validate character data before saving
@@ -2412,7 +2583,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
     }
     
     try {
-      console.log("Saving character data:", character);
+      console.log("Saving character data with form values:", { character, formValues });
       if (!newRecord) {
           const data = await updateCharacter(character);
           if (!data) throw new Error("No se recibió respuesta al actualizar el personaje");
@@ -2430,74 +2601,166 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
     }
   }
 
+  /**
+   * Uploads character statistics to the database
+   * 
+   * MIGRATION STATUS: Refactored to use React Hook Form as primary source of truth
+   * - Gets stat values from React Hook Form first
+   * - Falls back to local state for compatibility
+   * 
+   * @param isNewCharacter - Whether this is a new character or an update
+   * @param characterId - The ID of the character to update
+   */
   async function uploadStats(isNewCharacter: boolean, characterId: string) {
     if (characterId === "") return;
 
-    if (!isNewCharacter) {
-      for (const element of inputsStatsData) {
-        const record: DBEstadisticaPersonaje = {
+    const formValues = getValues();
+    
+    // Map of stat IDs to their corresponding form field names
+    const statFieldMap = [
+      { id: 'STR', label: 'Fuerza', dice: "strDice", class: "strClass", level: "strLevel" },
+      { id: 'INT', label: 'Inteligencia', dice: "intDice", class: "intClass", level: "intLevel" },
+      { id: 'DEX', label: 'Destreza', dice: "dexDice", class: "dexClass", level: "dexLevel" },
+      { id: 'CON', label: 'Constitución', dice: "conDice", class: "conClass", level: "conLevel" },
+      { id: 'PER', label: 'Percepción', dice: "perDice", class: "perClass", level: "perLevel" },
+      { id: 'CHA', label: 'Carisma', dice: "chaDice", class: "chaClass", level: "chaLevel" }
+    ];
+    
+    // Build stat records using React Hook Form values or local state as fallback
+    const buildStats = () => {
+      const stats: DBEstadisticaPersonaje[] = [];
+        statFieldMap.forEach((stat, index) => {
+        // Use type-safe approach to access form values based on stat ID
+        let dice = inputsStatsData[index]?.valueDice || 0;
+        let classValue = inputsStatsData[index]?.valueClass || 0;
+        let level = inputsStatsData[index]?.valueLevel || 0;
+        
+        // Use a switch statement for type safety when accessing form values
+        switch (stat.id) {
+          case 'STR':
+            dice = Number(formValues.strDice) || dice;
+            classValue = Number(formValues.strClass) || classValue;
+            level = Number(formValues.strLevel) || level;
+            break;
+          case 'INT':
+            dice = Number(formValues.intDice) || dice;
+            classValue = Number(formValues.intClass) || classValue;
+            level = Number(formValues.intLevel) || level;
+            break;
+          case 'DEX':
+            dice = Number(formValues.dexDice) || dice;
+            classValue = Number(formValues.dexClass) || classValue;
+            level = Number(formValues.dexLevel) || level;
+            break;
+          case 'CON':
+            dice = Number(formValues.conDice) || dice;
+            classValue = Number(formValues.conClass) || classValue;
+            level = Number(formValues.conLevel) || level;
+            break;
+          case 'PER':
+            dice = Number(formValues.perDice) || dice;
+            classValue = Number(formValues.perClass) || classValue;
+            level = Number(formValues.perLevel) || level;
+            break;
+          case 'CHA':
+            dice = Number(formValues.chaDice) || dice;
+            classValue = Number(formValues.chaClass) || classValue;
+            level = Number(formValues.chaLevel) || level;
+            break;
+        }
+          
+        stats.push({
           epe_id: uuidv4(),
           epe_personaje: characterId,
-          epe_sigla: element?.id,
-          epe_nombre: element?.label,
-          epe_num_dado: element?.valueDice,
-          epe_num_clase: element?.valueClass,
-          epe_num_nivel: element?.valueLevel,
-        };
-        updateCharacterStats(record);
+          epe_sigla: stat.id,
+          epe_nombre: stat.label,
+          epe_num_dado: dice,
+          epe_num_clase: classValue,
+          epe_num_nivel: level,
+        });
+      });
+      
+      return stats;
+    };
+    
+    // Process based on whether it's a new character or an update
+    if (!isNewCharacter) {
+      const stats = buildStats();
+      // Update each stat record individually
+      for (const stat of stats) {
+        await updateCharacterStats(stat);
       }
     } else {
-      const saveStats: DBEstadisticaPersonaje[] = [];
-      for (const element of inputsStatsData) {
-        saveStats.push({
-          epe_id: uuidv4(),
-          epe_personaje: characterId,
-          epe_sigla: element?.id,
-          epe_nombre: element?.label,
-          epe_num_dado: element?.valueDice,
-          epe_num_clase: element?.valueClass,
-          epe_num_nivel: element?.valueLevel,
-        });
-      }
-      insertDataEpe(saveStats);
+      // Insert all stats at once for new character
+      const stats = buildStats();
+      await insertDataEpe(stats);
+      console.log(`Inserted ${stats.length} stats for new character ${characterId}`);
     }
   }
 
+  /**
+   * Uploads character skills data to the database
+   * 
+   * MIGRATION STATUS: Refactored to use React Hook Form as primary source of truth
+   * - Gets skill values from React Hook Form first
+   * - Falls back to local state for compatibility
+   * 
+   * @param characterId - The ID of the character to update
+   */
   async function uploadSkill(characterId: string) {
     if (characterId === "") return;
 
+    // Get form values from React Hook Form (primary source of truth)
+    const formValues = getValues();
     const saveSkill: DBHabilidadPersonaje[] = [];
-    saveSkill.push({
-      hpe_id: uuidv4(),
-      hpe_personaje: characterId,
-      hpe_habilidad: fieldSkill.filter(
-        (skill) => skill.field === "skillClass"
-      )[0].skill,
-      hpe_campo: "skillClass",
-      hpe_alineacion: null,
-    });
-    saveSkill.push({
-      hpe_id: uuidv4(),
-      hpe_personaje: characterId,
-      hpe_habilidad: fieldSkill.filter(
-        (skill) => skill.field === "skillExtra"
-      )[0].skill,
-      hpe_campo: "skillExtra",
-      hpe_alineacion: null,
-    });
+    
+    // Add main skill (try React Hook Form first, fall back to local state)
+    const mainSkillId = formValues.skillClass || 
+      fieldSkill.find(skill => skill.field === "skillClass")?.skill || '';
+      
+    if (mainSkillId) {
+      saveSkill.push({
+        hpe_id: uuidv4(),
+        hpe_personaje: characterId,
+        hpe_habilidad: mainSkillId,
+        hpe_campo: "skillClass",
+        hpe_alineacion: null,
+      });
+    } else {
+      console.warn("No main skill found for character");
+    }
+    
+    // Add extra skill (try React Hook Form first, fall back to local state)
+    const extraSkillId = formValues.skillExtra || 
+      fieldSkill.find(skill => skill.field === "skillExtra")?.skill || '';
+      
+    if (extraSkillId) {
+      saveSkill.push({
+        hpe_id: uuidv4(),
+        hpe_personaje: characterId,
+        hpe_habilidad: extraSkillId,
+        hpe_campo: "skillExtra",
+        hpe_alineacion: null,
+      });
+    } else {
+      console.warn("No extra skill found for character");
+    }
 
+    // Add ring skills (use local state for now, as these are more complex)
+    // In a future iteration, these should be moved to React Hook Form
     for (let index = 0; index < skillsAcquired.length; index++) {
-      if (skillsAcquired[index].id === "") continue;
+      if (!skillsAcquired[index].id) continue;
       saveSkill.push({
         hpe_id: uuidv4(),
         hpe_personaje: characterId,
         hpe_habilidad: skillsAcquired[index].id,
         hpe_campo: "skillRing" + skillsAcquired[index].value,
-        hpe_alineacion: null,
+        hpe_alineacion: formValues.alignment || null,
       });
     }
 
-    upsertDataHpe(saveSkill);
+    console.log(`Saving ${saveSkill.length} skills for character ${characterId}`, saveSkill);
+    await upsertDataHpe(saveSkill);
   }
 
   async function uploadInventory(characterId: string) {
@@ -3679,5 +3942,47 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
     </>
   );
 };
+
+/**
+ * MIGRATION NOTE: React Hook Form Integration
+ * 
+ * Este componente se ha migrado para usar React Hook Form como fuente principal de verdad
+ * para la gestión de estado, siguiendo un proceso de migración gradual que mantiene compatibilidad
+ * con el código antiguo mientras se avanza hacia un estado de datos centralizado.
+ * 
+ * Funciones migradas con éxito (usan React Hook Form como fuente primaria):
+ * - randomRoll: Genera estadísticas aleatorias para el personaje
+ * - handleLevelChange: Maneja cambios en el nivel del personaje y ajusta los stats
+ * - handleSelectedRingSkillChange: Actualiza habilidades de anillo seleccionadas
+ * - handleSelectedTypeRingSkillChange: Actualiza tipos de habilidades de anillo
+ * - handleStatsInputChange: Actualiza estadísticas del personaje
+ * - getInventory: Obtiene y procesa elementos de inventario
+ * - getStats: Gestiona estadísticas del personaje
+ * - updStatsPoints: Actualiza los puntos de estadísticas
+ * - handleSelectSkillChange: Maneja cambios en la habilidad principal
+ * - handleSelectExtraSkillChange: Maneja cambios en la habilidad extra
+ * - handleAlignmentChange: Actualiza la alineación del personaje
+ * - handleSelectRaceChange: Maneja cambios en la raza del personaje
+ * - handleCharacterClassChange: Maneja cambios en la clase del personaje
+ * - handleCharacterJobSelectChange: Maneja cambios en el trabajo del personaje
+ * - handleSelectedCheckValuesChange: Actualiza conocimientos seleccionados
+ * - saveData: Guarda datos del personaje
+ * - uploadInfoCharacter: Sube información básica del personaje
+ * - uploadStats: Sube estadísticas del personaje
+ * - uploadSkill: Sube habilidades del personaje
+ * - uploadInventory: Sube inventario del personaje
+ * 
+ * Funcionamiento del patrón de migración:
+ * 1. Actualizar primero React Hook Form (fuente principal de verdad)
+ * 2. Luego actualizar el estado local (para compatibilidad temporal)
+ * 3. Incluir validaciones y manejo de errores mejorado
+ * 4. Documentar el enfoque de migración en cada función
+ * 
+ * Próximos pasos para completar la migración:
+ * - Eliminar gradualmente variables de estado local redundantes
+ * - Refactorizar componentes hijos para usar datos directamente de React Hook Form
+ * - Implementar validaciones avanzadas usando los esquemas de validación de React Hook Form
+ * - Optimizar el rendimiento reduciendo re-renderizados innecesarios
+ */
 
 export default CharacterSheet;

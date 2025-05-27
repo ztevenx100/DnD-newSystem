@@ -245,7 +245,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       );
     }
   };
-  // MIGRATION: Local state removed - using React Hook Form as single source of truth
   // Default stats data for fallback scenarios only
   const defaultStatsData: InputStats[] = [
     { id: 'STR', label: 'Fuerza', description: 'Fuerza física y potencia muscular', valueDice: 1, valueClass: 0, valueLevel: 0 },
@@ -360,20 +359,17 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       }
     }
   });
-    const { 
+  
+  const {
     fields: _skillsFields // Usando prefijo _ para indicar que es intencionalmente no utilizada
   } = useFieldArray({
     control,
     name: "skills"
   });
-  
-  const [characterImage, setCharacterImage] = useState<string | undefined>(
+    const [characterImage, setCharacterImage] = useState<string | undefined>(
     undefined
   );
-  // Mantenemos estos estados por ahora para compatibilidad con el código existente,
-  // pero deberían migrarse completamente a React Hook Form. 
-  // TODO: Migrar estos estados a React Hook Form para mantener una única fuente de verdad
-  // MIGRATION: Local state removed - using React Hook Form as single source of truth
+  
   // Default skills data for fallback scenarios only
   const defaultSkillsData: SkillsAcquired[] = [
     { id: "", value: "0", name: "", description: "", ring: "" },
@@ -576,12 +572,7 @@ const getInventory = useCallback(async () => {
   }, [params.id, appendInventory, getValues, setValue]);
   /**
    * Maneja el cambio en la selección de una habilidad para un anillo específico
-   * Actualiza la habilidad seleccionada usando el hook useRingSkills
-   * 
-   * MIGRATION STATUS: Fully migrated to use useRingSkills hook
-   * - Uses ringSkills.setRingSkillName for direct updates
-   * - Maintains legacy state update for backward compatibility
-   * 
+   * Actualiza la habilidad seleccionada usando el hook useRingSkills   * 
    * @param id - ID/índice del anillo que está siendo modificado
    * @param ring - Tipo de anillo seleccionado
    * @param skill - ID de la habilidad seleccionada
@@ -605,8 +596,6 @@ const getInventory = useCallback(async () => {
       ringSkills.setRingSkillName(id, skill, ring, stat);
       console.log(`Habilidad de anillo ${id} actualizada en React Hook Form usando ringSkills hook`);
       
-      // MIGRATION: Removed local state update - using React Hook Form as single source of truth
-      
       // Limpiar cualquier error de validación relacionado con este anillo
       clearValidationError(`ringSkill${id}`);
     } catch (error) {
@@ -616,12 +605,7 @@ const getInventory = useCallback(async () => {
   /**
    * Maneja el cambio en el tipo de habilidad del anillo seleccionado
    * Actualiza el tipo de anillo usando el hook useRingSkills
-   * 
-   * MIGRATION STATUS: Fully migrated to use useRingSkills hook
-   * - Uses ringSkills.updateRingType for direct updates
-   * - Updates local skill list for compatibility with current UI
-   * - Preserves local state update temporarily
-   * 
+   *
    * @param id - ID/índice del anillo que está siendo modificado
    * @param type - Tipo de habilidad seleccionado para el anillo
    */
@@ -666,11 +650,8 @@ const getInventory = useCallback(async () => {
           ...newList[ringIndex],
           skills: skills
         };
-        
         return newList;
       });
-      
-      // MIGRATION: Removed local state update - using React Hook Form as single source of truth
       
       // Limpiar cualquier error de validación relacionado con este anillo
       clearValidationError(`ringSkill${id}`);
@@ -683,7 +664,6 @@ const getInventory = useCallback(async () => {
     
     if (data !== null) {
       const updatedFieldSkill = fieldSkill.map(item => ({...item}));
-      // MIGRATION: Removed updatedSkills array - using React Hook Form through ringSkills hook
 
       let characterSkills: DBHabilidadPersonaje[] = [];
       if (params.id) {
@@ -721,16 +701,13 @@ const getInventory = useCallback(async () => {
           skill.hpe_campo.startsWith("skillRing") && skill.hpe_habilidad === elem.id);
           if (existingRingSkill) {
             const ringNumber = existingRingSkill.hpe_campo.replace("skillRing", "");
-            
             handleSelectedTypeRingSkillChange(ringNumber, elem.estadistica_base);
             
-            // MIGRATION: Use React Hook Form through ringSkills hook instead of local state
             ringSkills.setRingSkillName(ringNumber, elem.sigla, elem.estadistica_base, elem.estadistica_base);
           }
         }
       });
       
-      // MIGRATION: Removed local state update - using React Hook Form as single source of truth
       setFieldSkill(updatedFieldSkill);
     }
   }, [params.id, handleSelectedTypeRingSkillChange, setValue]);
@@ -808,7 +785,6 @@ const getInventory = useCallback(async () => {
           setValue("chaLevel", data[5].epe_num_nivel);
         }
         
-        // MIGRATION: Removed local state update - using React Hook Form as single source of truth
         console.log("React Hook Form estadísticas actualizadas desde la base de datos");
       } else {
         console.warn("No se encontraron datos de estadísticas para cargar");
@@ -1309,7 +1285,6 @@ const getInventory = useCallback(async () => {
       }
     });
     
-    // MIGRATION: Removed local state update - using React Hook Form as single source of truth
     console.log("Estadísticas actualizadas correctamente en React Hook Form");
   };
   /**
@@ -1518,8 +1493,6 @@ const getInventory = useCallback(async () => {
         setValue(fields.class as keyof CharacterForm, newInputStats.valueClass);
         setValue(fields.level as keyof CharacterForm, newInputStats.valueLevel);
       }
-      
-      // MIGRATION: Removed local state update - using React Hook Form as single source of truth
       
       // Validate the updated stat (no alerts during input to avoid excessive popups)
       const validationResult = validateSingleStat(newInputStats.id, false);
@@ -1896,11 +1869,7 @@ const getInventory = useCallback(async () => {
   /**
    * Generates random stats for a character based on their class and the selected generation type
    * 
-   * MIGRATION STATUS: Refactored to use React Hook Form as primary source of truth
-   * - First sets React Hook Form values directly
-   * - Then updates local state for temporary compatibility
-   * 
-   * @param generationType - The type of stat generation to use
+   * * @param generationType - The type of stat generation to use
    *   - 'balanced': Provides a slightly higher primary stat (default)
    *   - 'heroic': Generates higher stats across the board
    *   - 'standard': Completely random stats within normal range
@@ -2089,10 +2058,6 @@ const randomRoll = useCallback((generationType: 'balanced' | 'heroic' | 'standar
   /**
    * Handle changes to character level and adjust stats accordingly
    * 
-   * MIGRATION STATUS: Refactored to use React Hook Form as primary source of truth
-   * - First updates the React Hook Form data
-   * - Then updates local state for temporary compatibility
-   * 
    * This function updates the character level and calculates stat bonuses 
    * that should be applied or removed based on level milestones (3, 6, 9)
    * 
@@ -2160,8 +2125,8 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       if (bonusDifference === 0) {
         console.log("No milestone changes, no stat adjustments needed");
         clearValidationError('level');
-        return true;      }
-        // MIGRATION: Get current level bonus from React Hook Form instead of local state
+        return true;
+      }
       const levelFormStats = getValues("stats") || [];
       const currentBonus = levelFormStats[primaryStat.index]?.valueLevel || 0;
       
@@ -2205,8 +2170,6 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
           valueLevel: newBonus
         });
       }
-      
-      // MIGRATION: Removed local state update - using React Hook Form as single source of truth
       
       // Clear any validation errors related to the level field
       clearValidationError('level');
@@ -2267,10 +2230,6 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
   };
   /**
    * Saves character data to the database
-   * 
-   * MIGRATION STATUS: Refactored to use React Hook Form as primary source of truth
-   * - Uses React Hook Form to get all necessary data before saving
-   * - Updates character records in the database
    */
   async function saveData() {
     try {
@@ -2375,10 +2334,6 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
   /**
    * Uploads basic character information to the database
    * 
-   * MIGRATION STATUS: Refactored to use React Hook Form as primary source of truth
-   * - Gets character info from React Hook Form before saving
-   * - Ensures we're saving the most up-to-date data from the form
-   * 
    * @param newRecord - Whether this is a new character or an update
    * @returns - The ID of the saved character
    */
@@ -2439,13 +2394,8 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       throw error;
     }
   }
-
   /**
    * Uploads character statistics to the database
-   * 
-   * MIGRATION STATUS: Refactored to use React Hook Form as primary source of truth
-   * - Gets stat values from React Hook Form first
-   * - Falls back to local state for compatibility
    * 
    * @param isNewCharacter - Whether this is a new character or an update
    * @param characterId - The ID of the character to update
@@ -2500,13 +2450,8 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       console.log(`Inserted ${stats.length} stats for new character ${characterId}`);
     }
   }
-
   /**
    * Uploads character skills data to the database
-   * 
-   * MIGRATION STATUS: Refactored to use React Hook Form as primary source of truth
-   * - Gets skill values from React Hook Form first
-   * - Falls back to local state for compatibility
    * 
    * @param characterId - The ID of the character to update
    */
@@ -2587,14 +2532,8 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
 
     upsertDataInp(saveItems);
     deleteItemInventory(deleteItems);
-  }
-  /**
+  }  /**
    * Handles the form submission, performing validations and preparing data for saving
-   * 
-   * MIGRATION STATUS: Fully migrated to use React Hook Form validation
-   * - Leverages Yup schema validation through React Hook Form resolver
-   * - Uses ringSkills hook to get the most up-to-date skill data
-   * - Provides better error feedback with categorized errors
    * 
    * @param data The form data submitted
    */
@@ -2778,13 +2717,8 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
     onOpen();
     console.log("onSubmitForm: Modal debería estar abierto ahora, isOpen=", isOpen);
   };
-
   /**
    * Validates the character form data, checking all required fields and constraints
-   * 
-   * MIGRATION STATUS: Refactored to use React Hook Form as primary source of truth
-   * - Uses form values as main source of validation
-   * - Uses helper functions like getInputStatsFromForm
    * 
    * @returns Array of field names with validation errors
    */
@@ -2900,13 +2834,10 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
     // Remove any duplicate entries
     return [...new Set(fieldsRequired)];
   };
-  
-  /**
+    /**
    * Helper function to get InputStats array from React Hook Form data
    * This ensures that all code that previously used inputsStatsData can work
    * with React Hook Form's data as the source of truth
-   * 
-   * MIGRATION STATUS: Updated to use defaultStatsData fallback instead of removed local state
    */
   const getInputStatsFromForm = useCallback((): InputStats[] => {
     const inputStatsFormStats = getValues("stats") || [];
@@ -2921,14 +2852,9 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       valueLevel: stat.valueLevel
     }));
   }, [getValues, defaultStatsData]);
-
   /**
    * Get the skills from React Hook Form and ensure they are properly formatted
    * This is now a simple wrapper around our custom hook
-   * 
-   * MIGRATION STATUS: Fully migrated to use useRingSkills hook
-   * - Uses the ring skills hook as the sole source of truth
-   * - Maintains compatibility with code expecting this function
    * 
    * @returns Array of skills from the form
    */
@@ -3903,47 +3829,5 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
     </>
   );
 };
-
-/**
- * MIGRATION NOTE: React Hook Form Integration
- * 
- * Este componente se ha migrado para usar React Hook Form como fuente principal de verdad
- * para la gestión de estado, siguiendo un proceso de migración gradual que mantiene compatibilidad
- * con el código antiguo mientras se avanza hacia un estado de datos centralizado.
- * 
- * Funciones migradas con éxito (usan React Hook Form como fuente primaria):
- * - randomRoll: Genera estadísticas aleatorias para el personaje
- * - handleLevelChange: Maneja cambios en el nivel del personaje y ajusta los stats
- * - handleSelectedRingSkillChange: Actualiza habilidades de anillo seleccionadas
- * - handleSelectedTypeRingSkillChange: Actualiza tipos de habilidades de anillo
- * - handleStatsInputChange: Actualiza estadísticas del personaje
- * - getInventory: Obtiene y procesa elementos de inventario
- * - getStats: Gestiona estadísticas del personaje
- * - updStatsPoints: Actualiza los puntos de estadísticas
- * - handleSelectSkillChange: Maneja cambios en la habilidad principal
- * - handleSelectExtraSkillChange: Maneja cambios en la habilidad extra
- * - handleAlignmentChange: Actualiza la alineación del personaje
- * - handleSelectRaceChange: Maneja cambios en la raza del personaje
- * - handleCharacterClassChange: Maneja cambios en la clase del personaje
- * - handleCharacterJobSelectChange: Maneja cambios en el trabajo del personaje
- * - handleSelectedCheckValuesChange: Actualiza conocimientos seleccionados
- * - saveData: Guarda datos del personaje
- * - uploadInfoCharacter: Sube información básica del personaje
- * - uploadStats: Sube estadísticas del personaje
- * - uploadSkill: Sube habilidades del personaje
- * - uploadInventory: Sube inventario del personaje
- * 
- * Funcionamiento del patrón de migración:
- * 1. Actualizar primero React Hook Form (fuente principal de verdad)
- * 2. Luego actualizar el estado local (para compatibilidad temporal)
- * 3. Incluir validaciones y manejo de errores mejorado
- * 4. Documentar el enfoque de migración en cada función
- * 
- * Próximos pasos para completar la migración:
- * - Eliminar gradualmente variables de estado local redundantes
- * - Refactorizar componentes hijos para usar datos directamente de React Hook Form
- * - Implementar validaciones avanzadas usando los esquemas de validación de React Hook Form
- * - Optimizar el rendimiento reduciendo re-renderizados innecesarios
- */
 
 export default CharacterSheet;

@@ -7,6 +7,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 // Custom hooks
 import { characterSchema } from "@features/character-sheet/hooks/useCharacterFormValidation";
 import useRingSkills from "@features/character-sheet/hooks/useRingSkills";
+import { useCharacterStats } from "@features/character-sheet/hooks/useCharacterStats";
 import { CharacterForm } from "@features/character-sheet/types/characterForm";
 
 // NextUI Components
@@ -117,7 +118,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   };
   
   const normalizedUser = normalizeUser(loaderData?.user);
-    const safeData = {
+  const safeData = {
     user: normalizedUser,
     character: loaderData?.character
   };
@@ -231,9 +232,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     setValue,
     getValues,
     control,
-    formState: { errors }
-  } = methods;
-  
+    formState: { errors }  } = methods;
+
   // State to track empty required fields for validation
   const [emptyRequiredFields, setEmptyRequiredFields] = useState<string[]>([]);
   
@@ -263,55 +263,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
    * @param showAlert - Whether to display alerts for validation issues
    * @returns Object with validation status and messages
    */
-  const validateSingleStat = useCallback((statId: string, showAlert = false): {
-    isValid: boolean;
-    message?: string;
-    totalValue: number;
-  } => {
-    // Use our helper function to get the most current stats data
-    const characterStats = getInputStatsFromForm();
-    const stat = characterStats.find(s => s.id === statId);
-    
-    if (!stat) {
-      const errorMsg = `Stat "${statId}" not found`;
-      if (showAlert) alert(errorMsg);
-      return { isValid: false, message: errorMsg, totalValue: 0 };
-    }
-    
-    // Calculate total value
-    const totalValue = stat.valueDice + stat.valueClass + stat.valueLevel;
-    
-    // Validate dice value range (1-10)
-    if (typeof stat.valueDice !== 'number' || isNaN(stat.valueDice) || stat.valueDice < 1 || stat.valueDice > 10) {
-      const errorMsg = `${stat.label}: Base value must be between 1 and 10`;
-      if (showAlert) alert(errorMsg);
-      return { isValid: false, message: errorMsg, totalValue };
-    }
-    
-    // Validate class bonus range (0-3)
-    if (typeof stat.valueClass !== 'number' || isNaN(stat.valueClass) || stat.valueClass < 0 || stat.valueClass > 3) {
-      const errorMsg = `${stat.label}: Class bonus must be between 0 and 3`;
-      if (showAlert) alert(errorMsg);
-      return { isValid: false, message: errorMsg, totalValue };
-    }
-    
-    // Validate level bonus range (0-5)
-    if (typeof stat.valueLevel !== 'number' || isNaN(stat.valueLevel) || stat.valueLevel < 0 || stat.valueLevel > 5) {
-      const errorMsg = `${stat.label}: Level bonus must be between 0 and 5`;
-      if (showAlert) alert(errorMsg);
-      return { isValid: false, message: errorMsg, totalValue };
-    }
-    
-    // Validate total maximum (typically should not exceed 15-18)
-    if (totalValue > 18) {
-      const warningMsg = `${stat.label}: Total value ${totalValue} is unusually high`;
-      console.warn(warningMsg);
-      // This is just a warning, not a validation failure
-    }
-    
-    return { isValid: true, totalValue };
-  }, [getValues]);
-    // Usar useFieldArray para gestionar los arrays en el formulario
+  // validateSingleStat function is now provided by the useCharacterStats hook as characterStats.validateSingleStat
+  // Usar useFieldArray para gestionar los arrays en el formulario
   const { 
     fields: _statsFields, // Usando prefijo _ para indicar que es intencionalmente no utilizada
     update: updateStats
@@ -403,12 +356,25 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [loading, setLoading] = useState<boolean>(true);
-  const [newRecord, setNewRecord] = useState<boolean>(true);
-  const [character, setCharacter] = useState<DBPersonajesUsuario>(
+  const [newRecord, setNewRecord] = useState<boolean>(true);  const [character, setCharacter] = useState<DBPersonajesUsuario>(
     initialPersonajesUsuario
   );
   const navigate = useNavigate();
-  const params = useParams();  // Calculate total stats with useMemo to optimize performance
+  const params = useParams();
+  // Initialize character stats hook - now after all dependencies are declared
+  const characterStats = useCharacterStats({
+    getValues,
+    setValue,
+    updateStats,
+    character: character || initialPersonajesUsuario,
+    optionsCharacterJob: optionsCharacterJob.filter(option => option.extraPoint !== undefined).map(option => ({
+      value: option.value,
+      extraPoint: option.extraPoint!
+    })),
+    clearValidationError
+  });
+
+  // Calculate total stats with useMemo to optimize performance
   const totalStats = useMemo(() => {
     const totalFormStats = getValues("stats") || [];
     if (totalFormStats.length < 6) return { str: 0, int: 0, dex: 0, con: 0, per: 0, cha: 0, total: 0 };    
@@ -500,7 +466,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
    * 
    * @returns {Promise<void>}
    */
-const getInventory = useCallback(async () => {
+  const getInventory = useCallback(async () => {
     // Check if we already have inventory data
     const currentInventory = getValues("inventory") || [];
     if (currentInventory.length !== 0) return;
@@ -1189,104 +1155,6 @@ const getInventory = useCallback(async () => {
       console.warn("No matching option found for skillExtra:", currentSkill);
     }
   };
-
-  /**
-   * Actualiza los puntos de estadísticas basados en la clase y trabajo seleccionados
-   * 
-   * Esta función calcula y asigna los bonos de estadísticas según la clase y trabajo
-   * del personaje, usando React Hook Form como fuente principal de verdad.
-   * Cada clase tiene una estadística principal que recibe +2 puntos,
-   * y cada trabajo puede proporcionar +1 punto en ciertas estadísticas.
-   * 
-   * @param selectedClass - Código de la clase seleccionada del personaje
-   * @param selectedJob - Código del trabajo seleccionado del personaje
-   */
-  const updStatsPoints = (selectedClass: string, selectedJob: string): void => {
-    console.log("Actualizando puntos de estadísticas para", { 
-      clase: selectedClass, 
-      trabajo: selectedJob 
-    });
-    
-    if (!selectedClass && !selectedJob) {
-      console.warn("No se ha seleccionado clase ni trabajo, omitiendo actualización");
-      return;
-    }
-    
-    // Obtener datos del trabajo seleccionado
-    const jobOption = optionsCharacterJob.find(option => option.value === selectedJob);
-    const extraPoints = jobOption?.extraPoint || "";
-    
-    if (selectedJob && !jobOption) {
-      console.warn(`Trabajo seleccionado "${selectedJob}" no encontrado en opciones`);
-    }
-
-    // Mapeo de clases a sus estadísticas principales
-    const classStatBonuses: Record<string, string> = {
-      "WAR": "STR", // Guerrero - Fuerza
-      "MAG": "INT", // Mago - Inteligencia
-      "SCO": "DEX", // Explorador - Destreza
-      "MED": "CON", // Médico - Constitución
-      "RES": "PER", // Investigador - Percepción
-      "ACT": "CHA"  // Artista - Carisma
-    };
-    
-    const primaryStat = selectedClass ? classStatBonuses[selectedClass] : null;
-    if (selectedClass && !primaryStat) {
-      console.warn(`Clase seleccionada "${selectedClass}" no tiene estadística principal definida`);
-    }
-    
-    // 1. Primero actualizar React Hook Form (fuente principal de verdad)
-    const handleStatsFormStats = getValues("stats") || [];
-    
-    handleStatsFormStats.forEach((stat, index) => {
-      const classBonus = (primaryStat && stat.id === primaryStat) ? 2 : 0;
-      const jobBonus = extraPoints.includes(stat.id) ? 1 : 0;
-      const newClassValue = classBonus + jobBonus;
-      
-      if (stat.valueClass !== newClassValue) {
-        const updatedStat = {
-          ...stat,
-          valueClass: newClassValue
-        };
-        
-        // Actualizar el estado en React Hook Form
-        updateStats(index, updatedStat);
-        
-        console.log(`Estadística ${stat.id} actualizada en React Hook Form:`, {
-          anterior: stat.valueClass,
-          nuevo: newClassValue,
-          bonoClase: classBonus,
-          bonoTrabajo: jobBonus
-        });
-      }
-    });
-    
-    // 2. Actualizar campos individuales en React Hook Form (compatibilidad)
-    handleStatsFormStats.forEach((stat: any) => {
-      switch (stat.id) {
-        case 'STR':
-          setValue("strClass", stat.valueClass);
-          break;
-        case 'INT':
-          setValue("intClass", stat.valueClass);
-          break;
-        case 'DEX':
-          setValue("dexClass", stat.valueClass);
-          break;
-        case 'CON':
-          setValue("conClass", stat.valueClass);
-          break;
-        case 'PER':
-          setValue("perClass", stat.valueClass);
-          break;
-        case 'CHA':
-          setValue("chaClass", stat.valueClass);
-          break;
-      }
-    });
-    
-    console.log("Estadísticas actualizadas correctamente en React Hook Form");
-  };
   /**
    * Maneja el cambio en la selección de clase del personaje
    * 
@@ -1332,9 +1200,8 @@ const getInventory = useCallback(async () => {
       console.log("Updated character state with class:", updated);
       return updated;
     });
-
     // 3. Actualizar puntos de estadísticas basados en la clase y trabajo
-    updStatsPoints(value, character?.pus_trabajo || '');
+    characterStats.updStatsPoints(value, character?.pus_trabajo || '');
     
     // 4. Seleccionar y actualizar la habilidad principal según la clase
     const skillValue = selectedOption?.mainStat ? "S" + selectedOption.mainStat : "";
@@ -1367,9 +1234,8 @@ const getInventory = useCallback(async () => {
       console.log("Updated character state with job:", updated);
       return updated;
     });
-    
     // 3. Actualizar puntos de estadísticas basados en la clase y trabajo
-    updStatsPoints(character?.pus_clase || '', value);
+    characterStats.updStatsPoints(character?.pus_clase || '', value);
   };
   /**
    * Maneja el cambio de imagen del personaje
@@ -1435,83 +1301,8 @@ const getInventory = useCallback(async () => {
     // Limpiar cualquier error de validación relacionado con los conocimientos
     clearValidationError('knowledge');
   };
+  // Note: handleStatsInputChange is now provided by the useCharacterStats hook
 
-  /**
-   * Handles changes to character stats and validates them
-   * Esta función mantiene sincronizados los estados locales y React Hook Form,
-   * dando prioridad a React Hook Form como fuente principal de verdad.
-   * 
-   * @param newInputStats - Updated stat values
-   * @returns True if validation passed, false otherwise
-   */
-  const handleStatsInputChange = useCallback((newInputStats: InputStats): boolean => {
-    // Validate the stats values
-    if (newInputStats.valueDice < 1 || newInputStats.valueDice > 6) {
-      console.warn(`Invalid dice value for ${newInputStats.id}: ${newInputStats.valueDice}`);
-      return false;
-    }
-    
-    try {
-      // Clear any previous validation errors
-      clearValidationError(`stat${newInputStats.id}`);
-      // 1. Actualizar React Hook Form stats array (fuente principal de verdad)
-      const updateFormStats = getValues("stats") || [];
-      const statIndex = updateFormStats.findIndex(stat => stat.id === newInputStats.id);
-      
-      if (statIndex !== -1) {
-        // Create updated stat object
-        const updatedStat = {
-          ...updateFormStats[statIndex],
-          valueDice: newInputStats.valueDice,
-          valueClass: newInputStats.valueClass,
-          valueLevel: newInputStats.valueLevel
-        };
-        
-        // Update the stat in the field array
-        updateStats(statIndex, updatedStat);
-        console.log(`Estadística ${newInputStats.id} actualizada en React Hook Form`);
-      } else {
-        console.warn(`Stat with ID ${newInputStats.id} not found in form stats array`);
-        return false; // Salir si no se puede actualizar React Hook Form
-      }
-      
-      // 2. Update React Hook Form individual fields (for compatibility)
-      // Using a mapping for better maintainability
-      const statMapping: Record<string, {dice: string, class: string, level: string}> = {
-        'STR': {dice: "strDice", class: "strClass", level: "strLevel"},
-        'INT': {dice: "intDice", class: "intClass", level: "intLevel"},
-        'DEX': {dice: "dexDice", class: "dexClass", level: "dexLevel"},
-        'CON': {dice: "conDice", class: "conClass", level: "conLevel"},
-        'PER': {dice: "perDice", class: "perClass", level: "perLevel"},
-        'CHA': {dice: "chaDice", class: "chaClass", level: "chaLevel"},
-      };
-      
-      // Find the matching fields for this stat
-      const fields = statMapping[newInputStats.id];
-      if (fields) {
-        setValue(fields.dice as keyof CharacterForm, newInputStats.valueDice);
-        setValue(fields.class as keyof CharacterForm, newInputStats.valueClass);
-        setValue(fields.level as keyof CharacterForm, newInputStats.valueLevel);
-      }
-      
-      // Validate the updated stat (no alerts during input to avoid excessive popups)
-      const validationResult = validateSingleStat(newInputStats.id, false);
-      
-      // If validation failed, add a warning to the console
-      if (!validationResult.isValid) {
-        console.warn(`Stat validation issue: ${validationResult.message}`);
-      } else {
-        // Clear any validation errors for stats if this stat is now valid
-        clearValidationError('stats');
-      }
-      
-      return validationResult.isValid;
-    } catch (error) {
-      console.error("Error updating stats:", error);
-      return false;
-    }
-  }, [clearValidationError, getValues, setValue, updateStats, validateSingleStat]);
-  
   /**
    * Actualiza la alineación del personaje y aplica efectos visuales
    * basados en la alineación seleccionada, usando React Hook Form como fuente principal
@@ -1865,321 +1656,6 @@ const getInventory = useCallback(async () => {
       alert("Error al preparar los datos del personaje");
     }
  };
-
-  /**
-   * Generates random stats for a character based on their class and the selected generation type
-   * 
-   * * @param generationType - The type of stat generation to use
-   *   - 'balanced': Provides a slightly higher primary stat (default)
-   *   - 'heroic': Generates higher stats across the board
-   *   - 'standard': Completely random stats within normal range
-   * @returns Boolean indicating if stats were successfully generated
-   */
-const randomRoll = useCallback((generationType: 'balanced' | 'heroic' | 'standard' = 'balanced'): boolean => {
-    // Prevent stat changes for characters above level 1
-    if (character?.pus_nivel && character.pus_nivel > 1) {
-      alert("Random stats can only be generated for level 1 characters");
-      return false;
-    }
-
-    // Check if character class is selected
-    if (!character?.pus_clase) {
-      alert("Please select a character class before generating random stats");
-      return false;
-    }
-
-    try {
-      // Define the primary and secondary stats for each class
-      const classAttributes: Record<string, {primary: number, secondary: number, name: string, statId: string}> = {
-        'WAR': { primary: 0, secondary: 3, name: 'Warrior', statId: 'STR' },    // STR, CON
-        'MAG': { primary: 1, secondary: 4, name: 'Mage', statId: 'INT' },       // INT, PER
-        'SCO': { primary: 2, secondary: 4, name: 'Scout', statId: 'DEX' },      // DEX, PER
-        'MED': { primary: 3, secondary: 1, name: 'Medic', statId: 'CON' },      // CON, INT
-        'RES': { primary: 4, secondary: 1, name: 'Researcher', statId: 'PER' }, // PER, INT
-        'ACT': { primary: 5, secondary: 2, name: 'Artist', statId: 'CHA' }      // CHA, DEX
-      };
-      
-      // Map of indices to stat IDs for direct access
-      const statIdMap = ['STR', 'INT', 'DEX', 'CON', 'PER', 'CHA'];
-      
-      // Get character class data
-      let classData = classAttributes[character.pus_clase];
-      if (!classData) {
-        console.warn(`Unknown character class: ${character.pus_clase}`);
-        // If class not found, use random primary and secondary stats
-        const primaryStat = Math.floor(Math.random() * 6);
-        let secondaryStat;
-        do {
-          secondaryStat = Math.floor(Math.random() * 6);
-        } while (secondaryStat === primaryStat);
-        
-        classData = { 
-          primary: primaryStat, 
-          secondary: secondaryStat, 
-          name: 'Unknown', 
-          statId: statIdMap[primaryStat]
-        };
-      }
-      
-      console.log(`Generating ${generationType} stats for ${classData.name} class`);
-      
-      // Total points to distribute
-      let totalPoints;
-      switch (generationType) {
-        case 'heroic':
-          totalPoints = 18 + Math.floor(Math.random() * 3); // 18-20 points
-          break;
-        case 'standard':
-          totalPoints = 12 + Math.floor(Math.random() * 5); // 12-16 points
-          break;
-        case 'balanced':
-        default:
-          totalPoints = 14 + Math.floor(Math.random() * 4); // 14-17 points
-      }
-      
-      // Initialize new stat values
-      const newStatValues: Record<string, number> = {
-        'STR': 1, 'INT': 1, 'DEX': 1, 'CON': 1, 'PER': 1, 'CHA': 1
-      };
-      
-      // Remaining points to distribute after minimum allocation
-      let remainingPoints = totalPoints - 6; // 6 stats with minimum 1 each
-      
-      // Distribution weights based on generation type
-      const weights = {
-        primary: generationType === 'balanced' ? 0.5 : (generationType === 'heroic' ? 0.4 : 0.33),
-        secondary: generationType === 'balanced' ? 0.3 : (generationType === 'heroic' ? 0.3 : 0.27),
-        other: generationType === 'balanced' ? 0.2 : (generationType === 'heroic' ? 0.3 : 0.4)
-      };
-      
-      // Distribute primary stat points (approx 40-50% of remaining)
-      const primaryPoints = Math.round(remainingPoints * weights.primary);
-      const primaryStatId = statIdMap[classData.primary];
-      newStatValues[primaryStatId] += primaryPoints;
-      remainingPoints -= primaryPoints;
-      
-      // Distribute secondary stat points (approx 25-30% of remaining)
-      const secondaryPoints = Math.round(remainingPoints * weights.secondary);
-      const secondaryStatId = statIdMap[classData.secondary];
-      newStatValues[secondaryStatId] += secondaryPoints;
-      remainingPoints -= secondaryPoints;
-      
-      // Random distribution of remaining points
-      while (remainingPoints > 0) {
-        // Randomly select a stat, with lower probability for primary/secondary
-        let statIndex;
-        const roll = Math.random();
-        
-        if (roll < 0.6) { // 60% chance to improve a tertiary stat
-          // Select a random stat that is neither primary nor secondary
-          const tertiaryIndices = [0, 1, 2, 3, 4, 5].filter(
-            i => i !== classData.primary && i !== classData.secondary
-          );
-          statIndex = tertiaryIndices[Math.floor(Math.random() * tertiaryIndices.length)];
-        } else if (roll < 0.85) { // 25% chance for secondary
-          statIndex = classData.secondary;
-        } else { // 15% chance for primary
-          statIndex = classData.primary;
-        }
-        
-        // Add a point if it doesn't exceed the maximum (6 for heroic, 5 otherwise)
-        const statId = statIdMap[statIndex];
-        const maxStatValue = generationType === 'heroic' ? 6 : 5;
-        if (newStatValues[statId] < maxStatValue) {
-          newStatValues[statId] += 1;
-          remainingPoints--;
-        }
-      }
-      
-      // Final validation to ensure no stat exceeds maximum values
-      for (let i = 0; i < statIdMap.length; i++) {
-        const statId = statIdMap[i];
-        const maxValue = i === classData.primary ? 6 : 5;
-        if (newStatValues[statId] > maxValue) {
-          console.warn(`Stat ${statId} exceeded maximum value. Capping at ${maxValue}.`);
-          newStatValues[statId] = maxValue;
-        }
-      }
-      // Update React Hook Form (single source of truth)
-      // 1. Update legacy individual fields (for backward compatibility)
-      setValue("strDice", newStatValues['STR']);
-      setValue("intDice", newStatValues['INT']);
-      setValue("dexDice", newStatValues['DEX']);
-      setValue("conDice", newStatValues['CON']);
-      setValue("perDice", newStatValues['PER']);
-      setValue("chaDice", newStatValues['CHA']);
-      
-      // 2. Update the stats array in React Hook Form (primary source)
-      const rollStatsFormStats = getValues("stats") || [];
-      if (rollStatsFormStats.length >= 6) {
-        // Update each stat in the stats array
-        for (let i = 0; i < rollStatsFormStats.length; i++) {
-          const statId = statIdMap[i];
-          if (statId && rollStatsFormStats[i]) {
-            updateStats(i, {
-              ...rollStatsFormStats[i],
-              valueDice: newStatValues[statId]
-            });
-          }
-        }
-      }
-      
-      // Show informative message
-      console.log("Generated random stats:", 
-        Object.entries(newStatValues).map(([id, value]) => `${id}: ${value}`).join(', '),
-        `(Total: ${Object.values(newStatValues).reduce((sum, val) => sum + val, 0)})`
-      );
-      
-      // Validate all stats after generation
-      let allValid = true;
-      const statIds = ['STR', 'INT', 'DEX', 'CON', 'PER', 'CHA'];
-      
-      statIds.forEach(statId => {
-        const validationResult = validateSingleStat(statId);
-        if (!validationResult.isValid) {
-          allValid = false;
-          console.warn(`Generated stat validation issue for ${statId}: ${validationResult.message}`);
-        }
-      });
-      
-      // Clear validation errors if all stats are valid
-      if (allValid) {
-        clearValidationError('stats');
-      }
-      
-      return true;
-    } catch (error) {
-      console.error("Error generating random stats:", error);
-      alert("An error occurred while generating random stats. Please try again.");
-      return false;
-    }
-  }, [character?.pus_clase, character?.pus_nivel, setValue, getValues, updateStats, validateSingleStat, clearValidationError]);
-
-  /**
-   * Handle changes to character level and adjust stats accordingly
-   * 
-   * This function updates the character level and calculates stat bonuses 
-   * that should be applied or removed based on level milestones (3, 6, 9)
-   * 
-   * @param newLevel - New character level (1-10)
-   * @returns Boolean indicating if the change was successful
-   */
-const handleLevelChange = useCallback((newLevel: number): boolean => {
-    // Validate the new level with proper error messaging
-    if (isNaN(newLevel)) {
-      console.error("Invalid level value: Not a number");
-      alert("Character level must be a number between 1 and 10");
-      return false;
-    }
-    
-    if (newLevel < 1 || newLevel > 10) {
-      console.error(`Level value out of valid range: ${newLevel}`);
-      alert("Character level must be between 1 and 10");
-      return false;
-    }
-
-    const previousLevel = character?.pus_nivel || 1;
-    
-    // If level hasn't changed, do nothing
-    if (previousLevel === newLevel) {
-      return true;
-    }
-    
-    console.log(`Changing level from ${previousLevel} to ${newLevel}`);
-    
-    try {
-      // Update level in React Hook Form first (primary source of truth)
-      setValue("level", newLevel);
-      
-      // Update level in character state next (for temporary compatibility)
-      setCharacter(prevState => {
-        if (!prevState) return initialPersonajesUsuario; // Return initial state instead of undefined
-        return {...prevState, pus_nivel: newLevel};
-      });
-      
-      // Map class codes to their primary stat fields
-      const classToPrimaryStat: Record<string, { index: number, statId: string, formField: string }> = {
-        'WAR': { index: 0, statId: 'STR', formField: "strLevel" }, // STR
-        'MAG': { index: 1, statId: 'INT', formField: "intLevel" }, // INT
-        'SCO': { index: 2, statId: 'DEX', formField: "dexLevel" }, // DEX
-        'MED': { index: 3, statId: 'CON', formField: "conLevel" }, // CON
-        'RES': { index: 4, statId: 'PER', formField: "perLevel" }, // PER
-        'ACT': { index: 5, statId: 'CHA', formField: "chaLevel" }  // CHA
-      };
-      
-      // Get the primary stat info for this character's class
-      const characterClass = character?.pus_clase || '';
-      const primaryStat = classToPrimaryStat[characterClass];
-      
-      if (!primaryStat) {
-        console.warn(`Unknown character class: ${characterClass}. Stat bonuses not applied.`);
-        return true; // Still consider this a successful level change
-      }
-      
-      // Calculate milestone level bonuses
-      // At levels 3, 6, and 9, the character gains +1 to primary stat
-      const previousMilestones = Math.floor((previousLevel - 1) / 3);
-      const newMilestones = Math.floor((newLevel - 1) / 3);
-      const bonusDifference = newMilestones - previousMilestones;
-      
-      if (bonusDifference === 0) {
-        console.log("No milestone changes, no stat adjustments needed");
-        clearValidationError('level');
-        return true;
-      }
-      const levelFormStats = getValues("stats") || [];
-      const currentBonus = levelFormStats[primaryStat.index]?.valueLevel || 0;
-      
-      // Calculate new level bonus (ensure it stays within valid range 0-3)
-      const newBonus = Math.max(0, Math.min(3, currentBonus + bonusDifference));
-      
-      // Log the change being made
-      if (bonusDifference > 0) {
-        console.log(`Level ${newLevel}: Adding +${bonusDifference} to ${primaryStat.statId} (primary stat for ${characterClass})`);
-      } else {
-        console.log(`Level ${newLevel}: Reducing ${Math.abs(bonusDifference)} from ${primaryStat.statId} (primary stat for ${characterClass})`);
-      }
-      
-      // Update React Hook Form fields based on the stat ID
-      switch (primaryStat.statId) {
-        case 'STR':
-          setValue("strLevel", newBonus);
-          break;
-        case 'INT':
-          setValue("intLevel", newBonus);
-          break;
-        case 'DEX':
-          setValue("dexLevel", newBonus);
-          break;
-        case 'CON':
-          setValue("conLevel", newBonus);
-          break;
-        case 'PER':
-          setValue("perLevel", newBonus);
-          break;
-        case 'CHA':
-          setValue("chaLevel", newBonus);
-          break;
-      }
-      
-      // Also update the stats array in React Hook Form if it exists
-      const levelUpdateFormStats = getValues("stats") || [];
-      if (levelUpdateFormStats.length > primaryStat.index) {
-        updateStats(primaryStat.index, {
-          ...levelUpdateFormStats[primaryStat.index],
-          valueLevel: newBonus
-        });
-      }
-      
-      // Clear any validation errors related to the level field
-      clearValidationError('level');
-      return true;
-    } catch (error) {
-      console.error("Error updating character stats for level change:", error);
-      alert("An error occurred while updating character stats. Please try again.");
-      return false;
-    }
-  }, [character?.pus_clase, character?.pus_nivel, setValue, getValues, clearValidationError]);
 
   const getClassName = (id: string | undefined): string | undefined => {
     return optionsCharacterClass.find((elem) => elem.value === id)?.name;
@@ -2805,7 +2281,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
       // Then validate each stat individually for more detailed feedback
       const statIds = ['STR', 'INT', 'DEX', 'CON', 'PER', 'CHA'];
       statIds.forEach(statId => {
-        const result = validateSingleStat(statId);
+        const result = characterStats.validateSingleStat(statId);
         if (!result.isValid && !fieldsRequired.includes('stats')) {
           fieldsRequired.push('stats');
           console.warn(`Stat validation failed for ${statId}: ${result.message}`);
@@ -3209,10 +2685,10 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
               required: true, 
               maxLength: 2, 
               min:1, 
-              max:10, 
+              max:10,
               onChange: (e) => {
                 const levelValue = parseInt(e.target.value) || 0;
-                handleLevelChange(levelValue);
+                characterStats.handleLevelChange(levelValue);
               }
             })}
             placeholder="Nivel"
@@ -3296,7 +2772,7 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
                   className="btn-save-character"
                   onClick={() => {
                     const generationType = document.getElementById('statGenerationType') as HTMLSelectElement;
-                    randomRoll(generationType?.value as 'balanced' | 'heroic' | 'standard' || 'balanced');
+                    characterStats.randomRoll(generationType?.value as 'balanced' | 'heroic' | 'standard' || 'balanced');
                   }}
                   aria-label="Generar estadísticas aleatorias"
                 >
@@ -3320,38 +2796,38 @@ const handleLevelChange = useCallback((newLevel: number): boolean => {
 
           {/* STRENGTH */}
           <FormInputStats
-            inputStats={getValues("stats")[0] || defaultStatsData[0]}
-            onSelectedValuesChange={handleStatsInputChange}
+            inputStats={getValues("stats")[0] || characterStats.defaultStatsData[0]}
+            onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
 
           {/* INTELLIGENCE */}
           <FormInputStats
-            inputStats={getValues("stats")[1] || defaultStatsData[1]}
-            onSelectedValuesChange={handleStatsInputChange}
+            inputStats={getValues("stats")[1] || characterStats.defaultStatsData[1]}
+            onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
 
           {/* DEXTERITY */}
           <FormInputStats
-            inputStats={getValues("stats")[2] || defaultStatsData[2]}
-            onSelectedValuesChange={handleStatsInputChange}
+            inputStats={getValues("stats")[2] || characterStats.defaultStatsData[2]}
+            onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
 
           {/* CONSTITUTION */}
           <FormInputStats
-            inputStats={getValues("stats")[3] || defaultStatsData[3]}
-            onSelectedValuesChange={handleStatsInputChange}
+            inputStats={getValues("stats")[3] || characterStats.defaultStatsData[3]}
+            onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
 
           {/* PERCEPTION */}
           <FormInputStats
-            inputStats={getValues("stats")[4] || defaultStatsData[4]}
-            onSelectedValuesChange={handleStatsInputChange}
+            inputStats={getValues("stats")[4] || characterStats.defaultStatsData[4]}
+            onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
 
           {/* CHARISMA */}
           <FormInputStats
-            inputStats={getValues("stats")[5] || defaultStatsData[5]}
-            onSelectedValuesChange={handleStatsInputChange}
+            inputStats={getValues("stats")[5] || characterStats.defaultStatsData[5]}
+            onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
         </fieldset>
 

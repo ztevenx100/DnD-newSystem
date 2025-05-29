@@ -2,7 +2,6 @@ import { useCallback, useMemo } from 'react';
 import { UseFormGetValues, UseFormSetValue, UseFieldArrayUpdate } from 'react-hook-form';
 import { CharacterForm } from '../types/characterForm';
 import { InputStats } from '@shared/utils/types/typesCharacterSheet';
-import { DBPersonajesUsuario } from '@shared/utils/types/dbTypes';
 
 /**
  * Props interface for the useCharacterStats hook
@@ -11,7 +10,6 @@ interface UseCharacterStatsProps {
   getValues: UseFormGetValues<CharacterForm>;
   setValue: UseFormSetValue<CharacterForm>;
   updateStats: UseFieldArrayUpdate<CharacterForm, "stats">;
-  character: DBPersonajesUsuario;
   optionsCharacterJob: Array<{ value: string; extraPoint: string }>;
   clearValidationError: (field: string) => void;
 }
@@ -104,7 +102,6 @@ export function useCharacterStats({
   getValues,
   setValue,
   updateStats,
-  character,
   optionsCharacterJob,
   clearValidationError
 }: UseCharacterStatsProps) {
@@ -353,23 +350,26 @@ export function useCharacterStats({
    * Generates random stats for a character based on their class and generation type
    */
   const randomRoll = useCallback((generationType: StatGenerationType = 'balanced'): boolean => {
+    // Get character level and class from React Hook Form
+    const characterLevel = getValues("level") || 1;
+    const characterClass = getValues("class") || '';
+    
     // Prevent stat changes for characters above level 1
-    if (character?.pus_nivel && character.pus_nivel > 1) {
+    if (characterLevel > 1) {
       alert("Random stats can only be generated for level 1 characters");
       return false;
     }
 
     // Check if character class is selected
-    if (!character?.pus_clase) {
+    if (!characterClass) {
       alert("Please select a character class before generating random stats");
       return false;
     }
 
     try {
       // Get character class data
-      let classData = CLASS_ATTRIBUTES[character.pus_clase];
-      if (!classData) {
-        console.warn(`Unknown character class: ${character.pus_clase}`);
+      let classData = CLASS_ATTRIBUTES[characterClass];if (!classData) {
+        console.warn(`Unknown character class: ${characterClass}`);
         // If class not found, use random primary and secondary stats
         const primaryStat = Math.floor(Math.random() * 6);
         let secondaryStat;
@@ -514,7 +514,7 @@ export function useCharacterStats({
       alert("An error occurred while generating random stats. Please try again.");
       return false;
     }
-  }, [character?.pus_clase, character?.pus_nivel, setValue, getValues, updateStats, validateSingleStat, clearValidationError]);
+  }, [getValues, setValue, updateStats, validateSingleStat, clearValidationError]);
 
   /**
    * Handle changes to character level and adjust stats accordingly
@@ -533,7 +533,8 @@ export function useCharacterStats({
       return false;
     }
 
-    const previousLevel = character?.pus_nivel || 1;
+    // Get previous level from React Hook Form
+    const previousLevel = getValues("level") || 1;
     
     // If level hasn't changed, do nothing
     if (previousLevel === newLevel) {
@@ -545,9 +546,8 @@ export function useCharacterStats({
     try {
       // Update level in React Hook Form first
       setValue("level", newLevel);
-      
-      // Get the primary stat info for this character's class
-      const characterClass = character?.pus_clase || '';
+        // Get the primary stat info for this character's class from React Hook Form
+      const characterClass = getValues("class") || '';
       const primaryStat = CLASS_TO_PRIMARY_STAT[characterClass];
       
       if (!primaryStat) {
@@ -601,7 +601,7 @@ export function useCharacterStats({
       alert("An error occurred while updating character stats. Please try again.");
       return false;
     }
-  }, [character?.pus_clase, character?.pus_nivel, setValue, getValues, updateStats, clearValidationError]);
+  }, [setValue, getValues, updateStats, clearValidationError]);
 
   return {
     // Data

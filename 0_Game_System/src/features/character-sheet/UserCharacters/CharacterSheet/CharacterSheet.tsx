@@ -61,18 +61,15 @@ import {
   DBPersonajesUsuario,
   DBSistemaJuego,
   DBUsuario,
-  initialPersonajesUsuario,
 } from '@shared/utils/types';
 
 // Utility Functions
 import { validateNumeric } from "@shared/utils/helpers/utilConversions";
 import { normalizeUser } from "@shared/utils/helpers/userHelpers";
 import { mapSkillFields } from "./fixSkills";
-import { 
+import {
   getCharacterProperty, 
-  setCharacterProperty, 
   getGameSystemProperty,
-  validateCharacter,
   validateCharacterStats,
   safeNumberConversion,
   validateCharacterAttributes
@@ -216,13 +213,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   });
   
   const ringSkills = useRingSkills(methods);
-  
   const {
     register,
     handleSubmit,
     setValue,
     getValues,
     control,
+    watch,
     formState: { errors }  } = methods;
 
   // State to track empty required fields for validation
@@ -344,12 +341,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const [optionsSkillExtra, setOptionsSkillExtra] = useState<Option[]>([]);
   // Listado del select skillTypeRing
   const [skillsTypes, setSkillsTypes] = useState<SkillTypes[]>([]);
-
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [loading, setLoading] = useState<boolean>(true);
-  const [newRecord, setNewRecord] = useState<boolean>(true);  const [character, setCharacter] = useState<DBPersonajesUsuario>(
-    initialPersonajesUsuario
-  );
+  const [newRecord, setNewRecord] = useState<boolean>(true);
   const navigate = useNavigate();
   const params = useParams();
   // Initialize character stats hook - now after all dependencies are declared
@@ -357,7 +351,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     getValues,
     setValue,
     updateStats,
-    character: character || initialPersonajesUsuario,
     optionsCharacterJob: optionsCharacterJob.filter(option => option.extraPoint !== undefined).map(option => ({
       value: option.value,
       extraPoint: option.extraPoint!
@@ -448,12 +441,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   }
 
   const [dataCharacter, setDataCharacter] = useState<DataCharacter>();
-
   /**
    * Carga los objetos del inventario desde la base de datos y los configura en React Hook Form.
-   * 
-   * Esta función utiliza exclusivamente React Hook Form para gestionar el inventario,
-   * siguiendo el patrón de tener una única fuente de verdad para los datos.
    * 
    * @returns {Promise<void>}
    */
@@ -472,11 +461,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           count: 1,
           readOnly: true,
         };
-        
         // Add to React Hook Form
         appendInventory(defaultItem);
         
-        console.log("Objeto inicial añadido a nuevo personaje");
         return;
       }
 
@@ -516,24 +503,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             });
           }
           
-          console.log(`Inventario cargado: ${formattedInventory.length} objetos`);
-        } else {
-          console.log("No se encontraron objetos en el inventario");
         }
-      } else {
-        console.log("No se encontraron objetos en el inventario");
       }
     } catch (error) {
       console.error("Error al cargar el inventario:", error);
     }
   }, [params.id, appendInventory, getValues, setValue]);
   /**
-   * Maneja el cambio en la selección de una habilidad para un anillo específico
-   * Actualiza la habilidad seleccionada usando el hook useRingSkills   * 
-   * @param id - ID/índice del anillo que está siendo modificado
-   * @param ring - Tipo de anillo seleccionado
-   * @param skill - ID de la habilidad seleccionada
-   * @param stat - Estadística base asociada a la habilidad
+   * Actualiza la habilidad seleccionada para un anillo específico
    */
   const handleSelectedRingSkillChange = useCallback((
     id: string,
@@ -541,19 +518,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     skill: string,
     stat: string
   ) => {
-    console.log('handleSelectedRingSkillChange', {id, ring, skill, stat});
-    
-    // Validar entradas
     if (!id || !ring || !skill) {
-      console.warn('ID, ring o skill inválidos en handleSelectedRingSkillChange', {id, ring, skill});
       return;
     }
     try {
-      // 1. Actualizar usando el hook useRingSkills (fuente principal de verdad)
       ringSkills.setRingSkillName(id, skill, ring, stat);
-      console.log(`Habilidad de anillo ${id} actualizada en React Hook Form usando ringSkills hook`);
-      
-      // Limpiar cualquier error de validación relacionado con este anillo
       clearValidationError(`ringSkill${id}`);
     } catch (error) {
       console.error("Error al actualizar la habilidad del anillo:", error);
@@ -570,30 +539,20 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     id: string,
     type: string
   ) => {
-    console.log('handleSelectedTypeRingSkillChange', {id, type});
-    
-    // Validar entradas
     if (!id || !type) {
       console.warn('ID o tipo de habilidad inválido', {id, type});
       return;
     }
     
     try {
-      // 1. Actualizar usando el hook useRingSkills (fuente principal de verdad)
       ringSkills.updateRingType(id, type);
-      console.log(`Tipo de habilidad de anillo ${id} actualizado a ${type} usando ringSkills hook`);
       
-      // 2. Actualizar la lista de habilidades disponibles para este anillo (estado local)
-      // Este paso es necesario para mantener la UI actualizada con las opciones disponibles
       setSkillsRingList(prevList => {
         const newList = [...prevList];
         const skills = skillsTypes.find(option => option.id === type)?.skills || [];
-        console.log('New skills for ring', id, ':', skills.map(s => s.name).join(', '));
         
-        // Log para depuración 
         if (skills.length === 0) {
-          console.warn(`No se encontraron habilidades para el tipo ${type}. skillsTypes contiene:`, 
-            skillsTypes.map(s => ({ id: s.id, numSkills: s.skills.length })));
+          console.warn(`No se encontraron habilidades para el tipo ${type}`);
         }
         
         // Actualizar las habilidades disponibles para este anillo
@@ -685,10 +644,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setCharacterImage(url + "?" + refreshParam);
     }
   }, [user, params.id]);
-
   /**
-   * Carga las estadísticas del personaje desde la base de datos y las configura
-   * dando prioridad a React Hook Form como fuente principal de verdad.
+   * Carga las estadísticas del personaje desde la base de datos
    */
   const getStats = useCallback(async () => {
     if (params.id === null || params.id === undefined) return;
@@ -697,7 +654,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       const data = await getCharacterStats(params.id);
       
       if (data !== null && Array.isArray(data)) {
-        // 1. Actualizar React Hook Form - Array de estadísticas (enfoque principal)
         const getStatsFormStats = getValues("stats") || [];
         
         if (getStatsFormStats.length === 6 && data.length >= 6) {
@@ -713,14 +669,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               updateStats(index, updatedStat);
             }
           });
-          
-          console.log("Estadísticas actualizadas en React Hook Form");
         } else {
           console.warn("No se pudo actualizar el array de estadísticas: longitud incorrecta");
-          return; // Salir si no se puede actualizar React Hook Form
+          return;
         }
         
-        // 2. Actualizar React Hook Form - Campos individuales (para compatibilidad)
         if (data.length >= 6) {
           setValue("strDice", data[0].epe_num_dado);
           setValue("strClass", data[0].epe_num_clase);
@@ -741,8 +694,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           setValue("chaClass", data[5].epe_num_clase);
           setValue("chaLevel", data[5].epe_num_nivel);
         }
-        
-        console.log("React Hook Form estadísticas actualizadas desde la base de datos");
       } else {
         console.warn("No se encontraron datos de estadísticas para cargar");
       }
@@ -758,13 +709,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       }
       
       const userId = user.id;
-      
-      if (params.id === null || params.id === undefined) {
-        setCharacter({
-          ...initialPersonajesUsuario,
-          pus_id: uuidv4(),
-          pus_usuario: userId
-        });
+        if (params.id === null || params.id === undefined) {
+        // For new characters, just set default values in the form
+        setValue("characterId", uuidv4());
+        setValue("userName", userId);
         return;
       }
 
@@ -792,9 +740,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         if (missingFields.length > 0) {
           console.warn("Missing character fields:", missingFields);
         }
-        
-        // Set character data in state
-        setCharacter(characterData as DBPersonajesUsuario);
         // Handle game system data
         if (characterData.sju_sistema_juego) {
           const gameSystem = characterData.sju_sistema_juego;
@@ -817,6 +762,26 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             sju_descripcion: ""
           });
         }
+
+        // Load character data into the form
+        setValue("characterId", getCharacterProperty(characterData, 'pus_id', ''));
+        setValue("userName", getCharacterProperty(characterData, 'pus_usuario', userId));
+        setValue("name", getCharacterProperty(characterData, 'pus_nombre', ''));
+        setValue("class", getCharacterProperty(characterData, 'pus_clase', ''));
+        setValue("level", getCharacterProperty(characterData, 'pus_nivel', 1));
+        setValue("race", getCharacterProperty(characterData, 'pus_raza', ''));
+        setValue("job", getCharacterProperty(characterData, 'pus_trabajo', ''));
+        setValue("alignment", getCharacterProperty(characterData, 'pus_alineacion', ''));
+        setValue("luckyPoints", Number(getCharacterProperty(characterData, 'pus_puntos_suerte', 0)));
+        setValue("lifePoints", Number(getCharacterProperty(characterData, 'pus_puntos_vida', 0)));
+        setValue("knowledge", getCharacterProperty(characterData, 'pus_conocimientos', ''));
+        setValue("characterDescription", getCharacterProperty(characterData, 'pus_descripcion', ''));
+        setValue("mainWeapon", getCharacterProperty(characterData, 'pus_arma_principal', ''));
+        setValue("secondaryWeapon", getCharacterProperty(characterData, 'pus_arma_secundaria', ''));
+        setValue("goldCoins", Number(getCharacterProperty(characterData, 'pus_monedas_oro', 0)));
+        setValue("silverCoins", Number(getCharacterProperty(characterData, 'pus_monedas_plata', 0)));
+        setValue("bronzeCoins", Number(getCharacterProperty(characterData, 'pus_monedas_bronce', 0)));
+
       } catch (parseError) {
         console.error("Error processing character data:", parseError);
         alert("Error al procesar los datos del personaje. Algunos campos pueden no estar disponibles.");
@@ -825,15 +790,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       handleAsyncError(error, "fetching character info");
     }
   }, [params.id, user]);
-  
-  useEffect(() => {
-    if (character?.pus_nombre) setValue("name", character.pus_nombre);
-    if (character?.pus_descripcion) setValue("characterDescription", character.pus_descripcion);
-    if (character?.pus_clase) setValue("class", character.pus_clase);
-    if (character?.pus_raza) setValue("race", character.pus_raza);
-    if (character?.pus_trabajo) setValue("job", character.pus_trabajo);
+    useEffect(() => {
     if (user?.usu_nombre) setValue("userName", user.usu_nombre);
-  }, [character, setValue, user]);
+  }, [setValue, user]);
 
   useEffect(() => {
     getSkills();
@@ -886,12 +845,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     
     loadInfo();
   }, [params.id, changeBackground]);
-  
   async function getListSkill() {
     try {
-      console.log("Fetching skill list data...");
       const data = await getListHad();
-      console.log("Raw skill data received:", data);
 
       if (data !== null && Array.isArray(data) && data.length > 0) {
         const updatedOptionsSkillClass: Option[] = [];
@@ -991,29 +947,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setSystemGameList(updatedSystemGameList);
     }
   }
-
   /**
    * Maneja el cambio en la selección de raza del personaje
-   * usando React Hook Form como fuente principal de verdad
    * 
    * @param value - ID de la raza seleccionada
    */
    const handleSelectRaceChange = (value: string) => {
-    console.log("Selecting race:", value);
-    
-    // 1. Actualizar en React Hook Form (fuente principal de verdad)
     setValue("race", value);
-    console.log(`Raza actualizada en React Hook Form: ${value}`);
-    
-    // 2. Actualizar en el estado del personaje (compatibilidad temporal)
-    setCharacter((prevState) => {
-      if (!prevState) return prevState;
-      const updated = setCharacterProperty(prevState, 'pus_raza', value);
-      console.log("Updated character state with race:", updated);
-      return updated;
-    });
-    
-    // Limpiar cualquier error de validación relacionado con la raza
     clearValidationError('characterRace');
   };
   /**
@@ -1031,35 +971,20 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return;
     }
     
-    console.log("Cambiando sistema de juego:", currentSystem, option[0].name);
-    
     setSystemGame({
       sju_id: option[0].value,
       sju_nombre: option[0].name,
       sju_descripcion: systemGame.sju_descripcion
     });
-    
-    setCharacter((prevState) => {
-      if (!prevState) return prevState;
-      return setCharacterProperty(prevState, 'pus_sistema_juego', currentSystem);
-    });
   };
-
   /**
    * Maneja el cambio en la selección de habilidad principal del personaje
    * 
-   * Esta función actualiza la habilidad principal del personaje usando React Hook Form como 
-   * fuente principal de verdad, manteniendo también actualizado el estado local por compatibilidad.
-   *
    * @param currentSkill - ID de la habilidad seleccionada
    */
   const handleSelectSkillChange = (currentSkill: string) => {
-    console.log('handleSelectSkillChange', currentSkill);
-    
-    // Si no hay habilidad seleccionada, limpiar el valor
     if (!currentSkill) {
       setValue("skillClass", "");
-      // Actualizar también el estado local por compatibilidad
       setFieldSkill((prevItems) =>
         prevItems.map((item) =>
           item.field === "skillClass"
@@ -1070,17 +995,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return;
     }
     
-    // Buscar la opción correspondiente en las opciones disponibles
     const option = optionsSkillClass.filter(
       (skill) => skill.value === currentSkill
     );
     
     if (option.length > 0) {
-      // 1. Actualizar React Hook Form (fuente principal de verdad)
       setValue("skillClass", currentSkill);
-      console.log(`Habilidad principal actualizada en React Hook Form: ${currentSkill}`);
       
-      // 2. Actualizar el estado local (compatibilidad temporal)
       setFieldSkill((prevItems) =>
         prevItems.map((item) =>
           item.field === "skillClass"
@@ -1094,22 +1015,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       console.warn("No matching option found for skillClass:", currentSkill);
     }
   };
-
   /**
    * Maneja el cambio en la selección de habilidades extra
-   * 
-   * Esta función actualiza la habilidad extra del personaje usando React Hook Form como 
-   * fuente principal de verdad, manteniendo también actualizado el estado local por compatibilidad.
    * 
    * @param currentSkill - ID de la habilidad extra seleccionada
    */
   const handleSelectExtraSkillChange = (currentSkill: string) => {
-    console.log('handleSelectExtraSkillChange', currentSkill);
-    
-    // Si no hay habilidad seleccionada, limpiar el valor
     if (!currentSkill) {
       setValue("skillExtra", "");
-      // Actualizar también el estado local por compatibilidad
       setFieldSkill((prevItems) =>
         prevItems.map((item) =>
           item.field === "skillExtra"
@@ -1120,17 +1033,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return;
     }
     
-    // Buscar la opción correspondiente en las opciones disponibles
     const option = optionsSkillExtra.filter(
       (skill) => skill.value === currentSkill
     );
     
     if (option.length > 0) {
-      // 1. Actualizar React Hook Form (fuente principal de verdad)
       setValue("skillExtra", currentSkill);
-      console.log(`Habilidad extra actualizada en React Hook Form: ${currentSkill}`);
       
-      // 2. Actualizar el estado local (compatibilidad temporal)
       setFieldSkill((prevItems) =>
         prevItems.map((item) =>
           item.field === "skillExtra"
@@ -1138,9 +1047,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             : item
         )
       );
-      console.log(`Estado local de habilidad extra actualizado para compatibilidad`);
       
-      // Limpiar cualquier error de validación que pudiera haber
       clearValidationError('skillExtra');
     } else {
       console.warn("No matching option found for skillExtra:", currentSkill);
@@ -1149,26 +1056,19 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   /**
    * Maneja el cambio en la selección de clase del personaje
    * 
-   * Esta función actualiza la clase del personaje, asigna el conocimiento correspondiente,
-   * actualiza los puntos de estadísticas y selecciona la habilidad principal según la clase,
-   * usando React Hook Form como fuente principal de verdad
+   * Actualiza la clase del personaje, asigna el conocimiento correspondiente,
+   * actualiza los puntos de estadísticas y selecciona la habilidad principal según la clase.
    *
    * @param value - ID de la clase seleccionada
    */
   const handleCharacterClassChange = (value: string) => {
-    // Limpiar cualquier error de validación previo
     clearValidationError('characterClass');
     
-    // Buscar la opción de clase seleccionada
     const selectedOption = optionsCharacterClass.find(
       (option) => option.value === value
     );
     
-    console.log("Option found:", selectedOption);
-    
-    // 1. Actualizar en React Hook Form (fuente principal de verdad)
     setValue("class", value);
-    console.log(`Clase actualizada en React Hook Form: ${value}`);
     
     // Asignar el conocimiento según la clase seleccionada
     let knowledgeValue = "";
@@ -1181,20 +1081,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       case 'ACT': knowledgeValue = "ART"; break;
     }
     
-    // 2. Actualizar los datos del personaje (compatibilidad temporal)
-    setCharacter((prevState) => {
-      if (!prevState) return prevState;
-      
-      // Usar nuestra función de utilidad para actualizar propiedades de manera segura
-      let updated = setCharacterProperty(prevState, 'pus_clase', value);
-      updated = setCharacterProperty(updated, 'pus_conocimientos', knowledgeValue);
-      console.log("Updated character state with class:", updated);
-      return updated;
-    });
-    // 3. Actualizar puntos de estadísticas basados en la clase y trabajo
-    characterStats.updStatsPoints(value, character?.pus_trabajo || '');
+    setValue("knowledge", knowledgeValue);
     
-    // 4. Seleccionar y actualizar la habilidad principal según la clase
+    // Actualizar puntos de estadísticas basados en la clase y trabajo
+    characterStats.updStatsPoints(value, getValues("job") || '');
+    
+    // Seleccionar y actualizar la habilidad principal según la clase
     const skillValue = selectedOption?.mainStat ? "S" + selectedOption.mainStat : "";
     setValue("skillClass", skillValue);
     handleSelectSkillChange(skillValue);
@@ -1202,31 +1094,17 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   /**
    * Maneja el cambio en la selección de trabajo/profesión del personaje
    * 
-   * Esta función actualiza el trabajo del personaje y ajusta los puntos de estadísticas
-   * basados en la combinación de clase y trabajo seleccionados,
-   * usando React Hook Form como fuente principal de verdad
+   * Actualiza el trabajo del personaje y ajusta los puntos de estadísticas
+   * basados en la combinación de clase y trabajo seleccionados.
    *
    * @param value - ID del trabajo seleccionado
    */
   const handleCharacterJobSelectChange = (value: string) => {
-    // Limpiar cualquier error de validación previo
     clearValidationError('characterJob');
-    
-    // 1. Actualizar en React Hook Form (fuente principal de verdad)
     setValue("job", value);
-    console.log(`Trabajo actualizado en React Hook Form: ${value}`);
     
-    // 2. Actualizar el trabajo en el estado del personaje (compatibilidad temporal)
-    setCharacter((prevState) => {
-      if (!prevState) return prevState;
-      
-      // Usar la función helper con tipado seguro para actualizar la propiedad
-      const updated = setCharacterProperty(prevState, 'pus_trabajo', value);
-      console.log("Updated character state with job:", updated);
-      return updated;
-    });
-    // 3. Actualizar puntos de estadísticas basados en la clase y trabajo
-    characterStats.updStatsPoints(character?.pus_clase || '', value);
+    // Actualizar puntos de estadísticas basados en la clase y trabajo
+    characterStats.updStatsPoints(getValues("class") || '', value);
   };
   /**
    * Maneja el cambio de imagen del personaje
@@ -1240,7 +1118,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
    */
   const handleCharacterImageFileChange = async (value: string, file: File) => {
     if (!user || !params.id) {
-      console.log("No se puede subir la imagen: Usuario o ID de personaje no disponibles");
       return;
     }
 
@@ -1267,57 +1144,22 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   };
   /**
    * Maneja el cambio en los conocimientos seleccionados del personaje
-   * usando React Hook Form como fuente principal de verdad
    * 
    * @param newValues - Array de IDs de los conocimientos seleccionados
    */
   const handleSelectedCheckValuesChange = (newValues: string[]) => {
-    console.log("Conocimientos seleccionados:", newValues);
-    
-    // Construir una cadena separada por comas con los conocimientos seleccionados
     const knowledgeString = newValues.join(',');
-    
-    // 1. Actualizar en React Hook Form (fuente principal de verdad)
     setValue("knowledge", knowledgeString);
-    
-    // 2. Actualizar el estado local del personaje (compatibilidad temporal)
-    setCharacter((prevState) => {
-      if (!prevState) return prevState;
-      // Use the type-safe helper to update knowledge property
-      const updated = setCharacterProperty(prevState, 'pus_conocimientos', knowledgeString);
-      console.log("Estado actualizado con conocimientos:", updated);
-      return updated;
-    });
-    
-    // Limpiar cualquier error de validación relacionado con los conocimientos
     clearValidationError('knowledge');
   };
   // Note: handleStatsInputChange is now provided by the useCharacterStats hook
-
   /**
-   * Actualiza la alineación del personaje y aplica efectos visuales
-   * basados en la alineación seleccionada, usando React Hook Form como fuente principal
+   * Actualiza la alineación del personaje
    * 
    * @param value - Alineación seleccionada ('O' para Orden, 'C' para Caos)
    */
   const handleAlignmentChange = (value: string) => {
-    console.log('handleAlignmentChange', value);
-    
-    // 1. Actualizar en React Hook Form (fuente principal de verdad)
     setValue("alignment", value);
-    console.log(`Alineación actualizada en React Hook Form: ${value}`);
-    
-    // 2. Actualizar la alineación en el estado del personaje (compatibilidad temporal)
-    setCharacter((prevState) => {
-      if (!prevState) return prevState;
-      
-      // Usar el helper con tipado seguro para modificar la propiedad
-      const updated = setCharacterProperty(prevState, 'pus_alineacion', value);
-      console.log(`Estado local de alineación actualizado para compatibilidad: ${value}`);
-      return updated;
-    });
-    
-    // Limpiar cualquier error de validación relacionado con la alineación
     clearValidationError('alignment');
   };
   
@@ -1372,38 +1214,19 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   }, []);
   /**
    * Añade un nuevo objeto al inventario
-   * 
-   * IMPLEMENTACIÓN HÍBRIDA: Esta función muestra el patrón de sincronización
-   * entre el estado local y React Hook Form, manteniendo ambos sistemas actualizados.
-   * 
-   * NOTA SOBRE LA MIGRACIÓN:
-   * - En la implementación actual: Mantiene sincronizados ambos enfoques (estado local y RHF)
-   * - En la implementación ideal: Usaríamos solo React Hook Form con useFieldArray
    */
-  /**
-   * Añade un nuevo objeto al inventario usando React Hook Form's field array
-   * Esta es la versión migrada que usa exclusivamente React Hook Form
-   * - No más dependencia del estado local (setInvObjects)
-   * - Toda la gestión de datos a través de React Hook Form
-   */  const handleAddObject = useCallback(() => {
-    console.log("Añadiendo nuevo objeto al inventario usando React Hook Form");
-    
+  const handleAddObject = useCallback(() => {
     try {
-      // 1. Obtener valores desde React Hook Form
       const newObjectName = getValues("newObjectName");
       const newObjectDescription = getValues("newObjectDescription");
       const newObjectCount = getValues("newObjectCount");
       
-      // 2. Validar los datos del objeto
       const errorMessage = validateInventoryItem(newObjectName, newObjectCount);
       if (errorMessage) {
-        console.warn("Validación fallida:", errorMessage);
         alert(errorMessage);
         document.getElementById("objectName")?.focus();
         return;
-      }    
-      
-      // 3. Crear un objeto válido y bien formateado
+      }
       const newObject = validateInventoryObject({
         id: uuidv4(),
         name: newObjectName.trim(),
@@ -1411,67 +1234,53 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         count: typeof newObjectCount === 'number' ? newObjectCount : 1,
         readOnly: false,
       });
-      
-      console.log("Nuevo objeto creado:", newObject);
 
-      // 4. Actualizar el formulario usando useFieldArray
       appendInventory(newObject);
-      
-      // 5. Limpiar los campos del formulario usando React Hook Form
       setValue("newObjectName", "");
       setValue("newObjectDescription", "");
       setValue("newObjectCount", 1);
-      
-      console.log("Objeto añadido correctamente");
     } catch (error) {
       console.error("Error al añadir objeto al inventario:", error);
       alert("No se pudo añadir el objeto. Por favor, inténtalo de nuevo.");
     }
   }, [getValues, setValue, appendInventory, validateInventoryItem]);
-/**
-   * Elimina un objeto del inventario usando React Hook Form
+  /**
+   * Elimina un objeto del inventario
    * 
    * @param id - ID del objeto a eliminar
-   */  const handleDeleteObject = useCallback(async (id: string) => {
+   */
+  const handleDeleteObject = useCallback(async (id: string) => {
     try {
-      // 1. Encontrar el índice del objeto en el array de inventario
       const formInventory = getValues("inventory");
       const objectIndex = formInventory.findIndex(obj => obj.id === id);
       
-      // 2. Si se encuentra el objeto, eliminarlo usando removeInventory
       if (objectIndex !== -1) {
         removeInventory(objectIndex);
-        console.log(`Objeto con ID ${id} eliminado del formulario`);
       } else {
         console.warn(`No se encontró el objeto con ID ${id} en el formulario`);
       }
       
-      // 3. Registrar el ID para eliminación en la base de datos
       setDeleteItems((prevItems) => [...prevItems, id]);
     } catch (error) {
       console.error("Error al eliminar objeto del inventario:", error);
       alert("No se pudo eliminar el objeto. Por favor, inténtalo de nuevo.");
     }
   }, [getValues, removeInventory]);
-/**
-   * Actualiza la cantidad de un objeto en el inventario usando React Hook Form
+  /**
+   * Actualiza la cantidad de un objeto en el inventario
    * 
    * @param id - ID del objeto a editar
    * @param newCount - Nueva cantidad como string
-   */  const handleEditCount = useCallback((id: string, newCount: string) => {
+   */
+  const handleEditCount = useCallback((id: string, newCount: string) => {
     try {
-      // 1. Convertir el valor de entrada a un número válido con valor predeterminado de 1
       const numericValue = validateNumeric(newCount, 1);
-      
-      // 2. Encontrar el índice del objeto en el array de inventario de React Hook Form
       const formInventory = getValues("inventory");
       const objectIndex = formInventory.findIndex(obj => obj.id === id);
       
-      // 3. Si se encuentra el objeto, actualizar su cantidad usando el método update
       if (objectIndex !== -1) {
         const updatedObject = { ...formInventory[objectIndex], count: numericValue };
         updateInventory(objectIndex, updatedObject);
-        console.log(`Cantidad del objeto ${id} actualizada a ${numericValue} en el formulario`);
       } else {
         console.warn(`No se encontró el objeto con ID ${id} en el formulario para actualizar su cantidad`);
       }
@@ -1491,22 +1300,24 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const validateRequiredFields = (): string[] => {
     const fieldsRequired: string[] = [];
     
+    // Get form values for validation
+    const formValues = getValues();
+    
     // Validate required character properties
-    if (!character?.pus_raza?.trim()) {
+    if (!formValues.race?.trim()) {
       console.log("Falta la raza");
       fieldsRequired.push('characterRace');
     }
-    if (!character?.pus_trabajo?.trim()) {
+    if (!formValues.job?.trim()) {
       console.log("Falta el trabajo");
       fieldsRequired.push('characterJob');
     }
-    if (!character?.pus_clase?.trim()) {
+    if (!formValues.class?.trim()) {
       console.log("Falta la clase");
       fieldsRequired.push('characterClass');
     }
     
     // Validate form fields
-    const formValues = getValues();
     if (!formValues.name?.trim()) {
       console.log("Falta el nombre del personaje");
       fieldsRequired.push('name');
@@ -1521,38 +1332,31 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     
     return fieldsRequired;
   };
-  
   /**
    * Prepara los datos del personaje para el modal
-   * Usando nuestros helpers para acceder a la versión más actualizada de los datos
+   * 
    * @returns Un objeto DataCharacter con todos los datos del personaje
    */
   const prepareCharacterData = (): DataCharacter => {
-    if (!character) {
-      console.error("Character data is missing");
-      throw new Error("No character data available");
-    }
-    
-    // Obtener datos de formulario con fallback al estado local
     const formValues = getValues();
     const characterStats = getInputStatsFromForm();
     
-    // Procesar conocimientos desde el formulario o del personaje
-    const knowledgeStr = formValues.knowledge || character.pus_conocimientos || '';
+    // Procesar conocimientos desde el formulario
+    const knowledgeStr = formValues.knowledge || '';
     const knowledgeArray = typeof knowledgeStr === 'string' 
       ? knowledgeStr.split(',').filter(Boolean)
       : Array.isArray(knowledgeStr) ? knowledgeStr : [];
     
     return {
-      id: character.pus_id || '',
-      player: character.pus_usuario || '',
-      name: formValues.name || character.pus_nombre || '',
-      class: formValues.class || character.pus_clase || '',
-      race: formValues.race || character.pus_raza || '',
-      job: formValues.job || character.pus_trabajo || '',
-      level: formValues.level || character.pus_nivel || 1,
-      luckyPoints: formValues.luckyPoints || character.pus_puntos_suerte || 0,
-      description: formValues.characterDescription || character.pus_descripcion || '',
+      id: formValues.characterId || '',
+      player: formValues.userName || '',
+      name: formValues.name || '',
+      class: formValues.class || '',
+      race: formValues.race || '',
+      job: formValues.job || '',
+      level: formValues.level || 1,
+      luckyPoints: formValues.luckyPoints || 0,
+      description: formValues.characterDescription || '',
       knowledge: knowledgeArray,
       str: [
         {
@@ -1595,10 +1399,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           class: characterStats[5].valueClass,
           level: characterStats[5].valueLevel,
         },
-      ],
-      mainWeapon: formValues.mainWeapon || character.pus_arma_principal || '',
-      secondaryWeapon: formValues.secondaryWeapon || character.pus_arma_secundaria || '',
-      alignment: formValues.alignment || character.pus_alineacion || '',
+      ],      mainWeapon: formValues.mainWeapon || '',
+      secondaryWeapon: formValues.secondaryWeapon || '',
+      alignment: formValues.alignment || '',
       mainSkill: formValues.skillClass || '',
       extraSkill: formValues.skillExtra || '',
       skills: getSkillsAcquiredFromForm(),
@@ -1610,7 +1413,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       inv: formValues.inventory || [],
     };
   };
-
   /**
    * Abre el modal para guardar el personaje, validando primero
    * que todos los campos requeridos estén completos
@@ -1627,12 +1429,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return;
     }
     
-    // Ensure character exists
-    if (!character) {
-      console.error("Character data is missing");
-      return;
-    }
-    
     console.log("Campos requeridos completos, preparando datos para el modal...");
 
     try {
@@ -1646,7 +1442,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       console.error("Error preparing character data:", error);
       alert("Error al preparar los datos del personaje");
     }
- };
+  };
 
   const getClassName = (id: string | undefined): string | undefined => {
     return optionsCharacterClass.find((elem) => elem.value === id)?.name;
@@ -1700,36 +1496,37 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
    */
   async function saveData() {
     try {
-      // Before we start, validate character data
-      if (!character) {
-        throw new Error("No hay datos de personaje para guardar");
-      }
-
-      // Get all form values from React Hook Form (primary source of truth)
       const formValues = getValues();
       
-      // Update character with form values to ensure it has the latest data
-      // This ensures we're saving what's in the form rather than possibly stale local state
-      if (character) {
-        character.pus_nombre = formValues.name;
-        character.pus_nivel = formValues.level;
-        character.pus_suerte = formValues.luckyPoints;
-        character.pus_vida = formValues.lifePoints;
-        character.pus_arma_principal = formValues.mainWeapon;
-        character.pus_arma_secundaria = formValues.secondaryWeapon;
-        character.pus_cantidad_oro = formValues.goldCoins;
-        character.pus_cantidad_plata = formValues.silverCoins;
-        character.pus_cantidad_bronce = formValues.bronzeCoins;
-        character.pus_descripcion = formValues.characterDescription;
-      }
+      // Build character object from form data
+      const characterData: DBPersonajesUsuario = {
+        pus_id: formValues.characterId || uuidv4(),
+        pus_usuario: formValues.userName || user?.id || '',
+        pus_nombre: formValues.name || '',
+        pus_clase: formValues.class || '',
+        pus_raza: formValues.race || '',
+        pus_trabajo: formValues.job || '',
+        pus_nivel: formValues.level || 1,
+        pus_puntos_suerte: formValues.luckyPoints || 0,
+        pus_vida: formValues.lifePoints || 0,
+        pus_descripcion: formValues.characterDescription || '',
+        pus_conocimientos: formValues.knowledge || '',
+        pus_arma_principal: formValues.mainWeapon || '',
+        pus_arma_secundaria: formValues.secondaryWeapon || '',
+        pus_alineacion: formValues.alignment || '',
+        pus_sistema_juego: systemGame.sju_id || '',
+        pus_cantidad_oro: formValues.goldCoins || 0,
+        pus_cantidad_plata: formValues.silverCoins || 0,
+        pus_cantidad_bronce: formValues.bronzeCoins || 0
+      };
 
       // Show saving indicator
       setLoading(true);
       
       console.log("Starting character save process using CharacterService", { 
         newRecord, 
-        characterId: character.pus_id,
-        username: character.pus_usuario,
+        characterId: characterData.pus_id,
+        username: characterData.pus_usuario,
         formValues
       });
       
@@ -1740,7 +1537,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       
       // Use CharacterService to save all data
       const savedCharacterId = await CharacterService.saveCompleteCharacter(
-        character,
+        characterData,
         formValues,
         characterStats,
         characterSkills,
@@ -1775,13 +1572,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const onSubmitForm = (data: CharacterForm) => {
     console.log("Form submission data:", {
       formData: data,
-      characterState: {
-        name: character?.pus_nombre,
-        clase: character?.pus_clase,
-        raza: character?.pus_raza,
-        trabajo: character?.pus_trabajo,
-        userName: user?.usu_nombre
-      }
+      userName: user?.usu_nombre
     });
     
     // Error categories for better UI feedback
@@ -1814,24 +1605,31 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     // As backup, use our existing validation for additional checks
     let fieldsRequired: string[] = validateCharacterForm();
     let errorMessage = "Por favor, complete todos los campos obligatorios:\n";
-    
-    // Update character object with form values
-    const updatedCharacter = character ? {...character} : undefined;
-    if (updatedCharacter) {
-      updatedCharacter.pus_nombre = data.name;
-      updatedCharacter.pus_nivel = data.level;
-      updatedCharacter.pus_suerte = data.luckyPoints;
-      updatedCharacter.pus_vida = data.lifePoints;
-      updatedCharacter.pus_arma_principal = data.mainWeapon;
-      updatedCharacter.pus_arma_secundaria = data.secondaryWeapon;
-      updatedCharacter.pus_cantidad_oro = data.goldCoins;
-      updatedCharacter.pus_cantidad_plata = data.silverCoins;
-      updatedCharacter.pus_cantidad_bronce = data.bronzeCoins;
-      updatedCharacter.pus_descripcion = data.characterDescription;
-    }
     // Use our enhanced validation function for comprehensive assessment with helper functions
+    // Convert form data to character format for validation
+    const characterForValidation: DBPersonajesUsuario = {
+      pus_id: data.characterId || '',
+      pus_usuario: data.userName || '',
+      pus_nombre: data.name || '',
+      pus_clase: data.class || '',
+      pus_raza: data.race || '',
+      pus_trabajo: data.job || '',
+      pus_nivel: data.level || 1,
+      pus_puntos_suerte: data.luckyPoints || 0,
+      pus_vida: data.lifePoints || 0,
+      pus_arma_principal: data.mainWeapon || '',
+      pus_arma_secundaria: data.secondaryWeapon || '',
+      pus_descripcion: data.characterDescription || '',
+      pus_alineacion: data.alignment || '',
+      pus_conocimientos: data.knowledge || '',
+      pus_cantidad_oro: data.goldCoins || 0,
+      pus_cantidad_plata: data.silverCoins || 0,
+      pus_cantidad_bronce: data.bronzeCoins || 0,
+      pus_sistema_juego: systemGame.sju_id || ''
+    };
+    
     const validationResults = validateCharacterAttributes(
-      updatedCharacter, 
+      characterForValidation,
       getInputStatsFromForm(),
       getSkillsAcquiredFromForm(),
       getValues("inventory") || []
@@ -1866,25 +1664,18 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       return;
     }
     
-    // Ensure character exists before proceeding
-    if (!character) {
-      console.error("Character data is missing");
-      alert("Error: No se encontraron datos del personaje. Por favor, intenta nuevamente.");
-      return;
-    }
-    
-    // Prepare character data for the modal
+    // Prepare character data for the modal using form data
     const newCharacter: DataCharacter = {
-      id: character.pus_id || '',
-      player: character.pus_usuario || '',
+      id: data.characterId || uuidv4(),
+      player: data.userName || '',
       name: data.name,
-      class: character.pus_clase || '',
-      race: character.pus_raza || '',
-      job: character.pus_trabajo || '',
+      class: data.class || '',
+      race: data.race || '',
+      job: data.job || '',
       level: data.level,
       luckyPoints: data.luckyPoints,
       description: data.characterDescription || '',
-      knowledge: character.pus_conocimientos ? character.pus_conocimientos.split(',').filter(Boolean) : [],
+      knowledge: data.knowledge ? data.knowledge.split(',').filter(Boolean) : [],
       mainWeapon: data.mainWeapon || '',
       secondaryWeapon: data.secondaryWeapon || '',
       str: [
@@ -1931,7 +1722,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       ],
       mainSkill: data.skillClass || '',
       extraSkill: data.skillExtra || '',
-      alignment: character.pus_alineacion || '',
+      alignment: data.alignment || '',
       skills: ringSkills.getSkillsFromForm(),
       coinsInv: [
         data.goldCoins || 0,
@@ -1940,11 +1731,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       ],
       inv: getValues("inventory") || [],
     };
-    
-    // Only update character if updatedCharacter is not undefined
-    if (updatedCharacter) {
-      setCharacter(updatedCharacter);
-    }
     
     console.log("onSubmitForm: Preparando datos para el modal", newCharacter);
     setDataCharacter(newCharacter);
@@ -1960,45 +1746,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const validateCharacterForm = (): string[] => {
     let fieldsRequired: string[] = [];
     
-    // Get form values from React Hook Form (primary source of truth)
     const formValues = getValues();
-    
-    // Create a character object using form values with fallback to local state
-    const tempCharacter = character ? { ...character } : {} as DBPersonajesUsuario;
-    
-    // Update character fields with form values
-    tempCharacter.pus_nombre = formValues.name;
-    tempCharacter.pus_clase = formValues.class;
-    tempCharacter.pus_raza = formValues.race;
-    tempCharacter.pus_trabajo = formValues.job;
-    tempCharacter.pus_nivel = Number(formValues.level);
-    tempCharacter.pus_suerte = Number(formValues.luckyPoints);
-    tempCharacter.pus_vida = Number(formValues.lifePoints);
-    tempCharacter.pus_arma_principal = formValues.mainWeapon;
-    tempCharacter.pus_arma_secundaria = formValues.secondaryWeapon;
-    tempCharacter.pus_descripcion = formValues.characterDescription;
-    tempCharacter.pus_alineacion = formValues.alignment;
-    
-    // Use our character validation utility for base character properties
-    if (character) {
-      const characterErrors = validateCharacter(tempCharacter);
-      
-      // Map database field names to UI field names for validation
-      characterErrors.forEach(field => {
-        if (field === 'pus_nombre') fieldsRequired.push('name');
-        else if (field === 'pus_clase') fieldsRequired.push('characterClass');
-        else if (field === 'pus_raza') fieldsRequired.push('characterRace');
-        else if (field === 'pus_trabajo') fieldsRequired.push('characterJob');
-      });
-    } else {
-      fieldsRequired.push('character');
-      // Only exit early if we don't have a character object, to allow partial validation
-      return fieldsRequired;
-    }
     
     // Check basic required text fields
     if (!formValues.name?.trim()) {
-      if (!fieldsRequired.includes('name')) fieldsRequired.push('name');
+      fieldsRequired.push('name');
+    }
+    
+    if (!formValues.class?.trim()) {
+      fieldsRequired.push('characterClass');
+    }
+    
+    if (!formValues.race?.trim()) {
+      fieldsRequired.push('characterRace');
+    }
+    
+    if (!formValues.job?.trim()) {
+      fieldsRequired.push('characterJob');
     }
     
     // Validate character level with proper type safety
@@ -2069,10 +1833,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     // Remove any duplicate entries
     return [...new Set(fieldsRequired)];
   };
-    /**
+  /**
    * Helper function to get InputStats array from React Hook Form data
    * This ensures that all code that previously used inputsStatsData can work
-   * with React Hook Form's data as the source of truth
    */
   const getInputStatsFromForm = useCallback((): InputStats[] => {
     const inputStatsFormStats = getValues("stats") || [];
@@ -2096,15 +1859,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const getSkillsAcquiredFromForm = useCallback((): SkillsAcquired[] => {
     return ringSkills.getSkillsFromForm();
   }, [ringSkills]);
-
   /**
    * Displays user-friendly validation feedback based on validation results
    * Groups errors by category and creates a well-structured message
-   * 
-   * MIGRATION STATUS: Enhanced to better support React Hook Form validation
-   * - Shows more detailed errors by category
-   * - Provides better error highlighting using field names from React Hook Form
-   * - Adds support for both errors and warnings
    * 
    * @param validationResults The detailed validation results
    * @param showAlerts Whether to display alert boxes (default true)
@@ -2183,7 +1940,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         fieldsWithErrors.push('stats');
         errorGroups['Character Stats'].push(message);
       } else if (field.startsWith('skill') || field === 'ringSkills' || field.startsWith('skills.')) {
-        // Handle both legacy skill errors and React Hook Form skill array errors
         if (field.startsWith('skills.')) {
           // Extract index from array path (e.g., skills.0.name -> 0)
           const match = field.match(/skills\.(\d+)/);
@@ -2358,9 +2114,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       >
         {/* Titulo */}
         <fieldset className="fieldset-form form-title col-span-2 md:col-span-2 lg:col-span-3 shadow-lg rounded">
-          {!newRecord && character?.sju_sistema_juego ? (
+          {!newRecord && systemGame?.sju_nombre ? (
             <h1 className="col-span-2 text-center font-bold">
-              {getGameSystemProperty(character.sju_sistema_juego, 'sju_nombre', 'Sistema de Juego')}
+              {systemGame.sju_nombre}
             </h1>
           ) : (
             <FormSelectInfoPlayer
@@ -2412,7 +2168,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             id="characterClass"
             label="Clase"
             options={optionsCharacterClass}
-            selectedValue={character?.pus_clase || ""}
+            selectedValue={watch("class") || ""}
             onSelectChange={handleCharacterClassChange}
             className={emptyRequiredFields.includes('characterClass') ? 'required-input' : ''}
           />
@@ -2420,7 +2176,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             id="characterRace"
             label="Raza"
             options={optionsCharacterRace}
-            selectedValue={character?.pus_raza || ""}
+            selectedValue={watch("race") || ""}
             onSelectChange={handleSelectRaceChange}
             className={emptyRequiredFields.includes('characterRace') ? 'required-input' : ''}
           ></FormSelectInfoPlayer>
@@ -2428,7 +2184,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             id="characterJob"
             label="Trabajo"
             options={optionsCharacterJob}
-            selectedValue={character?.pus_trabajo || ""}
+            selectedValue={watch("job") || ""}
             onSelectChange={handleCharacterJobSelectChange}
             className={emptyRequiredFields.includes('characterJob') ? 'required-input' : ''}
           ></FormSelectInfoPlayer>
@@ -2506,12 +2262,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               emptyRequiredFields.includes('description') ? 'required-input' : ''
             }`}
           />
-
           <FormCardCheckbox
             id="characterKnowledge"
             label="Conocimientos"
             checkboxes={checkboxesData}
-            selectedValues={(character?.pus_conocimientos || "").split(",")}
+            selectedValues={(watch("knowledge") || "").split(",")}
             onSelectedValuesChange={handleSelectedCheckValuesChange}
           />
         </fieldset>
@@ -2648,7 +2403,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         {/* Habilidades */}
         <fieldset className="fieldset-form skills-player col-span-1 row-span-2 col-start-1 md:col-start-2 bg-white shadow-lg rounded">
           <legend>Habilidades</legend>
-          {character!.pus_nivel >= 3 ? (
+          {watch("level") >= 3 ? (
             <>
               <label htmlFor="alignment" className="form-lbl mt-2 ">
                 Alineación
@@ -2671,7 +2426,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
               <FormInputSkillsRing
                 id={"0"}
-                level={character!.pus_nivel}
+                level={watch("level")}
                 levelEvaluated={3}
                 ringTypes={optionsRingTypes}
                 skillList={skillsRingList[0]}
@@ -2679,10 +2434,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                 onSelectChange={handleSelectedRingSkillChange}
                 onSelectTypeChange={handleSelectedTypeRingSkillChange}
               />
-
               <FormInputSkillsRing
                 id={"1"}
-                level={character!.pus_nivel}
+                level={watch("level")}
                 levelEvaluated={6}
                 ringTypes={optionsRingTypes}
                 skillList={skillsRingList[1]}
@@ -2693,7 +2447,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
               <FormInputSkillsRing
                 id={"2"}
-                level={character!.pus_nivel}
+                level={watch("level")}
                 levelEvaluated={9}
                 ringTypes={optionsRingTypes}
                 skillList={skillsRingList[2]}

@@ -25,4 +25,7 @@ export {
 export { getlistCharacters, deleteCharacter as removeCharacter } from './characters';
 
 // User
-export { getUser } from './user'; 
+export { getUser } from './user';
+
+// Character Service (new service layer)
+export { CharacterService } from './CharacterService';

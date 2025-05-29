@@ -29,22 +29,14 @@ import {
   getUrlCharacter,
 } from "@database/storage/dbStorage";
 import {
-  deleteItemInventory,
   getCharacter,
   getGameSystem,
   getCharacterStats,
   getListHad,
   getCharacterInventory,
-  insertPus,
-  updateCharacterStats,
-  updateCharacter,
   getCharacterSkills,
+  CharacterService,
 } from "@features/character-sheet/infrastructure/services";
-import {
-  insertDataEpe,
-  upsertDataHpe,
-  upsertDataInp,
-} from "@database/models/dbTables";
 
 // Local Components
 import FormSelectInfoPlayer from "./FormSelectInfoPlayer/FormSelectInfoPlayer";
@@ -63,7 +55,6 @@ import {
   Option,
 } from '@shared/utils/types/typesCharacterSheet';
 import {
-  DBEstadisticaPersonaje,
   DBHabilidad,
   DBHabilidadPersonaje,
   DBInventarioPersonaje,
@@ -1705,7 +1696,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       ?.skills.find((ele) => ele.value === id)?.name;
   };
   /**
-   * Saves character data to the database
+   * Saves character data to the database using the CharacterService
    */
   async function saveData() {
     try {
@@ -1732,69 +1723,40 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         character.pus_descripcion = formValues.characterDescription;
       }
 
-      // Validate essential character fields
-      const missingFields = validateCharacter(character);
-      if (missingFields.length > 0) {
-        throw new Error(`Datos incompletos del personaje: ${missingFields.join(', ')}`);
-      }
-
       // Show saving indicator
       setLoading(true);
       
-      console.log("Starting character save process", { 
+      console.log("Starting character save process using CharacterService", { 
         newRecord, 
         characterId: character.pus_id,
         username: character.pus_usuario,
         formValues
       });
       
-      // Upload character information first
-      let ID_CHARACTER: string;
-      try {
-        ID_CHARACTER = await uploadInfoCharacter(newRecord) || "";
-        
-        if (!ID_CHARACTER) {
-          throw new Error("No se pudo guardar la información básica del personaje");
-        }
-        
-        console.log("Character base info saved successfully with ID:", ID_CHARACTER);
-      } catch (error) {
-        console.error("Error during character base info upload:", error);
-        throw error; // Re-throw to be caught by the outer catch
-      }
-
-      // Upload remaining data in parallel
-      try {
-        console.log("Uploading additional character data...");
-        await Promise.all([
-          uploadStats(newRecord, ID_CHARACTER)
-            .catch(err => {
-              console.error("Stats upload failed:", err);
-              throw new Error(`Error al guardar estadísticas: ${err.message}`);
-            }),
-          uploadSkill(ID_CHARACTER)
-            .catch(err => {
-              console.error("Skills upload failed:", err);
-              throw new Error(`Error al guardar habilidades: ${err.message}`);
-            }),
-          uploadInventory(ID_CHARACTER)
-            .catch(err => {
-              console.error("Inventory upload failed:", err);
-              throw new Error(`Error al guardar inventario: ${err.message}`);
-            }),
-        ]);
-        
-        console.log("All character data saved successfully");
-      } catch (error) {
-        console.error("Error during additional character data upload:", error);
-        throw error; // Re-throw to be caught by the outer catch
-      }
+      // Get required data for the service
+      const characterStats = getInputStatsFromForm();
+      const characterSkills = getSkillsAcquiredFromForm();
+      const inventoryItems = getValues("inventory") || [];
+      
+      // Use CharacterService to save all data
+      const savedCharacterId = await CharacterService.saveCompleteCharacter(
+        character,
+        formValues,
+        characterStats,
+        characterSkills,
+        inventoryItems,
+        newRecord,
+        deleteItems,
+        fieldSkill
+      );
+      
+      console.log("All character data saved successfully via CharacterService");
       
       // Update state and navigate
       setNewRecord(false);
       document.documentElement.scrollTop = 0;
       onOpenChange();
-      reloadPage(ID_CHARACTER);
+      reloadPage(savedCharacterId);
     } catch (error) {
       console.error("Error during character save:", error);
       handleAsyncError(error, "saving character data");
@@ -1802,213 +1764,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setLoading(false);
     }
   }
-
   const reloadPage = (characterId: string) => {
     navigate("/CharacterSheet/" + characterId);
   };
-
   /**
-   * Uploads basic character information to the database
-   * 
-   * @param newRecord - Whether this is a new character or an update
-   * @returns - The ID of the saved character
-   */
-  async function uploadInfoCharacter(newRecord: boolean): Promise<string | undefined> {
-    if (!character) {
-      console.error("Character object is null or undefined");
-      throw new Error("No character data available to save");
-    }
-
-    // Get current form values from React Hook Form (primary source of truth)
-    const formValues = getValues();
-    
-    // Update character object with the latest form values before saving
-    // This ensures we're saving what the user has actually entered in the form
-    if (character) {
-      character.pus_nombre = formValues.name;
-      character.pus_nivel = Number(formValues.level);
-      character.pus_suerte = Number(formValues.luckyPoints);
-      character.pus_vida = Number(formValues.lifePoints);
-      character.pus_descripcion = formValues.characterDescription || '';
-      character.pus_alineacion = formValues.alignment || '';
-      
-      // These properties may not be directly editable in the form
-      // but are maintained in the character state
-      if (character.pus_arma_1 !== formValues.mainWeapon) {
-        console.log(`Updating mainWeapon from ${character.pus_arma_1} to ${formValues.mainWeapon}`);
-        character.pus_arma_1 = formValues.mainWeapon;
-      }
-      
-      if (character.pus_arma_2 !== formValues.secondaryWeapon) {
-        console.log(`Updating secondaryWeapon from ${character.pus_arma_2} to ${formValues.secondaryWeapon}`);
-        character.pus_arma_2 = formValues.secondaryWeapon;
-      }
-    }
-
-    // Validate character data before saving
-    const missingFields = validateCharacter(character);
-    if (missingFields.length > 0) {
-      console.error("Character validation failed, missing fields:", missingFields);
-      throw new Error(`Datos incompletos del personaje: ${missingFields.join(', ')}`);
-    }
-    
-    try {
-      console.log("Saving character data with form values:", { character, formValues });
-      if (!newRecord) {
-          const data = await updateCharacter(character);
-          if (!data) throw new Error("No se recibió respuesta al actualizar el personaje");
-          console.log("Character updated successfully:", data);
-          return data?.pus_id;
-      } else {
-          const data = await insertPus(character);
-          if (!data) throw new Error("No se recibió respuesta al insertar el personaje");
-          console.log("Character inserted successfully:", data);
-          return data?.pus_id;
-      }
-    } catch (error) {
-      console.error("Error saving character data:", error);
-      throw error;
-    }
-  }
-  /**
-   * Uploads character statistics to the database
-   * 
-   * @param isNewCharacter - Whether this is a new character or an update
-   * @param characterId - The ID of the character to update
-   */
-  async function uploadStats(isNewCharacter: boolean, characterId: string) {
-    if (characterId === "") return;
-    
-    // Get stats using our helper function (uses React Hook Form as primary source)
-    const characterStats = getInputStatsFromForm();
-    
-    // Map of stat IDs to their labels for building database records
-    const statLabels = {
-      'STR': 'Fuerza',
-      'INT': 'Inteligencia',
-      'DEX': 'Destreza',
-      'CON': 'Constitución',
-      'PER': 'Percepción',
-      'CHA': 'Carisma'
-    };
-    
-    // Build stat records using our helper to get the most up-to-date stats
-    const buildStats = () => {
-      const stats: DBEstadisticaPersonaje[] = [];
-      
-      // Use the helper function to get current stat values
-      characterStats.forEach(stat => {
-        stats.push({
-          epe_id: uuidv4(),
-          epe_personaje: characterId,
-          epe_sigla: stat.id,
-          epe_nombre: statLabels[stat.id as keyof typeof statLabels] || stat.label,
-          epe_num_dado: stat.valueDice,
-          epe_num_clase: stat.valueClass,
-          epe_num_nivel: stat.valueLevel,
-        });
-      });
-      
-      return stats;
-    };
-    
-    // Process based on whether it's a new character or an update
-    if (!isNewCharacter) {
-      const stats = buildStats();
-      // Update each stat record individually
-      for (const stat of stats) {
-        await updateCharacterStats(stat);
-      }
-    } else {
-      // Insert all stats at once for new character
-      const stats = buildStats();
-      await insertDataEpe(stats);
-      console.log(`Inserted ${stats.length} stats for new character ${characterId}`);
-    }
-  }
-  /**
-   * Uploads character skills data to the database
-   * 
-   * @param characterId - The ID of the character to update
-   */
-  async function uploadSkill(characterId: string) {
-    if (characterId === "") return;
-
-    // Get form values from React Hook Form (primary source of truth)
-    const formValues = getValues();
-    const saveSkill: DBHabilidadPersonaje[] = [];
-    
-    // Add main skill (try React Hook Form first, fall back to local state)
-    const mainSkillId = formValues.skillClass || 
-      fieldSkill.find(skill => skill.field === "skillClass")?.skill || '';
-      
-    if (mainSkillId) {
-      saveSkill.push({
-        hpe_id: uuidv4(),
-        hpe_personaje: characterId,
-        hpe_habilidad: mainSkillId,
-        hpe_campo: "skillClass",
-        hpe_alineacion: null,
-      });
-    } else {
-      console.warn("No main skill found for character");
-    }
-    
-    // Add extra skill (try React Hook Form first, fall back to local state)
-    const extraSkillId = formValues.skillExtra || 
-      fieldSkill.find(skill => skill.field === "skillExtra")?.skill || '';
-      
-    if (extraSkillId) {
-      saveSkill.push({
-        hpe_id: uuidv4(),
-        hpe_personaje: characterId,
-        hpe_habilidad: extraSkillId,
-        hpe_campo: "skillExtra",
-        hpe_alineacion: null,
-      });
-    } else {
-      console.warn("No extra skill found for character");
-    }
-
-    // Add ring skills - use our helper to get the most up-to-date data
-    const characterSkills = getSkillsAcquiredFromForm();
-    
-    // Process and save ring skills
-    for (let index = 0; index < characterSkills.length; index++) {
-      if (!characterSkills[index].id) continue;
-      saveSkill.push({
-        hpe_id: uuidv4(),
-        hpe_personaje: characterId,
-        hpe_habilidad: characterSkills[index].id,
-        hpe_campo: "skillRing" + characterSkills[index].value,
-        hpe_alineacion: formValues.alignment || null,
-      });
-    }
-
-    console.log(`Saving ${saveSkill.length} skills for character ${characterId}`, saveSkill);
-    await upsertDataHpe(saveSkill);
-  }
-
-  async function uploadInventory(characterId: string) {
-    if (characterId === "") return;
-
-    // Use inventory data from React Hook Form instead of local state
-    const inventoryItems = getValues("inventory") || [];
-    
-    const saveItems: DBInventarioPersonaje[] = [];
-    for (let index = 0; index < inventoryItems.length; index++) {
-      saveItems.push({
-        inp_id: inventoryItems[index].id,
-        inp_personaje: characterId,
-        inp_nombre: inventoryItems[index].name,
-        inp_descripcion: inventoryItems[index].description,
-        inp_cantidad: inventoryItems[index].count,
-      });
-    }
-
-    upsertDataInp(saveItems);
-    deleteItemInventory(deleteItems);
-  }  /**
    * Handles the form submission, performing validations and preparing data for saving
    * 
    * @param data The form data submitted

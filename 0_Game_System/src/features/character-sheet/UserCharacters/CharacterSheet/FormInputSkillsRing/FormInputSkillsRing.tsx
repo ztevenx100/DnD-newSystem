@@ -30,7 +30,6 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({
 }) => {
     useEffect(() => {
         if (values.ring && skillList.skills.length === 0) {
-            console.log('useEffect - Initializing skills for ring', id, values.ring);
             const ringType = ringTypes.find(ring => ring.id === values.ring);
             const stat: string = ringType?.stat || '';
             if (stat !== '') {
@@ -38,24 +37,18 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({
             }
         }
     }, [id, values.ring, ringTypes, skillList.skills.length, onSelectTypeChange]);
-
     const handleSkillTypeRingChange = (newRing: string) => {
         const ringType = ringTypes.find(ring => ring.id === newRing);
         const stat: string = ringType?.stat || '';
         
-        console.log('handleSkillTypeRingChange', {id, newRing, ringType, stat});
-        
         if (stat !== '') {
             onSelectTypeChange(id, stat);
-            console.log('Available ring types:', ringTypes.map(r => ({id: r.id, name: r.name, stat: r.stat})));
         }
         
         onSelectChange(id, newRing, values.name || '', stat);
     };
-
     const handleSkillChange = (id: string, newSkill: string) => {
         const stat: string = ringTypes.find(ring => ring.id === values.ring)?.stat || '';
-        console.log('handleSkillChange', {id, newSkill, ring: values.ring, stat});
         onSelectChange(id, values.ring, newSkill, stat);
     };
 

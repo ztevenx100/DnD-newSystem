@@ -5,6 +5,7 @@ import { InventoryObject, SkillsAcquired } from "@/shared/utils/types/typesChara
  */
 export interface CharacterForm {
   // Basic information
+  characterId?: string;
   userName: string;
   name: string;
   class: string;

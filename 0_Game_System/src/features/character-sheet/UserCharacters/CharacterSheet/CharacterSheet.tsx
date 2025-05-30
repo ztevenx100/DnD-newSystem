@@ -70,8 +70,6 @@ import { mapSkillFields } from "./fixSkills";
 import {
   getCharacterProperty, 
   getGameSystemProperty,
-  validateCharacterStats,
-  safeNumberConversion,
   validateCharacterAttributes
 } from "@shared/utils/helpers/characterHelpers";
 
@@ -1292,7 +1290,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     const numericValue = validateNumeric(value, 1);
     setValue("newObjectCount", numericValue);
   };
-
   /**
    * Valida los campos requeridos para abrir el modal
    * @returns array de strings con los campos que faltan
@@ -1305,28 +1302,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     
     // Validate required character properties
     if (!formValues.race?.trim()) {
-      console.log("Falta la raza");
       fieldsRequired.push('characterRace');
     }
     if (!formValues.job?.trim()) {
-      console.log("Falta el trabajo");
       fieldsRequired.push('characterJob');
     }
     if (!formValues.class?.trim()) {
-      console.log("Falta la clase");
       fieldsRequired.push('characterClass');
     }
     
     // Validate form fields
     if (!formValues.name?.trim()) {
-      console.log("Falta el nombre del personaje");
       fieldsRequired.push('name');
     }
     
     // Validate stats - use our getStatTotal helper
     const totalStatsSum = getStatTotal('total');
     if (totalStatsSum <= 0) {
-      console.log("No hay estadísticas definidas");
       fieldsRequired.push('stats');
     }
     
@@ -1418,8 +1410,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
    * que todos los campos requeridos estén completos
    */
   const handleOpenModal = () => {
-    console.log("Ejecutando handleOpenModal");
-    
     // Validar campos requeridos
     const fieldsRequired = validateRequiredFields();
     setEmptyRequiredFields(fieldsRequired);
@@ -1428,16 +1418,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       alert("Por favor, complete todos los campos obligatorios: " + fieldsRequired.join(", "));
       return;
     }
-    
-    console.log("Campos requeridos completos, preparando datos para el modal...");
 
     try {
       const newCharacter = prepareCharacterData();
-      console.log("Datos del personaje preparados para el modal:", newCharacter);
       setDataCharacter(newCharacter);
-      console.log("Abriendo modal...");
       onOpen();
-      console.log("Modal abierto, isOpen=", isOpen);
     } catch (error) {
       console.error("Error preparing character data:", error);
       alert("Error al preparar los datos del personaje");
@@ -1463,14 +1448,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     const validIds = ids.filter(Boolean);
     if (validIds.length === 0) return names;
     
-    console.log("Buscando nombres para conocimientos:", validIds);
-    
     validIds.forEach((know) => {
       const found = checkboxesData.find((elem) => elem.value === know);
       if (found) {
         names += found.name + ", ";
-      } else {
-        console.log("Conocimiento no encontrado:", know);
       }
     });
     names = names.length > 2 ? names.substring(0, names.length - 2) : names;
@@ -1523,13 +1504,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       // Show saving indicator
       setLoading(true);
       
-      console.log("Starting character save process using CharacterService", { 
-        newRecord, 
-        characterId: characterData.pus_id,
-        username: characterData.pus_usuario,
-        formValues
-      });
-      
       // Get required data for the service
       const characterStats = getInputStatsFromForm();
       const characterSkills = getSkillsAcquiredFromForm();
@@ -1546,8 +1520,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         deleteItems,
         fieldSkill
       );
-      
-      console.log("All character data saved successfully via CharacterService");
       
       // Update state and navigate
       setNewRecord(false);
@@ -1570,20 +1542,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
    * @param data The form data submitted
    */
   const onSubmitForm = (data: CharacterForm) => {
-    console.log("Form submission data:", {
-      formData: data,
-      userName: user?.usu_nombre
-    });
-    
-    // Error categories for better UI feedback
-    const basicInfoErrors = ['name', 'characterRace', 'characterClass', 'characterJob'];
-    const statsErrors = ['stats', 'level', 'luckyPoints', 'lifePoints'];
-    const weaponsErrors = ['mainWeapon', 'secondaryWeapon'];
-    const skillsErrors = ['mainSkill', 'extraSkill', 'ringSkills', 'ringSkill0', 'ringSkill1', 'ringSkill2'];
-    
     // Check for React Hook Form validation errors first
     if (Object.keys(errors).length > 0) {
-      console.log("React Hook Form validation errors:", errors);
       
       // Map React Hook Form errors to our validation structure
       const validationResult = {
@@ -1601,12 +1561,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       showValidationFeedback(validationResult);
       return; // Stop form submission if there are React Hook Form errors
     }
-    
-    // As backup, use our existing validation for additional checks
-    let fieldsRequired: string[] = validateCharacterForm();
-    let errorMessage = "Por favor, complete todos los campos obligatorios:\n";
-    // Use our enhanced validation function for comprehensive assessment with helper functions
-    // Convert form data to character format for validation
+    // Use comprehensive validation with helper functions
     const characterForValidation: DBPersonajesUsuario = {
       pus_id: data.characterId || '',
       pus_usuario: data.userName || '',
@@ -1635,32 +1590,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       getValues("inventory") || []
     );
     
-    // Process validation results with our new feedback function
     const feedbackResult = showValidationFeedback(validationResults);
     
-    // If validation failed, stop form processing
     if (!feedbackResult.success) {
-      return;
-    }
-      
-    const basicMissing = fieldsRequired.filter(field => basicInfoErrors.includes(field));
-    const statsMissing = fieldsRequired.filter(field => statsErrors.includes(field));
-    const weaponsMissing = fieldsRequired.filter(field => weaponsErrors.includes(field));
-    const skillsMissing = fieldsRequired.filter(field => skillsErrors.includes(field));
-    const otherMissing = fieldsRequired.filter(field => 
-      !basicInfoErrors.includes(field) && 
-      !statsErrors.includes(field) && 
-      !weaponsErrors.includes(field) &&
-      !skillsErrors.includes(field)
-    );
-    if (fieldsRequired.length > 0) {
-      if (basicMissing.length > 0) errorMessage += "\n- Información básica: " + basicMissing.join(", ");
-      if (statsMissing.length > 0) errorMessage += "\n- Estadísticas: " + statsMissing.join(", ");
-      if (weaponsMissing.length > 0) errorMessage += "\n- Armamento: " + weaponsMissing.join(", ");
-      if (skillsMissing.length > 0) errorMessage += "\n- Habilidades: " + skillsMissing.join(", ");
-      if (otherMissing.length > 0) errorMessage += "\n- Otros campos: " + otherMissing.join(", ");
-      
-      alert(errorMessage);
       return;
     }
     
@@ -1731,107 +1663,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       ],
       inv: getValues("inventory") || [],
     };
-    
-    console.log("onSubmitForm: Preparando datos para el modal", newCharacter);
     setDataCharacter(newCharacter);
-    console.log("onSubmitForm: Abriendo modal...");
     onOpen();
-    console.log("onSubmitForm: Modal debería estar abierto ahora, isOpen=", isOpen);
-  };
-  /**
-   * Validates the character form data, checking all required fields and constraints
-   * 
-   * @returns Array of field names with validation errors
-   */
-  const validateCharacterForm = (): string[] => {
-    let fieldsRequired: string[] = [];
-    
-    const formValues = getValues();
-    
-    // Check basic required text fields
-    if (!formValues.name?.trim()) {
-      fieldsRequired.push('name');
-    }
-    
-    if (!formValues.class?.trim()) {
-      fieldsRequired.push('characterClass');
-    }
-    
-    if (!formValues.race?.trim()) {
-      fieldsRequired.push('characterRace');
-    }
-    
-    if (!formValues.job?.trim()) {
-      fieldsRequired.push('characterJob');
-    }
-    
-    // Validate character level with proper type safety
-    const level = safeNumberConversion(formValues.level);
-    if (level < 1 || level > 10) {
-      fieldsRequired.push('level');
-    }
-    
-    // Validate other numeric values
-    const luckyPoints = safeNumberConversion(formValues.luckyPoints);
-    if (luckyPoints < 0) {
-      fieldsRequired.push('luckyPoints');
-    }
-    
-    const lifePoints = safeNumberConversion(formValues.lifePoints);
-    if (lifePoints < 0) {
-      fieldsRequired.push('lifePoints');
-    }
-    
-    // Validate required weapons
-    if (!formValues.mainWeapon?.trim()) {
-      fieldsRequired.push('mainWeapon');
-    }
-    // Validate stats using our helper function to get most current stats data
-    const statsToValidate = getInputStatsFromForm();
-    
-    // First check overall stats
-    if (!validateCharacterStats(statsToValidate)) {
-      fieldsRequired.push('stats');
-    } else {
-      // Additional check for total stats to ensure character has some abilities
-      const totalStats = statsToValidate.reduce((sum, stat) => 
-        sum + stat.valueDice + stat.valueClass + stat.valueLevel, 0);
-      
-      if (totalStats <= 0) {
-        if (!fieldsRequired.includes('stats')) fieldsRequired.push('stats');
-      }
-      
-      // Then validate each stat individually for more detailed feedback
-      const statIds = ['STR', 'INT', 'DEX', 'CON', 'PER', 'CHA'];
-      statIds.forEach(statId => {
-        const result = characterStats.validateSingleStat(statId);
-        if (!result.isValid && !fieldsRequired.includes('stats')) {
-          fieldsRequired.push('stats');
-          console.warn(`Stat validation failed for ${statId}: ${result.message}`);
-        }
-      });
-    }
-    
-    // Validate selected skills using helper function to get consistent data
-    const skills = getSkillsAcquiredFromForm();
-    if (!formValues.skillClass) {
-      fieldsRequired.push('mainSkill');
-    }
-    
-    // Check if ring skills are properly assigned (if they should be)
-    const ringSkillsWithoutName = skills.filter(skill => skill.ring && !skill.name);
-    if (ringSkillsWithoutName.length > 0) {
-      fieldsRequired.push('ringSkills');
-      console.warn('Missing ring skill names:', ringSkillsWithoutName.map(s => s.value).join(', '));
-    }
-    
-    // Validate character description if it's a required field
-    if (formValues.characterDescription?.trim() === '') {
-      fieldsRequired.push('description');
-    }
-    
-    // Remove any duplicate entries
-    return [...new Set(fieldsRequired)];
   };
   /**
    * Helper function to get InputStats array from React Hook Form data
@@ -2168,7 +2001,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             id="characterClass"
             label="Clase"
             options={optionsCharacterClass}
-            selectedValue={watch("class") || ""}
+            register={register}
+            name="class"
+            required={true}
             onSelectChange={handleCharacterClassChange}
             className={emptyRequiredFields.includes('characterClass') ? 'required-input' : ''}
           />
@@ -2176,7 +2011,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             id="characterRace"
             label="Raza"
             options={optionsCharacterRace}
-            selectedValue={watch("race") || ""}
+            register={register}
+            name="race"
+            required={true}
             onSelectChange={handleSelectRaceChange}
             className={emptyRequiredFields.includes('characterRace') ? 'required-input' : ''}
           ></FormSelectInfoPlayer>
@@ -2184,7 +2021,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             id="characterJob"
             label="Trabajo"
             options={optionsCharacterJob}
-            selectedValue={watch("job") || ""}
+            register={register}
+            name="job"
+            required={true}
             onSelectChange={handleCharacterJobSelectChange}
             className={emptyRequiredFields.includes('characterJob') ? 'required-input' : ''}
           ></FormSelectInfoPlayer>
@@ -2266,7 +2105,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             id="characterKnowledge"
             label="Conocimientos"
             checkboxes={checkboxesData}
-            selectedValues={(watch("knowledge") || "").split(",")}
+            control={control}
+            name="knowledge"
             onSelectedValuesChange={handleSelectedCheckValuesChange}
           />
         </fieldset>
@@ -2381,18 +2221,21 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             id="skillClass"
             label="Habilidad innata"
             options={optionsSkillClass}
-            selectedValue={getValues("skillClass")}
+            register={register}
+            name="skillClass"
+            required={true}
             onSelectChange={handleSelectSkillChange}
           ></FormSelectInfoPlayer>
 
           {/* Debug information */}
           {optionsSkillClass.length === 0 && <div className="text-red-500 text-xs">No options available for skillClass</div>}
-
           <FormSelectInfoPlayer
             id="skillExtra"
             label="Habilidad extra"
             options={optionsSkillExtra}
-            selectedValue={getValues("skillExtra")}
+            register={register}
+            name="skillExtra"
+            required={true}
             onSelectChange={handleSelectExtraSkillChange}
           ></FormSelectInfoPlayer>
 

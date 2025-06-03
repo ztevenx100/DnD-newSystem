@@ -37,8 +37,8 @@ import FormSelectInfoPlayer from "./FormSelectInfoPlayer/FormSelectInfoPlayer";
 import FormCardCheckbox from "./FormCardCheckbox/FormCardCheckbox";
 import FormInputStats from "./FormInputStats/FormInputStats";
 import FormInputSkillsRing from "./FormInputSkillsRing/FormInputSkillsRing";
-import FormImageFile from "./FormImageFile/FormImageFile";
 import CharacterSaveModal from "./CharacterSaveModal/CharacterSaveModal";
+import CharacterImageWrapper from "./components/CharacterImageWrapper";
 
 // Type Definitions
 import {
@@ -86,11 +86,10 @@ import {
   checkboxesData 
 } from '../../constants/characterOptions';
 
-interface CharacterSheetProps {
-  changeBackground: (newBackground: string) => void;
-}
+// Importar las props desde el archivo de tipos
+import { CharacterSheetProps } from './types/characterSheetProps';
 
-const CharacterSheet: React.FC<CharacterSheetProps> = ({
+export const CharacterSheet: React.FC<CharacterSheetProps> = ({
   changeBackground,
 }) => {
   const loaderData = useLoaderData() as {
@@ -2071,7 +2070,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           >
             Imagen
           </label>
-          <FormImageFile
+          <CharacterImageWrapper
             externalStyles={
               "col-start-1 md:col-start-5 col-span-2 md:col-span-1 row-start-7 md:row-start-2 row-span-3 md:row-span-4 mr-2 ml-2"
             }
@@ -2489,5 +2488,3 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     </>
   );
 };
-
-export default CharacterSheet;

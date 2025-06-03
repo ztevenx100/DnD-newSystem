@@ -11,7 +11,11 @@ import { DBPersonajesUsuario } from '@shared/utils/types/dbTypes';
 // Importaciones lazy para las páginas principales
 const Home = lazy(() => import('@/app/Home'));
 const UserCharacters = lazy(() => import('@features/character-sheet/UserCharacters/UserCharacters'));
-const CharacterSheet = lazy(() => import('@features/character-sheet/UserCharacters/CharacterSheet/CharacterSheet'));
+// Modificación para usar la exportación nombrada desde el barrel (index.ts)
+const CharacterSheet = lazy(() => 
+  import('@features/character-sheet/UserCharacters/CharacterSheet')
+  .then(module => ({ default: module.CharacterSheet }))
+);
 const WorldMap = lazy(() => import('@features/world-map/WorldMap/WorldMap'));
 const SystemsGameList = lazy(() => import('@features/game-systems/presentation/pages/SystemsGameList'));
 

@@ -97,7 +97,6 @@ export interface CharacterSheetContextType {
   // Validación
   emptyRequiredFields: string[];
   clearValidationError: (fieldId: string) => void;
-  
   // Funciones handler
   handleCharacterClassChange: (value: string) => void;
   handleCharacterJobSelectChange: (value: string) => void;
@@ -109,6 +108,8 @@ export interface CharacterSheetContextType {
   handleSelectedRingSkillChange: (id: string, ring: string, skill: string, stat: string) => void;
   handleSelectedTypeRingSkillChange: (id: string, type: string) => Promise<void>;
   handleAddObject: () => void;
+  handleDeleteObject: (id: string) => void;
+  handleUpdateObject: (id: string, field: string, value: any) => void;
   
   // Funciones para obtener datos
   getInventory: () => Promise<void>;
@@ -118,6 +119,7 @@ export interface CharacterSheetContextType {
   
   // Estadísticas y utilidades
   totalStats: StatsTotal;
+  setTotalStats: (stats: StatsTotal) => void;
   getStatTotal: (statId: string) => number;
   
   // Datos del usuario y personaje

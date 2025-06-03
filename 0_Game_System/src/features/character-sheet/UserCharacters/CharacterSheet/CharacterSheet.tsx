@@ -34,11 +34,13 @@ import {
 
 // Local Components
 import FormSelectInfoPlayer from "./FormSelectInfoPlayer/FormSelectInfoPlayer";
-import FormCardCheckbox from "./FormCardCheckbox/FormCardCheckbox";
-import FormInputStats from "./FormInputStats/FormInputStats";
 import FormInputSkillsRing from "./FormInputSkillsRing/FormInputSkillsRing";
+import FormCardCheckbox from "./FormCardCheckbox/FormCardCheckbox";
 import CharacterSaveModal from "./CharacterSaveModal/CharacterSaveModal";
 import CharacterImageWrapper from "./components/CharacterImageWrapper";
+import CharacterStatsWrapper from "./components/CharacterStatsWrapper";
+import CharacterBasicInfoWrapper from "./components/CharacterBasicInfoWrapper";
+import CharacterInventoryWrapper from "./components/CharacterInventoryWrapper";
 
 // Type Definitions
 import {
@@ -74,7 +76,6 @@ import ScreenLoader from "@UI/ScreenLoader/ScreenLoader";
 import SvgCharacter from "@Icons/SvgCharacter";
 import SvgSaveCharacter from "@Icons/SvgSaveCharacter";
 import SvgD4Roll from "@Icons/SvgD4Roll";
-import SvgDeleteItem from "@Icons/SvgDeleteItem";
 
 // Constants
 import { 
@@ -1974,74 +1975,34 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
             className="form-input col-start-2 col-end-3 col-span-1 mr-2 focus:border-black focus:shadow"
             readOnly
           />
-          <label
-            htmlFor="name"
-            className="form-lbl col-start-1 bg-grey-lighter "
-          >
-            Personaje
-          </label>
-          <input
-            {...register("name", { 
-              required: true, 
-              maxLength: 50,
-              onChange: () => clearValidationError('name')
-            })}
-            placeholder="Nombre del personaje"
-            className={`form-input col-start-2 mr-2 focus:border-black focus:shadow ${
-              emptyRequiredFields.includes('name') ? 'required-input' : ''
-            }`}
+          {/* Componente de información básica refactorizado */}
+          <CharacterBasicInfoWrapper 
+            externalStyles="row-span-2 col-span-4"
+            name={getValues("name") || ""}
+            characterClass={getValues("class") || ""}
+            race={getValues("race") || ""}
+            job={getValues("job") || ""}
+            level={getValues("level") || 1}
+            alignment={getValues("alignment") || ""}
+            classOptions={optionsCharacterClass}
+            raceOptions={optionsCharacterRace}
+            jobOptions={optionsCharacterJob}
+            onNameChange={(value) => {
+              setValue("name", value);
+              clearValidationError('name');
+            }}
+            onClassChange={handleCharacterClassChange}
+            onRaceChange={handleSelectRaceChange}
+            onJobChange={handleCharacterJobSelectChange}
+            onLevelChange={(value) => {
+              setValue("level", value);
+              characterStats.handleLevelChange(value);
+            }}
+            onAlignmentChange={(value) => {
+              setValue("alignment", value);
+            }}
           />
-          <FormSelectInfoPlayer
-            id="characterClass"
-            label="Clase"
-            options={optionsCharacterClass}
-            register={register}
-            name="class"
-            required={true}
-            onSelectChange={handleCharacterClassChange}
-            className={emptyRequiredFields.includes('characterClass') ? 'required-input' : ''}
-          />
-          <FormSelectInfoPlayer
-            id="characterRace"
-            label="Raza"
-            options={optionsCharacterRace}
-            register={register}
-            name="race"
-            required={true}
-            onSelectChange={handleSelectRaceChange}
-            className={emptyRequiredFields.includes('characterRace') ? 'required-input' : ''}
-          ></FormSelectInfoPlayer>
-          <FormSelectInfoPlayer
-            id="characterJob"
-            label="Trabajo"
-            options={optionsCharacterJob}
-            register={register}
-            name="job"
-            required={true}
-            onSelectChange={handleCharacterJobSelectChange}
-            className={emptyRequiredFields.includes('characterJob') ? 'required-input' : ''}
-          ></FormSelectInfoPlayer>
 
-          <label
-            htmlFor="level"
-            className="form-lbl-y col-start-1 md:col-start-3 col-span-1 row-start-2 md:row-start-1 bg-grey-lighter "
-          >
-            Nivel
-          </label>
-          <input
-            {...register("level", { 
-              required: true, 
-              maxLength: 2, 
-              min:1, 
-              max:10,
-              onChange: (e) => {
-                const levelValue = parseInt(e.target.value) || 0;
-                characterStats.handleLevelChange(levelValue);
-              }
-            })}
-            placeholder="Nivel"
-            className="form-input-y numeric-input col-start-1 md:col-start-3 col-span-1 row-start-3 md:row-start-2 row-span-3 md:row-span-4 focus:border-black focus:shadow"
-          />
           <label
             htmlFor="luckyPoints"
             className="form-lbl-y col-start-2 md:col-start-4 col-span-1 row-start-2 md:row-start-1 bg-grey-lighter "
@@ -2141,39 +2102,38 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
               </select>
             </div>
           </header>
-
           {/* STRENGTH */}
-          <FormInputStats
+          <CharacterStatsWrapper
             inputStats={getValues("stats")[0] || characterStats.defaultStatsData[0]}
             onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
 
           {/* INTELLIGENCE */}
-          <FormInputStats
+          <CharacterStatsWrapper
             inputStats={getValues("stats")[1] || characterStats.defaultStatsData[1]}
             onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
 
           {/* DEXTERITY */}
-          <FormInputStats
+          <CharacterStatsWrapper
             inputStats={getValues("stats")[2] || characterStats.defaultStatsData[2]}
             onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
 
           {/* CONSTITUTION */}
-          <FormInputStats
+          <CharacterStatsWrapper
             inputStats={getValues("stats")[3] || characterStats.defaultStatsData[3]}
             onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
 
           {/* PERCEPTION */}
-          <FormInputStats
+          <CharacterStatsWrapper
             inputStats={getValues("stats")[4] || characterStats.defaultStatsData[4]}
             onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
 
           {/* CHARISMA */}
-          <FormInputStats
+          <CharacterStatsWrapper
             inputStats={getValues("stats")[5] || characterStats.defaultStatsData[5]}
             onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
@@ -2297,168 +2257,30 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
             <></>
           )}
         </fieldset>
-
-        {/* Inventario */}
+        {/* Componente de inventario refactorizado */}
         <fieldset className="fieldset-form inventory-player row-span-3 col-span-1 col-start-1 lg:col-start-3 lg:row-start-3 bg-white shadow-lg rounded" aria-labelledby="inventory-heading">
           <legend id="inventory-heading" className="text-lg font-semibold">Inventario</legend>
-
-          <label
-            htmlFor="goldCoins"
-            className="form-lbl col-span-3 mb-1 bg-grey-lighter font-medium"
-          >
-            Monedero
-          </label>
-          <label
-            htmlFor="goldCoins"
-            className="form-lbl-coins ml-2 col-span-1 bg-grey-lighter "
-          >
-            Oro
-          </label>
-          <label
-            htmlFor="silverCoins"
-            className="form-lbl-coins col-span-1 bg-grey-lighter "
-          >
-            Plata
-          </label>
-          <label
-            htmlFor="bronzeCoins"
-            className="form-lbl-coins mr-2 col-span-1 bg-grey-lighter "
-          >
-            Bronce
-          </label>
-          <input
-            {...register("goldCoins", { 
-              required: true, 
-              maxLength: 3,
-              onChange: (e) => {
-                const numericValue = validateNumeric(e.target.value);
-                setValue("goldCoins", numericValue);
-                clearValidationError('goldCoins');
+          
+          <CharacterInventoryWrapper 
+            externalStyles="inventory-wrapper"
+            inventory={inventoryFields}
+            onAddItem={handleAddObject}
+            onUpdateItem={(id, field, value) => {
+              if (field === 'count') {
+                handleEditCount(id, value);
               }
-            })}
-            placeholder="Oro"
-            className={`form-input ml-2 col-span-1 focus:border-black focus:shadow ${
-              emptyRequiredFields.includes('goldCoins') ? 'required-input' : ''
-            }`}
+            }}
+            onRemoveItem={handleDeleteObject}
+            newObjectName={getValues("newObjectName") || ""}
+            newObjectDescription={getValues("newObjectDescription") || ""}
+            newObjectCount={getValues("newObjectCount") || 1}
+            onNewObjectNameChange={(value) => setValue("newObjectName", value)}
+            onNewObjectDescriptionChange={(value) => setValue("newObjectDescription", value)}
+            onNewObjectCountChange={(value) => {
+              setValue("newObjectCount", value);
+              handleNewCount(value.toString());
+            }}
           />
-          <input
-            {...register("silverCoins", { 
-              required: true, 
-              maxLength: 3,
-              onChange: (e) => {
-                const numericValue = validateNumeric(e.target.value);
-                setValue("silverCoins", numericValue);
-                clearValidationError('silverCoins');
-              }
-            })}
-            placeholder="Plata"
-            className={`form-input col-span-1 focus:border-black focus:shadow ${
-              emptyRequiredFields.includes('silverCoins') ? 'required-input' : ''
-            }`}
-          />
-          <input
-            {...register("bronzeCoins", { 
-              required: true, 
-              maxLength: 3,
-              onChange: (e) => {
-                const numericValue = validateNumeric(e.target.value);
-                setValue("bronzeCoins", numericValue);
-                clearValidationError('bronzeCoins');
-              }
-            })}
-            placeholder="Bronce"
-            className={`form-input mr-2 col-span-1 focus:border-black focus:shadow ${
-              emptyRequiredFields.includes('bronzeCoins') ? 'required-input' : ''
-            }`}
-          />
-
-          <label className="form-lbl mb-1 col-span-3 bg-grey-lighter ">
-            Bolsa
-          </label>
-          {/* Listado de objetos */}
-          {inventoryFields.map((elem) => (
-            <Tooltip
-              className="bg-dark text-light px-2 py-1"
-              key={"object" + elem.id}
-              placement="left"
-              content={elem.description}
-            >
-              <label
-                htmlFor={"object" + elem.id}
-                className="form-lbl object-item col-span-3 bg-grey-lighter "
-              >
-                {" "}
-                {elem.name}
-                <input type="hidden" value={elem.id} />
-                <input
-                  type="text"
-                  id={"object" + elem.id}
-                  placeholder="Cantidad"
-                  className="form-input-count focus:border-black focus:shadow"
-                  value={elem.count}
-                  maxLength={2}
-                  onChange={(e) => handleEditCount(elem.id, e.target.value)}
-                  readOnly={elem.readOnly}
-                />
-                <button
-                  type="button"
-                  className="btn-delete-object"
-                  onClick={() => handleDeleteObject(elem.id)}
-                >
-                  <SvgDeleteItem width={25} fill="var(--required-color)" />
-                </button>
-              </label>
-            </Tooltip>
-          ))}
-
-          <input
-            type="text"
-            id="objectName"
-            placeholder="Nuevo objeto"
-            className={`form-input col-span-2 focus:border-black focus:shadow ${errors.newObjectName ? 'border-red-500' : ''}`}
-            {...register("newObjectName", {
-              maxLength: {
-                value: 50,
-                message: "El nombre no puede exceder 50 caracteres"
-              }
-            })}
-            maxLength={50}
-          />
-          <input
-            type="text"
-            id="objectCount"
-            placeholder="Cantidad"
-            className={`form-input mr-2 col-span-1 focus:border-black focus:shadow ${errors.newObjectCount ? 'border-red-500' : ''}`}
-            {...register("newObjectCount", {
-              validate: value => {
-                const numValue = Number(value);
-                return (!isNaN(numValue) && numValue > 0 && numValue <= 99) || 
-                  "La cantidad debe ser un número entre 1 y 99";
-              }
-            })}
-            maxLength={2}
-            onChange={(e) => handleNewCount(e.target.value)}
-          />
-          <input
-            type="text"
-            id="objectDescription"
-            placeholder="Descripción"
-            className={`form-input mx-2 col-span-3 row-span-2 focus:border-black focus:shadow ${errors.newObjectDescription ? 'border-red-500' : ''}`}
-            {...register("newObjectDescription", {
-              maxLength: {
-                value: 200,
-                message: "La descripción no puede exceder 200 caracteres"
-              }
-            })}
-            maxLength={200}
-          />
-          <button
-            type="button"
-            className="btn-add-object col-span-3 mx-2"
-            onClick={() => handleAddObject()}
-          >
-            Añadir
-          </button>
         </fieldset>
 
         <aside className="panel-save">

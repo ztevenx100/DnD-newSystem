@@ -48,43 +48,102 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
   // para centralizar toda la lógica aquí
   
   // Comenzamos a implementar el contexto para poder usar posteriormente los componentes refactorizados
-  // Esta es una transición gradual para mantener la aplicación funcionando en todo momento  // Extendemos el contexto con más valores reales
+  // Esta es una transición gradual para mantener la aplicación funcionando en todo momento
+  // Extendemos el contexto con más valores reales
+  // Hook para manejar las operaciones de carga de datos
+  const [loading, _setLoading] = useState(false); // prefijo _ indica que es intencionalmente no utilizado por ahora
+  const [systemGame, _setSystemGame] = useState({ sju_id: "", sju_nombre: "", sju_descripcion: "" });
+  const [systemGameList, _setSystemGameList] = useState([]);
+  const [totalStats, _setTotalStats] = useState({ str: 0, int: 0, dex: 0, con: 0, per: 0, cha: 0, total: 0 });
+  
+  // Estos estados se utilizarán completamente en futuras iteraciones de la refactorización
+  
   const contextValue = {
     // Valores reales que estamos implementando
-    characterImage: characterImage, 
+    characterImage, 
     handleCharacterImageFileChange: handleCharacterImageChange,
     params,
+    loading,
+    newRecord: params.id ? false : true,
+    systemGame,
+    SystemGameList: systemGameList,
+    
+    // Funcionalidad relacionada con las estadísticas
+    totalStats,
+    getStatTotal: (statId: string) => {
+      switch(statId) {
+        case 'STR': return totalStats.str;
+        case 'INT': return totalStats.int;
+        case 'DEX': return totalStats.dex;
+        case 'CON': return totalStats.con;
+        case 'PER': return totalStats.per;
+        case 'CHA': return totalStats.cha;
+        default: return 0;
+      }
+    },
     
     // Estos valores serán completados en futuras iteraciones
-    methods: {} as any,
-    loading: false,
-    newRecord: true,
-    systemGame: { sju_id: "", sju_nombre: "", sju_descripcion: "" },
-    SystemGameList: [],
+    // pero ya comienzan a tomar forma con implementaciones básicas
     skillsRingList: [],
     fieldSkill: [],
     optionsSkillClass: [],
     optionsSkillExtra: [],
     skillsTypes: [],
     emptyRequiredFields: [],
-    clearValidationError: () => {},
-    handleCharacterClassChange: () => {},
-    handleCharacterJobSelectChange: () => {},
-    handleSelectRaceChange: () => {},
-    handleSystemGameChange: () => {},
-    handleSelectSkillChange: () => {},
-    handleSelectExtraSkillChange: () => {},
-    handleSelectedRingSkillChange: () => {},
-    handleSelectedTypeRingSkillChange: async () => {},
-    handleAddObject: () => {},
-    getInventory: async () => {},
-    getStats: async () => {},
-    getSkills: async () => {},
-    getCharacterImage: async () => {},
-    totalStats: { str: 0, int: 0, dex: 0, con: 0, per: 0, cha: 0, total: 0 },
-    getStatTotal: () => 0,
+    clearValidationError: (fieldId: string) => {
+      // Esta función será implementada más adelante
+      console.log(`Clearing validation error for field: ${fieldId}`);
+    },
+    
+    // Handlers que serán implementados completamente en futuras iteraciones
+    handleCharacterClassChange: (value: string) => {
+      console.log(`Character class changed to: ${value}`);
+    },
+    handleCharacterJobSelectChange: (value: string) => {
+      console.log(`Character job changed to: ${value}`);
+    },
+    handleSelectRaceChange: (value: string) => {
+      console.log(`Character race changed to: ${value}`);
+    },
+    handleSystemGameChange: (currentSystem: string) => {
+      console.log(`Game system changed to: ${currentSystem}`);
+    },
+    handleSelectSkillChange: (currentSkill: string) => {
+      console.log(`Skill changed to: ${currentSkill}`);
+    },
+    handleSelectExtraSkillChange: (currentSkill: string) => {
+      console.log(`Extra skill changed to: ${currentSkill}`);
+    },
+    handleSelectedRingSkillChange: (id: string, ring: string, skill: string, stat: string) => {
+      console.log(`Ring skill changed - id: ${id}, ring: ${ring}, skill: ${skill}, stat: ${stat}`);
+    },
+    handleSelectedTypeRingSkillChange: async (id: string, type: string) => {
+      console.log(`Ring skill type changed - id: ${id}, type: ${type}`);
+    },
+    handleAddObject: () => {
+      console.log('Adding object to inventory');
+    },
+    
+    // Métodos para obtener datos que se implementarán completamente después
+    getInventory: async () => {
+      console.log('Getting inventory data');
+    },
+    getStats: async () => {
+      console.log('Getting stats data');
+    },
+    getSkills: async () => {
+      console.log('Getting skills data');
+    },
+    getCharacterImage: async () => {
+      // Ya implementada parcialmente arriba
+      console.log('Getting character image');
+    },
+    
     user: props.user || {} as any,
     navigate: () => {},
+    
+    // Métodos de React Hook Form que serán implementados después
+    methods: {} as any,
     register: () => {},
     setValue: () => {},
     getValues: () => ({}),

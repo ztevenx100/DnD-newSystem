@@ -4,10 +4,9 @@ import { useCharacterSheet } from '../context/CharacterSheetContext';
 import { InputStats } from '../context/CharacterSheetTypes';
 
 interface CharacterStatsWrapperProps {
-  externalStyles: string;
-  statsData: InputStats[];
-  handleStatsChange: (statId: string, field: string, value: number) => void;
-  getStatTotal: (statId: string) => number;
+  inputStats: InputStats;
+  onSelectedValuesChange: (newInputStats: InputStats) => void;
+  externalStyles?: string;
 }
 
 /**
@@ -17,36 +16,51 @@ interface CharacterStatsWrapperProps {
  * Es un componente transitorio que nos permite refactorizar gradualmente.
  */
 const CharacterStatsWrapper: React.FC<CharacterStatsWrapperProps> = ({
-  externalStyles,
-  statsData,
-  handleStatsChange,
-  getStatTotal,
-}) => {
-  // Intento de usar el contexto, pero solo para logging en esta etapa
-  // En futuras iteraciones, utilizaremos completamente el contexto
+  inputStats,
+  onSelectedValuesChange,
+  externalStyles = ''
+}) => {  // Intentamos usar el contexto para funciones comunes
+  let context: ReturnType<typeof useCharacterSheet> | undefined;
   try {
-    const context = useCharacterSheet();
+    context = useCharacterSheet();
     console.log('Contexto disponible en CharacterStatsWrapper:', !!context);
   } catch (error) {
     console.log('Contexto aún no disponible en CharacterStatsWrapper');
+    context = undefined;
   }
+    // Calculamos el total de los valores de estadística
+  // Intentamos usar el contexto si está disponible, de lo contrario fallback a la lógica local
+  const getStatTotal = (statId: string): number => {
+    if (context && context.getStatTotal) {
+      const contextTotal = context.getStatTotal(statId);
+      if (contextTotal !== 0) {
+        return contextTotal;
+      }
+    }
+    
+    if (statId === inputStats.id) {
+      return inputStats.valueDice + inputStats.valueClass + inputStats.valueLevel;
+    }
+    return 0;
+  };
   
-  // Por ahora, seguimos utilizando los props que recibimos
-  // para mantener la compatibilidad con el componente actual
-  
-  // Adaptador para la función de cambio de estadísticas
+  // Función adaptadora para manejar cambios en los valores de estadísticas
   const handleStatChange = (
     statId: string, 
     field: 'valueDice' | 'valueClass' | 'valueLevel', 
     value: number
   ) => {
-    handleStatsChange(statId, field, value);
+    if (statId === inputStats.id) {
+      const updatedStats = { ...inputStats };
+      updatedStats[field] = value;
+      onSelectedValuesChange(updatedStats);
+    }
   };
   
   return (
     <div className={'stats-wrapper ' + externalStyles}>
       <CharacterStats
-        stats={statsData}
+        stats={[inputStats]}
         onStatChange={handleStatChange}
         getStatTotal={getStatTotal}
       />

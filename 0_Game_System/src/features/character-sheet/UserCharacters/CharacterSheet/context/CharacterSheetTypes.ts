@@ -1,11 +1,16 @@
 // Define los tipos básicos para ser usados en el CharacterSheetContext
 // Estos tipos pueden ser movidos a un archivo dedicado más adelante si es necesario
 
-export interface DBSistemaJuego {
-  sju_id: string;
-  sju_nombre: string;
-  sju_descripcion: string;
-}
+// Importamos los tipos necesarios para definir el contexto
+import { UseFormReturn } from 'react-hook-form';
+import { CharacterForm } from '@features/character-sheet/types/characterForm';
+import { 
+  DBSistemaJuego,
+  DBUsuario 
+} from '@shared/utils/types';
+
+// Reexportamos los tipos importados para que estén disponibles desde este módulo
+export type { DBSistemaJuego, DBUsuario };
 
 export interface Option {
   value: string;
@@ -61,6 +66,68 @@ export interface StatsTotal {
   total: number;
 }
 
+// Definición del tipo para el contexto
+export interface CharacterSheetContextType {
+  // Propiedades del formulario
+  methods: UseFormReturn<CharacterForm>;
+  register: any;
+  setValue: any;
+  getValues: any;
+  control: any;
+  errors: any;
+  handleSubmit: any;
+  watch: any;
+  
+  // Estados principales
+  loading: boolean;
+  newRecord: boolean;
+  characterImage?: string;
+  
+  // Estados del sistema de juego
+  systemGame: DBSistemaJuego;
+  SystemGameList: Option[];
+  
+  // Estados de habilidades
+  skillsRingList: SkillTypes[];
+  fieldSkill: SkillFields[];
+  optionsSkillClass: Option[];
+  optionsSkillExtra: Option[];
+  skillsTypes: SkillTypes[];
+  
+  // Validación
+  emptyRequiredFields: string[];
+  clearValidationError: (fieldId: string) => void;
+  
+  // Funciones handler
+  handleCharacterClassChange: (value: string) => void;
+  handleCharacterJobSelectChange: (value: string) => void;
+  handleSelectRaceChange: (value: string) => void;
+  handleSystemGameChange: (currentSystem: string) => void;
+  handleSelectSkillChange: (currentSkill: string) => void;
+  handleSelectExtraSkillChange: (currentSkill: string) => void;
+  handleCharacterImageFileChange: (value: string, file: File) => Promise<void>;
+  handleSelectedRingSkillChange: (id: string, ring: string, skill: string, stat: string) => void;
+  handleSelectedTypeRingSkillChange: (id: string, type: string) => Promise<void>;
+  handleAddObject: () => void;
+  
+  // Funciones para obtener datos
+  getInventory: () => Promise<void>;
+  getStats: () => Promise<void>;
+  getSkills: () => Promise<void>;
+  getCharacterImage: () => Promise<void>;
+  
+  // Estadísticas y utilidades
+  totalStats: StatsTotal;
+  getStatTotal: (statId: string) => number;
+  
+  // Datos del usuario y personaje
+  user: DBUsuario;
+  
+  // Utilidades de React Router DOM
+  params: any;
+  navigate: any;
+}
+
 // Interfaces específicas del proyecto que pueden necesitar actualización
 export interface DBPersonajesUsuario {
   pus_id: string;
@@ -81,12 +148,6 @@ export interface DBPersonajesUsuario {
   pus_alineacion?: string;
   pus_conocimientos?: string;
   sju_sistema_juego?: any; // Debería ser tipado más específicamente
-}
-
-export interface DBUsuario {
-  usu_id: string;
-  usu_nombre: string;
-  // Otros campos que pueda tener el usuario
 }
 
 export interface DBInventarioPersonaje {

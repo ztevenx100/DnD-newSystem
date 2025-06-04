@@ -28,7 +28,7 @@ interface CharacterBasicInfoWrapperProps {
  * 
  * Es un componente transitorio que nos permite refactorizar gradualmente.
  */
-const CharacterBasicInfoWrapper: React.FC<CharacterBasicInfoWrapperProps> = ({
+const CharacterBasicInfoWrapper: React.FC<CharacterBasicInfoWrapperProps> = React.memo(({
   externalStyles,
   name,
   characterClass,
@@ -45,14 +45,13 @@ const CharacterBasicInfoWrapper: React.FC<CharacterBasicInfoWrapperProps> = ({
   onJobChange,
   onLevelChange,
   onAlignmentChange
-}) => {
-  // Intento de usar el contexto, pero solo para logging en esta etapa
+}) => {  // Intento de usar el contexto, pero solo para logging en esta etapa
   // En futuras iteraciones, utilizaremos completamente el contexto
   try {
-    const context = useCharacterSheet();
-    console.log('Contexto disponible en CharacterBasicInfoWrapper:', !!context);
+    useCharacterSheet(); // Solo para verificar disponibilidad
+    // Eliminamos el log para evitar spam en consola
   } catch (error) {
-    console.log('Contexto aún no disponible en CharacterBasicInfoWrapper');
+    // Contexto aún no disponible
   }
   
   // Por ahora, seguimos utilizando los props que recibimos
@@ -79,6 +78,6 @@ const CharacterBasicInfoWrapper: React.FC<CharacterBasicInfoWrapperProps> = ({
       />
     </div>
   );
-};
+});
 
 export default CharacterBasicInfoWrapper;

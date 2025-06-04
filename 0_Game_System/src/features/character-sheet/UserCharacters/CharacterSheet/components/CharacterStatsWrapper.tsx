@@ -15,17 +15,17 @@ interface CharacterStatsWrapperProps {
  * 
  * Es un componente transitorio que nos permite refactorizar gradualmente.
  */
-const CharacterStatsWrapper: React.FC<CharacterStatsWrapperProps> = ({
+const CharacterStatsWrapper: React.FC<CharacterStatsWrapperProps> = React.memo(({
   inputStats,
   onSelectedValuesChange,
   externalStyles = ''
-}) => {  // Intentamos usar el contexto para funciones comunes
+}) => {
+  // Intentamos usar el contexto para funciones comunes
   let context: ReturnType<typeof useCharacterSheet> | undefined;
   try {
     context = useCharacterSheet();
-    console.log('Contexto disponible en CharacterStatsWrapper:', !!context);
+    // Eliminamos el log para evitar spam en consola
   } catch (error) {
-    console.log('Contexto aún no disponible en CharacterStatsWrapper');
     context = undefined;
   }
     // Calculamos el total de los valores de estadística
@@ -66,6 +66,6 @@ const CharacterStatsWrapper: React.FC<CharacterStatsWrapperProps> = ({
       />
     </div>
   );
-};
+});
 
 export default CharacterStatsWrapper;

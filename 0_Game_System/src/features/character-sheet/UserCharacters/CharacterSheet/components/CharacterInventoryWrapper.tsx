@@ -23,7 +23,7 @@ interface CharacterInventoryWrapperProps {
  * 
  * Es un componente transitorio que nos permite refactorizar gradualmente.
  */
-const CharacterInventoryWrapper: React.FC<CharacterInventoryWrapperProps> = ({
+const CharacterInventoryWrapper: React.FC<CharacterInventoryWrapperProps> = React.memo(({
   externalStyles,
   inventory,
   onAddItem,
@@ -35,14 +35,13 @@ const CharacterInventoryWrapper: React.FC<CharacterInventoryWrapperProps> = ({
   onNewObjectNameChange,
   onNewObjectDescriptionChange,
   onNewObjectCountChange
-}) => {
-  // Intento de usar el contexto, pero solo para logging en esta etapa
+}) => {  // Intento de usar el contexto, pero solo para logging en esta etapa
   // En futuras iteraciones, utilizaremos completamente el contexto
   try {
-    const context = useCharacterSheet();
-    console.log('Contexto disponible en CharacterInventoryWrapper:', !!context);
+    useCharacterSheet(); // Solo para verificar disponibilidad
+    // Eliminado console.log para evitar spam en consola
   } catch (error) {
-    console.log('Contexto aún no disponible en CharacterInventoryWrapper');
+    // Contexto aún no disponible - eliminado console.log
   }
   
   // Por ahora, seguimos utilizando los props que recibimos
@@ -64,6 +63,6 @@ const CharacterInventoryWrapper: React.FC<CharacterInventoryWrapperProps> = ({
       />
     </div>
   );
-};
+});
 
 export default CharacterInventoryWrapper;

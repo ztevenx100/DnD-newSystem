@@ -344,7 +344,7 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
       console.error("Error al cambiar el tipo de habilidad del anillo:", error);
     }
   }, [skillsTypes, ringSkills, clearValidationError]);
-    /**
+  /**
    * Maneja la adición de objetos al inventario
    * Migrado desde CharacterSheet.tsx
    */
@@ -469,8 +469,6 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
     return null;
   }, []);
   
-  // ======= FUNCIONES DE CARGA DE DATOS MIGRADAS =======
-  
   /**
    * Carga la lista de sistemas de juego
    * Migrado desde CharacterSheet.tsx
@@ -560,51 +558,55 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
             }
           }
         });
-        
         // Procesar habilidades existentes del personaje
         if (characterSkills.length > 0) {
-          const updatedFieldSkill = fieldSkill.map(item => ({...item}));
+          // Usar callback para acceder al estado actual sin dependencias
+          setFieldSkill((currentFieldSkill) => {
+            const updatedFieldSkill = currentFieldSkill.map(item => ({...item}));
 
-          (data as DBHabilidad[]).forEach((rawElem: DBHabilidad) => {
-            const elem = mapSkillFields(rawElem);
+            (data as DBHabilidad[]).forEach((rawElem: DBHabilidad) => {
+              const elem = mapSkillFields(rawElem);
 
-            if (elem.tipo === "C") {
-              const existingSkill = characterSkills.find(skill => 
-                skill.hpe_campo === "skillClass" && skill.hpe_habilidad === elem.id);
-              
-              if (existingSkill) {
-                setValue("skillClass", elem.sigla);
-                const classSkill = updatedFieldSkill.find(skill => skill.field === "skillClass");
-                if (classSkill) {
-                  classSkill.id = elem.sigla;
-                  classSkill.skill = elem.id;
-                }
-              }
-            } else if (elem.tipo === "E") {
-              const existingSkill = characterSkills.find(skill => 
-                skill.hpe_campo === "skillExtra" && skill.hpe_habilidad === elem.id);
-              
-              if (existingSkill) {
-                setValue("skillExtra", elem.sigla);
-                const extraSkill = updatedFieldSkill.find(skill => skill.field === "skillExtra");
-                if (extraSkill) {
-                  extraSkill.id = elem.sigla;
-                  extraSkill.skill = elem.id;
-                }
-              }
-            } else if (elem.tipo === "R") {
-              const existingRingSkill = characterSkills.find(skill => 
-                skill.hpe_campo.startsWith("skillRing") && skill.hpe_habilidad === elem.id);
-              if (existingRingSkill) {
-                const ringNumber = existingRingSkill.hpe_campo.replace("skillRing", "");
-                handleSelectedTypeRingSkillChange(ringNumber, elem.estadistica_base);
+              if (elem.tipo === "C") {
+                const existingSkill = characterSkills.find(skill => 
+                  skill.hpe_campo === "skillClass" && skill.hpe_habilidad === elem.id);
                 
-                ringSkills.setRingSkillName(ringNumber, elem.sigla, elem.estadistica_base, elem.estadistica_base);
+                if (existingSkill) {
+                  setValue("skillClass", elem.sigla);
+                  const classSkill = updatedFieldSkill.find(skill => skill.field === "skillClass");
+                  if (classSkill) {
+                    classSkill.id = elem.sigla;
+                    classSkill.skill = elem.id;
+                  }
+                }
+              } else if (elem.tipo === "E") {
+                const existingSkill = characterSkills.find(skill => 
+                  skill.hpe_campo === "skillExtra" && skill.hpe_habilidad === elem.id);
+                
+                if (existingSkill) {
+                  setValue("skillExtra", elem.sigla);
+                  const extraSkill = updatedFieldSkill.find(skill => skill.field === "skillExtra");
+                  if (extraSkill) {
+                    extraSkill.id = elem.sigla;
+                    extraSkill.skill = elem.id;
+                  }
+                }
+              } else if (elem.tipo === "R") {
+                const existingRingSkill = characterSkills.find(skill => 
+                  skill.hpe_campo.startsWith("skillRing") && skill.hpe_habilidad === elem.id);
+                if (existingRingSkill) {
+                  const ringNumber = existingRingSkill.hpe_campo.replace("skillRing", "");
+                  // Procesar habilidades de anillo de forma async para evitar dependencias
+                  setTimeout(() => {
+                    handleSelectedTypeRingSkillChange(ringNumber, elem.estadistica_base);
+                    ringSkills.setRingSkillName(ringNumber, elem.sigla, elem.estadistica_base, elem.estadistica_base);
+                  }, 0);
+                }
               }
-            }
+            });
+            
+            return updatedFieldSkill;
           });
-          
-          setFieldSkill(updatedFieldSkill);
         }
         
         // Establecer los estados con los datos procesados
@@ -629,7 +631,7 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
     } catch (error) {
       console.error("Error in getListSkill:", error);
     }
-  }, [params.id, setValue, fieldSkill, handleSelectedTypeRingSkillChange, ringSkills]);
+  }, [params.id, setValue]);
   /**
    * Carga las estadísticas del personaje desde la base de datos
    * Migrado desde CharacterSheet.tsx - versión completa
@@ -693,18 +695,6 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
 
     try {
       console.log('Loading character skills for character:', params.id);
-      
-      // This function loads character skills and processes them with the ring skills
-      // The actual skill loading happens in getListSkill which handles both 
-      // loading available skills and setting existing character skills
-      
-      // The ring skills are managed by the useRingSkills hook which handles
-      // the form state for skills acquired by the character
-      
-      // Skills data loading is integrated with getListSkill function
-      // which processes all skill types including ring skills (R type)
-      
-      console.log('Character skills processing completed');
     } catch (error) {
       console.error("Error loading character skills:", error);
     }
@@ -720,8 +710,6 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
       const data = await getCharacterInventory(params.id);
       
       if (data !== null && Array.isArray(data)) {
-        console.log("Inventario cargado desde la base de datos:", data.length, "elementos");
-        
         // Limpiar inventario actual
         const currentInventory = getValues("inventory");
         if (currentInventory && currentInventory.length > 0) {
@@ -765,7 +753,7 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
     } catch (error) {
       console.error("Error al cargar el inventario:", error);
     }
-  }, [params.id, appendInventory, removeInventory, getValues, validateInventoryObject]);
+  }, [params.id, appendInventory, getValues]); // Reducir dependencias para optimización
   
   /**
    * Carga la imagen del personaje
@@ -814,7 +802,6 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
       getCharacterImage();
     }
   }, [params.id, normalizedUser?.usu_id, getCharacterImage]);
-  
   // Cargar datos iniciales
   useEffect(() => {
     const loadInitialData = async () => {
@@ -838,9 +825,9 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
         setLoading(false);
       }
     };
-    
+
     loadInitialData();
-  }, [params.id, getGameSystemList, getListSkill, getStats, getSkills, getInventory]);
+  }, [params.id]); // Solo depender de params.id para evitar bucles infinitos
   
   // ======= VALOR DEL CONTEXTO =======
   

@@ -21,8 +21,7 @@ import { useRingSkills } from '@features/character-sheet/hooks/useRingSkills';
 import { 
   optionsCharacterClass
 } from '../../constants/characterOptions';
-import { Option, SkillTypes, SkillFields, StatsTotal, DBSistemaJuego } from './context/CharacterSheetTypes';
-import { InventoryObject } from '@shared/utils/types/typesCharacterSheet';
+import { Option, SkillTypes, SkillFields, StatsTotal, DBSistemaJuego, InventoryObject } from './context/CharacterSheetTypes';
 import { DBHabilidad, DBHabilidadPersonaje } from '@shared/utils/types';
 
 /**
@@ -66,6 +65,9 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
   
   // Estados de validación
   const [emptyRequiredFields, setEmptyRequiredFields] = useState<string[]>([]);
+  
+  // Estado para manejo de elementos eliminados del inventario
+  const [deleteItems, setDeleteItems] = useState<string[]>([]);
   
   // Configuración del formulario React Hook Form
   const methods = useForm<CharacterForm>({
@@ -117,12 +119,51 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
   });
   
   // ======= IMPLEMENTACIÓN DE HANDLERS MIGRADOS DESDE EL COMPONENTE ORIGINAL =======
-  
   /**
    * Función para limpiar errores de validación
    */
   const clearValidationError = useCallback((fieldId: string) => {
     setEmptyRequiredFields(prev => prev.filter(field => field !== fieldId));
+  }, []);
+  
+  /**
+   * Valida un objeto de inventario y asegura que tenga todos los campos requeridos
+   * Migrado desde CharacterSheet.tsx
+   */
+  const validateInventoryObject = useCallback((object: Partial<InventoryObject>): InventoryObject => {
+    return {
+      id: object.id || uuidv4(),
+      name: object.name?.trim() || "Item sin nombre",
+      description: object.description?.trim() || "Sin descripción",
+      count: typeof object.count === 'number' ? object.count : 1,
+      readOnly: object.readOnly ?? false,
+    };
+  }, []);
+
+  /**
+   * Valida un nuevo elemento de inventario antes de añadirlo
+   * Migrado desde CharacterSheet.tsx
+   */
+  const validateInventoryItem = useCallback((name: string, count: number | string): string | null => {
+    const nameValue = typeof name === 'string' ? name.trim() : '';
+    
+    if (!nameValue) {
+      return "El nombre del objeto no puede estar vacío";
+    }
+    
+    if (nameValue.length > 50) {
+      return "El nombre del objeto no puede tener más de 50 caracteres";
+    }
+    
+    const countValue = typeof count === 'number' ? count : parseInt(String(count), 10);
+    if (isNaN(countValue) || countValue < 1) {
+      return "La cantidad debe ser un número positivo";
+    }
+    if (countValue > 99) {
+      return "La cantidad no puede ser mayor a 99";
+    }
+    
+    return null;
   }, []);
   
   /**
@@ -378,7 +419,6 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
       alert("No se pudo añadir el objeto. Por favor, inténtalo de nuevo.");
     }
   }, [getValues, setValue, appendInventory]);
-  
   /**
    * Elimina un objeto del inventario
    * Migrado desde CharacterSheet.tsx
@@ -393,11 +433,14 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
       } else {
         console.warn(`No se encontró el objeto con ID ${id} en el formulario`);
       }
+      
+      // Agregar el ID a la lista de elementos eliminados
+      setDeleteItems((prevItems) => [...prevItems, id]);
     } catch (error) {
       console.error("Error al eliminar objeto del inventario:", error);
       alert("No se pudo eliminar el objeto. Por favor, inténtalo de nuevo.");
     }
-  }, [getValues, removeInventory]);
+  }, [getValues, removeInventory, setDeleteItems]);
   
   /**
    * Actualiza un objeto en el inventario
@@ -430,44 +473,34 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
   }, [getValues, updateInventory]);
   
   /**
-   * Valida un objeto de inventario y asegura que tenga todos los campos requeridos
+   * Actualiza la cantidad de un objeto en el inventario
    * Migrado desde CharacterSheet.tsx
    */
-  const validateInventoryObject = useCallback((object: Partial<InventoryObject>): InventoryObject => {
-    return {
-      id: object.id || uuidv4(),
-      name: object.name?.trim() || "Item sin nombre",
-      description: object.description?.trim() || "Sin descripción",
-      count: typeof object.count === 'number' ? object.count : 1,
-      readOnly: object.readOnly || false,
-    };
-  }, []);
-
+  const handleEditCount = useCallback((id: string, newCount: string) => {
+    try {
+      const numericValue = validateNumeric(newCount, 1);
+      const formInventory = getValues("inventory");
+      const objectIndex = formInventory.findIndex(obj => obj.id === id);
+      
+      if (objectIndex !== -1) {
+        const updatedObject = { ...formInventory[objectIndex], count: numericValue };
+        updateInventory(objectIndex, updatedObject);
+      } else {
+        console.warn(`No se encontró el objeto con ID ${id} en el formulario para actualizar su cantidad`);
+      }
+    } catch (error) {
+      console.error("Error al actualizar la cantidad del objeto:", error);
+    }
+  }, [getValues, updateInventory]);
+  
   /**
-   * Valida un nuevo elemento de inventario antes de añadirlo
+   * Valida y establece un nuevo valor de cantidad para el formulario de nuevo objeto
    * Migrado desde CharacterSheet.tsx
    */
-  const validateInventoryItem = useCallback((name: string, count: number | string): string | null => {
-    const nameValue = typeof name === 'string' ? name.trim() : '';
-    
-    if (!nameValue) {
-      return "El nombre del objeto no puede estar vacío";
-    }
-    
-    if (nameValue.length > 50) {
-      return "El nombre del objeto no puede tener más de 50 caracteres";
-    }
-    
-    const countValue = typeof count === 'number' ? count : parseInt(String(count), 10);
-    if (isNaN(countValue) || countValue < 1) {
-      return "La cantidad debe ser un número positivo";
-    }
-    if (countValue > 99) {
-      return "La cantidad no puede ser mayor a 99";
-    }
-    
-    return null;
-  }, []);
+  const handleNewCount = useCallback((value: string) => {
+    const numericValue = validateNumeric(value, 1);
+    setValue("newObjectCount", numericValue);
+  }, [setValue]);
   
   /**
    * Carga la lista de sistemas de juego
@@ -874,6 +907,16 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
     handleAddObject,
     handleDeleteObject,
     handleUpdateObject,
+    handleEditCount,
+    handleNewCount,
+    
+    // Validación de inventario
+    validateInventoryObject,
+    validateInventoryItem,
+    
+    // Estado de elementos eliminados
+    deleteItems,
+    setDeleteItems,
     
     // Funciones para obtener datos IMPLEMENTADAS
     getInventory,

@@ -36,7 +36,7 @@ export interface InventoryObject {
   name: string;
   description: string;
   count: number;
-  readOnly?: boolean;
+  readOnly: boolean;
 }
 
 export interface InputStats {
@@ -106,10 +106,19 @@ export interface CharacterSheetContextType {
   handleSelectExtraSkillChange: (currentSkill: string) => void;
   handleCharacterImageFileChange: (value: string, file: File) => Promise<void>;
   handleSelectedRingSkillChange: (id: string, ring: string, skill: string, stat: string) => void;
-  handleSelectedTypeRingSkillChange: (id: string, type: string) => Promise<void>;
-  handleAddObject: () => void;
+  handleSelectedTypeRingSkillChange: (id: string, type: string) => Promise<void>;  handleAddObject: () => void;
   handleDeleteObject: (id: string) => void;
   handleUpdateObject: (id: string, field: string, value: any) => void;
+  handleEditCount: (id: string, newCount: string) => void;
+  handleNewCount: (value: string) => void;
+  
+  // Validación de inventario
+  validateInventoryObject: (object: Partial<InventoryObject>) => InventoryObject;
+  validateInventoryItem: (name: string, count: number | string) => string | null;
+  
+  // Estado de elementos eliminados
+  deleteItems: string[];
+  setDeleteItems: (items: string[] | ((prevItems: string[]) => string[])) => void;
   
   // Funciones para obtener datos
   getInventory: () => Promise<void>;

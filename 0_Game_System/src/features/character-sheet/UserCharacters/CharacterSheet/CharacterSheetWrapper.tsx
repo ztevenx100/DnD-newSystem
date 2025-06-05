@@ -16,13 +16,16 @@ import {
 } from '@features/character-sheet/infrastructure/services';
 import { validateNumeric } from "@shared/utils/helpers/utilConversions";
 import { normalizeUser } from "@shared/utils/helpers/userHelpers";
-import { mapSkillFields } from './fixSkills';
 import { useRingSkills } from '@features/character-sheet/hooks/useRingSkills';
+import { useCharacterStats } from '@features/character-sheet/hooks/useCharacterStats';
+import { CharacterService } from '@features/character-sheet/infrastructure/services/CharacterService';
+import { addStorageCharacter } from '@database/storage/dbStorage';
 import { 
-  optionsCharacterClass
+  optionsCharacterClass,
+  optionsCharacterJob
 } from '../../constants/characterOptions';
 import { Option, SkillTypes, SkillFields, StatsTotal, DBSistemaJuego, InventoryObject } from './context/CharacterSheetTypes';
-import { DBHabilidad, DBHabilidadPersonaje } from '@shared/utils/types';
+import { DBPersonajesUsuario, InputStats, SkillsAcquired } from '@shared/utils/types';
 
 /**
  * CharacterSheetWrapper es un componente que envuelve el componente original
@@ -69,6 +72,9 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
   // Estado para manejo de elementos eliminados del inventario
   const [deleteItems, setDeleteItems] = useState<string[]>([]);
   
+  // Estados adicionales para saveData
+  const [newRecord, setNewRecord] = useState<boolean>(true);
+  
   // Configuración del formulario React Hook Form
   const methods = useForm<CharacterForm>({
     defaultValues: {
@@ -106,9 +112,34 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
   });
   const { register, setValue, getValues, control, formState: { errors }, handleSubmit, watch } = methods;  
   
+  /**
+   * Función para limpiar errores de validación
+   */
+  const clearValidationError = useCallback((fieldId: string) => {
+    setEmptyRequiredFields(prev => prev.filter(field => field !== fieldId));
+  }, []);
+
   // Hook para manejo de habilidades de anillo
   const ringSkills = useRingSkills(methods);
-  // Hook para manejo del inventario
+  
+  // Hook para manejo de estadísticas de personaje
+  const { 
+    update: updateStats
+  } = useFieldArray({
+    control,
+    name: "stats"
+  });
+
+  const characterStats = useCharacterStats({
+    getValues,
+    setValue,
+    updateStats,
+    optionsCharacterJob: optionsCharacterJob.map(option => ({
+      value: option.value,
+      extraPoint: option.extraPoint || ''
+    })),
+    clearValidationError
+  });  // Hook para manejo del inventario
   const { 
     append: appendInventory,
     remove: removeInventory,
@@ -117,14 +148,6 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
     control,
     name: "inventory"
   });
-  
-  // ======= IMPLEMENTACIÓN DE HANDLERS MIGRADOS DESDE EL COMPONENTE ORIGINAL =======
-  /**
-   * Función para limpiar errores de validación
-   */
-  const clearValidationError = useCallback((fieldId: string) => {
-    setEmptyRequiredFields(prev => prev.filter(field => field !== fieldId));
-  }, []);
   
   /**
    * Valida un objeto de inventario y asegura que tenga todos los campos requeridos
@@ -189,11 +212,10 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
       case 'RES': knowledgeValue = "ACO"; break;
       case 'ACT': knowledgeValue = "ART"; break;
     }
-    
     setValue("knowledge", knowledgeValue);
     
-    // TODO: Actualizar puntos de estadísticas basados en la clase y trabajo
-    // characterStats.updStatsPoints(value, getValues("job") || '');
+    // Actualizar puntos de estadísticas basados en la clase y trabajo
+    characterStats.updStatsPoints(value, getValues("job") || '');
     
     // Seleccionar y actualizar la habilidad principal según la clase
     const skillValue = selectedOption?.mainStat ? "S" + selectedOption.mainStat : "";
@@ -209,8 +231,8 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
     clearValidationError('characterJob');
     setValue("job", value);
     
-    // TODO: Actualizar puntos de estadísticas basados en la clase y trabajo
-    // characterStats.updStatsPoints(getValues("class") || '', value);
+    // Actualizar puntos de estadísticas basados en la clase y trabajo
+    characterStats.updStatsPoints(getValues("class") || '', value);
   }, [setValue, clearValidationError]);
   
   /**
@@ -321,13 +343,48 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
   
   /**
    * Maneja el cambio de imagen del personaje
-   * Migrado desde CharacterSheet.tsx
+   * 
+   * Esta función se encarga de subir la imagen seleccionada al almacenamiento
+   * y actualizar la URL de la imagen en el estado del componente
+   * 
+   * @param value - URL de la imagen seleccionada
+   * @param file - Archivo de imagen seleccionado
+   * @returns {Promise<void>}
    */
   const handleCharacterImageFileChange = useCallback(async (value: string, file: File) => {
-    setCharacterImage(value);
-    // TODO: Implementar subida de imagen al almacenamiento
-    console.log('Cambio de imagen detectado:', file.name);
-  }, []);
+    if (!normalizedUser || !params.id) {
+      return;
+    }
+
+    if (!normalizedUser.usu_id) {
+      console.error("User ID is undefined");
+      return;
+    }
+
+    try {
+      // Subir la imagen al almacenamiento
+      const { path, error } = await addStorageCharacter(
+        normalizedUser.usu_id,
+        params.id,
+        file
+      );
+
+      if (error) {
+        // Mostrar error al usuario
+        alert(`Error al subir la imagen: ${error}`);
+        return;
+      }
+
+      // Actualizar la URL de la imagen en el estado
+      if (path) {
+        setCharacterImage(value);
+        console.log('Imagen del personaje actualizada correctamente:', path);
+      }
+    } catch (error) {
+      console.error('Error al procesar la imagen del personaje:', error);
+      alert('Error al procesar la imagen del personaje');
+    }
+  }, [normalizedUser, params.id]);
   /**
    * Maneja el cambio en las habilidades del anillo
    * Migrado desde CharacterSheet.tsx
@@ -503,51 +560,326 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
   }, [setValue]);
   
   /**
+   * Helper function para obtener InputStats desde React Hook Form data
+   * Migrado desde CharacterSheet.tsx
+   */
+  const getInputStatsFromForm = useCallback((): InputStats[] => {
+    const inputStatsFormStats = getValues("stats") || [];
+    if (inputStatsFormStats.length < 6) {
+      // Fallback a datos por defecto si no hay estadísticas en el formulario
+      return [
+        { id: "STR", label: "Fuerza", description: "La fuerza física del personaje", valueDice: 1, valueClass: 0, valueLevel: 0 },
+        { id: "INT", label: "Inteligencia", description: "La capacidad mental del personaje", valueDice: 1, valueClass: 0, valueLevel: 0 },
+        { id: "DEX", label: "Destreza", description: "La agilidad y coordinación del personaje", valueDice: 1, valueClass: 0, valueLevel: 0 },
+        { id: "CON", label: "Constitución", description: "La resistencia y salud del personaje", valueDice: 1, valueClass: 0, valueLevel: 0 },
+        { id: "PER", label: "Percepción", description: "Los sentidos y percepción del personaje", valueDice: 1, valueClass: 0, valueLevel: 0 },
+        { id: "CHA", label: "Carisma", description: "El carisma y personalidad del personaje", valueDice: 1, valueClass: 0, valueLevel: 0 }
+      ];
+    }
+    
+    return inputStatsFormStats.map(stat => ({
+      id: stat.id,
+      label: stat.label,
+      description: stat.description,
+      valueDice: stat.valueDice,
+      valueClass: stat.valueClass,
+      valueLevel: stat.valueLevel
+    }));
+  }, [getValues]);
+  
+  /**
+   * Obtiene las habilidades desde React Hook Form
+   * Migrado desde CharacterSheet.tsx
+   */
+  const getSkillsAcquiredFromForm = useCallback((): SkillsAcquired[] => {
+    return ringSkills.getSkillsFromForm();
+  }, [ringSkills]);
+  
+  /**
+   * Función para recargar la página hacia un personaje específico
+   * Migrado desde CharacterSheet.tsx
+   */
+  const reloadPage = useCallback((characterId: string) => {
+    navigate("/CharacterSheet/" + characterId);
+  }, [navigate]);
+  
+  /**
+   * Función principal para guardar los datos del personaje
+   * Migrado desde CharacterSheet.tsx - Implementación completa
+   */
+  const saveData = useCallback(async () => {
+    try {
+      const formValues = getValues();
+      
+      // Construir el objeto del personaje desde los datos del formulario
+      const characterData: DBPersonajesUsuario = {
+        pus_id: formValues.characterId || uuidv4(),
+        pus_usuario: formValues.userName || normalizedUser?.usu_id || '',
+        pus_nombre: formValues.name || '',
+        pus_clase: formValues.class || '',
+        pus_raza: formValues.race || '',
+        pus_trabajo: formValues.job || '',
+        pus_nivel: formValues.level || 1,
+        pus_puntos_suerte: formValues.luckyPoints || 0,
+        pus_vida: formValues.lifePoints || 0,
+        pus_descripcion: formValues.characterDescription || '',
+        pus_conocimientos: formValues.knowledge || '',
+        pus_arma_principal: formValues.mainWeapon || '',
+        pus_arma_secundaria: formValues.secondaryWeapon || '',
+        pus_alineacion: formValues.alignment || '',
+        pus_sistema_juego: systemGame.sju_id || '',
+        pus_cantidad_oro: formValues.goldCoins || 0,
+        pus_cantidad_plata: formValues.silverCoins || 0,
+        pus_cantidad_bronce: formValues.bronzeCoins || 0
+      };
+
+      // Mostrar indicador de guardado
+      setLoading(true);
+      
+      // Obtener datos requeridos para el servicio
+      const characterStats = getInputStatsFromForm();
+      const characterSkills = getSkillsAcquiredFromForm();
+      const inventoryItems = getValues("inventory") || [];
+      
+      // Usar CharacterService para guardar todos los datos
+      const savedCharacterId = await CharacterService.saveCompleteCharacter(
+        characterData,
+        formValues,
+        characterStats,
+        characterSkills,
+        inventoryItems,
+        newRecord,
+        deleteItems,
+        fieldSkill
+      );
+      
+      // Actualizar estado y navegar
+      setNewRecord(false);
+      document.documentElement.scrollTop = 0;
+      reloadPage(savedCharacterId);
+    } catch (error) {
+      console.error("Error durante el guardado del personaje:", error);
+      alert("Error al guardar el personaje. Por favor, inténtalo de nuevo.");
+    } finally {
+      setLoading(false);
+    }
+  }, [getValues, normalizedUser, systemGame, newRecord, deleteItems, fieldSkill, getInputStatsFromForm, getSkillsAcquiredFromForm, setLoading, setNewRecord, reloadPage]);
+  
+  // ======= FUNCIONES PARA CARGAR DATOS IMPLEMENTADAS =======
+  
+  /**
+   * Obtiene la imagen del personaje desde el almacenamiento
+   * Migrado desde CharacterSheet.tsx
+   */
+  const getCharacterImage = useCallback(async () => {
+    if (!normalizedUser?.usu_id || !params.id) {
+      return;
+    }
+
+    try {
+      const url = await getUrlCharacter(normalizedUser.usu_id, params.id);
+      if (url) {
+        const refreshParam = Math.random().toString(36).substring(7);
+        setCharacterImage(url + "?" + refreshParam);
+      }
+    } catch (error) {
+      console.error("Error loading character image:", error);
+    }
+  }, [normalizedUser?.usu_id, params.id]);
+
+  /**
+   * Carga las estadísticas del personaje desde la base de datos
+   * Migrado desde CharacterSheet.tsx
+   */
+  const getStats = useCallback(async () => {
+    if (!params.id) return;
+
+    try {
+      const data = await getCharacterStats(params.id);
+      
+      if (data && Array.isArray(data)) {
+        const currentStats = getValues("stats") || [];
+        const statsMap = new Map(currentStats.map((stat: InputStats) => [stat.id, stat]));
+        data.forEach((stat: any) => {
+          const statId = stat.est_sigla || stat.sigla;
+          if (statId && statsMap.has(statId)) {
+            const currentStat = statsMap.get(statId);
+            if (currentStat) {
+              currentStat.valueDice = stat.pes_valor_dado || stat.valor_dado || currentStat.valueDice;
+              currentStat.valueClass = stat.pes_valor_clase || stat.valor_clase || currentStat.valueClass;
+              currentStat.valueLevel = stat.pes_valor_nivel || stat.valor_nivel || currentStat.valueLevel;
+            }
+          }
+        });
+        
+        // Ensure all stats have required properties before setting
+        const updatedStats = Array.from(statsMap.values()).map(stat => ({
+          id: stat.id,
+          label: stat.label,
+          description: stat.description || "", // Ensure description is always a string
+          valueDice: stat.valueDice,
+          valueClass: stat.valueClass,
+          valueLevel: stat.valueLevel
+        }));
+        
+        setValue("stats", updatedStats);
+      }
+    } catch (error) {
+      console.error("Error loading character stats:", error);
+    }
+  }, [params.id, getValues, setValue]);
+  
+  /**
+   * Carga las habilidades del personaje desde la base de datos
+   * Migrado desde CharacterSheet.tsx
+   */
+  const getSkills = useCallback(async () => {
+    if (!params.id) return;
+
+    try {
+      const data = await getCharacterSkills(params.id);
+      
+      if (data && Array.isArray(data)) {
+        data.forEach((skill: any) => {
+          const field = skill.hpe_campo || skill.campo;
+          const skillValue = skill.hab_sigla || skill.sigla || skill.hpe_habilidad;
+          
+          if (field && skillValue) {
+            if (field === "skillClass") {
+              setValue("skillClass", skillValue);
+              handleSelectSkillChange(skillValue);
+            } else if (field === "skillExtra") {
+              setValue("skillExtra", skillValue);
+              handleSelectExtraSkillChange(skillValue);
+            } else if (field.startsWith("skill")) {
+              // Habilidades de anillo - usar RingSkills hook
+              const ringId = field.replace("skill", "");
+              if (ringId && /^\d+$/.test(ringId)) {
+                const ringIndex = parseInt(ringId, 10);
+                const skillName = skill.hab_nombre || skill.nombre || skillValue;
+                const ringType = skill.hpe_anillo || skill.anillo || "";
+                const statType = skill.hab_estadistica || skill.estadistica || "";
+                
+                ringSkills.setRingSkillName(ringIndex, skillName, ringType, statType);
+              }
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error loading character skills:", error);
+    }
+  }, [params.id, setValue, handleSelectSkillChange, handleSelectExtraSkillChange, ringSkills]);
+  
+  /**
+   * Carga el inventario del personaje desde la base de datos
+   * Migrado desde CharacterSheet.tsx
+   */
+  const getInventory = useCallback(async () => {
+    if (!params.id) return;
+
+    try {
+      const data = await getCharacterInventory(params.id);
+      
+      if (data && Array.isArray(data)) {
+        const inventoryItems = data.map((item: any) => ({
+          id: item.inp_id || item.id || uuidv4(),
+          name: item.inp_nombre || item.nombre || "Item sin nombre",
+          description: item.inp_descripcion || item.descripcion || "Sin descripción",
+          count: item.inp_cantidad || item.cantidad || 1,
+          readOnly: true // Los elementos cargados de la BD son de solo lectura inicialmente
+        }));
+        
+        setValue("inventory", inventoryItems);
+      }
+    } catch (error) {
+      console.error("Error loading character inventory:", error);
+    }
+  }, [params.id, setValue]);
+  
+  /**
+   * Función para obtener el total de una estadística específica
+   * Migrado desde CharacterSheet.tsx
+   */
+  const getStatTotal = useCallback((statId: string): number => {
+    const statsMap: Record<string, number | undefined> = {
+      'STR': totalStats.str,
+      'INT': totalStats.int,
+      'DEX': totalStats.dex,
+      'CON': totalStats.con,
+      'PER': totalStats.per,
+      'CHA': totalStats.cha,
+      'total': totalStats.total
+    };
+
+    const mappedValue = statsMap[statId];
+    if (mappedValue !== undefined) {
+      return mappedValue;
+    }
+
+    // Fallback: calcular desde los datos del formulario
+    const formStats = getValues("stats") || [];
+    const stat = formStats.find((s: InputStats) => s.id === statId);
+    if (!stat) return 0;
+    
+    return stat.valueDice + stat.valueClass + stat.valueLevel;
+  }, [totalStats, getValues]);
+  
+  /**
    * Carga la lista de sistemas de juego
    * Migrado desde CharacterSheet.tsx
    */
   const getGameSystemList = useCallback(async () => {
     try {
       const data = await getGameSystem();
-      if (data !== null) {
-        const updatedSystemGameList = [];
-        for (let i = 0; i < data.length; i++) {
-          updatedSystemGameList.push({
-            value: data[i].sju_id,
-            name: data[i].sju_nombre,
+      
+      if (data && Array.isArray(data)) {
+        const systemOptions = data.map((system: any) => ({
+          value: system.sju_id || system.id,
+          name: system.sju_nombre || system.nombre || "Sistema sin nombre"
+        }));
+        
+        setSystemGameList(systemOptions);
+        
+        // Establecer el primer sistema como predeterminado si existe
+        if (systemOptions.length > 0 && !systemGame.sju_id) {
+          setSystemGame({
+            sju_id: systemOptions[0].value,
+            sju_nombre: systemOptions[0].name,
+            sju_descripcion: ""
           });
         }
-        setSystemGameList(updatedSystemGameList);
       }
     } catch (error) {
       console.error("Error loading game systems:", error);
     }
-  }, []);
-    /**
-   * Carga la lista de habilidades desde la base de datos
-   * Migrado desde CharacterSheet.tsx - versión completa
+  }, [systemGame.sju_id]);
+  
+  /**
+   * Carga la lista de habilidades disponibles
+   * Migrado desde CharacterSheet.tsx
    */
   const getListSkill = useCallback(async () => {
     try {
       const data = await getListHad();
 
-      if (data !== null && Array.isArray(data) && data.length > 0) {
+      if (data && Array.isArray(data) && data.length > 0) {
         const updatedOptionsSkillClass: Option[] = [];
         const updatedOptionsSkillExtra: Option[] = [];
         const otherSkills: SkillTypes[] = [];
         
-        // Cargar habilidades del personaje existente si aplica
-        let characterSkills: DBHabilidadPersonaje[] = [];
-        if (params.id) {
-          characterSkills = await getCharacterSkills(params.id);
-        }
-        
-        (data as DBHabilidad[]).forEach((rawElem: DBHabilidad) => {
-          const elem = mapSkillFields(rawElem);
+        data.forEach((rawElem: any) => {
+          const elem = {
+            id: rawElem.hab_id || rawElem.id || '',
+            nombre: rawElem.hab_nombre || rawElem.nombre || '',
+            sigla: rawElem.hab_siglas || rawElem.sigla || '',
+            tipo: rawElem.hab_tipo || rawElem.tipo || '',
+            estadistica_base: rawElem.had_estadistica_base || rawElem.estadistica_base || '',
+            descripcion: rawElem.hab_descripcion || rawElem.descripcion || ''
+          };
           
           if (!elem || !elem.tipo || !elem.id || !elem.sigla || !elem.nombre) {
-            console.warn("Skipping invalid skill data:", elem);
-            return;
+            return; // Saltar elementos inválidos
           }
           
           if (elem.tipo === "C") {
@@ -563,10 +895,16 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
               name: elem.nombre,
             });
           } else if (elem.tipo === "R" && elem.estadistica_base) {
-            const countSkill = otherSkills.filter(
+            const existingSkill = otherSkills.find(
               (option: SkillTypes) => option.id === elem.estadistica_base
-            ).length;
-            if (countSkill === 0) {
+            );
+            if (existingSkill) {
+              existingSkill.skills.push({
+                id: elem.id,
+                value: elem.sigla,
+                name: elem.nombre,
+              });
+            } else {
               otherSkills.push({
                 id: elem.estadistica_base,
                 skills: [
@@ -577,256 +915,19 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
                   },
                 ],
               });
-            } else {
-              const existingSkill = otherSkills.find(
-                (option: SkillTypes) => option.id === elem.estadistica_base
-              );
-              if (existingSkill) {
-                existingSkill.skills.push({
-                  id: elem.id,
-                  value: elem.sigla,
-                  name: elem.nombre,
-                });
-              }
             }
           }
         });
-        // Procesar habilidades existentes del personaje
-        if (characterSkills.length > 0) {
-          // Usar callback para acceder al estado actual sin dependencias
-          setFieldSkill((currentFieldSkill) => {
-            const updatedFieldSkill = currentFieldSkill.map(item => ({...item}));
-
-            (data as DBHabilidad[]).forEach((rawElem: DBHabilidad) => {
-              const elem = mapSkillFields(rawElem);
-
-              if (elem.tipo === "C") {
-                const existingSkill = characterSkills.find(skill => 
-                  skill.hpe_campo === "skillClass" && skill.hpe_habilidad === elem.id);
-                
-                if (existingSkill) {
-                  setValue("skillClass", elem.sigla);
-                  const classSkill = updatedFieldSkill.find(skill => skill.field === "skillClass");
-                  if (classSkill) {
-                    classSkill.id = elem.sigla;
-                    classSkill.skill = elem.id;
-                  }
-                }
-              } else if (elem.tipo === "E") {
-                const existingSkill = characterSkills.find(skill => 
-                  skill.hpe_campo === "skillExtra" && skill.hpe_habilidad === elem.id);
-                
-                if (existingSkill) {
-                  setValue("skillExtra", elem.sigla);
-                  const extraSkill = updatedFieldSkill.find(skill => skill.field === "skillExtra");
-                  if (extraSkill) {
-                    extraSkill.id = elem.sigla;
-                    extraSkill.skill = elem.id;
-                  }
-                }
-              } else if (elem.tipo === "R") {
-                const existingRingSkill = characterSkills.find(skill => 
-                  skill.hpe_campo.startsWith("skillRing") && skill.hpe_habilidad === elem.id);
-                if (existingRingSkill) {
-                  const ringNumber = existingRingSkill.hpe_campo.replace("skillRing", "");
-                  // Procesar habilidades de anillo de forma async para evitar dependencias
-                  setTimeout(() => {
-                    handleSelectedTypeRingSkillChange(ringNumber, elem.estadistica_base);
-                    ringSkills.setRingSkillName(ringNumber, elem.sigla, elem.estadistica_base, elem.estadistica_base);
-                  }, 0);
-                }
-              }
-            });
-            
-            return updatedFieldSkill;
-          });
-        }
         
-        // Establecer los estados con los datos procesados
-        if (updatedOptionsSkillClass.length > 0) {
-          setOptionsSkillClass(updatedOptionsSkillClass);
-        } else {
-          console.warn("No Class skill options processed from data");
-        }
-        
-        if (updatedOptionsSkillExtra.length > 0) {
-          setOptionsSkillExtra(updatedOptionsSkillExtra);
-        } else {
-          console.warn("No Extra skill options processed from data");
-        }
-        
-        if (otherSkills.length > 0) {
-          setSkillsTypes(otherSkills);
-        }
-      } else {
-        console.error("Invalid or empty data received from getListHad():", data);
+        setOptionsSkillClass(updatedOptionsSkillClass);
+        setOptionsSkillExtra(updatedOptionsSkillExtra);
+        setSkillsTypes(otherSkills);
       }
     } catch (error) {
       console.error("Error in getListSkill:", error);
     }
-  }, [params.id, setValue]);
-  /**
-   * Carga las estadísticas del personaje desde la base de datos
-   * Migrado desde CharacterSheet.tsx - versión completa
-   */
-  const getStats = useCallback(async () => {
-    if (params.id === null || params.id === undefined) return;
+  }, []);
 
-    try {
-      const data = await getCharacterStats(params.id);
-      
-      if (data !== null && Array.isArray(data)) {
-        const getStatsFormStats = getValues("stats") || [];
-        if (getStatsFormStats.length >= 6) {
-          // Actualizar stats usando setValue para cada estadística
-          setValue("strDice", data[0].epe_num_dado);
-          setValue("strClass", data[0].epe_num_clase);
-          setValue("strLevel", data[0].epe_num_nivel);
-          setValue("intDice", data[1].epe_num_dado);
-          setValue("intClass", data[1].epe_num_clase);
-          setValue("intLevel", data[1].epe_num_nivel);
-          setValue("dexDice", data[2].epe_num_dado);
-          setValue("dexClass", data[2].epe_num_clase);
-          setValue("dexLevel", data[2].epe_num_nivel);
-          setValue("conDice", data[3].epe_num_dado);
-          setValue("conClass", data[3].epe_num_clase);
-          setValue("conLevel", data[3].epe_num_nivel);
-          setValue("perDice", data[4].epe_num_dado);
-          setValue("perClass", data[4].epe_num_clase);
-          setValue("perLevel", data[4].epe_num_nivel);
-          setValue("chaDice", data[5].epe_num_dado);
-          setValue("chaClass", data[5].epe_num_clase);
-          setValue("chaLevel", data[5].epe_num_nivel);
-          
-          // También actualizar el array de stats para mantener consistencia
-          const updatedStats = [
-            { ...getStatsFormStats[0], valueDice: data[0].epe_num_dado, valueClass: data[0].epe_num_clase, valueLevel: data[0].epe_num_nivel },
-            { ...getStatsFormStats[1], valueDice: data[1].epe_num_dado, valueClass: data[1].epe_num_clase, valueLevel: data[1].epe_num_nivel },
-            { ...getStatsFormStats[2], valueDice: data[2].epe_num_dado, valueClass: data[2].epe_num_clase, valueLevel: data[2].epe_num_nivel },
-            { ...getStatsFormStats[3], valueDice: data[3].epe_num_dado, valueClass: data[3].epe_num_clase, valueLevel: data[3].epe_num_nivel },
-            { ...getStatsFormStats[4], valueDice: data[4].epe_num_dado, valueClass: data[4].epe_num_clase, valueLevel: data[4].epe_num_nivel },
-            { ...getStatsFormStats[5], valueDice: data[5].epe_num_dado, valueClass: data[5].epe_num_clase, valueLevel: data[5].epe_num_nivel }
-          ];
-          setValue("stats", updatedStats);
-        }
-      } else {
-        console.log("No existing stats data found, using defaults");
-      }
-    } catch (error) {
-      console.error("Error loading character stats:", error);
-    }
-  }, [params.id, getValues, setValue]);
-  /**
-   * Carga las habilidades del personaje
-   * Migrado desde CharacterSheet.tsx - implementación completa
-   */
-  const getSkills = useCallback(async () => {
-    if (!params.id) {
-      console.log('No character ID available for loading skills');
-      return;
-    }
-
-    try {
-      console.log('Loading character skills for character:', params.id);
-    } catch (error) {
-      console.error("Error loading character skills:", error);
-    }
-  }, [params.id]);
-    /**
-   * Carga el inventario del personaje desde la base de datos
-   * Migrado desde CharacterSheet.tsx - versión completa
-   */
-  const getInventory = useCallback(async () => {
-    if (!params.id) return;
-    
-    try {
-      const data = await getCharacterInventory(params.id);
-      
-      if (data !== null && Array.isArray(data)) {
-        // Limpiar inventario actual
-        const currentInventory = getValues("inventory");
-        if (currentInventory && currentInventory.length > 0) {
-          // Remover elementos existentes
-          for (let i = currentInventory.length - 1; i >= 0; i--) {
-            removeInventory(i);
-          }
-        }
-        
-        // Formatear y validar los datos del inventario
-        const formattedInventory = data.map((item: any) => 
-          validateInventoryObject({
-            id: item.inp_id || uuidv4(),
-            name: item.inp_nombre || "Item sin nombre",
-            description: item.inp_descripcion || "Sin descripción", 
-            count: item.inp_cantidad || 1,
-            readOnly: false
-          })
-        );
-        
-        if (formattedInventory.length > 0) {
-          // Si hay muchos elementos, añadirlos en lotes para mejorar el rendimiento
-          if (formattedInventory.length > 20) {
-            const batchSize = 10;
-            for (let i = 0; i < formattedInventory.length; i += batchSize) {
-              const batch = formattedInventory.slice(i, i + batchSize);
-              batch.forEach(item => {
-                appendInventory(item);
-              });
-              // Opcional: Podríamos añadir un pequeño retraso entre lotes para UI responsiva
-              // await new Promise(resolve => setTimeout(resolve, 10));
-            }
-          } else {
-            // Si son pocos elementos, añadirlos directamente
-            formattedInventory.forEach(item => {
-              appendInventory(item);
-            });
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error al cargar el inventario:", error);
-    }
-  }, [params.id, appendInventory, getValues]); // Reducir dependencias para optimización
-  
-  /**
-   * Carga la imagen del personaje
-   * Migrado desde CharacterSheet.tsx
-   */
-  const getCharacterImage = useCallback(async () => {
-    if (!normalizedUser || !params.id) return;
-
-    if (!normalizedUser.usu_id) {
-      console.error("User ID is undefined");
-      return;
-    }
-
-    try {
-      const url = await getUrlCharacter(normalizedUser.usu_id, params.id);
-      if (url) {
-        const refreshParam = Math.random().toString(36).substring(7);
-        setCharacterImage(url + "?" + refreshParam);
-      }
-    } catch (error) {
-      console.error("Error loading character image:", error);
-    }
-  }, [normalizedUser, params.id]);
-  
-  /**
-   * Función para obtener el total de una estadística
-   * Migrado desde CharacterSheet.tsx
-   */
-  const getStatTotal = useCallback((statId: string): number => {
-    switch(statId) {
-      case 'STR': return totalStats.str;
-      case 'INT': return totalStats.int;
-      case 'DEX': return totalStats.dex;
-      case 'CON': return totalStats.con;
-      case 'PER': return totalStats.per;
-      case 'CHA': return totalStats.cha;
-      default: return 0;
-    }
-  }, [totalStats]);
-  
   // ======= EFECTOS PARA CARGAR DATOS =======
   
   // Cargar imagen del personaje al montar el componente
@@ -834,8 +935,7 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
     if (params.id && normalizedUser?.usu_id) {
       getCharacterImage();
     }
-  }, [params.id, normalizedUser?.usu_id, getCharacterImage]);
-  // Cargar datos iniciales
+  }, [params.id, normalizedUser?.usu_id, getCharacterImage]);  // Cargar datos iniciales
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
@@ -860,7 +960,7 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
     };
 
     loadInitialData();
-  }, [params.id]); // Solo depender de params.id para evitar bucles infinitos
+  }, [params.id, getGameSystemList, getListSkill, getStats, getSkills, getInventory]); // Incluir todas las funciones como dependencias
   
   // ======= VALOR DEL CONTEXTO =======
   
@@ -894,7 +994,6 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
     // Validación
     emptyRequiredFields,
     clearValidationError,
-    // Funciones handler IMPLEMENTADAS
     handleCharacterClassChange,
     handleCharacterJobSelectChange,
     handleSelectRaceChange,
@@ -909,6 +1008,7 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
     handleUpdateObject,
     handleEditCount,
     handleNewCount,
+    saveData,
     
     // Validación de inventario
     validateInventoryObject,

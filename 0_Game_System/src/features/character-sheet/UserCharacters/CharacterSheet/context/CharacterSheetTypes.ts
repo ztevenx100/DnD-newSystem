@@ -112,6 +112,9 @@ export interface CharacterSheetContextType {
   handleEditCount: (id: string, newCount: string) => void;
   handleNewCount: (value: string) => void;
   
+  // Función principal para guardar el personaje
+  saveData: () => Promise<void>;
+  
   // Validación de inventario
   validateInventoryObject: (object: Partial<InventoryObject>) => InventoryObject;
   validateInventoryItem: (name: string, count: number | string) => string | null;

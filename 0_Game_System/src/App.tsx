@@ -8,7 +8,7 @@ import { NextUIProvider } from "@nextui-org/react";
 
 import { DBUsuario } from "@utils/types";
 import { DBPersonajesUsuario } from "@features/character-sheet/domain/types";
-import { CharacterSheet } from "@features/character-sheet/UserCharacters/CharacterSheet";
+import { CharacterSheetWrapper as CharacterSheet } from "@features/character-sheet/UserCharacters/CharacterSheet/CharacterSheetWrapper";
 import homeBackground from "@assets/img/webp/bg-home-01.webp";
 import { ErrorPage } from "@components/ErrorPage";
 import Home from "@/app/Home";

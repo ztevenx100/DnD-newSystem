@@ -4,8 +4,10 @@
  */
 
 // Exportar el componente principal
-import CharacterSheetWrapper from './CharacterSheetWrapper';
-export { CharacterSheetWrapper as CharacterSheet };
+export { CharacterSheetWrapper } from './CharacterSheetWrapper';
+
+// Para compatibilidad, también exportamos como CharacterSheet
+export { CharacterSheetWrapper as CharacterSheet } from './CharacterSheetWrapper';
 
 // Exportamos también el contexto y sus hooks para su uso en componentes futuros
 export { useCharacterSheet } from './context/CharacterSheetContext';

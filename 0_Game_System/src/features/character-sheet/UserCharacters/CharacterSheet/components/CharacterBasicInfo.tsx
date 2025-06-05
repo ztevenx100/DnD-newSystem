@@ -42,21 +42,27 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
   return (
     <div className="character-basic-info">
       <div className="info-group">
-        <label htmlFor="characterName">Nombre del Personaje</label>
+        <label htmlFor="characterName" className="form-lbl col-start-1 col-end-2 bg-grey-lighter">
+          Nombre del Personaje
+        </label>
         <input
           id="characterName"
           type="text"
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
+          className="form-input col-start-2 col-end-3 mr-2 focus:border-black focus:shadow"
         />
       </div>
       
       <div className="info-group">
-        <label htmlFor="characterClass">Clase</label>
+        <label htmlFor="characterClass" className="form-lbl col-start-1 col-end-2 bg-grey-lighter">
+          Clase
+        </label>
         <select
           id="characterClass"
           value={characterClass}
           onChange={(e) => onClassChange(e.target.value)}
+          className="form-input col-start-2 col-end-3 mr-2"
         >
           <option value="">Selecciona una clase</option>
           {classOptions.map((option) => (
@@ -68,11 +74,14 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
       </div>
       
       <div className="info-group">
-        <label htmlFor="characterRace">Raza</label>
+        <label htmlFor="characterRace" className="form-lbl col-start-1 col-end-2 bg-grey-lighter">
+          Raza
+        </label>
         <select
           id="characterRace"
           value={race}
           onChange={(e) => onRaceChange(e.target.value)}
+          className="form-input col-start-2 col-end-3 mr-2"
         >
           <option value="">Selecciona una raza</option>
           {raceOptions.map((option) => (
@@ -84,11 +93,14 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
       </div>
       
       <div className="info-group">
-        <label htmlFor="characterJob">Trabajo/Profesión</label>
+        <label htmlFor="characterJob" className="form-lbl col-start-1 col-end-2 bg-grey-lighter">
+          Trabajo/Profesión
+        </label>
         <select
           id="characterJob"
           value={job}
           onChange={(e) => onJobChange(e.target.value)}
+          className="form-input col-start-2 col-end-3 mr-2"
         >
           <option value="">Selecciona un trabajo</option>
           {jobOptions.map((option) => (
@@ -98,9 +110,8 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
           ))}
         </select>
       </div>
-      
       <div className="info-group">
-        <label htmlFor="characterLevel">Nivel</label>
+        <label htmlFor="characterLevel" className="form-lbl col-start-1 col-end-2 bg-grey-lighter">Nivel</label>
         <input
           id="characterLevel"
           type="number"
@@ -108,12 +119,12 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
           max="20"
           value={level}
           onChange={(e) => onLevelChange(parseInt(e.target.value, 10) || 1)}
+          className="form-input col-start-2 col-end-3 mr-2"
         />
       </div>
-      
       <div className="info-group">
-        <label>Alineamiento</label>
-        <div className="alignment-options">
+        <label className="form-lbl col-start-1 col-end-2 bg-grey-lighter">Alineamiento</label>
+        <div className="alignment-options col-start-2 col-end-3 mr-2">
           <button
             className={`alignment-button ${alignment === 'O' ? 'selected' : ''}`}
             onClick={() => onAlignmentChange('O')}

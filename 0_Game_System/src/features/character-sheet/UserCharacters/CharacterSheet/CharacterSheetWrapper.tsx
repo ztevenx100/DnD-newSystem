@@ -27,6 +27,12 @@ import {
 import { Option, SkillTypes, SkillFields, StatsTotal, DBSistemaJuego, InventoryObject } from './context/CharacterSheetTypes';
 import { DBPersonajesUsuario, InputStats, SkillsAcquired } from '@shared/utils/types';
 
+// Importar los estilos CSS del componente original
+import './CharacterSheet.css';
+
+// Importar el background principal
+import mainBackground from "@img/webp/bg-home-02.webp";
+
 /**
  * CharacterSheetWrapper es un componente que envuelve el componente original
  * CharacterSheet con el contexto necesario para la refactorización.
@@ -958,9 +964,15 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
         setLoading(false);
       }
     };
-
     loadInitialData();
   }, [params.id, getGameSystemList, getListSkill, getStats, getSkills, getInventory]); // Incluir todas las funciones como dependencias
+  
+  // Configurar el background de la aplicación
+  useEffect(() => {
+    if (props.changeBackground) {
+      props.changeBackground(mainBackground);
+    }
+  }, [props.changeBackground]);
   
   // ======= VALOR DEL CONTEXTO =======
   

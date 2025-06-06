@@ -33,14 +33,17 @@ import {
 } from "@features/character-sheet/infrastructure/services";
 
 // Local Components
-import FormSelectInfoPlayer from "./FormSelectInfoPlayer/FormSelectInfoPlayer";
-import FormInputSkillsRing from "./FormInputSkillsRing/FormInputSkillsRing";
-import FormCardCheckbox from "./FormCardCheckbox/FormCardCheckbox";
+import FormSelectInfoPlayerWrapper from "./FormSelectInfoPlayer/FormSelectInfoPlayerWrapper";
+import FormInputSkillsRingWrapper from "./FormInputSkillsRing/FormInputSkillsRingWrapper";
+import FormCardCheckboxWrapper from "./FormCardCheckbox/FormCardCheckboxWrapper";
 import CharacterSaveModal from "./CharacterSaveModal/CharacterSaveModal";
 import CharacterImageWrapper from "./components/CharacterImageWrapper";
 import CharacterStatsWrapper from "./components/CharacterStatsWrapper";
 import CharacterBasicInfoWrapper from "./components/CharacterBasicInfoWrapper";
 import CharacterInventoryWrapper from "./components/CharacterInventoryWrapper";
+
+// Context
+import { useCharacterSheet } from "./context/CharacterSheetContext";
 
 // Type Definitions
 import {
@@ -204,7 +207,6 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
     mode: "onSubmit",
     resolver: yupResolver(characterSchema)
   });
-  
   const ringSkills = useRingSkills(methods);
   const {
     register,
@@ -214,6 +216,9 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
     control,
     watch,
     formState: { errors }  } = methods;
+
+  // Get additional data from context (this provides skillsRingList, among other things)
+  const { skillsRingList } = useCharacterSheet();
 
   // State to track empty required fields for validation
   const [emptyRequiredFields, setEmptyRequiredFields] = useState<string[]>([]);
@@ -310,17 +315,11 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
     { id: "", value: "1", name: "", description: "", ring: "" },
     { id: "", value: "2", name: "", description: "", ring: "" },
   ];
-
   const [systemGame, setSystemGame] = useState<DBSistemaJuego>({
     sju_id: "",
     sju_nombre: "",
     sju_descripcion: ""
   });
-  const [skillsRingList, setSkillsRingList] = useState<SkillTypes[]>([
-    { id: "0", skills: [] },
-    { id: "1", skills: [] },
-    { id: "2", skills: [] },
-  ]);
   const [fieldSkill, setFieldSkill] = useState<SkillFields[]>([
     { id: "", skill: "", field: "skillClass" },
     { id: "", skill: "", field: "skillExtra" },
@@ -502,72 +501,6 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
       console.error("Error al cargar el inventario:", error);
     }
   }, [params.id, appendInventory, getValues, setValue]);
-  /**
-   * Actualiza la habilidad seleccionada para un anillo específico
-   */
-  const handleSelectedRingSkillChange = useCallback((
-    id: string,
-    ring: string,
-    skill: string,
-    stat: string
-  ) => {
-    if (!id || !ring || !skill) {
-      return;
-    }
-    try {
-      ringSkills.setRingSkillName(id, skill, ring, stat);
-      clearValidationError(`ringSkill${id}`);
-    } catch (error) {
-      console.error("Error al actualizar la habilidad del anillo:", error);
-    }
-  }, [ringSkills, clearValidationError]);
-  /**
-   * Maneja el cambio en el tipo de habilidad del anillo seleccionado
-   * Actualiza el tipo de anillo usando el hook useRingSkills
-   *
-   * @param id - ID/índice del anillo que está siendo modificado
-   * @param type - Tipo de habilidad seleccionado para el anillo
-   */
-  const handleSelectedTypeRingSkillChange = useCallback(async (
-    id: string,
-    type: string
-  ) => {
-    if (!id || !type) {
-      console.warn('ID o tipo de habilidad inválido', {id, type});
-      return;
-    }
-    
-    try {
-      ringSkills.updateRingType(id, type);
-      
-      setSkillsRingList(prevList => {
-        const newList = [...prevList];
-        const skills = skillsTypes.find(option => option.id === type)?.skills || [];
-        
-        if (skills.length === 0) {
-          console.warn(`No se encontraron habilidades para el tipo ${type}`);
-        }
-        
-        // Actualizar las habilidades disponibles para este anillo
-        const ringIndex = Number(id);
-        if (isNaN(ringIndex) || ringIndex < 0 || ringIndex >= newList.length) {
-          console.error(`Índice de anillo inválido: ${id}`);
-          return prevList;
-        }
-        
-        newList[ringIndex] = {
-          ...newList[ringIndex],
-          skills: skills
-        };
-        return newList;
-      });
-      
-      // Limpiar cualquier error de validación relacionado con este anillo
-      clearValidationError(`ringSkill${id}`);
-    } catch (error) {
-      console.error("Error al cambiar el tipo de habilidad del anillo:", error);
-    }
-  }, [skillsTypes, ringSkills, clearValidationError]);
   const getSkills = useCallback(async () => {
     const data = await getListHad();
     
@@ -610,16 +543,14 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
           skill.hpe_campo.startsWith("skillRing") && skill.hpe_habilidad === elem.id);
           if (existingRingSkill) {
             const ringNumber = existingRingSkill.hpe_campo.replace("skillRing", "");
-            handleSelectedTypeRingSkillChange(ringNumber, elem.estadistica_base);
-            
+            // Ring skills are now handled by the context and ringSkills hook
             ringSkills.setRingSkillName(ringNumber, elem.sigla, elem.estadistica_base, elem.estadistica_base);
           }
         }
       });
-      
       setFieldSkill(updatedFieldSkill);
     }
-  }, [params.id, handleSelectedTypeRingSkillChange, setValue]);
+  }, [params.id, setValue, ringSkills]);
 
   const getCharacterImage = useCallback(async () => {
     if (!user || !params.id) return;
@@ -1947,7 +1878,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
               {systemGame.sju_nombre}
             </h1>
           ) : (
-            <FormSelectInfoPlayer
+            <FormSelectInfoPlayerWrapper
               id="systemGame"
               label="Sistema de juego"
               options={SystemGameList}
@@ -2056,11 +1987,10 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
               emptyRequiredFields.includes('description') ? 'required-input' : ''
             }`}
           />
-          <FormCardCheckbox
+          <FormCardCheckboxWrapper
             id="characterKnowledge"
             label="Conocimientos"
             checkboxes={checkboxesData}
-            control={control}
             name="knowledge"
             onSelectedValuesChange={handleSelectedCheckValuesChange}
           />
@@ -2171,27 +2101,25 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
             className="form-input mr-2 focus:border-black focus:shadow"
             list="wearons"
           />
-          <FormSelectInfoPlayer
+          <FormSelectInfoPlayerWrapper
             id="skillClass"
             label="Habilidad innata"
             options={optionsSkillClass}
-            register={register}
             name="skillClass"
             required={true}
             onSelectChange={handleSelectSkillChange}
-          ></FormSelectInfoPlayer>
+          />
 
           {/* Debug information */}
           {optionsSkillClass.length === 0 && <div className="text-red-500 text-xs">No options available for skillClass</div>}
-          <FormSelectInfoPlayer
+          <FormSelectInfoPlayerWrapper
             id="skillExtra"
             label="Habilidad extra"
             options={optionsSkillExtra}
-            register={register}
             name="skillExtra"
             required={true}
             onSelectChange={handleSelectExtraSkillChange}
-          ></FormSelectInfoPlayer>
+          />
 
           {/* Debug information */}
           {optionsSkillExtra.length === 0 && <div className="text-red-500 text-xs">No options available for skillExtra</div>}
@@ -2220,37 +2148,29 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
               <label className="form-lbl-skills mr-2 mb-0 ">
                 Anillo de poder
               </label>
-
-              <FormInputSkillsRing
+              <FormInputSkillsRingWrapper
                 id={"0"}
                 level={watch("level")}
                 levelEvaluated={3}
                 ringTypes={optionsRingTypes}
                 skillList={skillsRingList[0]}
                 values={getValues("skills")[0] || defaultSkillsData[0]}
-                onSelectChange={handleSelectedRingSkillChange}
-                onSelectTypeChange={handleSelectedTypeRingSkillChange}
               />
-              <FormInputSkillsRing
+              <FormInputSkillsRingWrapper
                 id={"1"}
                 level={watch("level")}
                 levelEvaluated={6}
                 ringTypes={optionsRingTypes}
                 skillList={skillsRingList[1]}
                 values={getValues("skills")[1] || defaultSkillsData[1]}
-                onSelectChange={handleSelectedRingSkillChange}
-                onSelectTypeChange={handleSelectedTypeRingSkillChange}
               />
-
-              <FormInputSkillsRing
+              <FormInputSkillsRingWrapper
                 id={"2"}
                 level={watch("level")}
                 levelEvaluated={9}
                 ringTypes={optionsRingTypes}
                 skillList={skillsRingList[2]}
                 values={getValues("skills")[2] || defaultSkillsData[2]}
-                onSelectChange={handleSelectedRingSkillChange}
-                onSelectTypeChange={handleSelectedTypeRingSkillChange}
               />
             </>
           ) : (

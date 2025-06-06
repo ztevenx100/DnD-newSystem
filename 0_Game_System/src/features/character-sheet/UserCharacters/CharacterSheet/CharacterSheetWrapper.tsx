@@ -4,6 +4,7 @@ import { CharacterSheet as OriginalCharacterSheet } from './CharacterSheet';
 import { CharacterSheetProps } from './types/characterSheetProps';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm, useFieldArray } from 'react-hook-form';
+import { useDisclosure } from '@nextui-org/react';
 import { v4 as uuidv4 } from 'uuid';
 import { CharacterForm } from '@features/character-sheet/types/characterForm';
 import { getUrlCharacter } from "@database/storage/dbStorage";
@@ -22,7 +23,9 @@ import { CharacterService } from '@features/character-sheet/infrastructure/servi
 import { addStorageCharacter } from '@database/storage/dbStorage';
 import { 
   optionsCharacterClass,
-  optionsCharacterJob
+  optionsCharacterJob,
+  optionsCharacterRace,
+  checkboxesData
 } from '../../constants/characterOptions';
 import { Option, SkillTypes, SkillFields, StatsTotal, DBSistemaJuego, InventoryObject } from './context/CharacterSheetTypes';
 import { DBPersonajesUsuario, InputStats, SkillsAcquired } from '@shared/utils/types';
@@ -71,7 +74,6 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
   const [optionsSkillClass, setOptionsSkillClass] = useState<Option[]>([]);
   const [optionsSkillExtra, setOptionsSkillExtra] = useState<Option[]>([]);
   const [skillsTypes, setSkillsTypes] = useState<SkillTypes[]>([]);
-  
   // Estados de validación
   const [emptyRequiredFields, setEmptyRequiredFields] = useState<string[]>([]);
   
@@ -80,6 +82,10 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
   
   // Estados adicionales para saveData
   const [newRecord, setNewRecord] = useState<boolean>(true);
+  
+  // Estados para modal
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [dataCharacter, setDataCharacter] = useState<any>(null);
   
   // Configuración del formulario React Hook Form
   const methods = useForm<CharacterForm>({
@@ -674,6 +680,121 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
   // ======= FUNCIONES PARA CARGAR DATOS IMPLEMENTADAS =======
   
   /**
+   * Obtiene la lista de sistemas de juego disponibles
+   * Migrado desde CharacterSheet.tsx
+   */
+  const getGameSystemList = useCallback(async () => {
+    try {
+      const data: DBSistemaJuego[] = await getGameSystem();
+      if (data !== null) {
+        const updatedSystemGameList = [];
+        for (let i = 0; i < data.length; i++) {
+          updatedSystemGameList.push({
+            value: data[i].sju_id,
+            name: data[i].sju_nombre,
+          });
+        }
+        setSystemGameList(updatedSystemGameList);
+      }
+    } catch (error) {
+      console.error("Error loading game systems:", error);
+    }
+  }, []);
+
+  /**
+   * Obtiene la lista de habilidades disponibles
+   * Migrado desde CharacterSheet.tsx
+   */
+  const getListSkill = useCallback(async () => {
+    try {
+      const data = await getListHad();
+
+      if (data !== null && Array.isArray(data) && data.length > 0) {
+        const updatedOptionsSkillClass: Option[] = [];
+        const updatedOptionsSkillExtra: Option[] = [];
+        const otherSkills: SkillTypes[] = [];
+        
+        (data as any[]).forEach((rawElem) => {
+          const elem = {
+            id: rawElem.hab_id || rawElem.id || '',
+            nombre: rawElem.hab_nombre || rawElem.nombre || '',
+            sigla: rawElem.hab_siglas || rawElem.sigla || '',
+            tipo: rawElem.hab_tipo || rawElem.tipo || '',
+            estadistica_base: rawElem.had_estadistica_base || rawElem.estadistica_base || '',
+            descripcion: rawElem.hab_descripcion || rawElem.descripcion || ''
+          };
+          
+          if (!elem || !elem.tipo || !elem.id || !elem.sigla || !elem.nombre) {
+            console.warn("Skipping invalid skill data:", elem);
+            return;
+          }
+          
+          if (elem.tipo === "C") {
+            updatedOptionsSkillClass.push({
+              id: elem.id,
+              value: elem.sigla,
+              name: elem.nombre,
+            });
+          } else if (elem.tipo === "E") {
+            updatedOptionsSkillExtra.push({
+              id: elem.id,
+              value: elem.sigla,
+              name: elem.nombre,
+            });
+          } else if (elem.tipo === "R" && elem.estadistica_base) {
+            const countSkill = otherSkills.filter(
+              (option: SkillTypes) => option.id === elem.estadistica_base
+            ).length;
+            if (countSkill === 0) {
+              otherSkills.push({
+                id: elem.estadistica_base,
+                skills: [
+                  {
+                    id: elem.id,
+                    value: elem.sigla,
+                    name: elem.nombre,
+                  },
+                ],
+              });
+            } else {
+              const existingSkill = otherSkills.find(
+                (option: SkillTypes) => option.id === elem.estadistica_base
+              );
+              if (existingSkill) {
+                existingSkill.skills.push({
+                  id: elem.id,
+                  value: elem.sigla,
+                  name: elem.nombre,
+                });
+              }
+            }
+          }
+        });
+        
+        if (updatedOptionsSkillClass.length > 0) {
+          setOptionsSkillClass(updatedOptionsSkillClass);
+        } else {
+          console.warn("No Class skill options processed from data");
+        }
+        
+        if (updatedOptionsSkillExtra.length > 0) {
+          setOptionsSkillExtra(updatedOptionsSkillExtra);
+        } else {
+          console.warn("No Extra skill options processed from data");
+        }
+        
+        if (otherSkills.length > 0) {
+          setSkillsTypes(otherSkills);
+        }
+      } else {
+        console.error("Invalid or empty data received from getListHad():", data);
+      }
+    } catch (error) {
+      console.error("Error in getListSkill:", error);
+    }
+  }, []);
+
+  /**
    * Obtiene la imagen del personaje desde el almacenamiento
    * Migrado desde CharacterSheet.tsx
    */
@@ -831,109 +952,306 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
     return stat.valueDice + stat.valueClass + stat.valueLevel;
   }, [totalStats, getValues]);
   
-  /**
-   * Carga la lista de sistemas de juego
-   * Migrado desde CharacterSheet.tsx
-   */
-  const getGameSystemList = useCallback(async () => {
-    try {
-      const data = await getGameSystem();
-      
-      if (data && Array.isArray(data)) {
-        const systemOptions = data.map((system: any) => ({
-          value: system.sju_id || system.id,
-          name: system.sju_nombre || system.nombre || "Sistema sin nombre"
-        }));
-        
-        setSystemGameList(systemOptions);
-        
-        // Establecer el primer sistema como predeterminado si existe
-        if (systemOptions.length > 0 && !systemGame.sju_id) {
-          setSystemGame({
-            sju_id: systemOptions[0].value,
-            sju_nombre: systemOptions[0].name,
-            sju_descripcion: ""
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Error loading game systems:", error);
-    }
-  }, [systemGame.sju_id]);
+  // ======= FUNCIONES FALTANTES MIGRADAS DESDE CharacterSheet.tsx =======
   
   /**
-   * Carga la lista de habilidades disponibles
+   * Valida que todos los campos requeridos estén completos
    * Migrado desde CharacterSheet.tsx
    */
-  const getListSkill = useCallback(async () => {
-    try {
-      const data = await getListHad();
-
-      if (data && Array.isArray(data) && data.length > 0) {
-        const updatedOptionsSkillClass: Option[] = [];
-        const updatedOptionsSkillExtra: Option[] = [];
-        const otherSkills: SkillTypes[] = [];
-        
-        data.forEach((rawElem: any) => {
-          const elem = {
-            id: rawElem.hab_id || rawElem.id || '',
-            nombre: rawElem.hab_nombre || rawElem.nombre || '',
-            sigla: rawElem.hab_siglas || rawElem.sigla || '',
-            tipo: rawElem.hab_tipo || rawElem.tipo || '',
-            estadistica_base: rawElem.had_estadistica_base || rawElem.estadistica_base || '',
-            descripcion: rawElem.hab_descripcion || rawElem.descripcion || ''
-          };
-          
-          if (!elem || !elem.tipo || !elem.id || !elem.sigla || !elem.nombre) {
-            return; // Saltar elementos inválidos
-          }
-          
-          if (elem.tipo === "C") {
-            updatedOptionsSkillClass.push({
-              id: elem.id,
-              value: elem.sigla,
-              name: elem.nombre,
-            });
-          } else if (elem.tipo === "E") {
-            updatedOptionsSkillExtra.push({
-              id: elem.id,
-              value: elem.sigla,
-              name: elem.nombre,
-            });
-          } else if (elem.tipo === "R" && elem.estadistica_base) {
-            const existingSkill = otherSkills.find(
-              (option: SkillTypes) => option.id === elem.estadistica_base
-            );
-            if (existingSkill) {
-              existingSkill.skills.push({
-                id: elem.id,
-                value: elem.sigla,
-                name: elem.nombre,
-              });
-            } else {
-              otherSkills.push({
-                id: elem.estadistica_base,
-                skills: [
-                  {
-                    id: elem.id,
-                    value: elem.sigla,
-                    name: elem.nombre,
-                  },
-                ],
-              });
-            }
-          }
-        });
-        
-        setOptionsSkillClass(updatedOptionsSkillClass);
-        setOptionsSkillExtra(updatedOptionsSkillExtra);
-        setSkillsTypes(otherSkills);
-      }
-    } catch (error) {
-      console.error("Error in getListSkill:", error);
+  const validateRequiredFields = useCallback((): string[] => {
+    const fieldsRequired: string[] = [];
+    const formValues = getValues();
+    
+    // Validate character selection fields
+    if (!formValues.race?.trim()) {
+      fieldsRequired.push('characterRace');
     }
+    if (!formValues.job?.trim()) {
+      fieldsRequired.push('characterJob');
+    }
+    if (!formValues.class?.trim()) {
+      fieldsRequired.push('characterClass');
+    }
+    
+    // Validate form fields
+    if (!formValues.name?.trim()) {
+      fieldsRequired.push('name');
+    }
+    
+    // Validate stats - use our getStatTotal helper
+    const totalStatsSum = getStatTotal('total');
+    if (totalStatsSum <= 0) {
+      fieldsRequired.push('stats');
+    }
+    
+    return fieldsRequired;
+  }, [getValues, getStatTotal]);
+
+  /**
+   * Prepara los datos del personaje para el modal
+   * Migrado desde CharacterSheet.tsx
+   */
+  const prepareCharacterData = useCallback((): any => {
+    const formValues = getValues();
+    const characterStats = getInputStatsFromForm();
+    
+    // Procesar conocimientos desde el formulario
+    const knowledgeStr = formValues.knowledge || '';
+    const knowledgeArray = typeof knowledgeStr === 'string' 
+      ? knowledgeStr.split(',').filter(Boolean)
+      : Array.isArray(knowledgeStr) ? knowledgeStr : [];
+    
+    return {
+      id: formValues.characterId || '',
+      player: formValues.userName || '',
+      name: formValues.name || '',
+      class: formValues.class || '',
+      race: formValues.race || '',
+      job: formValues.job || '',
+      level: formValues.level || 1,
+      luckyPoints: formValues.luckyPoints || 0,
+      description: formValues.characterDescription || '',
+      knowledge: knowledgeArray,
+      str: [
+        {
+          dice: characterStats[0].valueDice,
+          class: characterStats[0].valueClass,
+          level: characterStats[0].valueLevel,
+        },
+      ],
+      int: [
+        {
+          dice: characterStats[1].valueDice,
+          class: characterStats[1].valueClass,
+          level: characterStats[1].valueLevel,
+        },
+      ],
+      dex: [
+        {
+          dice: characterStats[2].valueDice,
+          class: characterStats[2].valueClass,
+          level: characterStats[2].valueLevel,
+        },
+      ],
+      con: [
+        {
+          dice: characterStats[3].valueDice,
+          class: characterStats[3].valueClass,
+          level: characterStats[3].valueLevel,
+        },
+      ],
+      per: [
+        {
+          dice: characterStats[4].valueDice,
+          class: characterStats[4].valueClass,
+          level: characterStats[4].valueLevel,
+        },
+      ],
+      cha: [
+        {
+          dice: characterStats[5].valueDice,
+          class: characterStats[5].valueClass,
+          level: characterStats[5].valueLevel,
+        },
+      ],
+      mainWeapon: formValues.mainWeapon || '',
+      secondaryWeapon: formValues.secondaryWeapon || '',
+      alignment: formValues.alignment || '',
+      mainSkill: formValues.skillClass || '',
+      extraSkill: formValues.skillExtra || '',
+      skills: getSkillsAcquiredFromForm(),
+      coinsInv: [
+        Number(formValues.goldCoins) || 0,
+        Number(formValues.silverCoins) || 0,
+        Number(formValues.bronzeCoins) || 0
+      ],
+      inv: formValues.inventory || [],
+    };
+  }, [getValues, getInputStatsFromForm, getSkillsAcquiredFromForm]);
+
+  /**
+   * Abre el modal para guardar el personaje, validando primero
+   * que todos los campos requeridos estén completos
+   * Migrado desde CharacterSheet.tsx
+   */
+  const handleOpenModal = useCallback(() => {
+    // Validar campos requeridos
+    const fieldsRequired = validateRequiredFields();
+    setEmptyRequiredFields(fieldsRequired);
+    
+    if (fieldsRequired.length > 0) {
+      alert("Por favor, complete todos los campos obligatorios: " + fieldsRequired.join(", "));
+      return;
+    }
+
+    try {
+      const newCharacter = prepareCharacterData();
+      setDataCharacter(newCharacter);
+      onOpen();
+    } catch (error) {
+      console.error("Error preparing character data:", error);
+      alert("Error al preparar los datos del personaje");
+    }
+  }, [validateRequiredFields, setEmptyRequiredFields, prepareCharacterData, setDataCharacter, onOpen]);
+
+  // ======= FUNCIONES PARA OBTENER NOMBRES =======
+
+  /**
+   * Obtiene el nombre de una clase por su ID
+   * Migrado desde CharacterSheet.tsx
+   */
+  const getClassName = useCallback((id: string | undefined): string | undefined => {
+    return optionsCharacterClass.find((elem) => elem.value === id)?.name;
+  }, [optionsCharacterClass]);
+
+  /**
+   * Obtiene el nombre de una raza por su ID
+   * Migrado desde CharacterSheet.tsx
+   */
+  const getRaceName = useCallback((id: string | undefined): string | undefined => {
+    return optionsCharacterRace.find((elem) => elem.value === id)?.name;
+  }, [optionsCharacterRace]);
+
+  /**
+   * Obtiene el nombre de un trabajo por su ID
+   * Migrado desde CharacterSheet.tsx
+   */
+  const getJobName = useCallback((id: string | undefined): string | undefined => {
+    return optionsCharacterJob.find((elem) => elem.value === id)?.name;
+  }, [optionsCharacterJob]);
+
+  /**
+   * Obtiene los nombres de conocimientos por sus IDs
+   * Migrado desde CharacterSheet.tsx
+   */
+  const getKnowledgeName = useCallback((ids: string[] | undefined): string | undefined => {
+    let names = "";
+    if (ids === undefined || ids.length === 0) return names;
+    
+    // Filtrar valores vacíos
+    const validIds = ids.filter(Boolean);
+    if (validIds.length === 0) return names;
+    
+    validIds.forEach((know) => {
+      const found = checkboxesData.find((elem) => elem.value === know);
+      if (found) {
+        names += found.name + ", ";
+      }
+    });
+    names = names.length > 2 ? names.substring(0, names.length - 2) : names;
+
+    return names;
+  }, [checkboxesData]);
+
+  /**
+   * Obtiene el nombre de una habilidad principal por su ID
+   * Migrado desde CharacterSheet.tsx
+   */
+  const getMainSkillName = useCallback((id: string | undefined): string | undefined => {
+    return optionsSkillClass.find((elem) => elem.value === id)?.name;
+  }, [optionsSkillClass]);
+
+  /**
+   * Obtiene el nombre de una habilidad extra por su ID
+   * Migrado desde CharacterSheet.tsx
+   */
+  const getExtraSkillName = useCallback((id: string | undefined): string | undefined => {
+    return optionsSkillExtra.find((elem) => elem.value === id)?.name;
+  }, [optionsSkillExtra]);
+
+  /**
+   * Obtiene el nombre de una habilidad de anillo por su ID y estadística
+   * Migrado desde CharacterSheet.tsx
+   */
+  const getSkillName = useCallback((id: string, stat: string): string | undefined => {
+    return skillsTypes
+      .find((skill) => skill.id === stat)
+      ?.skills.find((ele) => ele.value === id)?.name;
+  }, [skillsTypes]);
+
+  // ======= FUNCIONES DE MANEJO DE ERRORES =======
+
+  /**
+   * Generic async function error handler with proper logging and user-friendly messaging
+   * Migrado desde CharacterSheet.tsx
+   */
+  const handleAsyncError = useCallback((error: unknown, operation: string) => {
+    console.error(`Error during ${operation}:`, error);
+    
+    // Extract detailed error information
+    let errorMessage = 'Unknown error';
+    let errorDetails = '';
+    let userFriendlyMessage = '';
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      
+      // Extract additional details if available
+      if ('details' in error) {
+        errorDetails = (error as any).details;
+      }
+      
+      // Extract Supabase specific error details
+      if ('code' in error && 'hint' in error) {
+        const code = (error as any).code;
+        const hint = (error as any).hint;
+        errorDetails = `Code: ${code}, Hint: ${hint}`;
+        
+        // Generate user-friendly messages for common Supabase errors
+        switch(code) {
+          case '23505': 
+            userFriendlyMessage = 'Ya existe un registro con esa información.';
+            break;
+          case '42501':
+            userFriendlyMessage = 'No tienes permisos para realizar esta acción.';
+            break;
+          case '23503':
+            userFriendlyMessage = 'No se puede eliminar porque otros registros dependen de este.';
+            break;
+          // Add more specific error cases as needed
+        }
+      }
+      
+      // Network error handling
+      if (errorMessage.includes('network') || errorMessage.includes('NetworkError')) {
+        userFriendlyMessage = 'Hay un problema de conexión. Por favor, verifica tu conexión a internet.';
+      }
+    }
+    
+    // Log detailed error information
+    if (errorDetails) {
+      console.error(`Additional error details for ${operation}:`, errorDetails);
+    }
+    
+    // Use specific message if available, otherwise construct a generic one
+    if (!userFriendlyMessage) {
+      userFriendlyMessage = `Error durante ${operation}: ${errorMessage}. Por favor, inténtalo de nuevo.`;
+    }
+    
+    // Show user-friendly error message
+    alert(userFriendlyMessage);
+    
+    return null;
   }, []);
 
+  /**
+   * Wraps an async function with error handling and loading state management
+   * Migrado desde CharacterSheet.tsx
+   */
+  const withErrorHandling = useCallback(<T,>(
+    asyncFn: () => Promise<T>,
+    operation: string,
+    setLoadingState?: (loading: boolean) => void
+  ): Promise<T | null> => {
+    if (setLoadingState) setLoadingState(true);
+    
+    return asyncFn()
+      .catch(error => handleAsyncError(error, operation))
+      .finally(() => {
+        if (setLoadingState) setLoadingState(false);
+      });
+  }, [handleAsyncError]);
+  
   // ======= EFECTOS PARA CARGAR DATOS =======
   
   // Cargar imagen del personaje al montar el componente
@@ -991,10 +1309,15 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
     loading,
     newRecord: params.id ? false : true,
     characterImage,
-    
     // Estados del sistema de juego
     systemGame,
     SystemGameList,
+    
+    // Estados del modal
+    isOpen,
+    onOpen,
+    onOpenChange,
+    dataCharacter,
     
     // Estados de habilidades
     skillsRingList,
@@ -1029,12 +1352,28 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
     // Estado de elementos eliminados
     deleteItems,
     setDeleteItems,
-    
     // Funciones para obtener datos IMPLEMENTADAS
     getInventory,
     getStats,
     getSkills,
     getCharacterImage,
+    getGameSystemList,
+    getListSkill,
+    
+    // Funciones migradas para modal y nombres
+    handleOpenModal,
+    getClassName,
+    getRaceName,
+    getJobName,
+    getKnowledgeName,
+    getMainSkillName,
+    getExtraSkillName,
+    getSkillName,
+    handleAsyncError,
+    withErrorHandling,
+    validateRequiredFields,
+    prepareCharacterData,
+    
     // Estadísticas y utilidades
     totalStats,
     setTotalStats,

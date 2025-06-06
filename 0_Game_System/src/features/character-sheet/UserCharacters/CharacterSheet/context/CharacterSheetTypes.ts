@@ -122,12 +122,33 @@ export interface CharacterSheetContextType {
   // Estado de elementos eliminados
   deleteItems: string[];
   setDeleteItems: (items: string[] | ((prevItems: string[]) => string[])) => void;
+  // Estados del modal
+  isOpen: boolean;
+  onOpen: () => void;
+  onOpenChange: (isOpen: boolean) => void;
+  dataCharacter: any;
   
   // Funciones para obtener datos
   getInventory: () => Promise<void>;
   getStats: () => Promise<void>;
   getSkills: () => Promise<void>;
   getCharacterImage: () => Promise<void>;
+  getGameSystemList: () => Promise<void>;
+  getListSkill: () => Promise<void>;
+  
+  // Funciones migradas para modal y nombres
+  handleOpenModal: () => void;
+  getClassName: (id: string | undefined) => string | undefined;
+  getRaceName: (id: string | undefined) => string | undefined;
+  getJobName: (id: string | undefined) => string | undefined;
+  getKnowledgeName: (ids: string[] | undefined) => string | undefined;
+  getMainSkillName: (id: string | undefined) => string | undefined;
+  getExtraSkillName: (id: string | undefined) => string | undefined;
+  getSkillName: (id: string, stat: string) => string | undefined;
+  handleAsyncError: (error: unknown, operation: string) => null;
+  withErrorHandling: <T,>(asyncFn: () => Promise<T>, operation: string, setLoadingState?: (loading: boolean) => void) => Promise<T | null>;
+  validateRequiredFields: () => string[];
+  prepareCharacterData: () => any;
   
   // Estadísticas y utilidades
   totalStats: StatsTotal;

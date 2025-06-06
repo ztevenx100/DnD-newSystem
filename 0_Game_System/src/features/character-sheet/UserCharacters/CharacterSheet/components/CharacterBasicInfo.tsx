@@ -11,6 +11,7 @@ interface CharacterBasicInfoProps {
   classOptions: Option[];
   raceOptions: Option[];
   jobOptions: Option[];
+  emptyRequiredFields?: string[]; // Nuevo prop para manejar validación visual
   onNameChange: (value: string) => void;
   onClassChange: (value: string) => void;
   onRaceChange: (value: string) => void;
@@ -32,6 +33,7 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
   classOptions,
   raceOptions,
   jobOptions,
+  emptyRequiredFields = [], // Valor por defecto
   onNameChange,
   onClassChange,
   onRaceChange,
@@ -50,7 +52,9 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
           type="text"
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
-          className="form-input col-start-2 col-end-3 mr-2 focus:border-black focus:shadow"
+          className={`form-input-y col-start-2 col-end-3 mr-2 ${
+            emptyRequiredFields.includes('name') ? 'required-input' : ''
+          }`}
         />
       </div>
       
@@ -62,7 +66,9 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
           id="characterClass"
           value={characterClass}
           onChange={(e) => onClassChange(e.target.value)}
-          className="form-input col-start-2 col-end-3 mr-2"
+          className={`form-input col-start-2 col-end-3 mr-2 ${
+            emptyRequiredFields.includes('characterClass') ? 'required-input' : ''
+          }`}
         >
           <option value="">Selecciona una clase</option>
           {classOptions.map((option) => (
@@ -81,7 +87,9 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
           id="characterRace"
           value={race}
           onChange={(e) => onRaceChange(e.target.value)}
-          className="form-input col-start-2 col-end-3 mr-2"
+          className={`form-input col-start-2 col-end-3 mr-2 ${
+            emptyRequiredFields.includes('characterRace') ? 'required-input' : ''
+          }`}
         >
           <option value="">Selecciona una raza</option>
           {raceOptions.map((option) => (
@@ -100,7 +108,9 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
           id="characterJob"
           value={job}
           onChange={(e) => onJobChange(e.target.value)}
-          className="form-input col-start-2 col-end-3 mr-2"
+          className={`form-input col-start-2 col-end-3 mr-2 ${
+            emptyRequiredFields.includes('characterJob') ? 'required-input' : ''
+          }`}
         >
           <option value="">Selecciona un trabajo</option>
           {jobOptions.map((option) => (
@@ -119,20 +129,22 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
           max="20"
           value={level}
           onChange={(e) => onLevelChange(parseInt(e.target.value, 10) || 1)}
-          className="form-input col-start-2 col-end-3 mr-2"
+          className={`form-input-y col-start-2 col-end-3 mr-2 ${
+            emptyRequiredFields.includes('level') ? 'required-input' : ''
+          }`}
         />
       </div>
       <div className="info-group">
         <label className="form-lbl col-start-1 col-end-2 bg-grey-lighter">Alineamiento</label>
         <div className="alignment-options col-start-2 col-end-3 mr-2">
           <button
-            className={`alignment-button ${alignment === 'O' ? 'selected' : ''}`}
+            className={`orden ${alignment === 'O' ? 'selected' : ''}`}
             onClick={() => onAlignmentChange('O')}
           >
             Orden
           </button>
           <button
-            className={`alignment-button ${alignment === 'C' ? 'selected' : ''}`}
+            className={`caos ${alignment === 'C' ? 'selected' : ''}`}
             onClick={() => onAlignmentChange('C')}
           >
             Caos

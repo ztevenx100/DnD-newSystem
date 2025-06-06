@@ -14,6 +14,7 @@ interface CharacterBasicInfoWrapperProps {
   classOptions: Option[];
   raceOptions: Option[];
   jobOptions: Option[];
+  emptyRequiredFields?: string[]; // Nuevo prop para validación visual
   onNameChange: (value: string) => void;
   onClassChange: (value: string) => void;
   onRaceChange: (value: string) => void;
@@ -39,13 +40,14 @@ const CharacterBasicInfoWrapper: React.FC<CharacterBasicInfoWrapperProps> = Reac
   classOptions,
   raceOptions,
   jobOptions,
+  emptyRequiredFields,
   onNameChange,
   onClassChange,
   onRaceChange,
   onJobChange,
   onLevelChange,
   onAlignmentChange
-}) => {  // Intento de usar el contexto, pero solo para logging en esta etapa
+}) => {// Intento de usar el contexto, pero solo para logging en esta etapa
   // En futuras iteraciones, utilizaremos completamente el contexto
   try {
     useCharacterSheet(); // Solo para verificar disponibilidad
@@ -69,6 +71,7 @@ const CharacterBasicInfoWrapper: React.FC<CharacterBasicInfoWrapperProps> = Reac
         classOptions={classOptions}
         raceOptions={raceOptions}
         jobOptions={jobOptions}
+        emptyRequiredFields={emptyRequiredFields}
         onNameChange={onNameChange}
         onClassChange={onClassChange}
         onRaceChange={onRaceChange}

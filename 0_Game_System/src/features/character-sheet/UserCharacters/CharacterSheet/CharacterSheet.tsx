@@ -13,12 +13,6 @@ import { CharacterForm } from "@features/character-sheet/types/characterForm";
 // NextUI Components
 import {
   Tooltip,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
   useDisclosure,
 } from "@nextui-org/react";
 import "./CharacterSheet.css";
@@ -39,11 +33,17 @@ import {
 } from "@features/character-sheet/infrastructure/services";
 
 // Local Components
-import FormSelectInfoPlayer from "./FormSelectInfoPlayer/FormSelectInfoPlayer";
-import FormCardCheckbox from "./FormCardCheckbox/FormCardCheckbox";
-import FormInputStats from "./FormInputStats/FormInputStats";
-import FormInputSkillsRing from "./FormInputSkillsRing/FormInputSkillsRing";
-import FormImageFile from "./FormImageFile/FormImageFile";
+import FormSelectInfoPlayerWrapper from "./FormSelectInfoPlayer/FormSelectInfoPlayerWrapper";
+import FormInputSkillsRingWrapper from "./FormInputSkillsRing/FormInputSkillsRingWrapper";
+import FormCardCheckboxWrapper from "./FormCardCheckbox/FormCardCheckboxWrapper";
+import CharacterSaveModal from "./CharacterSaveModal/CharacterSaveModal";
+import CharacterImageWrapper from "./components/CharacterImageWrapper";
+import CharacterStatsWrapper from "./components/CharacterStatsWrapper";
+import CharacterBasicInfoWrapper from "./components/CharacterBasicInfoWrapper";
+import CharacterInventoryWrapper from "./components/CharacterInventoryWrapper";
+
+// Context
+import { useCharacterSheet } from "./context/CharacterSheetContext";
 
 // Type Definitions
 import {
@@ -79,7 +79,6 @@ import ScreenLoader from "@UI/ScreenLoader/ScreenLoader";
 import SvgCharacter from "@Icons/SvgCharacter";
 import SvgSaveCharacter from "@Icons/SvgSaveCharacter";
 import SvgD4Roll from "@Icons/SvgD4Roll";
-import SvgDeleteItem from "@Icons/SvgDeleteItem";
 
 // Constants
 import { 
@@ -91,11 +90,10 @@ import {
   checkboxesData 
 } from '../../constants/characterOptions';
 
-interface CharacterSheetProps {
-  changeBackground: (newBackground: string) => void;
-}
+// Importar las props desde el archivo de tipos
+import { CharacterSheetProps } from './types/characterSheetProps';
 
-const CharacterSheet: React.FC<CharacterSheetProps> = ({
+export const CharacterSheet: React.FC<CharacterSheetProps> = ({
   changeBackground,
 }) => {
   const loaderData = useLoaderData() as {
@@ -209,7 +207,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     mode: "onSubmit",
     resolver: yupResolver(characterSchema)
   });
-  
   const ringSkills = useRingSkills(methods);
   const {
     register,
@@ -219,6 +216,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     control,
     watch,
     formState: { errors }  } = methods;
+
+  // Get additional data from context (this provides skillsRingList, among other things)
+  const { skillsRingList } = useCharacterSheet();
 
   // State to track empty required fields for validation
   const [emptyRequiredFields, setEmptyRequiredFields] = useState<string[]>([]);
@@ -315,17 +315,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     { id: "", value: "1", name: "", description: "", ring: "" },
     { id: "", value: "2", name: "", description: "", ring: "" },
   ];
-
   const [systemGame, setSystemGame] = useState<DBSistemaJuego>({
     sju_id: "",
     sju_nombre: "",
     sju_descripcion: ""
   });
-  const [skillsRingList, setSkillsRingList] = useState<SkillTypes[]>([
-    { id: "0", skills: [] },
-    { id: "1", skills: [] },
-    { id: "2", skills: [] },
-  ]);
   const [fieldSkill, setFieldSkill] = useState<SkillFields[]>([
     { id: "", skill: "", field: "skillClass" },
     { id: "", skill: "", field: "skillExtra" },
@@ -507,72 +501,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       console.error("Error al cargar el inventario:", error);
     }
   }, [params.id, appendInventory, getValues, setValue]);
-  /**
-   * Actualiza la habilidad seleccionada para un anillo específico
-   */
-  const handleSelectedRingSkillChange = useCallback((
-    id: string,
-    ring: string,
-    skill: string,
-    stat: string
-  ) => {
-    if (!id || !ring || !skill) {
-      return;
-    }
-    try {
-      ringSkills.setRingSkillName(id, skill, ring, stat);
-      clearValidationError(`ringSkill${id}`);
-    } catch (error) {
-      console.error("Error al actualizar la habilidad del anillo:", error);
-    }
-  }, [ringSkills, clearValidationError]);
-  /**
-   * Maneja el cambio en el tipo de habilidad del anillo seleccionado
-   * Actualiza el tipo de anillo usando el hook useRingSkills
-   *
-   * @param id - ID/índice del anillo que está siendo modificado
-   * @param type - Tipo de habilidad seleccionado para el anillo
-   */
-  const handleSelectedTypeRingSkillChange = useCallback(async (
-    id: string,
-    type: string
-  ) => {
-    if (!id || !type) {
-      console.warn('ID o tipo de habilidad inválido', {id, type});
-      return;
-    }
-    
-    try {
-      ringSkills.updateRingType(id, type);
-      
-      setSkillsRingList(prevList => {
-        const newList = [...prevList];
-        const skills = skillsTypes.find(option => option.id === type)?.skills || [];
-        
-        if (skills.length === 0) {
-          console.warn(`No se encontraron habilidades para el tipo ${type}`);
-        }
-        
-        // Actualizar las habilidades disponibles para este anillo
-        const ringIndex = Number(id);
-        if (isNaN(ringIndex) || ringIndex < 0 || ringIndex >= newList.length) {
-          console.error(`Índice de anillo inválido: ${id}`);
-          return prevList;
-        }
-        
-        newList[ringIndex] = {
-          ...newList[ringIndex],
-          skills: skills
-        };
-        return newList;
-      });
-      
-      // Limpiar cualquier error de validación relacionado con este anillo
-      clearValidationError(`ringSkill${id}`);
-    } catch (error) {
-      console.error("Error al cambiar el tipo de habilidad del anillo:", error);
-    }
-  }, [skillsTypes, ringSkills, clearValidationError]);
   const getSkills = useCallback(async () => {
     const data = await getListHad();
     
@@ -615,16 +543,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           skill.hpe_campo.startsWith("skillRing") && skill.hpe_habilidad === elem.id);
           if (existingRingSkill) {
             const ringNumber = existingRingSkill.hpe_campo.replace("skillRing", "");
-            handleSelectedTypeRingSkillChange(ringNumber, elem.estadistica_base);
-            
+            // Ring skills are now handled by the context and ringSkills hook
             ringSkills.setRingSkillName(ringNumber, elem.sigla, elem.estadistica_base, elem.estadistica_base);
           }
         }
       });
-      
       setFieldSkill(updatedFieldSkill);
     }
-  }, [params.id, handleSelectedTypeRingSkillChange, setValue]);
+  }, [params.id, setValue, ringSkills]);
 
   const getCharacterImage = useCallback(async () => {
     if (!user || !params.id) return;
@@ -1952,7 +1878,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               {systemGame.sju_nombre}
             </h1>
           ) : (
-            <FormSelectInfoPlayer
+            <FormSelectInfoPlayerWrapper
               id="systemGame"
               label="Sistema de juego"
               options={SystemGameList}
@@ -1980,74 +1906,34 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             className="form-input col-start-2 col-end-3 col-span-1 mr-2 focus:border-black focus:shadow"
             readOnly
           />
-          <label
-            htmlFor="name"
-            className="form-lbl col-start-1 bg-grey-lighter "
-          >
-            Personaje
-          </label>
-          <input
-            {...register("name", { 
-              required: true, 
-              maxLength: 50,
-              onChange: () => clearValidationError('name')
-            })}
-            placeholder="Nombre del personaje"
-            className={`form-input col-start-2 mr-2 focus:border-black focus:shadow ${
-              emptyRequiredFields.includes('name') ? 'required-input' : ''
-            }`}
+          {/* Componente de información básica refactorizado */}
+          <CharacterBasicInfoWrapper 
+            externalStyles="row-span-2 col-span-4"
+            name={getValues("name") || ""}
+            characterClass={getValues("class") || ""}
+            race={getValues("race") || ""}
+            job={getValues("job") || ""}
+            level={getValues("level") || 1}
+            alignment={getValues("alignment") || ""}
+            classOptions={optionsCharacterClass}
+            raceOptions={optionsCharacterRace}
+            jobOptions={optionsCharacterJob}
+            onNameChange={(value) => {
+              setValue("name", value);
+              clearValidationError('name');
+            }}
+            onClassChange={handleCharacterClassChange}
+            onRaceChange={handleSelectRaceChange}
+            onJobChange={handleCharacterJobSelectChange}
+            onLevelChange={(value) => {
+              setValue("level", value);
+              characterStats.handleLevelChange(value);
+            }}
+            onAlignmentChange={(value) => {
+              setValue("alignment", value);
+            }}
           />
-          <FormSelectInfoPlayer
-            id="characterClass"
-            label="Clase"
-            options={optionsCharacterClass}
-            register={register}
-            name="class"
-            required={true}
-            onSelectChange={handleCharacterClassChange}
-            className={emptyRequiredFields.includes('characterClass') ? 'required-input' : ''}
-          />
-          <FormSelectInfoPlayer
-            id="characterRace"
-            label="Raza"
-            options={optionsCharacterRace}
-            register={register}
-            name="race"
-            required={true}
-            onSelectChange={handleSelectRaceChange}
-            className={emptyRequiredFields.includes('characterRace') ? 'required-input' : ''}
-          ></FormSelectInfoPlayer>
-          <FormSelectInfoPlayer
-            id="characterJob"
-            label="Trabajo"
-            options={optionsCharacterJob}
-            register={register}
-            name="job"
-            required={true}
-            onSelectChange={handleCharacterJobSelectChange}
-            className={emptyRequiredFields.includes('characterJob') ? 'required-input' : ''}
-          ></FormSelectInfoPlayer>
 
-          <label
-            htmlFor="level"
-            className="form-lbl-y col-start-1 md:col-start-3 col-span-1 row-start-2 md:row-start-1 bg-grey-lighter "
-          >
-            Nivel
-          </label>
-          <input
-            {...register("level", { 
-              required: true, 
-              maxLength: 2, 
-              min:1, 
-              max:10,
-              onChange: (e) => {
-                const levelValue = parseInt(e.target.value) || 0;
-                characterStats.handleLevelChange(levelValue);
-              }
-            })}
-            placeholder="Nivel"
-            className="form-input-y numeric-input col-start-1 md:col-start-3 col-span-1 row-start-3 md:row-start-2 row-span-3 md:row-span-4 focus:border-black focus:shadow"
-          />
           <label
             htmlFor="luckyPoints"
             className="form-lbl-y col-start-2 md:col-start-4 col-span-1 row-start-2 md:row-start-1 bg-grey-lighter "
@@ -2076,7 +1962,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           >
             Imagen
           </label>
-          <FormImageFile
+          <CharacterImageWrapper
             externalStyles={
               "col-start-1 md:col-start-5 col-span-2 md:col-span-1 row-start-7 md:row-start-2 row-span-3 md:row-span-4 mr-2 ml-2"
             }
@@ -2101,11 +1987,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               emptyRequiredFields.includes('description') ? 'required-input' : ''
             }`}
           />
-          <FormCardCheckbox
+          <FormCardCheckboxWrapper
             id="characterKnowledge"
             label="Conocimientos"
             checkboxes={checkboxesData}
-            control={control}
             name="knowledge"
             onSelectedValuesChange={handleSelectedCheckValuesChange}
           />
@@ -2147,39 +2032,38 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               </select>
             </div>
           </header>
-
           {/* STRENGTH */}
-          <FormInputStats
+          <CharacterStatsWrapper
             inputStats={getValues("stats")[0] || characterStats.defaultStatsData[0]}
             onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
 
           {/* INTELLIGENCE */}
-          <FormInputStats
+          <CharacterStatsWrapper
             inputStats={getValues("stats")[1] || characterStats.defaultStatsData[1]}
             onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
 
           {/* DEXTERITY */}
-          <FormInputStats
+          <CharacterStatsWrapper
             inputStats={getValues("stats")[2] || characterStats.defaultStatsData[2]}
             onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
 
           {/* CONSTITUTION */}
-          <FormInputStats
+          <CharacterStatsWrapper
             inputStats={getValues("stats")[3] || characterStats.defaultStatsData[3]}
             onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
 
           {/* PERCEPTION */}
-          <FormInputStats
+          <CharacterStatsWrapper
             inputStats={getValues("stats")[4] || characterStats.defaultStatsData[4]}
             onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
 
           {/* CHARISMA */}
-          <FormInputStats
+          <CharacterStatsWrapper
             inputStats={getValues("stats")[5] || characterStats.defaultStatsData[5]}
             onSelectedValuesChange={characterStats.handleStatsInputChange}
           />
@@ -2217,27 +2101,25 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             className="form-input mr-2 focus:border-black focus:shadow"
             list="wearons"
           />
-          <FormSelectInfoPlayer
+          <FormSelectInfoPlayerWrapper
             id="skillClass"
             label="Habilidad innata"
             options={optionsSkillClass}
-            register={register}
             name="skillClass"
             required={true}
             onSelectChange={handleSelectSkillChange}
-          ></FormSelectInfoPlayer>
+          />
 
           {/* Debug information */}
           {optionsSkillClass.length === 0 && <div className="text-red-500 text-xs">No options available for skillClass</div>}
-          <FormSelectInfoPlayer
+          <FormSelectInfoPlayerWrapper
             id="skillExtra"
             label="Habilidad extra"
             options={optionsSkillExtra}
-            register={register}
             name="skillExtra"
             required={true}
             onSelectChange={handleSelectExtraSkillChange}
-          ></FormSelectInfoPlayer>
+          />
 
           {/* Debug information */}
           {optionsSkillExtra.length === 0 && <div className="text-red-500 text-xs">No options available for skillExtra</div>}
@@ -2266,205 +2148,59 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               <label className="form-lbl-skills mr-2 mb-0 ">
                 Anillo de poder
               </label>
-
-              <FormInputSkillsRing
+              <FormInputSkillsRingWrapper
                 id={"0"}
                 level={watch("level")}
                 levelEvaluated={3}
                 ringTypes={optionsRingTypes}
                 skillList={skillsRingList[0]}
                 values={getValues("skills")[0] || defaultSkillsData[0]}
-                onSelectChange={handleSelectedRingSkillChange}
-                onSelectTypeChange={handleSelectedTypeRingSkillChange}
               />
-              <FormInputSkillsRing
+              <FormInputSkillsRingWrapper
                 id={"1"}
                 level={watch("level")}
                 levelEvaluated={6}
                 ringTypes={optionsRingTypes}
                 skillList={skillsRingList[1]}
                 values={getValues("skills")[1] || defaultSkillsData[1]}
-                onSelectChange={handleSelectedRingSkillChange}
-                onSelectTypeChange={handleSelectedTypeRingSkillChange}
               />
-
-              <FormInputSkillsRing
+              <FormInputSkillsRingWrapper
                 id={"2"}
                 level={watch("level")}
                 levelEvaluated={9}
                 ringTypes={optionsRingTypes}
                 skillList={skillsRingList[2]}
                 values={getValues("skills")[2] || defaultSkillsData[2]}
-                onSelectChange={handleSelectedRingSkillChange}
-                onSelectTypeChange={handleSelectedTypeRingSkillChange}
               />
             </>
           ) : (
             <></>
           )}
         </fieldset>
-
-        {/* Inventario */}
+        {/* Componente de inventario refactorizado */}
         <fieldset className="fieldset-form inventory-player row-span-3 col-span-1 col-start-1 lg:col-start-3 lg:row-start-3 bg-white shadow-lg rounded" aria-labelledby="inventory-heading">
           <legend id="inventory-heading" className="text-lg font-semibold">Inventario</legend>
-
-          <label
-            htmlFor="goldCoins"
-            className="form-lbl col-span-3 mb-1 bg-grey-lighter font-medium"
-          >
-            Monedero
-          </label>
-          <label
-            htmlFor="goldCoins"
-            className="form-lbl-coins ml-2 col-span-1 bg-grey-lighter "
-          >
-            Oro
-          </label>
-          <label
-            htmlFor="silverCoins"
-            className="form-lbl-coins col-span-1 bg-grey-lighter "
-          >
-            Plata
-          </label>
-          <label
-            htmlFor="bronzeCoins"
-            className="form-lbl-coins mr-2 col-span-1 bg-grey-lighter "
-          >
-            Bronce
-          </label>
-          <input
-            {...register("goldCoins", { 
-              required: true, 
-              maxLength: 3,
-              onChange: (e) => {
-                const numericValue = validateNumeric(e.target.value);
-                setValue("goldCoins", numericValue);
-                clearValidationError('goldCoins');
+          
+          <CharacterInventoryWrapper 
+            externalStyles="inventory-wrapper"
+            inventory={inventoryFields}
+            onAddItem={handleAddObject}
+            onUpdateItem={(id, field, value) => {
+              if (field === 'count') {
+                handleEditCount(id, value);
               }
-            })}
-            placeholder="Oro"
-            className={`form-input ml-2 col-span-1 focus:border-black focus:shadow ${
-              emptyRequiredFields.includes('goldCoins') ? 'required-input' : ''
-            }`}
+            }}
+            onRemoveItem={handleDeleteObject}
+            newObjectName={getValues("newObjectName") || ""}
+            newObjectDescription={getValues("newObjectDescription") || ""}
+            newObjectCount={getValues("newObjectCount") || 1}
+            onNewObjectNameChange={(value) => setValue("newObjectName", value)}
+            onNewObjectDescriptionChange={(value) => setValue("newObjectDescription", value)}
+            onNewObjectCountChange={(value) => {
+              setValue("newObjectCount", value);
+              handleNewCount(value.toString());
+            }}
           />
-          <input
-            {...register("silverCoins", { 
-              required: true, 
-              maxLength: 3,
-              onChange: (e) => {
-                const numericValue = validateNumeric(e.target.value);
-                setValue("silverCoins", numericValue);
-                clearValidationError('silverCoins');
-              }
-            })}
-            placeholder="Plata"
-            className={`form-input col-span-1 focus:border-black focus:shadow ${
-              emptyRequiredFields.includes('silverCoins') ? 'required-input' : ''
-            }`}
-          />
-          <input
-            {...register("bronzeCoins", { 
-              required: true, 
-              maxLength: 3,
-              onChange: (e) => {
-                const numericValue = validateNumeric(e.target.value);
-                setValue("bronzeCoins", numericValue);
-                clearValidationError('bronzeCoins');
-              }
-            })}
-            placeholder="Bronce"
-            className={`form-input mr-2 col-span-1 focus:border-black focus:shadow ${
-              emptyRequiredFields.includes('bronzeCoins') ? 'required-input' : ''
-            }`}
-          />
-
-          <label className="form-lbl mb-1 col-span-3 bg-grey-lighter ">
-            Bolsa
-          </label>
-          {/* Listado de objetos */}
-          {inventoryFields.map((elem) => (
-            <Tooltip
-              className="bg-dark text-light px-2 py-1"
-              key={"object" + elem.id}
-              placement="left"
-              content={elem.description}
-            >
-              <label
-                htmlFor={"object" + elem.id}
-                className="form-lbl object-item col-span-3 bg-grey-lighter "
-              >
-                {" "}
-                {elem.name}
-                <input type="hidden" value={elem.id} />
-                <input
-                  type="text"
-                  id={"object" + elem.id}
-                  placeholder="Cantidad"
-                  className="form-input-count focus:border-black focus:shadow"
-                  value={elem.count}
-                  maxLength={2}
-                  onChange={(e) => handleEditCount(elem.id, e.target.value)}
-                  readOnly={elem.readOnly}
-                />
-                <button
-                  type="button"
-                  className="btn-delete-object"
-                  onClick={() => handleDeleteObject(elem.id)}
-                >
-                  <SvgDeleteItem width={25} fill="var(--required-color)" />
-                </button>
-              </label>
-            </Tooltip>
-          ))}
-
-          <input
-            type="text"
-            id="objectName"
-            placeholder="Nuevo objeto"
-            className={`form-input col-span-2 focus:border-black focus:shadow ${errors.newObjectName ? 'border-red-500' : ''}`}
-            {...register("newObjectName", {
-              maxLength: {
-                value: 50,
-                message: "El nombre no puede exceder 50 caracteres"
-              }
-            })}
-            maxLength={50}
-          />
-          <input
-            type="text"
-            id="objectCount"
-            placeholder="Cantidad"
-            className={`form-input mr-2 col-span-1 focus:border-black focus:shadow ${errors.newObjectCount ? 'border-red-500' : ''}`}
-            {...register("newObjectCount", {
-              validate: value => {
-                const numValue = Number(value);
-                return (!isNaN(numValue) && numValue > 0 && numValue <= 99) || 
-                  "La cantidad debe ser un número entre 1 y 99";
-              }
-            })}
-            maxLength={2}
-            onChange={(e) => handleNewCount(e.target.value)}
-          />
-          <input
-            type="text"
-            id="objectDescription"
-            placeholder="Descripción"
-            className={`form-input mx-2 col-span-3 row-span-2 focus:border-black focus:shadow ${errors.newObjectDescription ? 'border-red-500' : ''}`}
-            {...register("newObjectDescription", {
-              maxLength: {
-                value: 200,
-                message: "La descripción no puede exceder 200 caracteres"
-              }
-            })}
-            maxLength={200}
-          />
-          <button
-            type="button"
-            className="btn-add-object col-span-3 mx-2"
-            onClick={() => handleAddObject()}
-          >
-            Añadir
-          </button>
         </fieldset>
 
         <aside className="panel-save">
@@ -2476,190 +2212,21 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             <SvgSaveCharacter className="icon" width={40} height={40} />
           </button>
         </aside>
-
         {/* Modal/Dialog */}
-        <Modal
-          id="modalSave"
+        <CharacterSaveModal
           isOpen={isOpen}
-          size={"5xl"}
           onOpenChange={onOpenChange}
-          className="dialog modal-fix"
-          classNames={{
-            wrapper: "my-0",
-            base: "z-50",
-            backdrop: "z-40 bg-black/50",
-            footer: "px-2 py-2",
-          }}
-        >
-          <ModalContent>
-            {(onClose) => (
-              <>
-                <ModalHeader>Resumen de hoja de personaje</ModalHeader>
-                <ModalBody className="dialog-body grid grid-cols-3 gap-3">
-                  <ul className="dialog-card col-span-2 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    <li className="col-span-2">
-                      <strong>Jugador: </strong>
-                      {dataCharacter?.player}
-                    </li>
-                    <li className="col-span-2">
-                      <strong>Personaje: </strong>
-                      {dataCharacter?.name}
-                    </li>
-                    <li>
-                      <strong>Nivel: </strong>
-                      {dataCharacter?.level}
-                    </li>
-                    <li>
-                      <strong>Clase: </strong>
-                      {getClassName(dataCharacter?.class)}
-                    </li>
-                    <li>
-                      <strong>Raza: </strong>
-                      {getRaceName(dataCharacter?.race)}
-                    </li>
-                    <li>
-                      <strong>Trabajo: </strong>
-                      {getJobName(dataCharacter?.job)}
-                    </li>
-                    <li className="col-span-2">
-                      <strong>Descripcion: </strong>
-                      {dataCharacter?.description}
-                    </li>
-                    <li className="col-span-2">
-                      <strong>Conocimientos: </strong>
-                      {getKnowledgeName(dataCharacter?.knowledge)}
-                    </li>
-                  </ul>
-                  <table className="dialog-table ">
-                    <thead>
-                      <tr>
-                        <th colSpan={2}>Estadisticas</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>Fuerza</td>
-                        <td>
-                          {(dataCharacter?.str[0].dice || 0) +
-                            (dataCharacter?.str[0].class || 0) +
-                            (dataCharacter?.str[0].level || 0)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Inteligencia</td>
-                        <td>
-                          {(dataCharacter?.int[0].dice || 0) +
-                            (dataCharacter?.int[0].class || 0) +
-                            (dataCharacter?.int[0].level || 0)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Destreza</td>
-                        <td>
-                          {(dataCharacter?.dex[0].dice || 0) +
-                            (dataCharacter?.dex[0].class || 0) +
-                            (dataCharacter?.dex[0].level || 0)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Constitución</td>
-                        <td>
-                          {(dataCharacter?.con[0].dice || 0) +
-                            (dataCharacter?.con[0].class || 0) +
-                            (dataCharacter?.con[0].level || 0)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Percepcion</td>
-                        <td>
-                          {(dataCharacter?.per[0].dice || 0) +
-                            (dataCharacter?.per[0].class || 0) +
-                            (dataCharacter?.per[0].level || 0)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Carisma</td>
-                        <td>
-                          {(dataCharacter?.cha[0].dice || 0) +
-                            (dataCharacter?.cha[0].class || 0) +
-                            (dataCharacter?.cha[0].level || 0)}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <ul className="dialog-card grid grid-cols-1 gap-3 col-start-1 row-start-2 items-center ">
-                    <li className="">
-                      <strong>Alineacion: </strong>
-                      {dataCharacter?.alignment}
-                    </li>
-                  </ul>
-                  <ul className="dialog-card grid grid-cols-1 gap-3 col-start-1">
-                    <li>
-                      <strong>Habilidad principal: </strong>
-                      {getMainSkillName(dataCharacter?.mainSkill)}
-                    </li>
-                    <li>
-                      <strong>Habilidad extra: </strong>
-                      {getExtraSkillName(dataCharacter?.extraSkill)}
-                    </li>
-                    {dataCharacter?.skills.map((elem) => (
-                      <li key={elem.value}>
-                        <strong>Habilidad: </strong>
-                        {getSkillName(elem.name, elem.stat || "")}
-                      </li>
-                    ))}
-                  </ul>
-                  <ul className="dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3 col-start-2 row-start-2 items-center">
-                    <li>
-                      <strong>Arma principal: </strong>
-                      {dataCharacter?.mainWeapon}
-                    </li>
-                  </ul>
-                  <ul className="dialog-card grid grid-cols-1 gap-3 col-start-2">
-                    <li>
-                      <strong>Arma secundaria: </strong>
-                      {dataCharacter?.secondaryWeapon}
-                    </li>
-                  </ul>
-                  <ul className="dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 col-start-3 row-start-2">
-                    <li className="md:col-span-2 lg:col-span-3">
-                      <strong>Dinero: </strong>{" "}
-                    </li>
-                    <li>Oro: {dataCharacter?.coinsInv[0]}</li>
-                    <li>Plata: {dataCharacter?.coinsInv[1]}</li>
-                    <li>Cobre: {dataCharacter?.coinsInv[2]}</li>
-                  </ul>
-                  <ul className="dialog-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3 col-start-3">
-                    <li className="md:col-span-2 lg:col-span-2">
-                      Inventario:{" "}
-                    </li>
-                    {dataCharacter?.inv.map((elem) => (
-                      <li key={elem.id}>
-                        <strong>{elem.name}: </strong>
-                        {elem.count}
-                      </li>
-                    ))}
-                  </ul>
-                </ModalBody>
-                <ModalFooter>
-                  <Button onPress={onClose} className="mr-1">
-                    <span>Cancelar</span>
-                  </Button>
-                  <Button
-                    className="btn-dialog-accept"
-                    onClick={() => saveData()}
-                    id="btnSaveData"
-                  >
-                    <span>Guardar información</span>
-                  </Button>
-                </ModalFooter>
-              </>
-            )}
-          </ModalContent>
-        </Modal>
+          dataCharacter={dataCharacter}
+          onSave={saveData}
+          getClassName={getClassName}
+          getRaceName={getRaceName}
+          getJobName={getJobName}
+          getKnowledgeName={getKnowledgeName}
+          getMainSkillName={getMainSkillName}
+          getExtraSkillName={getExtraSkillName}
+          getSkillName={getSkillName}
+        />
       </form>
     </>
   );
 };
-
-export default CharacterSheet;

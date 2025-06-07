@@ -6,25 +6,25 @@ import './fonts.css'  // Import the fonts
 import './index.css'
 import './shared/styles/text-truncate.css'  // Utilidades para truncado de texto
 
-// Test database connection on startup
-import { checkDatabaseConnection } from './database/utils/dbConnectionTest';
+// Lazy database connection testing - only when needed
+import { lazyDbTester } from './database/utils/lazyDbConnectionTest';
 
-// Async IIFE to test database connection
-(async () => {
-  try {
-    const connectionStatus = await checkDatabaseConnection();
-    console.log('Database connection status:', connectionStatus ? 'Connected' : 'Not connected');
-    
-    if (!connectionStatus) {
-      console.warn('⚠️ Database connection could not be established. Some features may not work correctly.');
-    }
-  } catch (error) {
-    console.error('Error testing database connection:', error);
-  }
-})();
-
+// First, render the app immediately for optimal startup performance
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,
 )
+
+// Optionally test database connection in the background after app loads
+// This won't block the UI and the test will only run once when first needed
+if (import.meta.env.DEV) {
+  // Only in development mode, test connection after a longer delay
+  setTimeout(() => {
+    lazyDbTester.getConnectionStatus().then((status) => {
+      console.log('🔗 Background DB check:', status ? 'Connected' : 'Disconnected');
+    }).catch((error) => {
+      console.error('🔗 Background DB check failed:', error);
+    });
+  }, 2000); // 2 second delay to ensure smooth startup
+}

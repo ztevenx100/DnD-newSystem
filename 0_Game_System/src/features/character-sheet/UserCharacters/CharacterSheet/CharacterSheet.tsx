@@ -1893,24 +1893,24 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
             <SvgCharacter width={20} height={20} className={"inline"} />
             Informacion del jugador
           </legend>
-
-          {/* Player name field - positioned at the top */}
+          {/* LEFT COLUMN - Player info and character details */}
+          {/* Player name field - positioned at the top left */}
           <label
             htmlFor="userName"
-            className="form-lbl col-start-1 col-end-3 row-start-1 bg-grey-lighter"
+            className="form-lbl col-start-1 col-end-2 row-start-1 bg-grey-lighter"
           >
             Jugador
           </label>
           <input
             {...register("userName", { required: true })}
             placeholder="Nombre del jugador"
-            className="form-input col-start-3 col-end-9 row-start-1 focus:border-black focus:shadow"
+            className="form-input col-start-2 col-end-6 row-start-1 focus:border-black focus:shadow"
             readOnly
           />
           
-          {/* Character basic info positioned below player name */}
+          {/* Character basic info positioned below player name in left column */}
           <CharacterBasicInfoWrapper 
-            externalStyles="col-start-1 col-end-9 row-start-2 row-span-3"
+            externalStyles="col-start-1 col-end-6 row-start-2 row-span-4"
             name={getValues("name") || ""}
             characterClass={getValues("class") || ""}
             race={getValues("race") || ""}
@@ -1936,47 +1936,35 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
             }}
           />
 
-          {/* Other fields positioned below character basic info */}
+          {/* Lucky and Life points in left column */}
           <label
             htmlFor="luckyPoints"
-            className="form-lbl-y col-start-1 col-end-3 row-start-5 bg-grey-lighter"
+            className="form-lbl-y col-start-1 col-end-2 row-start-6 bg-grey-lighter"
             >
             Puntos de suerte
           </label>
           <input
             {...register("luckyPoints", { required: true, maxLength: 2, min:1, max:10 })}
             placeholder="Puntos de suerte"
-            className="form-input-y numeric-input col-start-3 col-end-5 row-start-5 focus:border-black focus:shadow"
+            className="form-input-y numeric-input col-start-2 col-end-3 row-start-6 focus:border-black focus:shadow"
           />
           
           <label
             htmlFor="lifePoints"
-            className="form-lbl-y col-start-5 col-end-7 row-start-5 bg-grey-lighter"
-            >            Vida
+            className="form-lbl-y col-start-3 col-end-4 row-start-6 bg-grey-lighter"
+            >
+            Vida
           </label>
           <input
             {...register("lifePoints", { required: true, maxLength: 2, min:1, max:10 })}
             placeholder="Puntos de vida"
-            className="form-input-y numeric-input col-start-7 col-end-9 row-start-5 focus:border-black focus:shadow"
+            className="form-input-y numeric-input col-start-4 col-end-6 row-start-6 focus:border-black focus:shadow"
           />
           
-          <label
-            htmlFor="characterImage"
-            className="form-lbl-y col-start-1 col-end-3 row-start-6 bg-grey-lighter"
-          >
-            Imagen
-          </label>
-          <CharacterImageWrapper
-            externalStyles={
-              "col-start-3 col-end-6 row-start-6 row-span-3"
-            }
-            locationImage={characterImage}
-            onFormImageFileChange={handleCharacterImageFileChange}
-          />
-
+          {/* Description in left column */}
           <label
             htmlFor="characterDescription"
-            className="form-lbl-y col-start-6 col-end-9 row-start-6 bg-grey-lighter"
+            className="form-lbl-y col-start-1 col-end-6 row-start-7 bg-grey-lighter"
           >
             Descripción
           </label>
@@ -1987,16 +1975,35 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
               onChange: () => clearValidationError('description')
             })}
             placeholder="Descripcion del personaje"
-            className={`form-input-y col-start-6 col-end-9 row-start-7 row-span-2 focus:border-black focus:shadow ${
+            className={`form-input-y col-start-1 col-end-6 row-start-8 row-span-2 focus:border-black focus:shadow ${
               emptyRequiredFields.includes('description') ? 'required-input' : ''
             }`}
           />
+
+          {/* RIGHT COLUMN - Image and Knowledge */}
+          {/* Character image in right column */}
+          <label
+            htmlFor="characterImage"
+            className="form-lbl-y col-start-6 col-end-9 row-start-1 bg-grey-lighter"
+          >
+            Imagen
+          </label>
+          <CharacterImageWrapper
+            externalStyles={
+              "col-start-6 col-end-9 row-start-2 row-span-4"
+            }
+            locationImage={characterImage}
+            onFormImageFileChange={handleCharacterImageFileChange}
+          />
+
+          {/* Knowledge checkboxes in right column */}
           <FormCardCheckboxWrapper
             id="characterKnowledge"
             label="Conocimientos"
             checkboxes={checkboxesData}
             name="knowledge"
             onSelectedValuesChange={handleSelectedCheckValuesChange}
+            externalStyles="col-start-6 col-end-9 row-start-6 row-span-4"
           />
         </fieldset>
 

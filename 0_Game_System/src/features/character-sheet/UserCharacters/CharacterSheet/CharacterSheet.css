@@ -570,10 +570,26 @@ body{
         color-mix(in srgb, var(--bg-color-1) 8%, white) 100%) !important;
     border: 2px solid color-mix(in srgb, var(--bg-color-1) 20%, transparent) !important;
     
-    /* Inner grid improvements */
+    /* Two-column layout: left for character info, right for image and knowledge */
     grid-template-columns: repeat(8, 1fr) !important;
-    grid-template-rows: repeat(8, auto) !important;
+    grid-template-rows: repeat(10, auto) !important;
     gap: var(--grid-gap-normal) !important;
+    
+    /* Visual separation between columns */
+    &::after {
+        content: '';
+        position: absolute;
+        top: 2rem;
+        left: 62.5%; /* Between column 5 and 6 */
+        bottom: 1rem;
+        width: 1px;
+        background: linear-gradient(180deg, 
+            transparent 0%, 
+            var(--border-light) 20%, 
+            var(--border-light) 80%, 
+            transparent 100%);
+        z-index: 1;
+    }
 }
 
 .fieldset-form.stats-player {

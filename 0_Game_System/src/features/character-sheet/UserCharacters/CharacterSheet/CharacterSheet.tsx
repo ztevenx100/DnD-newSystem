@@ -2006,9 +2006,8 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
             externalStyles="col-start-6 col-end-9 row-start-6 row-span-4"
           />
         </fieldset>
-
-        {/* Estadisticas del personaje */}
-        <fieldset className="fieldset-form stats-player row-span-3 col-span-1 col-start-1 bg-white shadow-lg rounded" aria-labelledby="stats-heading">
+        {/* Estadisticas del personaje - Primary positioning for logical character building flow */}
+        <fieldset className="fieldset-form stats-player row-span-2 col-span-1 col-start-1 bg-white shadow-lg rounded" aria-labelledby="stats-heading">
           <legend id="stats-heading" className="text-lg font-semibold">Estadísticas del personaje</legend>
           <header className="stats-player-header col-span-3 col-start-3 flex items-center gap-2">
             <div className="relative group">
@@ -2135,9 +2134,8 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
           {/* Debug information */}
           {optionsSkillExtra.length === 0 && <div className="text-red-500 text-xs">No options available for skillExtra</div>}
         </fieldset>
-
-        {/* Habilidades */}
-        <fieldset className="fieldset-form skills-player col-span-1 row-span-2 col-start-1 md:col-start-2 bg-white shadow-lg rounded">
+        {/* Habilidades - Positioned for natural progression after armament */}
+        <fieldset className="fieldset-form skills-player col-span-1 row-span-1 col-start-1 md:col-start-2 bg-white shadow-lg rounded">
           <legend>Habilidades</legend>
           {watch("level") >= 3 ? (
             <>

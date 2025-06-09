@@ -50,7 +50,7 @@ const FormCardCheckbox = <TFieldValues extends FieldValues = FieldValues>({
         <label id={id} className="form-lbl-y col-start-1 row-start-16 md:row-start-8 col-span-2 md:col-span-5 bg-grey-lighter ">{label}</label>
         <Card className="col-start-1 col-span-2 md:col-span-5 row-span-2 ml-2 mr-2 border-1 border-black rounded-t-none" >
           <CardBody className='p-3'>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
               <Controller
                 name={name}
                 control={control}
@@ -93,7 +93,7 @@ const FormCardCheckbox = <TFieldValues extends FieldValues = FieldValues>({
       <label id={id} className="form-lbl-y col-start-1 row-start-16 md:row-start-8 col-span-2 md:col-span-5 bg-grey-lighter ">{label}</label>
       <Card className="col-start-1 col-span-2 md:col-span-5 row-span-2 ml-2 mr-2 border-1 border-black rounded-t-none" >
         <CardBody className='p-3'>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {checkboxes.map((checkbox) => (
               <label htmlFor={checkbox.id} key={checkbox.id} className="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded" >
                 <input 

@@ -640,76 +640,293 @@ body{
     grid-template-rows: auto 1fr auto !important;
 }
 
-/* Enhanced stats header styling */
-.stats-player-header {
-    grid-column: 1 / -1 !important;
+/* =====================================================
+   ENHANCED VISUAL IMPROVEMENTS FOR UX
+   ===================================================== */
+
+/* Form field pairing improvements - labels and inputs alignment */
+.info-group {
+    display: contents;
+    
+    /* Ensure proper vertical alignment */
+    .form-lbl, .form-lbl-y {
+        align-self: start;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-bottom: 1px solid var(--border-light);
+        margin-bottom: 0;
+    }
+    
+    .form-input, .form-input-y {
+        align-self: start;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        border-top: none;
+        margin-top: 0;
+    }
+}
+
+/* Enhanced select dropdown styling to prevent disabled appearance */
+select.form-input, select.form-input-y {
+    /* Force active appearance */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    
+    /* Enhanced visual state */
+    background-color: white !important;
+    color: var(--text-primary) !important;
+    font-weight: normal !important;
+    
+    /* Better border and shadow */
+    border: 2px solid var(--border-medium) !important;
+    box-shadow: 
+        inset 0 1px 2px rgba(0, 0, 0, 0.05),
+        0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    
+    /* Enhanced focus state */
+    &:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 
+            inset 0 1px 2px rgba(0, 0, 0, 0.05),
+            0 0 0 3px rgba(var(--primary-rgb), 0.1),
+            0 2px 6px rgba(0, 0, 0, 0.12) !important;
+        outline: none !important;
+    }
+}
+
+/* Fix for checkbox grid in knowledge section - 3 columns instead of 4 */
+.form-card-checkbox-wrapper .card .grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: var(--spacing-sm) !important;
+    
+    @media (max-width: 768px) {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    @media (max-width: 480px) {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Enhanced checkbox styling */
+.form-card-checkbox-wrapper .card input[type="checkbox"] {
+    width: 1rem !important;
+    height: 1rem !important;
+    accent-color: var(--primary) !important;
+    margin-right: var(--spacing-sm) !important;
+    cursor: pointer !important;
+}
+
+.form-card-checkbox-wrapper .card label {
+    cursor: pointer !important;
     display: flex !important;
     align-items: center !important;
-    justify-content: space-between !important;
-    padding: var(--spacing-md) !important;
-    background: color-mix(in srgb, var(--bg-color-2) 15%, transparent) !important;
-    border-radius: var(--border-radius-md) !important;
-    margin-bottom: var(--spacing-lg) !important;
-}
-
-/* Enhanced responsive behavior */
-@media (min-width: 1200px) and (max-width: 1599px) {
-    .form-sheet {
-        grid-template-columns: repeat(12, 1fr);
-        max-width: 1400px;
-        padding: var(--spacing-2xl);
+    padding: var(--spacing-xs) !important;
+    border-radius: var(--border-radius-sm) !important;
+    transition: var(--transition-fast) !important;
+    
+    &:hover {
+        background-color: color-mix(in srgb, var(--primary) 10%, transparent) !important;
     }
 }
 
-/* Improved mobile stacking */
-@media (max-width: 767px) {
-    .fieldset-form {
-        grid-template-columns: 1fr !important;
-        padding: var(--spacing-lg) !important;
+/* Responsive improvements for line separator */
+.fieldset-form.info-player {
+    @media (max-width: 1200px) {
+        &::after {
+            left: 60% !important;
+            top: 4rem !important;
+            bottom: 3rem !important;
+        }
     }
     
-    .fieldset-form.info-player {
-        grid-template-columns: 1fr !important;
-        grid-template-rows: auto !important;
+    @media (max-width: 1023px) {
+        &::after {
+            left: 50% !important;
+            top: 3rem !important;
+            bottom: 2rem !important;
+        }
+    }
+    
+    @media (max-width: 767px) {
+        &::after {
+            display: none !important;
+        }
     }
 }
 
-/* Visual enhancement for form sections */
-.fieldset-form {
-    /* Ensure proper z-index stacking */
-    position: relative;
-    z-index: 2;
+/* Enhanced numeric input styling */
+.numeric-input {
+    text-align: center !important;
+    font-weight: var(--font-weight-semibold) !important;
+    font-size: 1rem !important;
     
-    /* Smooth transitions for interactions */
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Better visual emphasis for numeric values */
+    background-color: color-mix(in srgb, var(--primary) 3%, white) !important;
+    border-color: var(--border-medium) !important;
     
-    /* Focus-within enhancement for accessibility */
-    &:focus-within {
+    &:focus {
+        background-color: white !important;
+        border-color: var(--primary) !important;
         box-shadow: 
-            0 16px 64px rgba(0, 0, 0, 0.15),
-            0 8px 24px rgba(0, 0, 0, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 1);
-        transform: translateY(-4px);
+            0 0 0 3px rgba(var(--primary-rgb), 0.1),
+            0 2px 4px rgba(0, 0, 0, 0.1) !important;
     }
+}
+
+/* Enhanced textarea styling */
+textarea.form-input-y {
+    resize: vertical !important;
+    min-height: 4rem !important;
+    line-height: 1.5 !important;
+    
+    &:focus {
+        min-height: 6rem !important;
+    }
+    
+    @media (max-width: 767px) {
+        min-height: 6rem !important;
+    }
+}
+
+/* Enhanced card styling for knowledge section */
+.form-card-checkbox-wrapper .card {
+    border: 2px solid var(--border-medium) !important;
+    box-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    
+    &:hover {
+        border-color: var(--border-dark) !important;
+        box-shadow: 
+            0 4px 8px rgba(0, 0, 0, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+    }
+}
+
+/* Enhanced form group spacing and alignment */
+.fieldset-form.info-player .info-group {
+    margin-bottom: var(--spacing-md) !important;
+    
+    /* Better visual grouping */
+    &:last-of-type {
+        margin-bottom: 0 !important;
+    }
+}
+
+/* Enhanced image wrapper responsive behavior */
+.characterImageInput {
+    border: 2px solid var(--border-light) !important;
+    border-radius: var(--border-radius-md) !important;
+    padding: var(--spacing-md) !important;
+    background-color: white !important;
+    
+    &:hover {
+        border-color: var(--border-medium) !important;
+    }
+    
+    .character-image {
+        border-radius: var(--border-radius-sm) !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    }
+}
+
+/* Enhanced responsive behavior for all form elements */
+@media (max-width: 767px) {
+    .fieldset-form.info-player {
+        /* Better mobile spacing */
+        gap: var(--spacing-lg) !important;
+        padding: var(--spacing-lg) !important;
+        
+        /* Ensure all elements stack properly */
+        .form-lbl, .form-lbl-y, .form-input, .form-input-y {
+            width: 100% !important;
+            margin-bottom: var(--spacing-sm) !important;
+        }
+        
+        .form-lbl, .form-lbl-y {
+            border-radius: var(--border-radius-sm) !important;
+            border-bottom: 2px solid var(--border-light) !important;
+        }
+        
+        .form-input, .form-input-y {
+            border-radius: var(--border-radius-sm) !important;
+            border-top: 2px solid var(--border-light) !important;
+        }
+    }
+}
+
+/* Enhanced focus management for better UX */
+.form-input:focus + .form-lbl,
+.form-input-y:focus + .form-lbl-y,
+.form-lbl:focus-within {
+    background-color: color-mix(in srgb, var(--primary) 10%, var(--bg-grey-lighter)) !important;
+    border-color: var(--primary) !important;
+}
+
+/* Better visual hierarchy for required fields */
+.required-input {
+    position: relative !important;
+    
+    &::before {
+        content: '*' !important;
+        position: absolute !important;
+        top: -0.5rem !important;
+        right: -0.5rem !important;
+        color: var(--danger) !important;
+        font-weight: bold !important;
+        font-size: 1.2rem !important;
+        z-index: 10 !important;
+    }
+}
+
+/* Enhanced loading states */
+.form-input.loading, .form-input-y.loading {
+    opacity: 0.7 !important;
+    pointer-events: none !important;
+    
+    &::after {
+        content: '' !important;
+        position: absolute !important;
+        top: 50% !important;
+        right: 0.75rem !important;
+        width: 1rem !important;
+        height: 1rem !important;
+        margin-top: -0.5rem !important;
+        border: 2px solid var(--border-light) !important;
+        border-radius: 50% !important;
+        border-top-color: var(--primary) !important;
+        animation: spin 1s linear infinite !important;
+    }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 /* =====================================================
    FORM INPUT AND LABEL STYLES
    ===================================================== */
 
-/* Form Labels */
+/* Form Labels - Enhanced alignment and consistent heights */
 .form-lbl, .form-lbl-y {
     font-size: 0.875rem;
     font-weight: 500;
     color: #374151;
-    padding: 0.5rem 0.75rem;
+    padding: 0.625rem 0.75rem; /* Match input padding */
     border: 2px solid var(--border-light);
     background-color: var(--bg-grey-lighter);
     border-radius: var(--border-radius-sm);
     display: flex;
     align-items: center;
+    justify-content: flex-start;
     margin-bottom: 0.25rem;
     transition: all 0.2s ease-in-out;
+    
+    /* Consistent height matching form inputs */
+    min-height: var(--form-height-sm);
+    height: var(--form-height-sm);
     
     /* Enhanced visibility */
     box-shadow: 
@@ -797,7 +1014,7 @@ body{
     75% { transform: translateX(2px); }
 }
 
-/* Select Elements */
+/* Select Elements - Enhanced visibility and interactive states */
 select.form-input, select.form-input-y {
     cursor: pointer;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
@@ -805,10 +1022,45 @@ select.form-input, select.form-input-y {
     background-repeat: no-repeat;
     background-size: 1.5em 1.5em;
     padding-right: 2.5rem;
+    
+    /* Enhanced visual state to prevent disabled appearance */
+    background-color: white !important;
+    color: var(--text-primary) !important;
+    border: 2px solid var(--border-medium) !important;
+    font-weight: var(--font-weight-normal);
+    opacity: 1 !important;
+    
+    /* Enhanced shadow for depth */
+    box-shadow: 
+        inset 0 1px 2px rgba(0, 0, 0, 0.05),
+        0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 select.form-input:hover, select.form-input-y:hover {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%234b5563' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-color: #fafafa !important;
+    border-color: var(--border-dark) !important;
+    box-shadow: 
+        inset 0 1px 2px rgba(0, 0, 0, 0.05),
+        0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+select.form-input:focus, select.form-input-y:focus {
+    background-color: #fefefe !important;
+    border-color: var(--primary) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23F2AF29' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    box-shadow: 
+        inset 0 1px 2px rgba(0, 0, 0, 0.05),
+        0 0 0 3px rgba(var(--primary-rgb), 0.1),
+        0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+/* Ensure select options are properly styled */
+select.form-input option, select.form-input-y option {
+    background-color: white;
+    color: var(--text-primary);
+    font-weight: var(--font-weight-normal);
+    padding: 0.5rem;
 }
 
 /* Form Group Spacing */
@@ -1061,6 +1313,515 @@ textarea.form-input-y {
                 font-size: 0.75rem;
                 padding: 0.375rem;
             }
+        }
+    }
+}
+
+/* =====================================================
+   GRID LAYOUT UTILITIES - TWO COLUMN LAYOUT SUPPORT
+   ===================================================== */
+
+/* Grid column positioning utilities */
+.col-start-1 { grid-column-start: 1; }
+.col-start-2 { grid-column-start: 2; }
+.col-start-3 { grid-column-start: 3; }
+.col-start-4 { grid-column-start: 4; }
+.col-start-5 { grid-column-start: 5; }
+.col-start-6 { grid-column-start: 6; }
+.col-start-7 { grid-column-start: 7; }
+.col-start-8 { grid-column-start: 8; }
+
+.col-end-1 { grid-column-end: 1; }
+.col-end-2 { grid-column-end: 2; }
+.col-end-3 { grid-column-end: 3; }
+.col-end-4 { grid-column-end: 4; }
+.col-end-5 { grid-column-end: 5; }
+.col-end-6 { grid-column-end: 6; }
+.col-end-7 { grid-column-end: 7; }
+.col-end-8 { grid-column-end: 8; }
+.col-end-9 { grid-column-end: 9; }
+
+/* Grid row positioning utilities */
+.row-start-1 { grid-row-start: 1; }
+.row-start-2 { grid-row-start: 2; }
+.row-start-3 { grid-row-start: 3; }
+.row-start-4 { grid-row-start: 4; }
+.row-start-5 { grid-row-start: 5; }
+.row-start-6 { grid-row-start: 6; }
+.row-start-7 { grid-row-start: 7; }
+.row-start-8 { grid-row-start: 8; }
+.row-start-9 { grid-row-start: 9; }
+.row-start-10 { grid-row-start: 10; }
+
+.row-end-1 { grid-row-end: 1; }
+.row-end-2 { grid-row-end: 2; }
+.row-end-3 { grid-row-end: 3; }
+.row-end-4 { grid-row-end: 4; }
+.row-end-5 { grid-row-end: 5; }
+.row-end-6 { grid-row-end: 6; }
+.row-end-7 { grid-row-end: 7; }
+.row-end-8 { grid-row-end: 8; }
+.row-end-9 { grid-row-end: 9; }
+.row-end-10 { grid-row-end: 10; }
+
+/* Row span utilities */
+.row-span-1 { grid-row: span 1 / span 1; }
+.row-span-2 { grid-row: span 2 / span 2; }
+.row-span-3 { grid-row: span 3 / span 3; }
+.row-span-4 { grid-row: span 4 / span 4; }
+.row-span-5 { grid-row: span 5 / span 5; }
+
+/* Column span utilities */
+.col-span-1 { grid-column: span 1 / span 1; }
+.col-span-2 { grid-column: span 2 / span 2; }
+.col-span-3 { grid-column: span 3 / span 3; }
+.col-span-4 { grid-column: span 4 / span 4; }
+.col-span-5 { grid-column: span 5 / span 5; }
+
+/* =====================================================
+   RESPONSIVE GRID LAYOUT FIXES
+   ===================================================== */
+
+/* Enhanced info-player responsive behavior */
+.fieldset-form.info-player {
+    /* Fixed responsive grid issues */
+    position: relative;
+    
+    /* Default desktop layout - Full two column layout */
+    grid-template-columns: repeat(8, 1fr) !important;
+    grid-template-rows: repeat(10, auto) !important;
+    gap: var(--grid-gap-normal) !important;
+    /* Column separator line for desktop */
+    &::after {
+        content: '';
+        position: absolute;
+        top: 3rem;
+        left: 62.5%; /* Between columns 5 and 6 */
+        bottom: 2rem;
+        width: 1px;
+        background: linear-gradient(180deg, 
+            transparent 0%, 
+            color-mix(in srgb, var(--border-light) 60%, transparent) 20%, 
+            color-mix(in srgb, var(--border-light) 60%, transparent) 80%, 
+            transparent 100%);
+        z-index: 1;
+        pointer-events: none; /* Prevents interaction issues */
+    }
+    
+    /* Tablet - Improved two column layout */
+    @media (max-width: 1023px) and (min-width: 768px) {
+        grid-template-columns: repeat(6, 1fr) !important;
+        gap: var(--grid-gap-compact) !important;
+        
+        /* Adjust positioning for tablet - left column */
+        .col-start-1 { grid-column-start: 1 !important; }
+        .col-start-2 { grid-column-start: 2 !important; }
+        .col-start-3 { grid-column-start: 3 !important; }
+        .col-start-4 { grid-column-start: 4 !important; }
+        .col-end-6 { grid-column-end: 4 !important; }
+        
+        /* Adjust positioning for tablet - right column */
+        .col-start-6 { grid-column-start: 4 !important; }
+        .col-end-9 { grid-column-end: 7 !important; }
+        
+        /* Adjust column separator for tablet */
+        &::after {
+            left: 50%;
+        }
+    }
+    
+    /* Mobile - Single column stacking */
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto !important;
+        gap: var(--spacing-md) !important;
+        padding: var(--spacing-lg) !important;
+        
+        /* Reset ALL grid positioning for mobile - complete override */
+        * {
+            grid-column-start: 1 !important;
+            grid-column-end: 2 !important;
+            grid-row-start: auto !important;
+            grid-row-end: auto !important;
+            grid-row: auto !important;
+        }
+        
+        /* Hide column separator on mobile */
+        &::after {
+            display: none;
+        }
+        
+        /* Mobile-specific layout order */
+        .form-lbl[for="userName"],
+        .form-input[placeholder*="jugador"] {
+            order: 1;
+        }
+        
+        /* Character basic info comes next */
+        .basic-info-wrapper {
+            order: 2;
+        }
+        
+        /* Points section */
+        .form-lbl[for="luckyPoints"],
+        .form-input[placeholder*="suerte"],
+        .form-lbl[for="lifePoints"], 
+        .form-input[placeholder*="vida"] {
+            order: 3;
+        }
+        
+        /* Description */
+        .form-lbl[for="characterDescription"],
+        textarea[placeholder*="Descripcion"] {
+            order: 4;
+        }
+        
+        /* Image section */
+        .form-lbl[for="characterImage"],
+        .characterImageInput {
+            order: 5;
+        }
+        
+        /* Knowledge section */
+        .form-card-checkbox-wrapper {
+            order: 6;
+        }
+    }
+    
+    /* Large desktop optimization */
+    @media (min-width: 1200px) {
+        gap: var(--grid-gap-relaxed) !important;
+        padding: var(--spacing-2xl) !important;
+    }
+}
+
+/* Enhanced form field visibility for better UX */
+.fieldset-form.info-player .form-input,
+.fieldset-form.info-player .form-input-y,
+.fieldset-form.info-player .form-lbl,
+.fieldset-form.info-player .form-lbl-y {
+    /* Enhanced border visibility */
+    border: 2px solid var(--border-medium) !important;
+    box-shadow: 
+        0 1px 3px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    
+    /* Improved hover states */
+    &:hover {
+        border-color: var(--border-dark) !important;
+        box-shadow: 
+            0 2px 4px rgba(0, 0, 0, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+    }
+    
+    /* Better focus states */
+    &:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 
+            0 0 0 3px rgba(var(--primary-rgb), 0.1),
+            0 2px 4px rgba(0, 0, 0, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+        outline: none !important;
+    }
+}
+
+/* Improved responsive text areas */
+.fieldset-form.info-player textarea {
+    resize: vertical;
+    min-height: 4rem;
+    
+    @media (max-width: 767px) {
+        min-height: 6rem;
+    }
+}
+
+/* Better spacing for labels and inputs */
+.fieldset-form.info-player .form-lbl,
+.fieldset-form.info-player .form-lbl-y {
+    /* Enhanced label styling */
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.025em;
+    background-color: color-mix(in srgb, var(--bg-grey-lighter) 95%, white) !important;
+    
+    /* Better visual hierarchy */
+    &:hover + .form-input,
+    &:hover + .form-input-y {
+        border-color: var(--border-dark);
+    }
+}
+
+/* Numeric input enhancement */
+.numeric-input {
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+    
+    /* Remove number input spinners for better design */
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+      &[type=number] {
+        appearance: textfield;
+        -moz-appearance: textfield;
+    }
+}
+
+/* Enhanced required field validation */
+.required-input {
+    border-color: var(--danger) !important;
+    background-color: color-mix(in srgb, var(--danger) 5%, white) !important;
+    box-shadow: 
+        0 0 0 3px rgba(var(--danger-rgb), 0.15),
+        0 1px 3px rgba(0, 0, 0, 0.1) !important;
+        
+    &::placeholder {
+        color: color-mix(in srgb, var(--danger) 70%, var(--text-muted));
+    }
+    
+    /* Attention animation */
+    animation: pulseError 2s ease-in-out infinite;
+}
+
+@keyframes pulseError {
+    0%, 100% { 
+        box-shadow: 
+            0 0 0 3px rgba(var(--danger-rgb), 0.15),
+            0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    50% { 
+        box-shadow: 
+            0 0 0 3px rgba(var(--danger-rgb), 0.25),
+            0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+}
+
+/* =====================================================
+   SPECIFIC COMPONENT FIXES FOR RESPONSIVE ISSUES
+   ===================================================== */
+
+/* Fix for FormCardCheckbox (Knowledge section) responsive issues */
+.form-card-checkbox-wrapper {
+    /* Ensure proper display in all screen sizes */
+    display: block !important;
+    width: 100% !important;
+    
+    /* Better mobile adaptation */
+    @media (max-width: 767px) {
+        margin-top: var(--spacing-lg) !important;
+        
+        .form-lbl-y {
+            width: 100% !important;
+            margin-bottom: var(--spacing-sm) !important;
+        }
+        
+        .card {
+            width: 100% !important;
+            max-width: none !important;
+        }
+    }
+    
+    /* Tablet optimization */
+    @media (min-width: 768px) and (max-width: 1023px) {
+        .card {
+            padding: var(--spacing-md) !important;
+        }
+    }
+}
+
+/* Fix for numeric inputs (Lucky Points / Life Points) */
+.fieldset-form.info-player {
+    /* Specific fixes for the points row */
+    .form-lbl-y[for="luckyPoints"],
+    .form-lbl-y[for="lifePoints"] {
+        @media (max-width: 767px) {
+            grid-column: 1 !important;
+            width: 100% !important;
+            margin-bottom: var(--spacing-xs) !important;
+        }
+        
+        @media (min-width: 768px) and (max-width: 1023px) {
+            font-size: var(--font-size-sm) !important;
+            padding: var(--spacing-sm) !important;
+        }
+    }
+    
+    .numeric-input[placeholder*="suerte"],
+    .numeric-input[placeholder*="vida"] {
+        @media (max-width: 767px) {
+            grid-column: 1 !important;
+            width: 100% !important;
+            margin-bottom: var(--spacing-md) !important;
+            text-align: left !important;
+        }
+        
+        @media (min-width: 768px) and (max-width: 1023px) {
+            min-width: 80px !important;
+        }
+    }
+    
+    /* Mobile-specific layout for points section */
+    @media (max-width: 767px) {
+        /* Lucky points section */
+        .form-lbl-y[for="luckyPoints"] {
+            order: 10;
+        }
+        
+        .numeric-input[placeholder*="suerte"] {
+            order: 11;
+        }
+        
+        /* Life points section */
+        .form-lbl-y[for="lifePoints"] {
+            order: 12;
+        }
+        
+        .numeric-input[placeholder*="vida"] {
+            order: 13;
+        }
+    }
+}
+
+/* Enhanced card styling for knowledge section */
+.card {
+    /* Better responsive behavior */
+    @media (max-width: 767px) {
+        padding: var(--spacing-md) !important;
+        margin: var(--spacing-sm) 0 !important;
+        border-radius: var(--border-radius-md) !important;
+        
+        .card-body {
+            padding: var(--spacing-sm) !important;
+        }
+        
+        .checkbox-group {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: var(--spacing-sm) !important;
+        }
+        
+        .checkbox-item {
+            width: 100% !important;
+            margin-bottom: var(--spacing-xs) !important;
+        }
+    }
+    
+    @media (min-width: 768px) {
+        .checkbox-group {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+            gap: var(--spacing-sm) !important;
+        }
+    }
+}
+
+/* Character image wrapper responsive fixes */
+.characterImageInput {
+    @media (max-width: 767px) {
+        width: 100% !important;
+        max-width: 300px !important;
+        margin: var(--spacing-lg) auto !important;
+        
+        .character-image {
+            width: 100% !important;
+            height: auto !important;
+            aspect-ratio: 1 !important;
+        }
+    }
+    
+    @media (min-width: 768px) and (max-width: 1023px) {
+        .character-image {
+            max-width: 200px !important;
+            max-height: 200px !important;
+        }
+    }
+}
+
+/* TextArea responsive improvements */
+.fieldset-form.info-player textarea {
+    @media (max-width: 767px) {
+        width: 100% !important;
+        min-height: 100px !important;
+        resize: vertical !important;
+    }
+    
+    @media (min-width: 768px) and (max-width: 1023px) {
+        min-height: 80px !important;
+    }
+}
+
+/* Mobile order optimization for info-player */
+@media (max-width: 767px) {
+    .fieldset-form.info-player {
+        display: flex !important;
+        flex-direction: column !important;
+        
+        /* Remove grid entirely on mobile and use flexbox */
+        grid-template-columns: none !important;
+        grid-template-rows: none !important;
+        
+        /* Proper mobile ordering */
+        > * {
+            width: 100% !important;
+            grid-column: unset !important;
+            grid-row: unset !important;
+        }
+        
+        /* Specific order for mobile */
+        .form-lbl[for="userName"] { order: 1; }
+        .form-input[placeholder*="jugador"] { order: 2; }
+        .basic-info-wrapper { order: 3; }
+        .form-lbl-y[for="luckyPoints"] { order: 4; }
+        .numeric-input[placeholder*="suerte"] { order: 5; }
+        .form-lbl-y[for="lifePoints"] { order: 6; }
+        .numeric-input[placeholder*="vida"] { order: 7; }
+        .form-lbl-y[for="characterDescription"] { order: 8; }
+        textarea[placeholder*="Descripcion"] { order: 9; }
+        .form-lbl-y[for="characterImage"] { order: 10; }
+        .characterImageInput { order: 11; }
+        .form-card-checkbox-wrapper { order: 12; }
+    }
+}
+
+/* Enhanced visibility for all form elements */
+.fieldset-form.info-player {
+    .form-lbl, .form-lbl-y, .form-input, .form-input-y {
+        /* Better contrast and visibility */
+        border-width: 2px !important;
+        border-style: solid !important;
+        
+        /* Consistent spacing */
+        margin-bottom: var(--spacing-sm) !important;
+        
+        /* Better typography */
+        font-size: var(--font-size-sm) !important;
+        line-height: var(--line-height-normal) !important;
+    }
+    
+    .form-lbl, .form-lbl-y {
+        /* Label specific improvements */
+        font-weight: var(--font-weight-semibold) !important;
+        background-color: var(--bg-grey-lighter) !important;
+        border-color: var(--border-medium) !important;
+        
+        /* Better padding */
+        padding: var(--spacing-sm) var(--spacing-md) !important;
+    }
+    
+    .form-input, .form-input-y {
+        /* Input specific improvements */
+        border-color: var(--border-medium) !important;
+        background-color: white !important;
+        
+        /* Consistent height */
+        min-height: var(--form-height-sm) !important;
+        
+        /* Better focus state */
+        &:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1) !important;
         }
     }
 }

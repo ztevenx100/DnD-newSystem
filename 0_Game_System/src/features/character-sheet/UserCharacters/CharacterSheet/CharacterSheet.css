@@ -4,6 +4,9 @@
 */
 
 :root{
+    /* ===== STEP 2: CONSOLIDATED DESIGN TOKENS ===== */
+    
+    /* Theme Colors - Primary Palette */
     --bg-form-neutral: #C1C3C7;
     --bg-form-orden: #0E79B2;
     --bg-form-caos: #E4572E;
@@ -16,29 +19,20 @@
     --bg-color-7: #31E981;
     --bg-color-8: #388697;
     --bg-color-9: #7F5A83;
+    
+    /* Semantic Color Mappings */
+    --primary: var(--bg-color-3);
+    --primary-rgb: 242, 175, 41;
+    --danger: var(--bg-color-4);
+    --danger-rgb: 230, 52, 98;
+    --success: var(--bg-color-7);
+    --success-rgb: 49, 233, 129;
     --required-color: var(--bg-color-4);
     --bg-color-btn-dice: var(--bg-color-3);
     --bg-title: var(--bg-color-3);
     --bg-loader: var(--bg-color-3);
 
-    --un-border-opacity: 1;
-    --border-card: 0.5rem;
-    
-    /* Enhanced design system variables */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    
-    --focus-ring: 0 0 0 3px rgba(242, 175, 41, 0.1);
-    --focus-ring-orden: 0 0 0 3px rgba(14, 121, 178, 0.1);
-    --focus-ring-caos: 0 0 0 3px rgba(228, 87, 46, 0.1);
-    
-    --transition-fast: all 0.15s ease;
-    --transition-normal: all 0.2s ease;
-    --transition-slow: all 0.3s ease;
-    
-    /* STEP 1: Enhanced Typography and Spacing System */
+    /* Typography System */
     --font-size-xs: 0.75rem;    /* 12px */
     --font-size-sm: 0.875rem;   /* 14px */
     --font-size-base: 1rem;     /* 16px */
@@ -57,7 +51,7 @@
     --font-weight-bold: 700;
     --font-weight-black: 900;
     
-    /* Enhanced spacing system */
+    /* Spacing System */
     --spacing-xs: 0.25rem;    /* 4px */
     --spacing-sm: 0.5rem;     /* 8px */
     --spacing-md: 0.75rem;    /* 12px */
@@ -67,51 +61,57 @@
     --spacing-3xl: 2rem;      /* 32px */
     --spacing-4xl: 2.5rem;    /* 40px */
     
-    /* Grid consistency variables */
+    /* Grid System */
     --grid-gap-tight: 0.5rem;
     --grid-gap-normal: 0.75rem;
     --grid-gap-relaxed: 1rem;
     --grid-gap-loose: 1.25rem;
     
-    /* Form element sizing */
+    /* Form Element Sizing */
     --form-height-sm: 2.5rem;
     --form-height-md: 3rem;
     --form-height-lg: 3.5rem;
     
-    /* Border radius consistency */
-    --border-radius-sm: 0.375rem;
-    --border-radius-md: 0.5rem;
-    --border-radius-lg: 0.75rem;
-    
-    /* Border colors */
-    --border-light: #e5e7eb;
-    --border-medium: #d1d5db;
-    --border-dark: #9ca3af;
-    
-    /* Text colors */
-    --text-primary: #111827;
-    --text-secondary: #374151;
-    --text-muted: #6b7280;
-    
-    /* Status colors */
-    --primary: var(--bg-color-3);
-    --primary-rgb: 242, 175, 41;
-    --danger: var(--bg-color-4);
-    --danger-rgb: 230, 52, 98;
-    --success: var(--bg-color-7);
-    --success-rgb: 49, 233, 129;
-    
-    /* Background colors */
-    --bg-grey-lighter: #f9fafb;
+    /* Border Radius System (consolidated - removed duplicates) */
     --border-radius-sm: 0.375rem;
     --border-radius-md: 0.5rem;
     --border-radius-lg: 0.75rem;
     --border-radius-xl: 1rem;
+    --border-card: 0.5rem; /* Legacy support */
     
-    /* Additional missing variables for Step 6 */
-    --bg-main: #f8fafc;
+    /* Border Colors */
+    --border-light: #e5e7eb;
+    --border-medium: #d1d5db;
+    --border-dark: #9ca3af;
+    
+    /* Text Colors (consolidated - removed duplicates) */
     --text-primary: #1f2937;
-    --transition-standard: 0.2s;
+    --text-secondary: #374151;
+    --text-muted: #6b7280;
+    
+    /* Background Colors */
+    --bg-grey-lighter: #f9fafb;
+    --bg-main: #f8fafc;
+    
+    /* Shadow System */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    
+    /* Focus Ring System */
+    --focus-ring: 0 0 0 3px rgba(242, 175, 41, 0.1);
+    --focus-ring-orden: 0 0 0 3px rgba(14, 121, 178, 0.1);
+    --focus-ring-caos: 0 0 0 3px rgba(228, 87, 46, 0.1);
+    
+    /* Transition System (consolidated) */
+    --transition-fast: all 0.15s ease;
+    --transition-normal: all 0.2s ease;
+    --transition-standard: 0.2s; /* Alias for compatibility */
+    --transition-slow: all 0.3s ease;
+    
+    /* Legacy Support */
+    --un-border-opacity: 1;
 }
 
 body{
@@ -144,25 +144,75 @@ body{
     }
 }
 
-/* STEP 3: Enhanced Responsive Grid System and Form Sheet Layout */
+/* =====================================================
+   STEP 3: ENHANCED GRID SYSTEM - FORM SHEET LAYOUT
+   ===================================================== */
 
-.form-sheet{
+.form-sheet {
     display: grid;
     min-height: 100vh;
     width: 100%;
     max-width: 100vw;
     margin: 0 auto;
-    padding: var(--spacing-lg);
-    gap: var(--spacing-xl);
-    
-    /* Enhanced responsive grid system for better element distribution */
-    grid-template-columns: repeat(12, 1fr);
-    grid-template-rows: auto auto auto auto auto auto;
-    
-    /* Background and alignment theming */
-    background: linear-gradient(135deg, var(--bg-main) 0%, color-mix(in srgb, var(--bg-main) 95%, white) 100%);
     position: relative;
     overflow-x: hidden;
+    
+    /* ===== MOBILE-FIRST GRID LAYOUT ===== */
+    /* Mobile (≤767px): Single column stack */
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(6, auto);
+    grid-template-areas:
+        "title"
+        "info"
+        "stats"
+        "armament"
+        "skills"
+        "inventory";
+    padding: var(--spacing-md);
+    gap: var(--spacing-lg);
+    
+    /* ===== RESPONSIVE BREAKPOINTS ===== */
+    
+    /* Tablet (768px - 1023px): Two column layout */
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: auto auto auto auto;
+        grid-template-areas:
+            "title title title title title title title title"
+            "info info info info info info info info"
+            "stats stats stats stats armament armament armament armament"
+            "skills skills skills skills inventory inventory inventory inventory";
+        padding: var(--spacing-lg);
+        gap: var(--spacing-xl);
+        max-width: 1200px;
+    }
+    
+    /* Desktop (1024px - 1599px): Optimized three column layout */
+    @media (min-width: 1024px) {
+        grid-template-columns: repeat(12, 1fr);
+        grid-template-rows: auto auto auto auto;
+        grid-template-areas:
+            "title title title title title title title title title title title title"
+            "info info info info info info info info info info info info"
+            "stats stats stats stats armament armament armament armament inventory inventory inventory inventory"
+            "skills skills skills skills skills skills skills skills inventory inventory inventory inventory";
+        max-width: 1400px;
+    }
+    
+    /* Large Desktop (≥1600px): Full wide layout */
+    @media (min-width: 1600px) {
+        grid-template-columns: repeat(16, 1fr);
+        grid-template-rows: auto auto auto auto;
+        grid-template-areas:
+            "title title title title title title title title title title title title title title title title"
+            "info info info info info info info info info info info info info info info info"
+            "stats stats stats stats stats armament armament armament armament skills skills skills skills inventory inventory inventory"
+            ". . . . . armament armament armament armament skills skills skills skills inventory inventory inventory";
+        max-width: 1800px;
+    }
+    
+    /* ===== BACKGROUND AND THEMING ===== */
+    background: linear-gradient(135deg, var(--bg-main) 0%, color-mix(in srgb, var(--bg-main) 95%, white) 100%);
     
     /* Pattern overlay for visual texture */
     &::before {
@@ -209,30 +259,69 @@ body{
         --bg-title: var(--bg-form-caos);
         --bg-loader: var(--bg-form-caos);
         --current-focus-ring: var(--focus-ring-caos);
-        
         /* Chaos-specific pattern */
         &::before {
             background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.2) 1px, transparent 0);
         }
     }
+    
+    /* ===== GRID AREA ASSIGNMENTS FOR FIELDSETS ===== */
+    
+    /* Form Title Section */
+    .fieldset-form.form-title {
+        grid-area: title;
+    }
+    
+    /* Info Player Section */
+    .fieldset-form.info-player {
+        grid-area: info;
+    }
+    
+    /* Stats Player Section */
+    .fieldset-form.stats-player {
+        grid-area: stats;
+    }
+    
+    /* Initial Armament Section */
+    .fieldset-form.initial-armament {
+        grid-area: armament;
+    }
+    
+    /* Skills Player Section */
+    .fieldset-form.skills-player {
+        grid-area: skills;
+    }
+    
+    /* Inventory Player Section */
+    .fieldset-form.inventory-player {
+        grid-area: inventory;
+    }
 }
 
-/* Enhanced fieldset layout organization */
+/* =====================================================
+   ENHANCED FIELDSET ORGANIZATION WITH GRID AREAS
+   ===================================================== */
+
+/* Enhanced fieldset base layout */
 .fieldset-form {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
     gap: var(--grid-gap-relaxed);
-    padding: var(--spacing-3xl);
+    padding: var(--spacing-2xl);
     margin: 0;
     border: 2px solid color-mix(in srgb, var(--bg-color-3) 20%, transparent);
     border-radius: var(--border-radius-lg);
     background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(8px);
-    box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.08),
-        0 2px 8px rgba(0, 0, 0, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9);
     transition: all var(--transition-standard) ease;
+    
+    /* Responsive padding adjustments */
+    @media (max-width: 767px) {
+        padding: var(--spacing-lg);
+    }
+    
+    @media (min-width: 1024px) {
+        padding: var(--spacing-3xl);
+    }
     
     /* Hover effect for interactive enhancement */
     &:hover {
@@ -265,59 +354,62 @@ body{
     }
 }
 
-/* SPECIFIC SECTION LAYOUTS - Enhanced Distribution */
+/* =====================================================
+   SPECIFIC FIELDSET CONFIGURATIONS
+   ===================================================== */
 
-/* 1. Form Title Section - Full width header */
-.form-title {
-    grid-column: 1 / -1;
-    grid-row: 1;
+/* 1. Form Title Section */
+.fieldset-form.form-title {
+    grid-area: title;
+    grid-template-columns: 1fr;
     min-height: auto;
-    
-    /* Enhanced styling for title section */
-    background: linear-gradient(135deg, 
-        color-mix(in srgb, var(--bg-color-3) 15%, white) 0%, 
-        rgba(255, 255, 255, 0.95) 100%);
-    border: 3px solid color-mix(in srgb, var(--bg-color-3) 25%, transparent);
+    text-align: center;
     
     h1 {
         font-size: var(--font-size-2xl);
         font-weight: var(--font-weight-black);
-        text-align: center;
         margin: 0;
         color: var(--text-primary);
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 }
 
-/* 2. Info Player Section - Enhanced layout */
-.info-player {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    
-    /* Enhanced gradient background for player info */
-    background: linear-gradient(135deg, 
-        rgba(255, 255, 255, 0.98) 0%, 
-        color-mix(in srgb, var(--bg-color-1) 8%, white) 100%);
-    border: 2px solid color-mix(in srgb, var(--bg-color-1) 20%, transparent);
-    
-    /* Inner grid improvements for better element distribution */
+/* 2. Info Player Section */
+.fieldset-form.info-player {
+    grid-area: info;
     grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: repeat(8, auto);
-    gap: var(--grid-gap-normal);
+    grid-template-rows: repeat(10, auto);
+    
+    /* Visual separation between left and right columns */
+    &::after {
+        content: '';
+        position: absolute;
+        top: 3rem;
+        left: 62.5%;
+        bottom: 2rem;
+        width: 1px;
+        background: linear-gradient(180deg, 
+            transparent 0%, 
+            color-mix(in srgb, var(--border-light) 60%, transparent) 20%, 
+            color-mix(in srgb, var(--border-light) 60%, transparent) 80%, 
+            transparent 100%);
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        
+        &::after {
+            display: none;
+        }
+    }
 }
 
-/* 3. Stats Player Section - Top left positioning for logical flow */
-.stats-player {
-    grid-column: 1 / 5;
-    grid-row: 3 / 5;
-    
-    /* Enhanced stats styling with gradient theme */
-    background: linear-gradient(135deg, 
-        color-mix(in srgb, var(--bg-color-2) 12%, white) 0%, 
-        rgba(255, 255, 255, 0.98) 100%);
-    border: 2px solid color-mix(in srgb, var(--bg-color-2) 25%, transparent);
-    
-    /* Stats grid layout improvements */
+/* 3. Stats Player Section */
+.fieldset-form.stats-player {
+    grid-area: stats;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: auto repeat(6, 1fr);
     
@@ -333,845 +425,88 @@ body{
     }
 }
 
-/* 4. Initial Armament Section - Top right positioning after stats */
-.initial-armament {
-    grid-column: 5 / 9;
-    grid-row: 3;
-    
-    /* Enhanced armament styling with warm theme */
-    background: linear-gradient(135deg, 
-        color-mix(in srgb, #F2AF29 8%, white) 0%, 
-        rgba(255, 255, 255, 0.98) 100%);
-    border: 2px solid color-mix(in srgb, #F2AF29 25%, transparent);
-    
-    /* Internal layout improvements */
+/* 4. Initial Armament Section */
+.fieldset-form.initial-armament {
+    grid-area: armament;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(6, auto);
 }
 
-/* 5. Skills Player Section - Below armament for natural progression */
-.skills-player {
-    grid-column: 5 / 9;
-    grid-row: 4;
-    
-    /* Enhanced skills styling with cool theme */
-    background: linear-gradient(135deg, 
-        color-mix(in srgb, var(--bg-color-4) 10%, white) 0%, 
-        rgba(255, 255, 255, 0.98) 100%);
-    border: 2px solid color-mix(in srgb, var(--bg-color-4) 25%, transparent);
-    
-    /* Skills layout improvements */
+/* 5. Skills Player Section */
+.fieldset-form.skills-player {
+    grid-area: skills;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(8, auto);
 }
 
-/* 6. Inventory Player Section - Far right spanning full height for equipment management */
-.inventory-player {
-    grid-column: 9 / -1;
-    grid-row: 3 / 6;
-    
-    /* Enhanced inventory styling with blue theme */
-    background: linear-gradient(135deg, 
-        color-mix(in srgb, #4A90E2 8%, white) 0%, 
-        rgba(255, 255, 255, 0.98) 100%);
-    border: 2px solid color-mix(in srgb, #4A90E2 25%, transparent);
-    
-    /* Inventory internal layout */
+/* 6. Inventory Player Section */
+.fieldset-form.inventory-player {
+    grid-area: inventory;
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr auto;
 }
 
-/* RESPONSIVE LAYOUT REDISTRIBUTIONS */
-
-/* Large Desktop - Ultra-wide layout (1600px+) - Enhanced logical organization */
-@media (min-width: 1600px) {
-    .form-sheet {
-        grid-template-columns: repeat(16, 1fr);
-        max-width: 1800px;
-        gap: var(--spacing-2xl);
-    }
-    
-    .info-player {
-        grid-column: 1 / -1;
-        grid-template-columns: repeat(12, 1fr);
-    }
-    
-    /* Stats positioned prominently for character building flow */
-    .stats-player {
-        grid-column: 1 / 6;
-        grid-row: 3 / 5;
-    }
-    
-    /* Armament follows stats in logical progression */
-    .initial-armament {
-        grid-column: 6 / 10;
-        grid-row: 3;
-    }
-    
-    /* Skills positioned below armament for natural flow */
-    .skills-player {
-        grid-column: 6 / 10;
-        grid-row: 4;
-    }
-    
-    /* Inventory spans remaining space for equipment management */
-    .inventory-player {
-        grid-column: 10 / -1;
-        grid-row: 3 / 5;
-    }
-}
-
-/* Desktop Layout (1024px - 1599px) - Optimized for logical flow */
-@media (min-width: 1024px) and (max-width: 1599px) {
-    .form-sheet {
-        grid-template-columns: repeat(12, 1fr);
-        max-width: 1400px;
-    }
-    
-    /* Stats positioned for primary focus */
-    .stats-player {
-        grid-column: 1 / 5;
-        grid-row: 3 / 5;
-    }
-    
-    /* Armament follows logically after stats */
-    .initial-armament {
-        grid-column: 5 / 8;
-        grid-row: 3;
-    }
-    
-    /* Skills positioned below armament for progression flow */
-    .skills-player {
-        grid-column: 5 / 8;
-        grid-row: 4;
-    }
-    
-    /* Inventory positioned for easy equipment management */
-    .inventory-player {
-        grid-column: 8 / -1;
-        grid-row: 3 / 5;
-    }
-}
-
-/* Tablet Layout (768px - 1023px) - Improved logical flow */
-@media (min-width: 768px) and (max-width: 1023px) {
-    .form-sheet {
-        grid-template-columns: repeat(8, 1fr);
-        grid-template-rows: auto auto auto auto auto auto;
-        gap: var(--spacing-lg);
-    }
-    
-    .info-player {
-        grid-column: 1 / -1;
-        grid-row: 2;
-    }
-    
-    /* Stats first for logical character building progression */
-    .stats-player {
-        grid-column: 1 / 5;
-        grid-row: 3 / 4;
-    }
-    
-    /* Initial armament follows stats */
-    .initial-armament {
-        grid-column: 5 / -1;
-        grid-row: 3;
-    }
-    
-    /* Skills below armament for natural progression */
-    .skills-player {
-        grid-column: 1 / 5;
-        grid-row: 4;
-    }
-    
-    /* Inventory spans full width at bottom for better space usage */
-    .inventory-player {
-        grid-column: 1 / -1;
-        grid-row: 5 / 6;
-    }
-}
-
-/* Mobile Layout (below 768px) - Optimized logical flow */
-@media (max-width: 767px) {
-    .form-sheet {
-        grid-template-columns: 1fr;
-        grid-template-rows: repeat(6, auto);
-        padding: var(--spacing-md);
-        gap: var(--spacing-lg);
-    }
-    
-    /* Maintain logical order for mobile: Title -> Info -> Stats -> Armament -> Skills -> Inventory */
-    .form-title {
-        grid-column: 1;
-        grid-row: 1;
-        order: 1;
-    }
-    
-    .info-player {
-        grid-column: 1;
-        grid-row: 2;
-        order: 2;
-    }
-    
-    .stats-player {
-        grid-column: 1;
-        grid-row: 3;
-        order: 3;
-    }
-    
-    .initial-armament {
-        grid-column: 1;
-        grid-row: 4;
-        order: 4;
-    }
-    
-    .skills-player {
-        grid-column: 1;
-        grid-row: 5;
-        order: 5;
-    }
-    
-    .inventory-player {
-        grid-column: 1;
-        grid-row: 6;
-        order: 6;
-    }
-    
-    .fieldset-form {
-        padding: var(--spacing-lg);
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Enhanced visual hierarchy for better organization */
-.fieldset-form {
-    /* Add subtle animation for better UX */
-    animation: fadeInUp 0.6s ease-out;
-    
-    /* Staggered animation delays for logical flow */
-    &.form-title { animation-delay: 0.1s; }
-    &.info-player { animation-delay: 0.2s; }
-    &.stats-player { animation-delay: 0.3s; }
-    &.initial-armament { animation-delay: 0.4s; }
-    &.skills-player { animation-delay: 0.5s; }
-    &.inventory-player { animation-delay: 0.6s; }
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Print layout optimization */
-@media print {
-    .form-sheet {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto;
-        gap: var(--spacing-md);
-        padding: var(--spacing-md);
-        background: white !important;
-    }
-    
-    .fieldset-form {
-        break-inside: avoid;
-        background: white !important;
-        box-shadow: none !important;
-        border: 1px solid #ccc !important;
-    }
-    
-    .panel-save {
-        display: none !important;
-    }
-}
-
-/* Enhanced section-specific styling overrides */
-
-/* Override any conflicting legacy styles */
-.fieldset-form.form-title {
-    /* Form title specific overrides */
-    background: linear-gradient(135deg, 
-        color-mix(in srgb, var(--bg-color-3) 15%, white) 0%, 
-        rgba(255, 255, 255, 0.95) 100%) !important;
-    border: 3px solid color-mix(in srgb, var(--bg-color-3) 25%, transparent) !important;
-    
-    h1 {
-        font-size: var(--font-size-2xl);
-        font-weight: var(--font-weight-black);
-        text-align: center;
-        margin: 0;
-        color: var(--text-primary);
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-}
-
-.fieldset-form.info-player {
-    /* Info player section specific styling */
-    background: linear-gradient(135deg, 
-        rgba(255, 255, 255, 0.98) 0%, 
-        color-mix(in srgb, var(--bg-color-1) 8%, white) 100%) !important;
-    border: 2px solid color-mix(in srgb, var(--bg-color-1) 20%, transparent) !important;
-    
-    /* Two-column layout: left for character info, right for image and knowledge */
-    grid-template-columns: repeat(8, 1fr) !important;
-    grid-template-rows: repeat(10, auto) !important;
-    gap: var(--grid-gap-normal) !important;
-    
-    /* Visual separation between columns */
-    &::after {
-        content: '';
-        position: absolute;
-        top: 2rem;
-        left: 62.5%; /* Between column 5 and 6 */
-        bottom: 1rem;
-        width: 1px;
-        background: linear-gradient(180deg, 
-            transparent 0%, 
-            var(--border-light) 20%, 
-            var(--border-light) 80%, 
-            transparent 100%);
-        z-index: 1;
-    }
-}
-
-.fieldset-form.stats-player {
-    /* Stats section specific styling */
-    background: linear-gradient(135deg, 
-        color-mix(in srgb, var(--bg-color-2) 12%, white) 0%, 
-        rgba(255, 255, 255, 0.98) 100%) !important;
-    border: 2px solid color-mix(in srgb, var(--bg-color-2) 25%, transparent) !important;
-    
-    /* Stats grid layout */
-    grid-template-columns: repeat(3, 1fr) !important;
-    grid-template-rows: auto repeat(6, 1fr) !important;
-}
-
-.fieldset-form.initial-armament {
-    /* Armament section specific styling */
-    background: linear-gradient(135deg, 
-        color-mix(in srgb, #F2AF29 8%, white) 0%, 
-        rgba(255, 255, 255, 0.98) 100%) !important;
-    border: 2px solid color-mix(in srgb, #F2AF29 25%, transparent) !important;
-    
-    /* Internal layout */
-    grid-template-columns: repeat(2, 1fr) !important;
-    grid-template-rows: repeat(6, auto) !important;
-}
-
-.fieldset-form.skills-player {
-    /* Skills section specific styling */
-    background: linear-gradient(135deg, 
-        color-mix(in srgb, var(--bg-color-4) 10%, white) 0%, 
-        rgba(255, 255, 255, 0.98) 100%) !important;
-    border: 2px solid color-mix(in srgb, var(--bg-color-4) 25%, transparent) !important;
-    
-    /* Skills layout */
-    grid-template-columns: repeat(2, 1fr) !important;
-    grid-template-rows: repeat(8, auto) !important;
-}
-
-.fieldset-form.inventory-player {
-    /* Inventory section specific styling */
-    background: linear-gradient(135deg, 
-        color-mix(in srgb, #4A90E2 8%, white) 0%, 
-        rgba(255, 255, 255, 0.98) 100%) !important;
-    border: 2px solid color-mix(in srgb, #4A90E2 25%, transparent) !important;
-    
-    /* Inventory layout */
-    grid-template-columns: 1fr !important;
-    grid-template-rows: auto 1fr auto !important;
-}
-
 /* =====================================================
-   ENHANCED VISUAL IMPROVEMENTS FOR UX
+   ENHANCED FORM ELEMENTS AND COMPONENTS
    ===================================================== */
 
-/* Form field pairing improvements - labels and inputs alignment */
-.info-group {
-    display: contents;
-    
-    /* Ensure proper vertical alignment */
-    .form-lbl, .form-lbl-y {
-        align-self: start;
-        border-bottom-left-radius: 0;
-        border-bottom-right-radius: 0;
-        border-bottom: 1px solid var(--border-light);
-        margin-bottom: 0;
-    }
-    
-    .form-input, .form-input-y {
-        align-self: start;
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
-        border-top: none;
-        margin-top: 0;
-    }
-}
-
-/* Enhanced select dropdown styling to prevent disabled appearance */
-select.form-input, select.form-input-y {
-    /* Force active appearance */
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    
-    /* Enhanced visual state */
-    background-color: white !important;
-    color: var(--text-primary) !important;
-    font-weight: normal !important;
-    
-    /* Better border and shadow */
-    border: 2px solid var(--border-medium) !important;
-    box-shadow: 
-        inset 0 1px 2px rgba(0, 0, 0, 0.05),
-        0 1px 3px rgba(0, 0, 0, 0.1) !important;
-    
-    /* Enhanced focus state */
-    &:focus {
-        border-color: var(--primary) !important;
-        box-shadow: 
-            inset 0 1px 2px rgba(0, 0, 0, 0.05),
-            0 0 0 3px rgba(var(--primary-rgb), 0.1),
-            0 2px 6px rgba(0, 0, 0, 0.12) !important;
-        outline: none !important;
-    }
-}
-
-/* Fix for checkbox grid in knowledge section - 3 columns instead of 4 */
-.form-card-checkbox-wrapper .card .grid {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: var(--spacing-sm) !important;
-    
-    @media (max-width: 768px) {
-        grid-template-columns: repeat(2, 1fr) !important;
-    }
-    
-    @media (max-width: 480px) {
-        grid-template-columns: 1fr !important;
-    }
-}
-
-/* Enhanced checkbox styling */
-.form-card-checkbox-wrapper .card input[type="checkbox"] {
-    width: 1rem !important;
-    height: 1rem !important;
-    accent-color: var(--primary) !important;
-    margin-right: var(--spacing-sm) !important;
-    cursor: pointer !important;
-}
-
-.form-card-checkbox-wrapper .card label {
-    cursor: pointer !important;
-    display: flex !important;
-    align-items: center !important;
-    padding: var(--spacing-xs) !important;
-    border-radius: var(--border-radius-sm) !important;
-    transition: var(--transition-fast) !important;
-    
-    &:hover {
-        background-color: color-mix(in srgb, var(--primary) 10%, transparent) !important;
-    }
-}
-
-/* Responsive improvements for line separator */
-.fieldset-form.info-player {
-    @media (max-width: 1200px) {
-        &::after {
-            left: 60% !important;
-            top: 4rem !important;
-            bottom: 3rem !important;
-        }
-    }
-    
-    @media (max-width: 1023px) {
-        &::after {
-            left: 50% !important;
-            top: 3rem !important;
-            bottom: 2rem !important;
-        }
-    }
-    
-    @media (max-width: 767px) {
-        &::after {
-            display: none !important;
-        }
-    }
-}
-
-/* Enhanced numeric input styling */
-.numeric-input {
-    text-align: center !important;
-    font-weight: var(--font-weight-semibold) !important;
-    font-size: 1rem !important;
-    
-    /* Better visual emphasis for numeric values */
-    background-color: color-mix(in srgb, var(--primary) 3%, white) !important;
-    border-color: var(--border-medium) !important;
-    
-    &:focus {
-        background-color: white !important;
-        border-color: var(--primary) !important;
-        box-shadow: 
-            0 0 0 3px rgba(var(--primary-rgb), 0.1),
-            0 2px 4px rgba(0, 0, 0, 0.1) !important;
-    }
-}
-
-/* Enhanced textarea styling */
-textarea.form-input-y {
-    resize: vertical !important;
-    min-height: 4rem !important;
-    line-height: 1.5 !important;
-    
-    &:focus {
-        min-height: 6rem !important;
-    }
-    
-    @media (max-width: 767px) {
-        min-height: 6rem !important;
-    }
-}
-
-/* Enhanced card styling for knowledge section */
-.form-card-checkbox-wrapper .card {
-    border: 2px solid var(--border-medium) !important;
-    box-shadow: 
-        0 2px 4px rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
-    
-    &:hover {
-        border-color: var(--border-dark) !important;
-        box-shadow: 
-            0 4px 8px rgba(0, 0, 0, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
-    }
-}
-
-/* Enhanced form group spacing and alignment */
-.fieldset-form.info-player .info-group {
-    margin-bottom: var(--spacing-md) !important;
-    
-    /* Better visual grouping */
-    &:last-of-type {
-        margin-bottom: 0 !important;
-    }
-}
-
-/* Enhanced image wrapper responsive behavior */
-.characterImageInput {
-    border: 2px solid var(--border-light) !important;
-    border-radius: var(--border-radius-md) !important;
-    padding: var(--spacing-md) !important;
-    background-color: white !important;
-    
-    &:hover {
-        border-color: var(--border-medium) !important;
-    }
-    
-    .character-image {
-        border-radius: var(--border-radius-sm) !important;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-    }
-}
-
-/* Enhanced responsive behavior for all form elements */
-@media (max-width: 767px) {
-    .fieldset-form.info-player {
-        /* Better mobile spacing */
-        gap: var(--spacing-lg) !important;
-        padding: var(--spacing-lg) !important;
-        
-        /* Ensure all elements stack properly */
-        .form-lbl, .form-lbl-y, .form-input, .form-input-y {
-            width: 100% !important;
-            margin-bottom: var(--spacing-sm) !important;
-        }
-        
-        .form-lbl, .form-lbl-y {
-            border-radius: var(--border-radius-sm) !important;
-            border-bottom: 2px solid var(--border-light) !important;
-        }
-        
-        .form-input, .form-input-y {
-            border-radius: var(--border-radius-sm) !important;
-            border-top: 2px solid var(--border-light) !important;
-        }
-    }
-}
-
-/* Enhanced focus management for better UX */
-.form-input:focus + .form-lbl,
-.form-input-y:focus + .form-lbl-y,
-.form-lbl:focus-within {
-    background-color: color-mix(in srgb, var(--primary) 10%, var(--bg-grey-lighter)) !important;
-    border-color: var(--primary) !important;
-}
-
-/* Better visual hierarchy for required fields */
-.required-input {
-    position: relative !important;
-    
-    &::before {
-        content: '*' !important;
-        position: absolute !important;
-        top: -0.5rem !important;
-        right: -0.5rem !important;
-        color: var(--danger) !important;
-        font-weight: bold !important;
-        font-size: 1.2rem !important;
-        z-index: 10 !important;
-    }
-}
-
-/* Enhanced loading states */
-.form-input.loading, .form-input-y.loading {
-    opacity: 0.7 !important;
-    pointer-events: none !important;
-    
-    &::after {
-        content: '' !important;
-        position: absolute !important;
-        top: 50% !important;
-        right: 0.75rem !important;
-        width: 1rem !important;
-        height: 1rem !important;
-        margin-top: -0.5rem !important;
-        border: 2px solid var(--border-light) !important;
-        border-radius: 50% !important;
-        border-top-color: var(--primary) !important;
-        animation: spin 1s linear infinite !important;
-    }
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* =====================================================
-   FORM INPUT AND LABEL STYLES
-   ===================================================== */
-
-/* Form Labels - Enhanced alignment and consistent heights */
+/* Form input and label base styles */
 .form-lbl, .form-lbl-y {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #374151;
-    padding: 0.625rem 0.75rem; /* Match input padding */
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+    padding: var(--spacing-sm) var(--spacing-md);
     border: 2px solid var(--border-light);
     background-color: var(--bg-grey-lighter);
     border-radius: var(--border-radius-sm);
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    margin-bottom: 0.25rem;
-    transition: all 0.2s ease-in-out;
-    
-    /* Consistent height matching form inputs */
+    margin-bottom: var(--spacing-xs);
+    transition: all var(--transition-fast);
     min-height: var(--form-height-sm);
-    height: var(--form-height-sm);
     
-    /* Enhanced visibility */
-    box-shadow: 
-        0 1px 3px rgba(0, 0, 0, 0.1),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+    &:hover {
+        border-color: var(--border-medium);
+        background-color: color-mix(in srgb, var(--bg-grey-lighter) 95%, white);
+    }
 }
 
-.form-lbl:hover, .form-lbl-y:hover {
-    border-color: var(--border-medium);
-    background-color: color-mix(in srgb, var(--bg-grey-lighter) 95%, white);
-}
-
-/* Form Inputs */
 .form-input, .form-input-y {
-    font-size: 0.875rem;
-    padding: 0.625rem 0.75rem;
-    border: 2px solid var(--border-light);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 2px solid var(--border-medium);
     border-radius: var(--border-radius-sm);
     background-color: white;
-    transition: all 0.2s ease-in-out;
-    height: var(--form-height-sm);
-    
-    /* Enhanced visibility and depth */
-    box-shadow: 
-        inset 0 1px 2px rgba(0, 0, 0, 0.05),
-        0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.form-input::placeholder, .form-input-y::placeholder {
-    color: var(--text-muted);
-    opacity: 0.7;
-}
-
-.form-input:hover, .form-input-y:hover {
-    border-color: var(--border-medium);
-    box-shadow: 
-        inset 0 1px 2px rgba(0, 0, 0, 0.05),
-        0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.form-input:focus, .form-input-y:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 
-        inset 0 1px 2px rgba(0, 0, 0, 0.05),
-        0 0 0 3px rgba(var(--primary-rgb), 0.1),
-        0 2px 4px rgba(0, 0, 0, 0.1);
-    background-color: #fefefe;
-}
-
-.form-input:read-only, .form-input-y:read-only {
-    background-color: var(--bg-grey-lighter);
-    border-style: dashed;
-    color: var(--text-muted);
-    cursor: not-allowed;
-}
-
-.form-input.error, .form-input:invalid,
-.form-input-y.error, .form-input-y:invalid {
-    border-color: var(--danger);
-    box-shadow: 
-        inset 0 1px 2px rgba(0, 0, 0, 0.05),
-        0 0 0 3px rgba(var(--danger-rgb), 0.1);
-}
-
-/* Required field validation styling */
-.required-input {
-    border-color: var(--danger) !important;
-    background-color: color-mix(in srgb, var(--danger) 5%, white) !important;
-    box-shadow: 
-        inset 0 1px 2px rgba(0, 0, 0, 0.05),
-        0 0 0 3px rgba(var(--danger-rgb), 0.15) !important;
-        
-    &::placeholder {
-        color: color-mix(in srgb, var(--danger) 70%, var(--text-muted));
-    }
-    
-    /* Animation for attention */
-    animation: shake 0.3s ease-in-out;
-}
-
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-2px); }
-    75% { transform: translateX(2px); }
-}
-
-/* Select Elements - Enhanced visibility and interactive states */
-select.form-input, select.form-input-y {
-    cursor: pointer;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 0.5rem center;
-    background-repeat: no-repeat;
-    background-size: 1.5em 1.5em;
-    padding-right: 2.5rem;
-    
-    /* Enhanced visual state to prevent disabled appearance */
-    background-color: white !important;
-    color: var(--text-primary) !important;
-    border: 2px solid var(--border-medium) !important;
-    font-weight: var(--font-weight-normal);
-    opacity: 1 !important;
-    
-    /* Enhanced shadow for depth */
-    box-shadow: 
-        inset 0 1px 2px rgba(0, 0, 0, 0.05),
-        0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-select.form-input:hover, select.form-input-y:hover {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%234b5563' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-    background-color: #fafafa !important;
-    border-color: var(--border-dark) !important;
-    box-shadow: 
-        inset 0 1px 2px rgba(0, 0, 0, 0.05),
-        0 2px 6px rgba(0, 0, 0, 0.12);
-}
-
-select.form-input:focus, select.form-input-y:focus {
-    background-color: #fefefe !important;
-    border-color: var(--primary) !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23F2AF29' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-    box-shadow: 
-        inset 0 1px 2px rgba(0, 0, 0, 0.05),
-        0 0 0 3px rgba(var(--primary-rgb), 0.1),
-        0 2px 6px rgba(0, 0, 0, 0.12);
-}
-
-/* Ensure select options are properly styled */
-select.form-input option, select.form-input-y option {
-    background-color: white;
     color: var(--text-primary);
-    font-weight: var(--font-weight-normal);
-    padding: 0.5rem;
-}
-
-/* Form Group Spacing */
-.info-group {
-    display: contents;
-}
-
-.info-group .form-lbl + .form-input,
-.info-group .form-lbl-y + .form-input-y {
-    margin-top: 0.25rem;
-}
-
-/* Focus and blur states for better UX */
-.form-input:focus-visible, .form-input-y:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
-}
-
-/* Loading state for form inputs */
-.form-input.loading, .form-input-y.loading {
-    position: relative;
-    pointer-events: none;
-    
-    &::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        right: 0.75rem;
-        width: 1rem;
-        height: 1rem;
-        margin-top: -0.5rem;
-        border: 2px solid var(--border-light);
-        border-radius: 50%;
-        border-top-color: var(--primary);
-        animation: spin 1s linear infinite;
-    }
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Enhanced focus states for accessibility */
-.form-input:focus, .form-input-y:focus,
-.form-lbl:focus-within {
-    z-index: 10;
-    position: relative;
-}
-
-/* Enhanced textarea styling */
-textarea.form-input-y {
-    resize: vertical;
-    min-height: 4rem;
-    line-height: 1.5;
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+    transition: all var(--transition-fast);
+    min-height: var(--form-height-sm);
     
     &:focus {
-        min-height: 6rem;
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 
+            inset 0 1px 2px rgba(0, 0, 0, 0.05),
+            0 0 0 3px rgba(var(--primary-rgb), 0.1),
+            0 2px 4px rgba(0, 0, 0, 0.1);
+        background-color: #fefefe;
+    }
+    
+    &:read-only {
+        background-color: var(--bg-grey-lighter);
+        border-style: dashed;
+        color: var(--text-muted);
+        cursor: not-allowed;
     }
 }
 
 /* Numeric input styling */
 .numeric-input {
     text-align: center;
-    font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    background-color: color-mix(in srgb, var(--primary) 3%, white);
     
     /* Remove number input arrows */
     &::-webkit-outer-spin-button,
@@ -1179,184 +514,29 @@ textarea.form-input-y {
         -webkit-appearance: none;
         margin: 0;
     }
-      &[type=number] {
+    
+    &[type=number] {
         appearance: textfield;
         -moz-appearance: textfield;
     }
 }
 
-/* Enhanced fieldset styling for better visual hierarchy */
-.fieldset-form {
-    position: relative;
+/* Enhanced textarea styling */
+textarea.form-input-y {
+    resize: vertical;
+    min-height: 4rem;
+    line-height: var(--line-height-relaxed);
     
-    /* Improved legend styling */
-    legend {
-        font-weight: var(--font-weight-semibold);
-        color: var(--text-primary);
-        padding: var(--spacing-sm) var(--spacing-lg);
-        border-radius: var(--border-radius-md);
-        background: linear-gradient(135deg, 
-            rgba(255, 255, 255, 0.95) 0%, 
-            rgba(255, 255, 255, 0.8) 100%);
-        box-shadow: var(--shadow-sm);
-        border: 1px solid var(--border-light);
-        margin-bottom: var(--spacing-md);
-        
-        svg {
-            margin-right: var(--spacing-xs);
-            vertical-align: middle;
-        }
+    &:focus {
+        min-height: 6rem;
+    }
+    
+    @media (max-width: 767px) {
+        min-height: 6rem;
     }
 }
 
-/* Improved info-player specific enhancements */
-.fieldset-form.info-player {
-    /* Improved spacing and alignment */
-    padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-lg);
-    /* Enhanced visual hierarchy */
-    &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, 
-            var(--bg-color-3) 0%, 
-            color-mix(in srgb, var(--bg-color-3) 80%, transparent) 50%,
-            var(--bg-color-3) 100%);
-        border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
-    }
-    
-    /* Better form control alignment */
-    .form-lbl, .form-lbl-y {
-        justify-content: flex-start;
-        align-items: center;
-        font-weight: var(--font-weight-medium);
-    }
-    
-    .form-input, .form-input-y {
-        &:focus {
-            transform: translateY(-1px);
-            box-shadow: 
-                inset 0 1px 2px rgba(0, 0, 0, 0.05),
-                0 0 0 3px rgba(var(--primary-rgb), 0.1),
-                0 4px 8px rgba(0, 0, 0, 0.12);
-        }
-    }
-}
-
-/* Character basic info wrapper enhancements */
-.character-basic-info-wrapper {
-    background: rgba(255, 255, 255, 0.5);
-    margin: var(--spacing-sm) 0;
-    
-    /* Subtle inner shadow for depth */
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-/* Character Basic Info Component Styling */
-.character-basic-info {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-sm);
-    background: rgba(255, 255, 255, 0.6);
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-    
-    .info-group {
-        display: contents;
-        
-        .form-lbl {
-            grid-column: 1;
-            margin-right: var(--spacing-xs);
-        }
-        
-        .form-input, .form-input-y {
-            grid-column: 2;
-        }
-    }
-    
-    /* Alignment buttons styling */
-    .alignment-options {
-        display: flex;
-        gap: var(--spacing-xs);
-        
-        button {
-            flex: 1;
-            padding: var(--spacing-sm);
-            border: 2px solid var(--border-medium);
-            border-radius: var(--border-radius-sm);
-            background: white;
-            font-size: 0.875rem;
-            font-weight: var(--font-weight-medium);
-            cursor: pointer;
-            transition: var(--transition-normal);
-            
-            &:hover {
-                border-color: var(--border-dark);
-                transform: translateY(-1px);
-                box-shadow: var(--shadow-sm);
-            }
-            
-            &.selected {
-                color: white;
-                font-weight: var(--font-weight-semibold);
-                
-                &.orden {
-                    background: var(--bg-form-orden);
-                    border-color: var(--bg-form-orden);
-                    box-shadow: 0 0 0 3px rgba(14, 121, 178, 0.2);
-                }
-                
-                &.caos {
-                    background: var(--bg-form-caos);
-                    border-color: var(--bg-form-caos);
-                    box-shadow: 0 0 0 3px rgba(228, 87, 46, 0.2);
-                }
-            }
-        }
-    }
-}
-
-/* Responsive styling for character basic info */
-@media (max-width: 768px) {
-    .character-basic-info {
-        grid-template-columns: 1fr;
-        gap: var(--spacing-xs);
-        padding: var(--spacing-sm);
-        
-        .info-group {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.25rem;
-            margin-bottom: var(--spacing-sm);
-            
-            .form-lbl {
-                grid-column: 1;
-                margin-bottom: 0.25rem;
-            }
-            
-            .form-input, .form-input-y {
-                grid-column: 1;
-            }
-        }
-        
-        .alignment-options {
-            grid-column: 1;
-            
-            button {
-                font-size: 0.75rem;
-                padding: 0.375rem;
-            }
-        }
-    }
-}
-
-/* =====================================================
-   GRID LAYOUT UTILITIES - TWO COLUMN LAYOUT SUPPORT
-   ===================================================== */
-
-/* Grid column positioning utilities */
+/* Grid positioning utilities for fine-tuning */
 .col-start-1 { grid-column-start: 1; }
 .col-start-2 { grid-column-start: 2; }
 .col-start-3 { grid-column-start: 3; }
@@ -1376,7 +556,6 @@ textarea.form-input-y {
 .col-end-8 { grid-column-end: 8; }
 .col-end-9 { grid-column-end: 9; }
 
-/* Grid row positioning utilities */
 .row-start-1 { grid-row-start: 1; }
 .row-start-2 { grid-row-start: 2; }
 .row-start-3 { grid-row-start: 3; }
@@ -1388,476 +567,15 @@ textarea.form-input-y {
 .row-start-9 { grid-row-start: 9; }
 .row-start-10 { grid-row-start: 10; }
 
-.row-end-1 { grid-row-end: 1; }
-.row-end-2 { grid-row-end: 2; }
-.row-end-3 { grid-row-end: 3; }
-.row-end-4 { grid-row-end: 4; }
-.row-end-5 { grid-row-end: 5; }
-.row-end-6 { grid-row-end: 6; }
-.row-end-7 { grid-row-end: 7; }
-.row-end-8 { grid-row-end: 8; }
-.row-end-9 { grid-row-end: 9; }
-.row-end-10 { grid-row-end: 10; }
-
-/* Row span utilities */
 .row-span-1 { grid-row: span 1 / span 1; }
 .row-span-2 { grid-row: span 2 / span 2; }
 .row-span-3 { grid-row: span 3 / span 3; }
 .row-span-4 { grid-row: span 4 / span 4; }
 .row-span-5 { grid-row: span 5 / span 5; }
 
-/* Column span utilities */
 .col-span-1 { grid-column: span 1 / span 1; }
 .col-span-2 { grid-column: span 2 / span 2; }
 .col-span-3 { grid-column: span 3 / span 3; }
 .col-span-4 { grid-column: span 4 / span 4; }
 .col-span-5 { grid-column: span 5 / span 5; }
-
-/* =====================================================
-   RESPONSIVE GRID LAYOUT FIXES
-   ===================================================== */
-
-/* Enhanced info-player responsive behavior */
-.fieldset-form.info-player {
-    /* Fixed responsive grid issues */
-    position: relative;
-    
-    /* Default desktop layout - Full two column layout */
-    grid-template-columns: repeat(8, 1fr) !important;
-    grid-template-rows: repeat(10, auto) !important;
-    gap: var(--grid-gap-normal) !important;
-    /* Column separator line for desktop */
-    &::after {
-        content: '';
-        position: absolute;
-        top: 3rem;
-        left: 62.5%; /* Between columns 5 and 6 */
-        bottom: 2rem;
-        width: 1px;
-        background: linear-gradient(180deg, 
-            transparent 0%, 
-            color-mix(in srgb, var(--border-light) 60%, transparent) 20%, 
-            color-mix(in srgb, var(--border-light) 60%, transparent) 80%, 
-            transparent 100%);
-        z-index: 1;
-        pointer-events: none; /* Prevents interaction issues */
-    }
-    
-    /* Tablet - Improved two column layout */
-    @media (max-width: 1023px) and (min-width: 768px) {
-        grid-template-columns: repeat(6, 1fr) !important;
-        gap: var(--grid-gap-compact) !important;
-        
-        /* Adjust positioning for tablet - left column */
-        .col-start-1 { grid-column-start: 1 !important; }
-        .col-start-2 { grid-column-start: 2 !important; }
-        .col-start-3 { grid-column-start: 3 !important; }
-        .col-start-4 { grid-column-start: 4 !important; }
-        .col-end-6 { grid-column-end: 4 !important; }
-        
-        /* Adjust positioning for tablet - right column */
-        .col-start-6 { grid-column-start: 4 !important; }
-        .col-end-9 { grid-column-end: 7 !important; }
-        
-        /* Adjust column separator for tablet */
-        &::after {
-            left: 50%;
-        }
-    }
-    
-    /* Mobile - Single column stacking */
-    @media (max-width: 767px) {
-        grid-template-columns: 1fr !important;
-        grid-template-rows: auto !important;
-        gap: var(--spacing-md) !important;
-        padding: var(--spacing-lg) !important;
-        
-        /* Reset ALL grid positioning for mobile - complete override */
-        * {
-            grid-column-start: 1 !important;
-            grid-column-end: 2 !important;
-            grid-row-start: auto !important;
-            grid-row-end: auto !important;
-            grid-row: auto !important;
-        }
-        
-        /* Hide column separator on mobile */
-        &::after {
-            display: none;
-        }
-        
-        /* Mobile-specific layout order */
-        .form-lbl[for="userName"],
-        .form-input[placeholder*="jugador"] {
-            order: 1;
-        }
-        
-        /* Character basic info comes next */
-        .basic-info-wrapper {
-            order: 2;
-        }
-        
-        /* Points section */
-        .form-lbl[for="luckyPoints"],
-        .form-input[placeholder*="suerte"],
-        .form-lbl[for="lifePoints"], 
-        .form-input[placeholder*="vida"] {
-            order: 3;
-        }
-        
-        /* Description */
-        .form-lbl[for="characterDescription"],
-        textarea[placeholder*="Descripcion"] {
-            order: 4;
-        }
-        
-        /* Image section */
-        .form-lbl[for="characterImage"],
-        .characterImageInput {
-            order: 5;
-        }
-        
-        /* Knowledge section */
-        .form-card-checkbox-wrapper {
-            order: 6;
-        }
-    }
-    
-    /* Large desktop optimization */
-    @media (min-width: 1200px) {
-        gap: var(--grid-gap-relaxed) !important;
-        padding: var(--spacing-2xl) !important;
-    }
-}
-
-/* Enhanced form field visibility for better UX */
-.fieldset-form.info-player .form-input,
-.fieldset-form.info-player .form-input-y,
-.fieldset-form.info-player .form-lbl,
-.fieldset-form.info-player .form-lbl-y {
-    /* Enhanced border visibility */
-    border: 2px solid var(--border-medium) !important;
-    box-shadow: 
-        0 1px 3px rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
-    
-    /* Improved hover states */
-    &:hover {
-        border-color: var(--border-dark) !important;
-        box-shadow: 
-            0 2px 4px rgba(0, 0, 0, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
-    }
-    
-    /* Better focus states */
-    &:focus {
-        border-color: var(--primary) !important;
-        box-shadow: 
-            0 0 0 3px rgba(var(--primary-rgb), 0.1),
-            0 2px 4px rgba(0, 0, 0, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 1) !important;
-        outline: none !important;
-    }
-}
-
-/* Improved responsive text areas */
-.fieldset-form.info-player textarea {
-    resize: vertical;
-    min-height: 4rem;
-    
-    @media (max-width: 767px) {
-        min-height: 6rem;
-    }
-}
-
-/* Better spacing for labels and inputs */
-.fieldset-form.info-player .form-lbl,
-.fieldset-form.info-player .form-lbl-y {
-    /* Enhanced label styling */
-    font-weight: 600;
-    font-size: 0.875rem;
-    letter-spacing: 0.025em;
-    background-color: color-mix(in srgb, var(--bg-grey-lighter) 95%, white) !important;
-    
-    /* Better visual hierarchy */
-    &:hover + .form-input,
-    &:hover + .form-input-y {
-        border-color: var(--border-dark);
-    }
-}
-
-/* Numeric input enhancement */
-.numeric-input {
-    text-align: center;
-    font-weight: 600;
-    font-size: 1rem;
-    
-    /* Remove number input spinners for better design */
-    &::-webkit-outer-spin-button,
-    &::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-      &[type=number] {
-        appearance: textfield;
-        -moz-appearance: textfield;
-    }
-}
-
-/* Enhanced required field validation */
-.required-input {
-    border-color: var(--danger) !important;
-    background-color: color-mix(in srgb, var(--danger) 5%, white) !important;
-    box-shadow: 
-        0 0 0 3px rgba(var(--danger-rgb), 0.15),
-        0 1px 3px rgba(0, 0, 0, 0.1) !important;
-        
-    &::placeholder {
-        color: color-mix(in srgb, var(--danger) 70%, var(--text-muted));
-    }
-    
-    /* Attention animation */
-    animation: pulseError 2s ease-in-out infinite;
-}
-
-@keyframes pulseError {
-    0%, 100% { 
-        box-shadow: 
-            0 0 0 3px rgba(var(--danger-rgb), 0.15),
-            0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-    50% { 
-        box-shadow: 
-            0 0 0 3px rgba(var(--danger-rgb), 0.25),
-            0 2px 4px rgba(0, 0, 0, 0.15);
-    }
-}
-
-/* =====================================================
-   SPECIFIC COMPONENT FIXES FOR RESPONSIVE ISSUES
-   ===================================================== */
-
-/* Fix for FormCardCheckbox (Knowledge section) responsive issues */
-.form-card-checkbox-wrapper {
-    /* Ensure proper display in all screen sizes */
-    display: block !important;
-    width: 100% !important;
-    
-    /* Better mobile adaptation */
-    @media (max-width: 767px) {
-        margin-top: var(--spacing-lg) !important;
-        
-        .form-lbl-y {
-            width: 100% !important;
-            margin-bottom: var(--spacing-sm) !important;
-        }
-        
-        .card {
-            width: 100% !important;
-            max-width: none !important;
-        }
-    }
-    
-    /* Tablet optimization */
-    @media (min-width: 768px) and (max-width: 1023px) {
-        .card {
-            padding: var(--spacing-md) !important;
-        }
-    }
-}
-
-/* Fix for numeric inputs (Lucky Points / Life Points) */
-.fieldset-form.info-player {
-    /* Specific fixes for the points row */
-    .form-lbl-y[for="luckyPoints"],
-    .form-lbl-y[for="lifePoints"] {
-        @media (max-width: 767px) {
-            grid-column: 1 !important;
-            width: 100% !important;
-            margin-bottom: var(--spacing-xs) !important;
-        }
-        
-        @media (min-width: 768px) and (max-width: 1023px) {
-            font-size: var(--font-size-sm) !important;
-            padding: var(--spacing-sm) !important;
-        }
-    }
-    
-    .numeric-input[placeholder*="suerte"],
-    .numeric-input[placeholder*="vida"] {
-        @media (max-width: 767px) {
-            grid-column: 1 !important;
-            width: 100% !important;
-            margin-bottom: var(--spacing-md) !important;
-            text-align: left !important;
-        }
-        
-        @media (min-width: 768px) and (max-width: 1023px) {
-            min-width: 80px !important;
-        }
-    }
-    
-    /* Mobile-specific layout for points section */
-    @media (max-width: 767px) {
-        /* Lucky points section */
-        .form-lbl-y[for="luckyPoints"] {
-            order: 10;
-        }
-        
-        .numeric-input[placeholder*="suerte"] {
-            order: 11;
-        }
-        
-        /* Life points section */
-        .form-lbl-y[for="lifePoints"] {
-            order: 12;
-        }
-        
-        .numeric-input[placeholder*="vida"] {
-            order: 13;
-        }
-    }
-}
-
-/* Enhanced card styling for knowledge section */
-.card {
-    /* Better responsive behavior */
-    @media (max-width: 767px) {
-        padding: var(--spacing-md) !important;
-        margin: var(--spacing-sm) 0 !important;
-        border-radius: var(--border-radius-md) !important;
-        
-        .card-body {
-            padding: var(--spacing-sm) !important;
-        }
-        
-        .checkbox-group {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: var(--spacing-sm) !important;
-        }
-        
-        .checkbox-item {
-            width: 100% !important;
-            margin-bottom: var(--spacing-xs) !important;
-        }
-    }
-    
-    @media (min-width: 768px) {
-        .checkbox-group {
-            display: grid !important;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
-            gap: var(--spacing-sm) !important;
-        }
-    }
-}
-
-/* Character image wrapper responsive fixes */
-.characterImageInput {
-    @media (max-width: 767px) {
-        width: 100% !important;
-        max-width: 300px !important;
-        margin: var(--spacing-lg) auto !important;
-        
-        .character-image {
-            width: 100% !important;
-            height: auto !important;
-            aspect-ratio: 1 !important;
-        }
-    }
-    
-    @media (min-width: 768px) and (max-width: 1023px) {
-        .character-image {
-            max-width: 200px !important;
-            max-height: 200px !important;
-        }
-    }
-}
-
-/* TextArea responsive improvements */
-.fieldset-form.info-player textarea {
-    @media (max-width: 767px) {
-        width: 100% !important;
-        min-height: 100px !important;
-        resize: vertical !important;
-    }
-    
-    @media (min-width: 768px) and (max-width: 1023px) {
-        min-height: 80px !important;
-    }
-}
-
-/* Mobile order optimization for info-player */
-@media (max-width: 767px) {
-    .fieldset-form.info-player {
-        display: flex !important;
-        flex-direction: column !important;
-        
-        /* Remove grid entirely on mobile and use flexbox */
-        grid-template-columns: none !important;
-        grid-template-rows: none !important;
-        
-        /* Proper mobile ordering */
-        > * {
-            width: 100% !important;
-            grid-column: unset !important;
-            grid-row: unset !important;
-        }
-        
-        /* Specific order for mobile */
-        .form-lbl[for="userName"] { order: 1; }
-        .form-input[placeholder*="jugador"] { order: 2; }
-        .basic-info-wrapper { order: 3; }
-        .form-lbl-y[for="luckyPoints"] { order: 4; }
-        .numeric-input[placeholder*="suerte"] { order: 5; }
-        .form-lbl-y[for="lifePoints"] { order: 6; }
-        .numeric-input[placeholder*="vida"] { order: 7; }
-        .form-lbl-y[for="characterDescription"] { order: 8; }
-        textarea[placeholder*="Descripcion"] { order: 9; }
-        .form-lbl-y[for="characterImage"] { order: 10; }
-        .characterImageInput { order: 11; }
-        .form-card-checkbox-wrapper { order: 12; }
-    }
-}
-
-/* Enhanced visibility for all form elements */
-.fieldset-form.info-player {
-    .form-lbl, .form-lbl-y, .form-input, .form-input-y {
-        /* Better contrast and visibility */
-        border-width: 2px !important;
-        border-style: solid !important;
-        
-        /* Consistent spacing */
-        margin-bottom: var(--spacing-sm) !important;
-        
-        /* Better typography */
-        font-size: var(--font-size-sm) !important;
-        line-height: var(--line-height-normal) !important;
-    }
-    
-    .form-lbl, .form-lbl-y {
-        /* Label specific improvements */
-        font-weight: var(--font-weight-semibold) !important;
-        background-color: var(--bg-grey-lighter) !important;
-        border-color: var(--border-medium) !important;
-        
-        /* Better padding */
-        padding: var(--spacing-sm) var(--spacing-md) !important;
-    }
-    
-    .form-input, .form-input-y {
-        /* Input specific improvements */
-        border-color: var(--border-medium) !important;
-        background-color: white !important;
-        
-        /* Consistent height */
-        min-height: var(--form-height-sm) !important;
-        
-        /* Better focus state */
-        &:focus {
-            border-color: var(--primary) !important;
-            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1) !important;
-        }
-    }
-}
 

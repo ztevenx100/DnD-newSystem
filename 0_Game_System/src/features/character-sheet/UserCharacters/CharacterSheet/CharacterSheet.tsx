@@ -2135,7 +2135,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
           {optionsSkillExtra.length === 0 && <div className="text-red-500 text-xs">No options available for skillExtra</div>}
         </fieldset>
         {/* Habilidades - Positioned for natural progression after armament */}
-        <fieldset className="fieldset-form skills-player col-span-1 row-span-1 col-start-1 md:col-start-2 bg-white shadow-lg rounded">
+        <fieldset className="fieldset-form skills-player col-span-1 row-span-1 col-start-1 md:col-start-2 lg:row-start-4 bg-white shadow-lg rounded">
           <legend>Habilidades</legend>
           {watch("level") >= 3 ? (
             <>
@@ -2187,7 +2187,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
           )}
         </fieldset>
         {/* Componente de inventario refactorizado */}
-        <fieldset className="fieldset-form inventory-player row-span-3 col-span-1 col-start-1 lg:col-start-3 lg:row-start-3 bg-white shadow-lg rounded" aria-labelledby="inventory-heading">
+        <fieldset className="fieldset-form inventory-player row-span-3 col-span-1 col-start-1 lg:col-start-3 lg:row-start-4 bg-white shadow-lg rounded" aria-labelledby="inventory-heading">
           <legend id="inventory-heading" className="text-lg font-semibold">Inventario</legend>
           
           <CharacterInventoryWrapper 

@@ -172,7 +172,6 @@ body{
     gap: var(--spacing-lg);
     
     /* ===== RESPONSIVE BREAKPOINTS ===== */
-    
     /* Tablet (768px - 1023px): Two column layout */
     @media (min-width: 768px) {
         grid-template-columns: repeat(8, 1fr);
@@ -186,28 +185,28 @@ body{
         gap: var(--spacing-xl);
         max-width: 1200px;
     }
-    
-    /* Desktop (1024px - 1599px): Optimized three column layout */
+      /* Desktop (1024px - 1599px): Optimized three column layout */
     @media (min-width: 1024px) {
         grid-template-columns: repeat(12, 1fr);
-        grid-template-rows: auto auto auto auto;
+        grid-template-rows: auto auto auto auto auto;
         grid-template-areas:
             "title title title title title title title title title title title title"
             "info info info info info info info info info info info info"
-            "stats stats stats stats armament armament armament armament inventory inventory inventory inventory"
-            "skills skills skills skills skills skills skills skills inventory inventory inventory inventory";
+            "stats stats stats stats armament armament armament armament . . . ."
+            "stats stats stats stats skills skills skills skills . . . ."
+            ". . . . inventory inventory inventory inventory inventory inventory inventory inventory";
         max-width: 1400px;
     }
-    
-    /* Large Desktop (≥1600px): Full wide layout */
+      /* Large Desktop (≥1600px): Full wide layout */
     @media (min-width: 1600px) {
         grid-template-columns: repeat(16, 1fr);
-        grid-template-rows: auto auto auto auto;
+        grid-template-rows: auto auto auto auto auto;
         grid-template-areas:
             "title title title title title title title title title title title title title title title title"
             "info info info info info info info info info info info info info info info info"
-            "stats stats stats stats stats armament armament armament armament skills skills skills skills inventory inventory inventory"
-            ". . . . . armament armament armament armament skills skills skills skills inventory inventory inventory";
+            "stats stats stats stats armament armament armament armament . . . . . . . ."
+            "stats stats stats stats skills skills skills skills . . . . . . . ."
+            ". . . . inventory inventory inventory inventory inventory inventory inventory inventory inventory inventory inventory inventory";
         max-width: 1800px;
     }
     
@@ -545,6 +544,10 @@ textarea.form-input-y {
 .col-start-6 { grid-column-start: 6; }
 .col-start-7 { grid-column-start: 7; }
 .col-start-8 { grid-column-start: 8; }
+.col-start-9 { grid-column-start: 9; }
+.col-start-10 { grid-column-start: 10; }
+.col-start-11 { grid-column-start: 11; }
+.col-start-12 { grid-column-start: 12; }
 
 .col-end-1 { grid-column-end: 1; }
 .col-end-2 { grid-column-end: 2; }
@@ -555,6 +558,10 @@ textarea.form-input-y {
 .col-end-7 { grid-column-end: 7; }
 .col-end-8 { grid-column-end: 8; }
 .col-end-9 { grid-column-end: 9; }
+.col-end-10 { grid-column-end: 10; }
+.col-end-11 { grid-column-end: 11; }
+.col-end-12 { grid-column-end: 12; }
+.col-end-13 { grid-column-end: 13; }
 
 .row-start-1 { grid-row-start: 1; }
 .row-start-2 { grid-row-start: 2; }
@@ -566,16 +573,553 @@ textarea.form-input-y {
 .row-start-8 { grid-row-start: 8; }
 .row-start-9 { grid-row-start: 9; }
 .row-start-10 { grid-row-start: 10; }
+.row-start-11 { grid-row-start: 11; }
+.row-start-12 { grid-row-start: 12; }
 
 .row-span-1 { grid-row: span 1 / span 1; }
 .row-span-2 { grid-row: span 2 / span 2; }
 .row-span-3 { grid-row: span 3 / span 3; }
 .row-span-4 { grid-row: span 4 / span 4; }
 .row-span-5 { grid-row: span 5 / span 5; }
+.row-span-6 { grid-row: span 6 / span 6; }
 
 .col-span-1 { grid-column: span 1 / span 1; }
 .col-span-2 { grid-column: span 2 / span 2; }
 .col-span-3 { grid-column: span 3 / span 3; }
 .col-span-4 { grid-column: span 4 / span 4; }
 .col-span-5 { grid-column: span 5 / span 5; }
+.col-span-6 { grid-column: span 6 / span 6; }
+.col-span-7 { grid-column: span 7 / span 7; }
+.col-span-8 { grid-column: span 8 / span 8; }
+
+/* Enhanced grid gap utilities */
+.gap-none { gap: 0; }
+.gap-xs { gap: var(--spacing-xs); }
+.gap-sm { gap: var(--spacing-sm); }
+.gap-md { gap: var(--spacing-md); }
+.gap-lg { gap: var(--spacing-lg); }
+.gap-xl { gap: var(--spacing-xl); }
+.gap-2xl { gap: var(--spacing-2xl); }
+
+/* Grid auto-fit utilities for responsive layouts */
+.grid-auto-fit-xs { grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); }
+.grid-auto-fit-sm { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+.grid-auto-fit-md { grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
+.grid-auto-fit-lg { grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); }
+
+/* Grid alignment utilities */
+.place-items-center { place-items: center; }
+.place-items-start { place-items: start; }
+.place-items-end { place-items: end; }
+.place-content-center { place-content: center; }
+.place-content-start { place-content: start; }
+.place-content-end { place-content: end; }
+
+/* =====================================================
+   ENHANCED GRID LAYOUT OPTIMIZATION
+   ===================================================== */
+
+/* Grid container performance optimization */
+.form-sheet {
+    /* Improve rendering performance */
+    will-change: contents;
+    contain: layout style;
+    
+    /* Enhanced content flow */
+    overflow: visible;
+    scroll-snap-type: y mandatory;
+    
+    /* Improved mobile-first approach */
+    @media (max-width: 767px) {
+        /* Ensure proper stacking on mobile */
+        grid-template-rows: auto auto auto auto auto auto;
+        scroll-padding-top: var(--spacing-lg);
+        
+        /* Mobile scroll snap points */
+        .fieldset-form {
+            scroll-snap-align: start;
+            scroll-margin-top: var(--spacing-lg);
+        }
+    }
+    /* Enhanced tablet optimization */
+    @media (min-width: 768px) and (max-width: 1023px) {
+        /* More balanced tablet grid */
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        grid-template-areas:
+            "title title title title title title title title"
+            "info info info info info info info info"
+            "stats stats stats stats armament armament armament armament"
+            "skills skills skills skills inventory inventory inventory inventory";
+        
+        /* Better content distribution */
+        .fieldset-form.stats-player,
+        .fieldset-form.initial-armament {
+            min-height: 350px;
+        }
+        
+        .fieldset-form.skills-player,
+        .fieldset-form.inventory-player {
+            min-height: 400px;
+        }
+    }
+    /* Enhanced desktop layout */
+    @media (min-width: 1024px) and (max-width: 1599px) {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        grid-template-areas:
+            "title title title title title title title title"
+            "info info info info info info info info"
+            "stats stats stats stats armament armament armament armament"
+            "skills skills skills skills inventory inventory inventory inventory";
+        
+        /* Optimized fieldset heights for desktop */
+        .fieldset-form.stats-player {
+            min-height: 400px;
+        }
+        
+        .fieldset-form.initial-armament {
+            min-height: 400px;
+        }
+        
+        .fieldset-form.skills-player {
+            min-height: 450px;
+        }
+        
+        .fieldset-form.inventory-player {
+            min-height: 500px;
+        }
+    }
+    
+    /* Ultra-wide optimizations */
+    @media (min-width: 1600px) {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        grid-template-areas:
+            "title title title title title title title title"
+            "info info info info info info info info"
+            "stats stats stats stats armament armament armament armament"
+            "skills skills skills skills inventory inventory inventory inventory";
+        
+        /* Maximum content optimization */
+        .fieldset-form.stats-player,
+        .fieldset-form.initial-armament,
+        .fieldset-form.skills-player {
+            min-height: 500px;
+        }
+        
+        .fieldset-form.inventory-player {
+            min-height: 600px;
+        }
+    }
+}
+
+/* =====================================================
+   ENHANCED FIELDSET GRID CONFIGURATIONS
+   ===================================================== */
+
+/* 1. Form Title Section - Enhanced */
+.fieldset-form.form-title {
+    /* Improved layout */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: auto;
+    
+    /* Better responsive behavior */
+    @media (max-width: 767px) {
+        padding: var(--spacing-lg);
+    }
+    
+    @media (min-width: 768px) {
+        padding: var(--spacing-xl);
+    }
+    
+    @media (min-width: 1024px) {
+        padding: var(--spacing-2xl);
+    }
+}
+
+/* 2. Info Player Section - Enhanced */
+.fieldset-form.info-player {
+    /* Mobile-first grid */
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(auto-fit, minmax(3rem, auto));
+    
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(6, 1fr);
+        grid-template-rows: repeat(10, minmax(3rem, auto));
+    }
+    
+    @media (min-width: 1024px) {
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: repeat(10, minmax(3.5rem, auto));
+    }
+    
+    @media (min-width: 1600px) {
+        grid-template-columns: repeat(10, 1fr);
+        grid-template-rows: repeat(10, minmax(4rem, auto));
+    }
+    
+    /* Enhanced visual separation */
+    &::after {
+        @media (min-width: 768px) {
+            content: '';
+            position: absolute;
+            top: 3rem;
+            left: 62.5%;
+            bottom: 2rem;
+            width: 1px;
+            background: linear-gradient(180deg, 
+                transparent 0%, 
+                color-mix(in srgb, var(--border-light) 60%, transparent) 20%, 
+                color-mix(in srgb, var(--border-light) 60%, transparent) 80%, 
+                transparent 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 767px) {
+            display: none;
+        }
+    }
+}
+
+/* 3. Stats Player Section - Enhanced */
+.fieldset-form.stats-player {
+    /* Responsive grid configuration */
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto repeat(6, minmax(4rem, auto));
+    }
+    
+    @media (min-width: 768px) and (max-width: 1023px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto repeat(3, minmax(4rem, 1fr));
+    }
+    
+    @media (min-width: 1024px) and (max-width: 1599px) {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: auto repeat(2, minmax(4rem, 1fr));
+    }
+    
+    @media (min-width: 1600px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto repeat(3, minmax(4rem, 1fr));
+    }
+    
+    .stats-player-header {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-md);
+        background: color-mix(in srgb, var(--bg-color-2) 15%, transparent);
+        border-radius: var(--border-radius-md);
+        margin-bottom: var(--spacing-lg);
+    }
+}
+
+/* 4. Initial Armament Section - Enhanced */
+.fieldset-form.initial-armament {
+    /* Responsive grid layout */
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(6, auto);
+    }
+    
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(6, auto);
+    }
+    
+    /* Better content organization */
+    .weapon-section {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .skills-section {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-lg);
+    }
+}
+
+/* 5. Skills Player Section - Enhanced */
+.fieldset-form.skills-player {
+    /* Responsive skill layout */
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(8, auto);
+    }
+    
+    @media (min-width: 768px) and (max-width: 1023px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(6, auto);
+    }
+    
+    @media (min-width: 1024px) and (max-width: 1599px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(4, auto);
+    }
+    
+    @media (min-width: 1600px) {
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(4, auto);
+    }
+}
+
+/* 6. Inventory Player Section - Enhanced */
+.fieldset-form.inventory-player {
+    /* Responsive inventory layout */
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    @media (min-width: 1024px) {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    @media (min-width: 1600px) {
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: auto 1fr auto;
+    }
+}
+
+/* =====================================================
+   GRID SYSTEM UTILITIES AND HELPERS
+   ===================================================== */
+
+/* Dynamic grid templates for complex layouts */
+.grid-dynamic-1 { grid-template-columns: 1fr; }
+.grid-dynamic-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-dynamic-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-dynamic-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-dynamic-6 { grid-template-columns: repeat(6, 1fr); }
+.grid-dynamic-8 { grid-template-columns: repeat(8, 1fr); }
+.grid-dynamic-12 { grid-template-columns: repeat(12, 1fr); }
+
+/* Responsive grid modifiers */
+@media (min-width: 768px) {
+    .md\:grid-dynamic-2 { grid-template-columns: repeat(2, 1fr); }
+    .md\:grid-dynamic-3 { grid-template-columns: repeat(3, 1fr); }
+    .md\:grid-dynamic-4 { grid-template-columns: repeat(4, 1fr); }
+    .md\:grid-dynamic-6 { grid-template-columns: repeat(6, 1fr); }
+    .md\:grid-dynamic-8 { grid-template-columns: repeat(8, 1fr); }
+}
+
+@media (min-width: 1024px) {
+    .lg\:grid-dynamic-3 { grid-template-columns: repeat(3, 1fr); }
+    .lg\:grid-dynamic-4 { grid-template-columns: repeat(4, 1fr); }
+    .lg\:grid-dynamic-6 { grid-template-columns: repeat(6, 1fr); }
+    .lg\:grid-dynamic-8 { grid-template-columns: repeat(8, 1fr); }
+    .lg\:grid-dynamic-12 { grid-template-columns: repeat(12, 1fr); }
+}
+
+/* Grid flow utilities */
+.grid-flow-row { grid-auto-flow: row; }
+.grid-flow-col { grid-auto-flow: column; }
+.grid-flow-dense { grid-auto-flow: row dense; }
+
+/* Advanced positioning utilities */
+.justify-self-auto { justify-self: auto; }
+.justify-self-start { justify-self: start; }
+.justify-self-end { justify-self: end; }
+.justify-self-center { justify-self: center; }
+.justify-self-stretch { justify-self: stretch; }
+
+.align-self-auto { align-self: auto; }
+.align-self-start { align-self: start; }
+.align-self-end { align-self: end; }
+.align-self-center { align-self: center; }
+.align-self-stretch { align-self: stretch; }
+
+/* =====================================================
+   GRID PERFORMANCE AND OPTIMIZATION ENHANCEMENTS
+   ===================================================== */
+
+/* Container queries for advanced responsive behavior */
+@container (min-width: 600px) {
+    .fieldset-form.info-player {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@container (min-width: 800px) {
+    .fieldset-form.stats-player {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* CSS Subgrid support for future enhancement */
+@supports (grid-template-rows: subgrid) {
+    .fieldset-form {
+        display: grid;
+        grid-template-rows: subgrid;
+    }
+}
+
+/* Grid layout debugging utilities (development only) */
+.debug-grid {
+    position: relative;
+    
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            linear-gradient(to right, rgba(255, 0, 0, 0.1) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 0, 0, 0.1) 1px, transparent 1px);
+        background-size: 
+            calc(100% / var(--grid-columns, 12)) 
+            calc(100% / var(--grid-rows, 12));
+        pointer-events: none;
+        z-index: 9999;
+    }
+    
+    .fieldset-form {
+        border: 1px dashed rgba(0, 255, 0, 0.5);
+        position: relative;
+        
+        &::after {
+            content: attr(class);
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 4px;
+            font-size: 10px;
+            z-index: 10000;
+        }
+    }
+}
+
+/* Layout shift prevention */
+.form-sheet {
+    /* Prevent cumulative layout shift */
+    content-visibility: auto;
+    contain-intrinsic-size: 100vh;
+}
+
+.fieldset-form {
+    /* Minimize reflows during dynamic content loading */
+    contain: layout style;
+    
+    /* Optimize for animations */
+    &:has(.loading) {
+        contain: layout style paint;
+    }
+}
+
+/* =====================================================
+   ACCESSIBILITY AND USER EXPERIENCE IMPROVEMENTS
+   ===================================================== */
+
+/* Focus management for grid navigation */
+.form-sheet {
+    /* Ensure logical focus order */
+    &:focus-within {
+        scroll-behavior: smooth;
+    }
+}
+
+.fieldset-form {
+    /* Screen reader navigation support */
+    &[aria-expanded="false"] {
+        max-height: 4rem;
+        overflow: hidden;
+        
+        legend::after {
+            content: " (minimized)";
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+    }
+    
+    /* Keyboard navigation enhancement */
+    &:focus-within {
+        z-index: 10;
+        box-shadow: 
+            var(--shadow-lg),
+            0 0 0 3px rgba(var(--primary-rgb), 0.2);
+    }
+}
+
+/* High contrast mode optimizations */
+@media (prefers-contrast: high) {
+    .form-sheet {
+        gap: var(--spacing-xl);
+    }
+    
+    .fieldset-form {
+        border: 3px solid #000;
+        background: #fff;
+        
+        &:focus-within {
+            border-color: #0066cc;
+        }
+    }
+    
+    .grid-area-title { background: #000; color: #fff; }
+    .grid-area-info { background: #f0f0f0; }
+    .grid-area-stats { background: #e0e0e0; }
+    .grid-area-armament { background: #d0d0d0; }
+    .grid-area-skills { background: #c0c0c0; }
+    .grid-area-inventory { background: #b0b0b0; }
+}
+
+/* Reduced motion optimizations */
+@media (prefers-reduced-motion: reduce) {
+    .form-sheet {
+        scroll-behavior: auto;
+        animation: none;
+    }
+    
+    .fieldset-form {
+        transition: none;
+        transform: none !important;
+    }
+    
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Print optimizations for grid layout */
+@media print {
+    .form-sheet {
+        display: block !important;
+        grid-template-areas: none !important;
+        gap: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+    }
+    
+    .fieldset-form {
+        display: block !important;
+        grid-template-columns: none !important;
+        grid-area: auto !important;
+        page-break-inside: avoid;
+        margin-bottom: 1rem;
+        border: 1px solid #000;
+        background: white !important;
+    }
+    
+    .panel-save,
+    .debug-grid::before,
+    .fieldset-form::after {
+        display: none !important;
+    }
+}
 

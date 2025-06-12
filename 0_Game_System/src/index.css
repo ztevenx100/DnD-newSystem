@@ -1,12 +1,14 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import './features/character-sheet/UserCharacters/CharacterSheet/tailwind-components.css';
 
 :root{
     --bg-dark: #3d3d3d;
     --bg-light: #e7e7e7;
+    
+    /* Mantener aquí otros tokens de diseño globales */
 }
 
 body{
     background: var(--bg-dark);
+    scrollbar-color: var(--bg-color-3, #F2AF29) var(--bg-color-1, #E5E7EB);
+    scrollbar-width: thin;
 }

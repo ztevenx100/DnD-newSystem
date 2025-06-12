@@ -43,8 +43,8 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
 }) => {
   return (
     <div className="character-basic-info">
-      <div className="info-group">
-        <label htmlFor="characterName" className="form-lbl col-start-1 col-end-2 bg-grey-lighter">
+      <div className={`form-field ${emptyRequiredFields.includes('characterName') ? 'required-field' : ''}`}>
+        <label htmlFor="characterName" className="form-lbl">
           Nombre del Personaje
         </label>
         <input

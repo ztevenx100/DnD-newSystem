@@ -35,7 +35,7 @@ import {
 // Local Components
 import FormSelectInfoPlayerWrapper from "./FormSelectInfoPlayer/FormSelectInfoPlayerWrapper";
 import FormInputSkillsRingWrapper from "./FormInputSkillsRing/FormInputSkillsRingWrapper";
-import FormCardCheckboxWrapper from "./FormCardCheckbox/FormCardCheckboxWrapper";
+import KnowledgeWrapper from "./components/KnowledgeWrapper";
 import CharacterSaveModal from "./CharacterSaveModal/CharacterSaveModal";
 import CharacterImageWrapper from "./components/CharacterImageWrapper";
 import CharacterStatsWrapper from "./components/CharacterStatsWrapper";
@@ -1990,20 +1990,19 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
           </label>
           <CharacterImageWrapper
             externalStyles={
-              "col-start-6 col-end-9 row-start-2 row-span-4"
+              "form-field-wide" // Cambiado para usar el nuevo sistema de grid
             }
             locationImage={characterImage}
             onFormImageFileChange={handleCharacterImageFileChange}
           />
 
-          {/* Knowledge checkboxes in right column */}
-          <FormCardCheckboxWrapper
+          {/* Knowledge checkboxes utilizando el nuevo componente */}
+          <KnowledgeWrapper
             id="characterKnowledge"
             label="Conocimientos"
             checkboxes={checkboxesData}
             name="knowledge"
             onSelectedValuesChange={handleSelectedCheckValuesChange}
-            externalStyles="col-start-6 col-end-9 row-start-6 row-span-4"
           />
         </fieldset>
         {/* Estadisticas del personaje - Primary positioning for logical character building flow */}

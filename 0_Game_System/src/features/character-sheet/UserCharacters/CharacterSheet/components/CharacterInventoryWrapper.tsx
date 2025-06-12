@@ -1,6 +1,5 @@
 import React from 'react';
 import CharacterInventory from './CharacterInventory';
-import { useCharacterSheet } from '../context/CharacterSheetContext';
 import { InventoryObject } from '../context/CharacterSheetTypes';
 
 interface CharacterInventoryWrapperProps {
@@ -22,6 +21,8 @@ interface CharacterInventoryWrapperProps {
  * manteniendo compatibilidad con la estructura existente.
  * 
  * Es un componente transitorio que nos permite refactorizar gradualmente.
+ * En futuras iteraciones, usaremos completamente el contexto de CharacterSheet 
+ * para acceder a los métodos y estado relacionados con el inventario.
  */
 const CharacterInventoryWrapper: React.FC<CharacterInventoryWrapperProps> = React.memo(({
   externalStyles,
@@ -35,28 +36,30 @@ const CharacterInventoryWrapper: React.FC<CharacterInventoryWrapperProps> = Reac
   onNewObjectNameChange,
   onNewObjectDescriptionChange,
   onNewObjectCountChange
-}) => {  // Intento de usar el contexto, pero solo para logging en esta etapa
-  // En futuras iteraciones, utilizaremos completamente el contexto
-  try {
-    useCharacterSheet(); // Solo para verificar disponibilidad
-    // Eliminado console.log para evitar spam en consola
-  } catch (error) {
-    // Contexto aún no disponible - eliminado console.log
-  }
+}) => {
+  // Eventualmente usaremos el contexto completo para acceder a los métodos de inventario
+  const handleAddInventoryItem = (name: string, description: string, count: number) => {
+    onAddItem(name, description, count);
+  };
+
+  const handleUpdateInventoryItem = (id: string, field: string, value: any) => {
+    onUpdateItem(id, field, value);
+  };
   
-  // Por ahora, seguimos utilizando los props que recibimos
-  // para mantener la compatibilidad con el componente actual
+  const handleRemoveInventoryItem = (id: string) => {
+    onRemoveItem(id);
+  };
   
   return (
-    <div className={'inventory-wrapper ' + externalStyles}>
+    <div className={`inventory-wrapper ${externalStyles || ''}`}>
       <CharacterInventory
-        inventory={inventory}
-        onAddItem={onAddItem}
-        onUpdateItem={onUpdateItem}
-        onRemoveItem={onRemoveItem}
-        newObjectName={newObjectName}
-        newObjectDescription={newObjectDescription}
-        newObjectCount={newObjectCount}
+        inventory={inventory || []}
+        onAddItem={handleAddInventoryItem}
+        onUpdateItem={handleUpdateInventoryItem}
+        onRemoveItem={handleRemoveInventoryItem}
+        newObjectName={newObjectName || ""}
+        newObjectDescription={newObjectDescription || ""}
+        newObjectCount={newObjectCount || 1}
         onNewObjectNameChange={onNewObjectNameChange}
         onNewObjectDescriptionChange={onNewObjectDescriptionChange}
         onNewObjectCountChange={onNewObjectCountChange}

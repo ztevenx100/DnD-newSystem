@@ -891,43 +891,25 @@ textarea.form-input-y {
     }
 }
 
-/* 6. Inventory Player Section - Enhanced with modern grid layout */
+/* 6. Inventory Player Section - Enhanced */
 .fieldset-form.inventory-player {
-    /* Base responsive inventory layout */
-    display: grid;
+    /* Responsive inventory layout */
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-    gap: var(--spacing-md);
-    padding: var(--spacing-lg);
+    grid-template-rows: auto 1fr auto;
     
-    /* Inventory section container styles */
-    .inventory-wrapper {
-        width: 100%;
-        height: 100%;
-        overflow: visible;
-    }
-    
-    /* Enhanced responsive behavior */
-    @media (max-width: 767px) {
-        /* Full width on mobile with more vertical space */
-        padding: var(--spacing-md);
-        max-height: none;
-        overflow: visible;
-    }
-    
-    @media (min-width: 768px) and (max-width: 1023px) {
-        /* Two column layout on tablets for better space usage */
-        padding: var(--spacing-lg);
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto 1fr auto;
     }
     
     @media (min-width: 1024px) {
-        /* More padding and space on desktop */
-        padding: var(--spacing-xl);
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: auto 1fr auto;
     }
     
     @media (min-width: 1600px) {
-        /* Maximum breathing room on large screens */
-        padding: var(--spacing-2xl);
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: auto 1fr auto;
     }
 }
 

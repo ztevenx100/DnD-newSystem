@@ -47,9 +47,8 @@ const CharacterInventory: React.FC<CharacterInventoryProps> = ({
           Total de items: <span>{inventory.length}</span>
         </div>
       </div>
-      
-      {/* Formulario para añadir nuevo objeto */}
-      <form className="inventory-form" onSubmit={(e) => e.preventDefault()}>
+        {/* Sección para añadir nuevo objeto */}
+      <div className="inventory-form">
         <h4 className="inventory-form-title">Añadir nuevo elemento</h4>
         
         <div className="inventory-form-fields">
@@ -94,7 +93,7 @@ const CharacterInventory: React.FC<CharacterInventoryProps> = ({
         
         <div className="inventory-form-actions">
           <button 
-            type="submit" 
+            type="button" 
             className="add-item-button"
             onClick={handleAddItem}
             disabled={!newObjectName.trim()}
@@ -102,7 +101,7 @@ const CharacterInventory: React.FC<CharacterInventoryProps> = ({
             Añadir Objeto
           </button>
         </div>
-      </form>
+      </div>
       
       {/* Lista de objetos en el inventario */}
       <div className="inventory-items-container">

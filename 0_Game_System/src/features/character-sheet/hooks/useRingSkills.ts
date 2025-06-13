@@ -92,7 +92,7 @@ export const useRingSkills = (
    * @param index - The skill index
    * @param ringType - The new ring type
    */
-  const updateRingType = useCallback((
+    const updateRingType = useCallback((
     index: number | string,
     ringType: string
   ): void => {
@@ -101,9 +101,17 @@ export const useRingSkills = (
       console.warn("Invalid skill index:", index);
       return;
     }
+      // Evitar actualizaciones innecesarias si el valor es el mismo
+    const allSkills = getValues("skills");
+    const currentSkill = allSkills && Array.isArray(allSkills) ? allSkills[skillIndex] : undefined;
+    const currentRingType = currentSkill?.ring;
+    
+    if (currentRingType === ringType) {
+      return; // No actualizar si el valor no ha cambiado
+    }
 
     updateRingSkill(skillIndex, { ring: ringType });
-  }, [updateRingSkill]);
+  }, [updateRingSkill, getValues]);
 
   /**
    * Set a skill name for a specific ring
@@ -123,12 +131,32 @@ export const useRingSkills = (
       console.warn("Invalid skill index:", index);
       return;
     }
+    
+    // Obtener los valores actuales para compararlos
+    const currentSkills = getSkillsFromForm();
+    if (skillIndex >= currentSkills.length) {
+      console.warn(`Invalid skill index: ${skillIndex}, max: ${currentSkills.length-1}`);
+      return;
+    }
+    
+    const currentSkill = currentSkills[skillIndex];
+    const newRingType = ringType || currentSkill?.ring || "";
+    const newStatType = statType || ringType || currentSkill?.stat || "";
+    
+    // Solo actualizar si hay cambios reales
+    if (currentSkill.id === skillName && 
+        currentSkill.name === skillName && 
+        currentSkill.ring === newRingType && 
+        currentSkill.stat === newStatType) {
+      return; // No hay cambios, evitar actualización
+    }
 
+    // Actualizar con los nuevos valores
     updateRingSkill(skillIndex, {
       id: skillName,
       name: skillName,
-      ring: ringType || getSkillsFromForm()[skillIndex]?.ring || "",
-      stat: statType || ringType || getSkillsFromForm()[skillIndex]?.stat || ""
+      ring: newRingType,
+      stat: newStatType
     });
   }, [getSkillsFromForm, updateRingSkill]);
 

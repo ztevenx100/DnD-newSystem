@@ -1,0 +1,45 @@
+/* Estilos para CharacterBasicInfo */
+
+/* Estilos para los campos en fila */
+.horizontal-field {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Estilos para las etiquetas */
+.field-label {
+  margin: 0;
+  flex: 0 0 auto;
+  min-width: 180px;
+}
+
+/* Estilos para los inputs */
+.field-input {
+  flex: 1 1 auto;
+  margin-right: 0.5rem;
+}
+
+/* Aplicar estos estilos a las clases existentes */
+.character-basic-info .form-field,
+.character-basic-info .info-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+}
+
+.character-basic-info .form-lbl,
+.character-basic-info .form-lbl-y {
+  margin: 0;
+  flex: 0 0 auto;
+  min-width: 180px;
+}
+
+.character-basic-info .form-input,
+.character-basic-info .form-input-y,
+.character-basic-info .alignment-options {
+  flex: 1 1 auto;
+  margin-right: 0.5rem;
+}

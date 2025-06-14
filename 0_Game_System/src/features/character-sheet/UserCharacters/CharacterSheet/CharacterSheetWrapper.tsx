@@ -36,12 +36,6 @@ import './CharacterSheet.css';
 // Importar el background principal
 import mainBackground from "@img/webp/bg-home-02.webp";
 
-// Cache para evitar consultas continuas a la base de datos por las mismas habilidades
-const skillsCache = {
-  lastQueried: {} as Record<string, number>,  // timestamp de la última consulta por ID
-  knownSkills: new Set<string>()              // IDs ya procesados
-};
-
 /**
  * CharacterSheetWrapper es un componente que envuelve el componente original
  * CharacterSheet con el contexto necesario para la refactorización.

@@ -2186,7 +2186,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
           )}
         </fieldset>
         {/* Componente de inventario refactorizado */}
-        <fieldset className="fieldset-form inventory-player row-span-3 col-span-1 col-start-1 lg:col-start-3 lg:row-start-4 bg-white shadow-lg rounded" aria-labelledby="inventory-heading">
+        <fieldset className="fieldset-form inventory-player row-span-3 col-span-full col-start-1 lg:col-start-3 lg:row-start-4 bg-white shadow-lg rounded w-full" aria-labelledby="inventory-heading">
           <legend id="inventory-heading" className="text-lg font-semibold">Inventario</legend>
           
           <CharacterInventoryWrapper 

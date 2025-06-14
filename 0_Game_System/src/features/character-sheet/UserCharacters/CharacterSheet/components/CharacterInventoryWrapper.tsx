@@ -1,6 +1,7 @@
 import React from 'react';
 import CharacterInventory from './CharacterInventory';
 import { InventoryObject } from '../context/CharacterSheetTypes';
+import './CharacterInventory.css';
 
 interface CharacterInventoryWrapperProps {
   externalStyles: string;
@@ -49,9 +50,8 @@ const CharacterInventoryWrapper: React.FC<CharacterInventoryWrapperProps> = Reac
   const handleRemoveInventoryItem = (id: string) => {
     onRemoveItem(id);
   };
-  
-  return (
-    <div className={`inventory-wrapper ${externalStyles || ''}`}>
+    return (
+    <div className={`${externalStyles || 'inventory-wrapper'} w-full max-w-full block`}>
       <CharacterInventory
         inventory={inventory || []}
         onAddItem={handleAddInventoryItem}

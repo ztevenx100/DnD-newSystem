@@ -1,8 +1,14 @@
+.inventory-wrapper{
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
+}
 /* Estilos para el componente de inventario */
 .inventory-container {
   display: grid;
   gap: var(--spacing-md, 0.75rem);
-  width: 100%;
+  width: 100% !important;
+  max-width: 100% !important;
   grid-template-rows: auto auto 1fr;
   
   /* Variables específicas para el inventario */

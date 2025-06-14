@@ -37,11 +37,10 @@ const CharacterInventory: React.FC<CharacterInventoryProps> = ({
       onAddItem(newObjectName, newObjectDescription, newObjectCount);
     }
   };
-
   return (
-    <div className="inventory-container">
+    <div className="inventory-container w-full max-w-full">
       {/* Encabezado del inventario con contador */}
-      <div className="inventory-header">
+      <div className="inventory-header w-full">
         <h3 className="inventory-title">Inventario del Personaje</h3>
         <div className="inventory-count">
           Total de items: <span>{inventory.length}</span>

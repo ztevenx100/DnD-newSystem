@@ -43,8 +43,8 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
 }) => {
   return (
     <div className="character-basic-info">
-      <div className="info-group">
-        <label htmlFor="characterName" className="form-lbl col-start-1 col-end-2 bg-grey-lighter">
+      <div className={`form-field horizontal-field ${emptyRequiredFields.includes('characterName') ? 'required-field' : ''} character-name-row`}>
+        <label htmlFor="characterName" className="form-lbl field-label">
           Nombre del Personaje
         </label>
         <input
@@ -52,21 +52,20 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
           type="text"
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
-          className={`form-input-y col-start-2 col-end-3 mr-2 ${
+          className={`form-input-y field-input ${
             emptyRequiredFields.includes('name') ? 'required-input' : ''
           }`}
         />
       </div>
-      
-      <div className="info-group">
-        <label htmlFor="characterClass" className="form-lbl col-start-1 col-end-2 bg-grey-lighter">
+      <div className="info-group horizontal-field">
+        <label htmlFor="characterClass" className="form-lbl bg-grey-lighter field-label">
           Clase
         </label>
         <select
           id="characterClass"
           value={characterClass}
           onChange={(e) => onClassChange(e.target.value)}
-          className={`form-input col-start-2 col-end-3 mr-2 ${
+          className={`form-input field-input ${
             emptyRequiredFields.includes('characterClass') ? 'required-input' : ''
           }`}
         >
@@ -78,16 +77,15 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
           ))}
         </select>
       </div>
-      
-      <div className="info-group">
-        <label htmlFor="characterRace" className="form-lbl col-start-1 col-end-2 bg-grey-lighter">
+      <div className="info-group horizontal-field">
+        <label htmlFor="characterRace" className="form-lbl bg-grey-lighter field-label">
           Raza
         </label>
         <select
           id="characterRace"
           value={race}
           onChange={(e) => onRaceChange(e.target.value)}
-          className={`form-input col-start-2 col-end-3 mr-2 ${
+          className={`form-input field-input ${
             emptyRequiredFields.includes('characterRace') ? 'required-input' : ''
           }`}
         >
@@ -99,16 +97,15 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
           ))}
         </select>
       </div>
-      
-      <div className="info-group">
-        <label htmlFor="characterJob" className="form-lbl col-start-1 col-end-2 bg-grey-lighter">
+    <div className="info-group horizontal-field">
+        <label htmlFor="characterJob" className="form-lbl bg-grey-lighter field-label">
           Trabajo/Profesión
         </label>
         <select
           id="characterJob"
           value={job}
           onChange={(e) => onJobChange(e.target.value)}
-          className={`form-input col-start-2 col-end-3 mr-2 ${
+          className={`form-input field-input ${
             emptyRequiredFields.includes('characterJob') ? 'required-input' : ''
           }`}
         >
@@ -120,8 +117,8 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
           ))}
         </select>
       </div>
-      <div className="info-group">
-        <label htmlFor="characterLevel" className="form-lbl col-start-1 col-end-2 bg-grey-lighter">Nivel</label>
+      <div className="info-group horizontal-field">
+        <label htmlFor="characterLevel" className="form-lbl bg-grey-lighter field-label">Nivel</label>
         <input
           id="characterLevel"
           type="number"
@@ -129,23 +126,32 @@ export const CharacterBasicInfo: React.FC<CharacterBasicInfoProps> = ({
           max="20"
           value={level}
           onChange={(e) => onLevelChange(parseInt(e.target.value, 10) || 1)}
-          className={`form-input-y col-start-2 col-end-3 mr-2 ${
+          className={`form-input-y field-input ${
             emptyRequiredFields.includes('level') ? 'required-input' : ''
           }`}
         />
       </div>
-      <div className="info-group">
-        <label className="form-lbl col-start-1 col-end-2 bg-grey-lighter">Alineamiento</label>
-        <div className="alignment-options col-start-2 col-end-3 mr-2">
+      <div className="info-group horizontal-field">
+        <label className="form-lbl bg-grey-lighter field-label">Alineamiento</label>
+        <div className="alignment-options field-input">
           <button
             className={`orden ${alignment === 'O' ? 'selected' : ''}`}
             onClick={() => onAlignmentChange('O')}
+            type="button"
           >
             Orden
           </button>
           <button
+            className={`neutral ${alignment === 'N' ? 'selected' : ''}`}
+            onClick={() => onAlignmentChange('N')}
+            type="button"
+          >
+            Neutral
+          </button>
+          <button
             className={`caos ${alignment === 'C' ? 'selected' : ''}`}
             onClick={() => onAlignmentChange('C')}
+            type="button"
           >
             Caos
           </button>

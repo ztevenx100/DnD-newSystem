@@ -28,7 +28,7 @@ import {
   checkboxesData
 } from '../../constants/characterOptions';
 import { Option, SkillTypes, SkillFields, StatsTotal, DBSistemaJuego, InventoryObject } from './context/CharacterSheetTypes';
-import { DBPersonajesUsuario, InputStats, SkillsAcquired } from '@shared/utils/types';
+import { DBPersonajesUsuario, InputStats, SkillsAcquired, DBHabilidad } from '@shared/utils/types';
 
 // Importar los estilos CSS del componente original
 import './CharacterSheet.css';
@@ -294,6 +294,12 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
       return;
     }
     
+    // Skip validation if optionsSkillClass hasn't been loaded yet
+    if (optionsSkillClass.length === 0) {
+      console.debug("Skill options not loaded yet, deferring validation for:", currentSkill);
+      return;
+    }
+    
     const option = optionsSkillClass.filter(
       (skill) => skill.value === currentSkill
     );
@@ -311,7 +317,8 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
       
       clearValidationError('skillClass');
     } else {
-      console.warn("No matching option found for skillClass:", currentSkill);
+      // Prevent repeated warnings about the same value
+      console.debug("No matching option found for skillClass:", currentSkill);
     }
   }, [setValue, optionsSkillClass, clearValidationError]);
   
@@ -332,6 +339,12 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
       return;
     }
     
+    // Skip validation if optionsSkillExtra hasn't been loaded yet
+    if (optionsSkillExtra.length === 0) {
+      console.debug("Extra skill options not loaded yet, deferring validation for:", currentSkill);
+      return;
+    }
+    
     const option = optionsSkillExtra.filter(
       (skill) => skill.value === currentSkill
     );
@@ -349,7 +362,8 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
       
       clearValidationError('skillExtra');
     } else {
-      console.warn("No matching option found for skillExtra:", currentSkill);
+      // Prevent repeated warnings about the same value
+      console.debug("No matching option found for skillExtra:", currentSkill);
     }
   }, [setValue, optionsSkillExtra, clearValidationError]);
   
@@ -396,64 +410,176 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
       console.error('Error al procesar la imagen del personaje:', error);
       alert('Error al procesar la imagen del personaje');
     }
-  }, [normalizedUser, params.id]);
+  }, [normalizedUser, params.id]);  // Estado para evitar actualizaciones simultáneas de habilidades de anillo
+  const [pendingSkillNameUpdates, setPendingSkillNameUpdates] = useState<Record<string, number>>({});
+  
   /**
    * Maneja el cambio en las habilidades del anillo
-   * Migrado desde CharacterSheet.tsx
+   * Implementación mejorada para evitar actualizaciones redundantes y retrasar operaciones concurrentes
    */
   const handleSelectedRingSkillChange = useCallback((id: string, ring: string, skill: string, stat: string) => {
-    if (!id || !ring || !skill) {
+    // Validación básica
+    if (!id || !ring) {
+      console.debug(`Ignorando actualización de anillo ${id} con datos incompletos`);
       return;
     }
+    
     try {
+      // Verificar si hay una actualización en progreso demasiado reciente (menos de 100ms)
+      const now = Date.now();
+      const lastUpdate = pendingSkillNameUpdates[id] || 0;
+      const timeSinceLastUpdate = now - lastUpdate;
+      
+      if (timeSinceLastUpdate < 100) {
+        console.debug(`Retrasar actualización de anillo ${id} (muy frecuente)`);
+        // Programamos la actualización para más tarde y evitamos ejecutar varias en cola
+        setTimeout(() => {
+          const currentTimestamp = pendingSkillNameUpdates[id] || 0;
+          // Solo actualizar si no se ha realizado otra actualización en el ínterin
+          if (currentTimestamp === lastUpdate) {
+            handleSelectedRingSkillChange(id, ring, skill, stat);
+          }
+        }, 150);
+        return;
+      }
+      
+      // Marcar esta operación como "en curso"
+      setPendingSkillNameUpdates(prev => ({...prev, [id]: now}));
+      // Verificar si los valores actuales ya son iguales para evitar actualizaciones innecesarias
+      // Obtener todas las habilidades y luego acceder al índice específico
+      const allSkills = getValues("skills");
+      const currentSkill = allSkills && Array.isArray(allSkills) ? allSkills[Number(id)] : undefined;
+      
+      // Verificamos que currentSkill sea un objeto de tipo SkillsAcquired con las propiedades esperadas
+      if (currentSkill && 
+          typeof currentSkill === 'object' && 
+          'id' in currentSkill &&
+          'name' in currentSkill &&
+          'ring' in currentSkill &&
+          currentSkill.id === skill && 
+          currentSkill.name === skill && 
+          currentSkill.ring === ring && 
+          currentSkill.stat === (stat || ring)) {
+        console.debug(`Anillo ${id} ya tiene los valores deseados, omitiendo actualización`);
+        return;
+      }
+      
+      console.debug(`Actualizando habilidad del anillo ${id}: ${skill} (${ring})`);
       ringSkills.setRingSkillName(id, skill, ring, stat);
       clearValidationError(`ringSkill${id}`);
+      
     } catch (error) {
       console.error("Error al actualizar la habilidad del anillo:", error);
     }
-  }, [ringSkills, clearValidationError]);
+  }, [ringSkills, clearValidationError, pendingSkillNameUpdates, getValues]);
+    // Rastreo de operaciones pendientes de actualización de tipo de anillo
+  const [pendingRingUpdates, setPendingRingUpdates] = useState<Record<string, boolean>>({});
   
   /**
    * Maneja el cambio en el tipo de habilidad del anillo
-   * Migrado desde CharacterSheet.tsx
+   * Implementación optimizada para evitar bucles de actualización
+   * @param id - Identificador del anillo ("0", "1", o "2")
+   * @param type - Tipo de estadística para el anillo ("STR", "DEX", etc)
    */
   const handleSelectedTypeRingSkillChange = useCallback(async (id: string, type: string) => {
+    // Validación de entrada
     if (!id || !type) {
       console.warn('ID o tipo de habilidad inválido', {id, type});
       return;
     }
     
+    // Evitar procesamiento simultáneo para el mismo anillo
+    if (pendingRingUpdates[id]) {
+      console.debug(`Actualizando anillo ${id}, operación anterior en progreso. Actualización puesta en cola.`);
+      // Usar setTimeout para intentar la actualización más tarde
+      setTimeout(() => handleSelectedTypeRingSkillChange(id, type), 100);
+      return;
+    }
+    
+    // Marcar este anillo como en actualización
+    setPendingRingUpdates(prev => ({...prev, [id]: true}));
+    
     try {
-      ringSkills.updateRingType(id, type);
+      // Validar índice
+      const ringIndex = Number(id);
+      if (isNaN(ringIndex) || ringIndex < 0 || ringIndex >= 3) {
+        console.error(`Índice de anillo inválido: ${id}`);
+        setPendingRingUpdates(prev => ({...prev, [id]: false}));
+        return;
+      }
+      // Verificar datos actuales con una sola llamada a getValues para minimizar renders
+      // Obtener todas las habilidades y luego acceder al índice específico
+      const allSkills = getValues("skills");
+      const currentSkill = allSkills && Array.isArray(allSkills) ? allSkills[ringIndex] : undefined;
       
-      setSkillsRingList(prevList => {
-        const newList = [...prevList];
-        const skills = skillsTypes.find(option => option.id === type)?.skills || [];
-        
-        if (skills.length === 0) {
-          console.warn(`No se encontraron habilidades para el tipo ${type}`);
-        }
-        
-        // Actualizar las habilidades disponibles para este anillo
-        const ringIndex = Number(id);
-        if (isNaN(ringIndex) || ringIndex < 0 || ringIndex >= newList.length) {
-          console.error(`Índice de anillo inválido: ${id}`);
-          return prevList;
-        }
-        
-        newList[ringIndex] = {
-          ...newList[ringIndex],
-          skills: skills
-        };
-        return newList;
-      });
+      // Extraer currentRing y currentStat si currentSkill es un objeto válido
+      const currentRing = (currentSkill && 
+                          typeof currentSkill === 'object' && 
+                          'ring' in currentSkill) ? currentSkill.ring : null;
+                          
+      const currentStat = (currentSkill && 
+                          typeof currentSkill === 'object' && 
+                          'stat' in currentSkill) ? currentSkill.stat : null;
       
-      // Limpiar cualquier error de validación relacionado con este anillo
-      clearValidationError(`ringSkill${id}`);
+      // Evitar actualizaciones redundantes
+      if (currentRing === type && currentStat === type) {
+        console.debug(`El anillo ${id} ya tiene el tipo ${type} configurado`);
+        setPendingRingUpdates(prev => ({...prev, [id]: false}));
+        return;
+      }
+      
+      // Obtener habilidades para este tipo de estadística una sola vez para mejorar rendimiento
+      const skillGroup = skillsTypes.find(option => option.id === type);
+      const skills = skillGroup?.skills || [];
+      
+      if (skills.length === 0) {
+        console.warn(`No se encontraron habilidades para el tipo ${type}. Verificar carga previa de datos.`);
+      }
+      
+      // Usar una función para manejar en secuencia todas las actualizaciones
+      const updateRingData = async () => {
+        console.debug(`Actualizando datos del anillo ${id} al tipo ${type}`);
+        
+        // 1. Primero actualizar el tipo de anillo (actualiza ring y stat)
+        ringSkills.updateRingType(id, type);
+        
+        // 2. Esperar breve tiempo para que React procese el cambio anterior
+        await new Promise(resolve => setTimeout(resolve, 20));
+        
+        // 3. Actualizar la lista de habilidades disponibles para este anillo
+        setSkillsRingList(prevList => {
+          // Actualizar solo si es necesario
+          if (prevList[ringIndex]?.id === type && 
+              JSON.stringify(prevList[ringIndex]?.skills) === JSON.stringify(skills)) {
+            return prevList; // Evitar re-renders innecesarios
+          }
+          
+          const newList = [...prevList];
+          newList[ringIndex] = {
+            id: type,
+            skills: skills
+          };
+          return newList;
+        });
+        
+        // 4. Limpiar errores de validación
+        clearValidationError(`ringSkill${id}`);
+        
+        // 5. Limpiar flag de operación pendiente después de un breve retraso
+        setTimeout(() => {
+          setPendingRingUpdates(prev => ({...prev, [id]: false}));
+          console.debug(`Actualización de anillo ${id} completada`);
+        }, 50);
+      };
+      
+      // Ejecutar actualizaciones en secuencia
+      await updateRingData();
+      
     } catch (error) {
       console.error("Error al cambiar el tipo de habilidad del anillo:", error);
+      setPendingRingUpdates(prev => ({...prev, [id]: false}));
     }
-  }, [skillsTypes, ringSkills, clearValidationError]);
+  }, [skillsTypes, ringSkills, clearValidationError, pendingRingUpdates, getValues]);
   /**
    * Maneja la adición de objetos al inventario
    * Migrado desde CharacterSheet.tsx
@@ -700,20 +826,62 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
       console.error("Error loading game systems:", error);
     }
   }, []);
-
   /**
    * Obtiene la lista de habilidades disponibles
    * Migrado desde CharacterSheet.tsx
    */
+  // Se usa un objeto para almacenar el resultado en caché
+  // Definido con un tipo que acepte null o array de DBHabilidad
+  const skillsCache: { data: DBHabilidad[] | null, timestamp: number } = { 
+    data: null, 
+    timestamp: 0 
+  };
+
+  // Función modificada con caché para evitar llamadas frecuentes a la DB  // Estado para rastrear si hay una operación de carga en curso
+  const [isLoadingSkills, setIsLoadingSkills] = useState(false);
+  
+  // Ampliar el tiempo de caché para reducir llamadas (2 minutos en vez de 30 segundos)
+  const SKILL_CACHE_DURATION = 120000; // 2 minutos
+  
   const getListSkill = useCallback(async () => {
+    // Verificar operación en curso para prevenir llamadas simultáneas
+    if (isLoadingSkills) {
+      console.debug('Operación de carga de habilidades en curso, esperando...');
+      return skillsCache.data; // Devolver lo que haya en caché mientras tanto
+    }
+    
+    // Comprobar si ya tenemos datos en caché y son recientes
+    const now = Date.now();
+    if (skillsCache.data && (now - skillsCache.timestamp) < SKILL_CACHE_DURATION) {
+      console.debug('Usando datos de habilidades en caché');
+      return skillsCache.data;
+    }
+
     try {
+      // Marcar como carga en curso
+      setIsLoadingSkills(true);
+      
+      // Usar un timeout de seguridad para evitar bloqueos
+      const safetyTimeout = setTimeout(() => {
+        setIsLoadingSkills(false);
+      }, 10000); // 10 segundos máximo
+      
+      console.debug('Realizando consulta a la base de datos para habilidades');
       const data = await getListHad();
 
-      if (data !== null && Array.isArray(data) && data.length > 0) {
+      // Actualizar la caché si obtenemos datos válidos
+      if (data && Array.isArray(data) && data.length > 0) {
+        console.debug(`Procesando ${data.length} habilidades de la base de datos`);
+          // Actualizar caché inmediatamente
+        skillsCache.data = data;
+        skillsCache.timestamp = now;
+        
+        // Preparar todas las estructuras antes de actualizar el estado
         const updatedOptionsSkillClass: Option[] = [];
         const updatedOptionsSkillExtra: Option[] = [];
         const otherSkills: SkillTypes[] = [];
         
+        // Procesar los datos en un solo recorrido
         (data as any[]).forEach((rawElem) => {
           const elem = {
             id: rawElem.hab_id || rawElem.id || '',
@@ -729,70 +897,87 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
             return;
           }
           
-          if (elem.tipo === "C") {
-            updatedOptionsSkillClass.push({
-              id: elem.id,
-              value: elem.sigla,
-              name: elem.nombre,
-            });
-          } else if (elem.tipo === "E") {
-            updatedOptionsSkillExtra.push({
-              id: elem.id,
-              value: elem.sigla,
-              name: elem.nombre,
-            });
-          } else if (elem.tipo === "R" && elem.estadistica_base) {
-            const countSkill = otherSkills.filter(
-              (option: SkillTypes) => option.id === elem.estadistica_base
-            ).length;
-            if (countSkill === 0) {
-              otherSkills.push({
-                id: elem.estadistica_base,
-                skills: [
-                  {
-                    id: elem.id,
-                    value: elem.sigla,
-                    name: elem.nombre,
-                  },
-                ],
+          switch (elem.tipo) {
+            case "C":
+              updatedOptionsSkillClass.push({
+                id: elem.id,
+                value: elem.sigla,
+                name: elem.nombre,
               });
-            } else {
-              const existingSkill = otherSkills.find(
-                (option: SkillTypes) => option.id === elem.estadistica_base
-              );
-              if (existingSkill) {
-                existingSkill.skills.push({
+              break;
+              
+            case "E":
+              updatedOptionsSkillExtra.push({
+                id: elem.id,
+                value: elem.sigla,
+                name: elem.nombre,
+              });
+              break;
+              
+            case "R":
+              if (elem.estadistica_base) {
+                // Buscar grupo existente o crear uno nuevo
+                let targetGroup = otherSkills.find(group => group.id === elem.estadistica_base);
+                
+                if (!targetGroup) {
+                  targetGroup = {
+                    id: elem.estadistica_base,
+                    skills: []
+                  };
+                  otherSkills.push(targetGroup);
+                }
+                
+                // Añadir la habilidad al grupo correspondiente
+                targetGroup.skills.push({
                   id: elem.id,
                   value: elem.sigla,
                   name: elem.nombre,
                 });
               }
-            }
+              break;
           }
         });
         
-        if (updatedOptionsSkillClass.length > 0) {
+        // Validar datos antes de actualizar estado
+        if (updatedOptionsSkillClass.length === 0) {
+          console.warn("No se encontraron habilidades de clase (tipo 'C')");
+        }
+        
+        if (updatedOptionsSkillExtra.length === 0) {
+          console.warn("No se encontraron habilidades extra (tipo 'E')");
+        }
+        
+        if (otherSkills.length === 0) {
+          console.warn("No se encontraron habilidades de anillo (tipo 'R')");
+        }
+        
+        // Actualizar estados de forma agrupada para minimizar re-renders
+        // Usar un pequeño timeout para asegurar que React batche las actualizaciones
+        setTimeout(() => {
+          // Actualizar todos los estados necesarios en una sola pasada
           setOptionsSkillClass(updatedOptionsSkillClass);
-        } else {
-          console.warn("No Class skill options processed from data");
-        }
-        
-        if (updatedOptionsSkillExtra.length > 0) {
           setOptionsSkillExtra(updatedOptionsSkillExtra);
-        } else {
-          console.warn("No Extra skill options processed from data");
-        }
-        
-        if (otherSkills.length > 0) {
           setSkillsTypes(otherSkills);
-        }
+          
+          console.debug('Datos de habilidades procesados y actualizados');
+          clearTimeout(safetyTimeout);
+          setIsLoadingSkills(false);
+        }, 0);
+        
+        // Devolver los datos para uso inmediato
+        return data;
       } else {
-        console.error("Invalid or empty data received from getListHad():", data);
+        console.error("Datos inválidos o vacíos recibidos de getListHad():", data);
+        clearTimeout(safetyTimeout);
+        setIsLoadingSkills(false);
+        return null;
       }
     } catch (error) {
-      console.error("Error in getListSkill:", error);
+      console.error("Error en getListSkill:", error);
+      setIsLoadingSkills(false);
+      return null;
     }
-  }, []);
+  }, [isLoadingSkills]);
 
   /**
    * Obtiene la imagen del personaje desde el almacenamiento
@@ -859,44 +1044,166 @@ export const CharacterSheetWrapper: React.FC<CharacterSheetProps> = (props) => {
   /**
    * Carga las habilidades del personaje desde la base de datos
    * Migrado desde CharacterSheet.tsx
-   */
+   */  // Variable de estado adicional para tracking de operaciones pendientes
+  const [pendingSkillsOperation, setPendingSkillsOperation] = useState<boolean>(false);
+  
+  // Tiempo máximo para evitar bloqueos (ms)
+  const MAX_SKILL_OPERATION_TIME = 5000;
+  
   const getSkills = useCallback(async () => {
     if (!params.id) return;
-
+    
+    // Evitar operaciones concurrentes - mecanismo de bloqueo basado en estado
+    if (pendingSkillsOperation) {
+      console.debug("Skipping getSkills, operation already in progress");
+      return;
+    }
+    
     try {
+      // Establecer flag de operación pendiente
+      setPendingSkillsOperation(true);
+      
+      // Garantizar liberación en caso de error con un timeout de seguridad
+      const safetyTimeout = setTimeout(() => {
+        setPendingSkillsOperation(false);
+      }, MAX_SKILL_OPERATION_TIME);
+      
       const data = await getCharacterSkills(params.id);
       
       if (data && Array.isArray(data)) {
-        data.forEach((skill: any) => {
+        console.debug(`Processing ${data.length} character skills`);
+        
+        // Procesamiento por lotes para evitar múltiples actualizaciones de estado
+        const classSkill = data.find((skill: any) => skill.hpe_campo === "skillClass");
+        const extraSkill = data.find((skill: any) => skill.hpe_campo === "skillExtra");
+        const ringSkillsData = data.filter((skill: any) => {
           const field = skill.hpe_campo || skill.campo;
-          const skillValue = skill.hab_sigla || skill.sigla || skill.hpe_habilidad;
+          return field && field.startsWith("skill") && field !== "skillClass" && field !== "skillExtra";
+        });
+        // Procesar actualizaciones en secuencia para evitar race conditions
+        
+        // 1. Actualizar habilidades principales primero (con un batch)
+        // Definimos explícitamente el tipo de la variable como un array de funciones
+        const skillUpdates: (() => void)[] = [];
+        
+        if (classSkill) {
+          // Usamos tipado más seguro con TypeScript
+          // Tratamos classSkill como any primero para extraer los campos necesarios
+          const skill = classSkill as any;
+          const skillValue = skill.hpe_habilidad ||
+                             // Si tiene una propiedad hab_habilidad, intentamos acceder a sus propiedades
+                             (skill.hab_habilidad && (skill.hab_habilidad.id || '')) ||
+                             // Fallback para formatos antiguos o diferentes
+                             skill.hab_sigla || skill.sigla || '';
           
-          if (field && skillValue) {
-            if (field === "skillClass") {
-              setValue("skillClass", skillValue);
-              handleSelectSkillChange(skillValue);
-            } else if (field === "skillExtra") {
-              setValue("skillExtra", skillValue);
-              handleSelectExtraSkillChange(skillValue);
-            } else if (field.startsWith("skill")) {
-              // Habilidades de anillo - usar RingSkills hook
-              const ringId = field.replace("skill", "");
-              if (ringId && /^\d+$/.test(ringId)) {
-                const ringIndex = parseInt(ringId, 10);
-                const skillName = skill.hab_nombre || skill.nombre || skillValue;
-                const ringType = skill.hpe_anillo || skill.anillo || "";
-                const statType = skill.hab_estadistica || skill.estadistica || "";
-                
-                ringSkills.setRingSkillName(ringIndex, skillName, ringType, statType);
-              }
+          if (skillValue) {
+            console.debug(`Setting skillClass value: ${skillValue}`);
+            setValue("skillClass", skillValue);
+            // Only add to updates if option exists in current options
+            const optionExists = optionsSkillClass.some(opt => opt.value === skillValue);
+            if (optionExists) {
+              skillUpdates.push(() => handleSelectSkillChange(skillValue));
+            } else {
+              console.debug(`Skipping update for skillClass: ${skillValue} (option not found yet)`);
             }
           }
-        });
+        }
+        
+        if (extraSkill) {
+          // Mismo enfoque para extraSkill
+          const skill = extraSkill as any;
+          const skillValue = skill.hpe_habilidad || 
+                             // Si tiene una propiedad hab_habilidad, intentamos acceder a sus propiedades
+                             (skill.hab_habilidad && (skill.hab_habilidad.id || '')) ||
+                             // Fallback para formatos antiguos o diferentes
+                             skill.hab_sigla || skill.sigla || '';
+                             
+          if (skillValue) {
+            console.debug(`Setting skillExtra value: ${skillValue}`);
+            setValue("skillExtra", skillValue);
+            // Only add to updates if option exists in current options
+            const optionExists = optionsSkillExtra.some(opt => opt.value === skillValue);
+            if (optionExists) {
+              skillUpdates.push(() => handleSelectExtraSkillChange(skillValue));
+            } else {
+              console.debug(`Skipping update for skillExtra: ${skillValue} (option not found yet)`);
+            }
+          }
+        }
+        
+        // Aplicar actualizaciones de habilidades principales con un poco de tiempo entre ellas
+        if (skillUpdates.length > 0) {
+          // Avoid race conditions by ensuring UI is updated first
+          await new Promise(resolve => {
+            requestAnimationFrame(() => {
+              // Only run one update and ignore others to prevent loop
+              if (skillUpdates.length > 0) {
+                skillUpdates[0]();
+              }
+              resolve(null);
+            });
+          });
+        }
+        
+        // 2. Procesar habilidades de anillos solo cuando las principales ya se han procesado
+        if (ringSkillsData.length > 0) {
+          // Crear un mapa con todas las actualizaciones pendientes
+          const ringsToUpdate = new Map();
+          
+          ringSkillsData.forEach((skill: any) => {
+            const field = skill.hpe_campo || skill.campo;
+            const ringId = field.replace("skill", "");
+            if (ringId && /^\d+$/.test(ringId)) {
+              const ringIndex = parseInt(ringId, 10);
+              // Acceso seguro al valor principal de la habilidad
+              const skillValue = skill.hpe_habilidad || 
+                                 (skill.hab_habilidad && (skill.hab_habilidad.id || '')) ||
+                                 // Fallback para los formatos antiguos
+                                 skill.hab_sigla || skill.sigla || '';
+                                 
+              // Acceso seguro al nombre de la habilidad
+              const skillName = (skill.hab_habilidad && skill.hab_habilidad.nombre) || 
+                               skill.hab_nombre || skill.nombre || skillValue;
+                               
+              // Acceso seguro al tipo de anillo y estadística
+              const ringType = skill.hpe_anillo || skill.anillo || "";
+              const statType = skill.hab_estadistica || skill.estadistica || "";
+              
+              ringsToUpdate.set(ringIndex, { skillName, ringType, statType });
+            }
+          });
+          
+          // Aplicar actualizaciones de anillos en secuencia con un tiempo mínimo entre ellas
+          if (ringsToUpdate.size > 0) {
+            console.debug(`Processing ${ringsToUpdate.size} ring skills`);
+            
+            // Dar tiempo para que las actualizaciones principales se completen
+            await new Promise(resolve => {
+              setTimeout(async () => {
+                // Actualizar los anillos en secuencia
+                for (const [ringIndex, data] of ringsToUpdate.entries()) {
+                  console.debug(`Updating ring skill ${ringIndex} with data:`, data);
+                  ringSkills.setRingSkillName(ringIndex, data.skillName, data.ringType, data.statType);
+                  
+                  // Pequeño retraso entre actualizaciones de anillo
+                  await new Promise(r => setTimeout(r, 50));
+                }
+                resolve(null);
+              }, 200);
+            });
+          }
+        }
       }
+      
+      // Limpiar el timeout de seguridad y marcar como completado
+      clearTimeout(safetyTimeout);
+      setPendingSkillsOperation(false);
+      
     } catch (error) {
       console.error("Error loading character skills:", error);
+      setPendingSkillsOperation(false);
     }
-  }, [params.id, setValue, handleSelectSkillChange, handleSelectExtraSkillChange, ringSkills]);
+  }, [params.id, setValue, handleSelectSkillChange, handleSelectExtraSkillChange, ringSkills, pendingSkillsOperation]);
   
   /**
    * Carga el inventario del personaje desde la base de datos

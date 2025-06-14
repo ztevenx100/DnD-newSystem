@@ -4,6 +4,9 @@
 */
 
 :root{
+    /* ===== STEP 2: CONSOLIDATED DESIGN TOKENS ===== */
+    
+    /* Theme Colors - Primary Palette */
     --bg-form-neutral: #C1C3C7;
     --bg-form-orden: #0E79B2;
     --bg-form-caos: #E4572E;
@@ -16,29 +19,20 @@
     --bg-color-7: #31E981;
     --bg-color-8: #388697;
     --bg-color-9: #7F5A83;
+    
+    /* Semantic Color Mappings */
+    --primary: var(--bg-color-3);
+    --primary-rgb: 242, 175, 41;
+    --danger: var(--bg-color-4);
+    --danger-rgb: 230, 52, 98;
+    --success: var(--bg-color-7);
+    --success-rgb: 49, 233, 129;
     --required-color: var(--bg-color-4);
     --bg-color-btn-dice: var(--bg-color-3);
     --bg-title: var(--bg-color-3);
     --bg-loader: var(--bg-color-3);
 
-    --un-border-opacity: 1;
-    --border-card: 0.5rem;
-    
-    /* Enhanced design system variables */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    
-    --focus-ring: 0 0 0 3px rgba(242, 175, 41, 0.1);
-    --focus-ring-orden: 0 0 0 3px rgba(14, 121, 178, 0.1);
-    --focus-ring-caos: 0 0 0 3px rgba(228, 87, 46, 0.1);
-    
-    --transition-fast: all 0.15s ease;
-    --transition-normal: all 0.2s ease;
-    --transition-slow: all 0.3s ease;
-    
-    /* STEP 1: Enhanced Typography and Spacing System */
+    /* Typography System */
     --font-size-xs: 0.75rem;    /* 12px */
     --font-size-sm: 0.875rem;   /* 14px */
     --font-size-base: 1rem;     /* 16px */
@@ -55,8 +49,9 @@
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
+    --font-weight-black: 900;
     
-    /* Enhanced spacing system */
+    /* Spacing System */
     --spacing-xs: 0.25rem;    /* 4px */
     --spacing-sm: 0.5rem;     /* 8px */
     --spacing-md: 0.75rem;    /* 12px */
@@ -66,23 +61,107 @@
     --spacing-3xl: 2rem;      /* 32px */
     --spacing-4xl: 2.5rem;    /* 40px */
     
-    /* Grid consistency variables */
+    /* Grid System */
     --grid-gap-tight: 0.5rem;
     --grid-gap-normal: 0.75rem;
     --grid-gap-relaxed: 1rem;
     --grid-gap-loose: 1.25rem;
     
-    /* Form element sizing */
+    /* Form Element Sizing */
     --form-height-sm: 2.5rem;
     --form-height-md: 3rem;
     --form-height-lg: 3.5rem;
     
-    /* Border radius consistency */
+    /* Border Radius System (consolidated - removed duplicates) */
     --border-radius-sm: 0.375rem;
     --border-radius-md: 0.5rem;
     --border-radius-lg: 0.75rem;
     --border-radius-xl: 1rem;
+    --border-card: 0.5rem; /* Legacy support */
+    
+    /* Border Colors */
+    --border-light: #e5e7eb;
+    --border-medium: #d1d5db;
+    --border-dark: #9ca3af;
+    
+    /* Text Colors (consolidated - removed duplicates) */
+    --text-primary: #1f2937;
+    --text-secondary: #374151;
+    --text-muted: #6b7280;
+    
+    /* Background Colors */
+    --bg-grey-lighter: #f9fafb;
+    --bg-main: #f8fafc;
+    
+    /* Shadow System */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    
+    /* Focus Ring System */
+    --focus-ring: 0 0 0 3px rgba(242, 175, 41, 0.1);
+    --focus-ring-orden: 0 0 0 3px rgba(14, 121, 178, 0.1);
+    --focus-ring-caos: 0 0 0 3px rgba(228, 87, 46, 0.1);
+    
+    /* Transition System (consolidated) */
+    --transition-fast: all 0.15s ease;
+    --transition-normal: all 0.2s ease;
+    --transition-standard: 0.2s; /* Alias for compatibility */
+    --transition-slow: all 0.3s ease;
+    
+    /* Legacy Support */
+    --un-border-opacity: 1;
 }
+
+
+/* =====================================================
+   GRID SYSTEM UTILITIES AND HELPERS
+   ===================================================== */
+
+/* Dynamic grid templates for complex layouts */
+.grid-dynamic-1 { grid-template-columns: 1fr; }
+.grid-dynamic-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-dynamic-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-dynamic-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-dynamic-6 { grid-template-columns: repeat(6, 1fr); }
+.grid-dynamic-8 { grid-template-columns: repeat(8, 1fr); }
+.grid-dynamic-12 { grid-template-columns: repeat(12, 1fr); }
+
+/* Responsive grid modifiers */
+@media (min-width: 768px) {
+  .md\:grid-dynamic-2 { grid-template-columns: repeat(2, 1fr); }
+  .md\:grid-dynamic-3 { grid-template-columns: repeat(3, 1fr); }
+  .md\:grid-dynamic-4 { grid-template-columns: repeat(4, 1fr); }
+  .md\:grid-dynamic-6 { grid-template-columns: repeat(6, 1fr); }
+  .md\:grid-dynamic-8 { grid-template-columns: repeat(8, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .lg\:grid-dynamic-3 { grid-template-columns: repeat(3, 1fr); }
+  .lg\:grid-dynamic-4 { grid-template-columns: repeat(4, 1fr); }
+  .lg\:grid-dynamic-6 { grid-template-columns: repeat(6, 1fr); }
+  .lg\:grid-dynamic-8 { grid-template-columns: repeat(8, 1fr); }
+  .lg\:grid-dynamic-12 { grid-template-columns: repeat(12, 1fr); }
+}
+
+/* Grid flow utilities */
+.grid-flow-row { grid-auto-flow: row; }
+.grid-flow-col { grid-auto-flow: column; }
+.grid-flow-dense { grid-auto-flow: row dense; }
+
+/* Advanced positioning utilities */
+.justify-self-auto { justify-self: auto; }
+.justify-self-start { justify-self: start; }
+.justify-self-end { justify-self: end; }
+.justify-self-center { justify-self: center; }
+.justify-self-stretch { justify-self: stretch; }
+
+.align-self-auto { align-self: auto; }
+.align-self-start { align-self: start; }
+.align-self-end { align-self: end; }
+.align-self-center { align-self: center; }
+.align-self-stretch { align-self: stretch; }
 
 body{
     scrollbar-color: var(--bg-color-3) var(--bg-color-1) ;
@@ -114,21 +193,84 @@ body{
     }
 }
 
-/* STEP 3: Enhanced Responsive Grid System and Form Sheet Layout */
+/* =====================================================
+   STEP 3: ENHANCED GRID SYSTEM - FORM SHEET LAYOUT
+   ===================================================== */
 
-.form-sheet{
-    background: linear-gradient(135deg, var(--bg-form-neutral) 0%, color-mix(in srgb, var(--bg-form-neutral) 95%, white) 100%);
-    --required-color: #E63462;
-    --current-focus-ring: var(--focus-ring);
-    transition: var(--transition-slow);
-    min-height: 100vh;
-    padding: var(--spacing-2xl);
-    gap: var(--spacing-2xl);
+.form-sheet {
     display: grid;
-    grid-template-columns: 1fr;
+    min-height: 100vh;
+    width: 100%;
+    max-width: 100vw;
+    margin: 0 auto;
     position: relative;
+    overflow-x: hidden;
+    /* Remove visible grid lines */
+    grid-gap: var(--spacing-lg);
+    gap: var(--spacing-lg);
     
-    /* Add subtle pattern overlay for texture */
+    /* Explicitly remove any column dividers */
+    background-image: none !important;
+    -webkit-column-rule: none !important;
+    -moz-column-rule: none !important;
+    column-rule: none !important;
+    
+    /* ===== MOBILE-FIRST GRID LAYOUT ===== */
+    /* Mobile (≤767px): Single column stack */
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(6, auto);
+    grid-template-areas:
+        "title"
+        "info"
+        "stats"
+        "armament"
+        "skills"
+        "inventory";
+    padding: var(--spacing-md);
+    
+    /* ===== RESPONSIVE BREAKPOINTS ===== */
+    /* Tablet (768px - 1023px): Two column layout */
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: auto auto auto auto;
+        grid-template-areas:
+            "title title title title title title title title"
+            "info info info info info info info info"
+            "stats stats stats stats armament armament armament armament"
+            "skills skills skills skills inventory inventory inventory inventory";
+        padding: var(--spacing-lg);
+        gap: var(--spacing-xl);
+        max-width: 1200px;
+    }
+      /* Desktop (1024px - 1599px): Optimized three column layout */
+    @media (min-width: 1024px) {
+        grid-template-columns: repeat(12, 1fr);
+        grid-template-rows: auto auto auto auto auto;
+        grid-template-areas:
+            "title title title title title title title title title title title title"
+            "info info info info info info info info info info info info"
+            "stats stats stats stats armament armament armament armament . . . ."
+            "stats stats stats stats skills skills skills skills . . . ."
+            ". . . . inventory inventory inventory inventory inventory inventory inventory inventory";
+        max-width: 1400px;
+    }
+      /* Large Desktop (≥1600px): Full wide layout */
+    @media (min-width: 1600px) {
+        grid-template-columns: repeat(16, 1fr);
+        grid-template-rows: auto auto auto auto auto;
+        grid-template-areas:
+            "title title title title title title title title title title title title title title title title"
+            "info info info info info info info info info info info info info info info info"
+            "stats stats stats stats armament armament armament armament . . . . . . . ."
+            "stats stats stats stats skills skills skills skills . . . . . . . ."
+            ". . . . inventory inventory inventory inventory inventory inventory inventory inventory inventory inventory inventory inventory";
+        max-width: 1800px;
+    }
+    
+    /* ===== BACKGROUND AND THEMING ===== */
+    background: linear-gradient(135deg, var(--bg-main) 0%, color-mix(in srgb, var(--bg-main) 95%, white) 100%);
+    
+    /* Pattern overlay for visual texture */
     &::before {
         content: '';
         position: absolute;
@@ -136,20 +278,20 @@ body{
         left: 0;
         right: 0;
         bottom: 0;
-        background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);
-        background-size: 20px 20px;
+        background-size: var(--spacing-3xl) var(--spacing-3xl);
+        opacity: 0.03;
         pointer-events: none;
         z-index: 0;
     }
     
-    /* Ensure content appears above the pattern */
-    & > * {
+    /* Ensure content appears above pattern */
+    > * {
         position: relative;
         z-index: 1;
     }
     
     /* Enhanced alignment-specific styling */
-    &.orden{
+    &.orden {
         background: linear-gradient(135deg, var(--bg-form-orden) 0%, color-mix(in srgb, var(--bg-form-orden) 95%, white) 100%);
         --bg-color-btn-dice: var(--bg-form-orden);
         --required-color: var(--bg-form-orden);
@@ -159,1510 +301,2047 @@ body{
         
         /* Order-specific pattern */
         &::before {
-            background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.2) 1px, transparent 0);
+            background-image: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%), 
+                            linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%), 
+                            linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.1) 75%), 
+                            linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.1) 75%);
         }
     }
     
-    &.caos{
+    &.caos {
         background: linear-gradient(135deg, var(--bg-form-caos) 0%, color-mix(in srgb, var(--bg-form-caos) 95%, white) 100%);
         --bg-color-btn-dice: var(--bg-form-caos);
         --required-color: var(--bg-form-caos);
         --bg-title: var(--bg-form-caos);
         --bg-loader: var(--bg-form-caos);
         --current-focus-ring: var(--focus-ring-caos);
-        
         /* Chaos-specific pattern */
         &::before {
             background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.2) 1px, transparent 0);
         }
     }
+    
+    /* ===== GRID AREA ASSIGNMENTS FOR FIELDSETS ===== */
+    
+    /* Form Title Section */
+    .fieldset-form.form-title {
+        grid-area: title;
+    }
+    
+    /* Info Player Section */
+    .fieldset-form.info-player {
+        grid-area: info;
+    }
+    
+    /* Stats Player Section */
+    .fieldset-form.stats-player {
+        grid-area: stats;
+    }
+    
+    /* Initial Armament Section */
+    .fieldset-form.initial-armament {
+        grid-area: armament;
+    }
+    
+    /* Skills Player Section */
+    .fieldset-form.skills-player {
+        grid-area: skills;
+    }
+    
+    /* Inventory Player Section */
+    .fieldset-form.inventory-player {
+        grid-area: inventory;
+    }
 }
 
-/* STEP 3: Enhanced Responsive Grid Adjustments */
-@media (max-width: 767px) {
-    .form-sheet {
-        grid-template-columns: 1fr;
+/* =====================================================
+   ENHANCED FIELDSET ORGANIZATION WITH GRID AREAS
+   ===================================================== */
+
+/* Enhanced fieldset base layout */
+.fieldset-form {
+    display: grid;
+    gap: var(--grid-gap-relaxed);
+    padding: var(--spacing-2xl);
+    margin: 0;
+    border: 2px solid color-mix(in srgb, var(--bg-color-3) 20%, transparent);
+    border-radius: var(--border-radius-lg);
+    background: rgba(255, 255, 255, 0.98);
+    
+    /* Remove any potential vertical lines */
+    -webkit-column-rule: none !important;
+    -moz-column-rule: none !important;
+    column-rule: none !important;
+    background-image: none !important;
+    
+    /* Prevent column dividers */
+    & > * {
+        position: relative;
+        &::before, &::after {
+            display: none !important;
+        }
+    }
+    backdrop-filter: blur(8px);
+    transition: all var(--transition-standard) ease;
+    
+    /* Responsive padding adjustments */
+    @media (max-width: 767px) {
         padding: var(--spacing-lg);
+    }
+    
+    @media (min-width: 1024px) {
+        padding: var(--spacing-3xl);
+    }
+    
+    /* Hover effect for interactive enhancement */
+    &:hover {
+        box-shadow: 
+            0 12px 48px rgba(0, 0, 0, 0.12),
+            0 4px 12px rgba(0, 0, 0, 0.06),
+            inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        transform: translateY(-2px);
+    }
+    
+    /* Legend styling with enhanced typography */
+    legend {
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-bold);
+        color: var(--text-primary);
+        padding: var(--spacing-sm) var(--spacing-xl);
+        background: linear-gradient(135deg, var(--bg-color-3) 0%, color-mix(in srgb, var(--bg-color-3) 85%, white) 100%);
+        border: 2px solid color-mix(in srgb, var(--bg-color-3) 30%, transparent);
+        border-radius: var(--border-radius-md);
+        margin-bottom: var(--spacing-lg);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        letter-spacing: 0.5px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        
+        /* Icon alignment */
+        svg {
+            vertical-align: middle;
+            margin-right: var(--spacing-sm);
+        }
+    }
+}
+
+/* =====================================================
+   SPECIFIC FIELDSET CONFIGURATIONS
+   ===================================================== */
+
+/* 1. Form Title Section */
+.fieldset-form.form-title {
+    grid-area: title;
+    grid-template-columns: 1fr;
+    min-height: auto;
+    text-align: center;
+    
+    h1 {
+        font-size: var(--font-size-2xl);
+        font-weight: var(--font-weight-black);
+        margin: 0;
+        color: var(--text-primary);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* 2. Info Player Section */
+.fieldset-form.info-player {
+    grid-area: info;
+    grid-template-columns: 1fr 1fr; /* Cambiado a 1fr 1fr para tener columnas de igual ancho */
+    grid-template-rows: repeat(10, auto);
+    
+    /* Removed visual separation between left and right columns */
+    &::after {
+        display: none;
+    }
+    
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        
+        &::after {
+            display: none;
+        }
+    }
+}
+
+/* 3. Stats Player Section */
+.fieldset-form.stats-player {
+    grid-area: stats;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto repeat(6, 1fr);
+    
+    .stats-player-header {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-md);
+        background: color-mix(in srgb, var(--bg-color-2) 15%, transparent);
+        border-radius: var(--border-radius-md);
+        margin-bottom: var(--spacing-lg);
+    }
+}
+
+/* 4. Initial Armament Section */
+.fieldset-form.initial-armament {
+    grid-area: armament;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(6, auto);
+}
+
+/* 5. Skills Player Section */
+.fieldset-form.skills-player {
+    grid-area: skills;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(8, auto);
+}
+
+/* 6. Inventory Player Section */
+.fieldset-form.inventory-player {
+    grid-area: inventory;
+    grid-template-columns: 1fr !important; /* Force single column for the fieldset */
+    grid-template-rows: auto 1fr auto;
+    
+    /* Ensure the inventory takes up the full width */
+    & > div {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* Ensure inventory wrapper takes full width */
+.inventory-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    
+    & .inventory-container {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* Override any other conflicting inventory grid layouts */
+.fieldset-form.inventory-player {
+    /* Responsive inventory layout */
+    grid-template-columns: 1fr !important;
+    
+    @media (min-width: 768px) {
+        grid-template-columns: 1fr !important;
+    }
+    
+    @media (min-width: 1024px) {
+        grid-template-columns: 1fr !important;
+    }
+    
+    @media (min-width: 1600px) {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* =====================================================
+   ENHANCED FIELDSET GRID CONFIGURATIONS
+   ===================================================== */
+
+/* 1. Form Title Section - Enhanced */
+.fieldset-form.form-title {
+    /* Improved layout */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: auto;
+    
+    /* Better responsive behavior */
+    @media (max-width: 767px) {
+        padding: var(--spacing-lg);
+    }
+    
+    @media (min-width: 768px) {
+        padding: var(--spacing-xl);
+    }
+    
+    @media (min-width: 1024px) {
+        padding: var(--spacing-2xl);
+    }
+}
+
+/* 2. Info Player Section - Enhanced */
+.fieldset-form.info-player {
+    /* Mobile-first grid */
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: var(--spacing-md);
+    
+    /* Establecer variables CSS personalizadas para control centralizado */
+    --info-field-min-width: 180px;
+    --info-field-height: 3.5rem;
+    
+    @media (min-width: 768px) {
+        /* Usar auto-fit para distribución automática y adaptable de columnas */
+        grid-template-columns: repeat(auto-fit, minmax(var(--info-field-min-width), 1fr));
+        grid-auto-rows: minmax(var(--info-field-height), auto);
+        
+        /* Ajustar el ancho mínimo para tablet */
+        --info-field-min-width: 200px;
+    }
+    
+    @media (min-width: 1024px) {
+        /* Aumentar ligeramente el ancho mínimo para desktop */
+        --info-field-min-width: 220px;
+        --info-field-height: 3.75rem;
         gap: var(--spacing-lg);
     }
     
-    .fieldset-form {
-        padding: var(--spacing-2xl);
-        gap: var(--grid-gap-tight);
-    }
-}
-
-@media (min-width: 768px) and (max-width: 1023px) {
-    .form-sheet {
-        grid-template-columns: repeat(2, 1fr);
-        padding: var(--spacing-2xl);
-        gap: var(--spacing-2xl);
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-}
-
-@media (min-width: 1024px) {
-    .form-sheet {
-        grid-template-columns: repeat(3, 1fr);
-        padding: var(--spacing-3xl);
-        gap: var(--spacing-3xl);
-        max-width: 1600px;
-        margin: 0 auto;
+    @media (min-width: 1600px) {
+        /* Pantallas extra grandes */
+        --info-field-min-width: 240px;
+        --info-field-height: 4rem;
     }
     
-    .fieldset-form {
-        padding: var(--spacing-4xl);
+    /* Enhanced visual separation - ahora usa una variable CSS para posicionamiento */
+    --separator-position: 50%;
+    
+    &::after {
+        @media (min-width: 768px) {
+            content: '';
+            position: absolute;
+            top: 3rem;
+            left: var(--separator-position);
+            bottom: 2rem;
+            width: 1px;
+            background: linear-gradient(180deg, 
+                transparent 0%, 
+                color-mix(in srgb, var(--border-light) 60%, transparent) 20%, 
+                color-mix(in srgb, var(--border-light) 60%, transparent) 80%, 
+                transparent 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 767px) {
+            display: none;
+        }
+    }
+    
+    /* Clases para ajustar el ancho de elementos específicos */
+    .form-field-full {
+        grid-column: 1 / -1;
+    }
+    
+    .form-field-half {
+        @media (min-width: 768px) {
+            min-width: calc(var(--info-field-min-width) * 1.5);
+        }
     }
 }
 
-.fieldset-form{
+
+/* 3. Stats Player Section - Enhanced */
+.fieldset-form.stats-player {
+    /* Base styles for all screen sizes */
     display: grid;
-    min-width: 100%;
-    grid-template-columns: 100px 1fr;
-    gap: var(--grid-gap-relaxed);
-    padding: var(--spacing-3xl);
-    margin-bottom: var(--spacing-2xl);
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: var(--border-radius-xl);
-    box-shadow: var(--shadow-md);
-    transition: var(--transition-normal);
-    position: relative;
-    
-    /* Enhanced hover state */
-    &:hover {
-        box-shadow: var(--shadow-lg);
-        transform: translateY(-1px);
-        border-color: rgba(242, 175, 41, 0.2);
-    }
-    
-    /* STEP 2: Enhanced Legend Typography */
-    & legend{
-        position: relative;
-        top: 8px;
-        left: 16px;
-        margin-bottom: var(--spacing-md);
-        padding: var(--spacing-md) var(--spacing-2xl);
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 250, 0.95) 100%);
-        border-radius: var(--border-radius-lg);
-        font-weight: var(--font-weight-bold);
-        font-size: var(--font-size-lg);
-        line-height: var(--line-height-tight);
-        letter-spacing: 0.025em;
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        box-shadow: var(--shadow-sm);
-        backdrop-filter: blur(8px);
-        color: #374151;
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        transition: var(--transition-normal);
-        
-        /* Enhanced hover state for legend */
-        &:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
-            background: linear-gradient(135deg, rgba(248, 249, 250, 0.98) 0%, rgba(241, 245, 249, 0.98) 100%);
-        }
-    }
-    
-    /* Enhanced form title styling */
-    &.form-title{
-        background: var(--bg-title);
-        filter: brightness(1.2);
-        padding: var(--spacing-2xl);
-        margin-bottom: var(--spacing-3xl);
-        border: none;
-        
-        & legend {
-            background: rgba(255, 255, 255, 0.25);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(12px);
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            font-weight: var(--font-weight-bold);
-            
-            &:hover {
-                background: rgba(255, 255, 255, 0.3);
-                transform: translateY(-1px);
-            }
-        }
-    }
-}
-
-.fieldset-form input[type=number]::-webkit-inner-spin-button,
-.fieldset-form input[type=number]::-webkit-outer-spin-button{
-    -webkit-appearance: none;
-    appearance: none;
-}
-.fieldset-form input[type=number]{
-    appearance: textfield;
-    &.form-input-y{
-        font-size: 3rem;
-        font-weight: 700;
-    }
-}
-
-.fieldset-form select.form-input{
-    padding: 1rem 1.25rem;
-    background: #ffffff;
-    border: 1px solid #dee2e6;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 0.75rem center;
-    background-repeat: no-repeat;
-    background-size: 1.5em 1.5em;
-    padding-right: 3rem;
-    
-    &:focus {
-        border-color: var(--bg-color-3);
-        box-shadow: 0 0 0 3px rgba(242, 175, 41, 0.1);
-        outline: none;
-    }
-    
-    &:hover {
-        border-color: #adb5bd;
-    }
-}
-
-.fieldset-form textarea.form-input-y{
-    min-height: 6rem;
-    max-height: 10rem;
-    resize: vertical;
-    font-family: inherit;
-    line-height: 1.6;
-    
-    &:focus {
-        border-color: var(--bg-color-3);
-        box-shadow: 0 0 0 3px rgba(242, 175, 41, 0.1);
-        outline: none;
-    }
-    
-    &:hover {
-        border-color: #adb5bd;
-    }
-}
-
-.fieldset-form .form-lbl{
-    display: flex;
-    align-items: center;
-    padding: 1rem 1.25rem;
-    margin: 0;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 1px solid #dee2e6;
-    border-top-left-radius: 0.5rem;
-    border-bottom-left-radius: 0.5rem; 
-    line-height: 1.5rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #374151;
-    min-height: 3rem;
-    justify-content: flex-start;
-}
-
-.fieldset-form .form-lbl-y{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem 1.25rem;
-    margin: 0;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 1px solid #dee2e6;
-    border-top-left-radius: 0.5rem;
-    border-top-right-radius: 0.5rem; 
-    line-height: 1.5rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #374151;
-    min-height: 3rem;
-}
-
-.fieldset-form .form-input{
-    padding: 1rem 1.25rem;
-    margin: 0;
-    border-radius: 0.5rem;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    line-height: 1.5rem;
-    border: 1px solid #dee2e6;
-    font-size: 1rem;
-    background: #ffffff;
-    color: #374151;
-    min-height: 3rem;
-    transition: all 0.2s ease;
-    
-    &:focus {
-        border-color: var(--bg-color-3);
-        box-shadow: 0 0 0 3px rgba(242, 175, 41, 0.1);
-        outline: none;
-    }
-    
-    &:hover {
-        border-color: #adb5bd;
-    }
-}
-
-.fieldset-form .form-input-y{
-    padding: 1rem 1.25rem;
-    margin: 0;
-    border: 1px solid #dee2e6;
-    border-bottom-left-radius: 0.5rem;
-    border-bottom-right-radius: 0.5rem;
-    line-height: 1.5rem;
-    font-size: 1rem;
-    text-align: center;
-    background: #ffffff;
-    color: #374151;
-    min-height: 3rem;
-    transition: all 0.2s ease;
-    
-    &:focus {
-        border-color: var(--bg-color-3);
-        box-shadow: 0 0 0 3px rgba(242, 175, 41, 0.1);
-        outline: none;
-    }
-    
-    &:hover {
-        border-color: #adb5bd;
-    }
-    
-    &.numeric-input{
-        font-size: 2.5rem;
-        font-weight: 700;
-        padding: 0.5rem;
-        color: var(--bg-color-3);
-    }
-}
-
-.fieldset-form.form-title .form-input{
-    margin-top: 0rem;
-}
-
-.fieldset-form .form-checkbox{
-    &:checked{
-        background-color: var(--required-color) !important;
-        color: #000;
-    }
-}
-
-/* info-player */
-.fieldset-form.info-player{
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(20, minmax(var(--form-height-md), auto));
-    gap: var(--grid-gap-normal);
-    align-items: stretch;
-    padding: var(--spacing-2xl);
-    position: relative;
-}
-
-/* STEP 1: Enhanced Mobile Layout - Critical Alignment Fixes */
-@media (max-width: 767px) {
-    .fieldset-form.info-player {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(25, minmax(var(--form-height-sm), auto));
-        padding: var(--spacing-lg);
-        gap: var(--grid-gap-tight);
-    }
-    
-    /* Mobile image optimization */
-    .fieldset-form.info-player .characterImageInput .characterImagePreview,
-    .fieldset-form.info-player .characterImageInput .CharacterImageEmpty {
-        min-height: 8rem;
-        height: 8rem;
-    }
-    
-    /* Mobile typography adjustments */
-    .fieldset-form.info-player .form-lbl,
-    .fieldset-form.info-player .form-lbl-y {
-        font-size: var(--font-size-sm);
-        padding: var(--spacing-sm) var(--spacing-md);
-    }
-    
-    .fieldset-form.info-player .form-input,
-    .fieldset-form.info-player .form-input-y {
-        font-size: var(--font-size-sm);
-        padding: var(--spacing-sm) var(--spacing-md);
-    }
-}
-
-/* STEP 1: Enhanced Tablet Layout - Critical Spacing Improvements */
-@media (min-width: 768px) and (max-width: 1023px) {
-    .fieldset-form.info-player {
-        grid-template-columns: repeat(5, 1fr);
-        grid-template-rows: repeat(20, minmax(calc(var(--form-height-md) + 0.25rem), auto));
-        gap: var(--grid-gap-normal);
-        padding: var(--spacing-2xl);
-    }
-    
-    /* Tablet image optimization */
-    .fieldset-form.info-player .characterImageInput .characterImagePreview,
-    .fieldset-form.info-player .characterImageInput .CharacterImageEmpty {
-        min-height: 10rem;
-        height: 10rem;
-    }
-    
-    /* Tablet typography improvements */
-    .fieldset-form.info-player .form-lbl,
-    .fieldset-form.info-player .form-lbl-y {
-        font-size: var(--font-size-base);
-        padding: var(--spacing-md) var(--spacing-lg);
-    }
-}
-
-/* STEP 1: Enhanced Desktop Layout - Optimized Grid System */
-@media (min-width: 1024px) {
-    .fieldset-form.info-player {
-        grid-template-columns: repeat(5, 1fr);
-        grid-template-rows: repeat(20, minmax(var(--form-height-lg), auto));
-        gap: var(--grid-gap-relaxed);
-        padding: var(--spacing-3xl);
-    }
-    
-    /* Desktop image optimization */
-    .fieldset-form.info-player .characterImageInput .characterImagePreview,
-    .fieldset-form.info-player .characterImageInput .CharacterImageEmpty {
-        min-height: 12rem;
-        height: 12rem;
-    }
-    
-    /* Desktop typography enhancements */
-    .fieldset-form.info-player .form-lbl,
-    .fieldset-form.info-player .form-lbl-y {
-        font-size: var(--font-size-base);
-        padding: var(--spacing-lg) var(--spacing-xl);
-    }
-}
-
-/* STEP 2: Enhanced Form Labels - Typography and Visual Hierarchy */
-.fieldset-form.info-player .form-lbl{
-    margin: 0;
-    padding: var(--spacing-md) var(--spacing-lg);
-    font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-base);
-    line-height: var(--line-height-tight);
-    letter-spacing: 0.025em;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 1px solid #dee2e6;
-    border-radius: var(--border-radius-md) 0 0 var(--border-radius-md);
-    border-right: none;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    min-height: var(--form-height-md);
-    height: 100%;
-    color: #374151;
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-    transition: var(--transition-normal);
-    
-    /* Enhanced hover state */
-    &:hover {
-        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-        color: #1f2937;
-    }
-}
-
-.fieldset-form.info-player .form-lbl-y{
-    margin: 0;
-    padding: var(--spacing-md) var(--spacing-lg);
-    font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-base);
-    line-height: var(--line-height-tight);
-    letter-spacing: 0.025em;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 1px solid #dee2e6;
-    border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
-    border-bottom: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: var(--form-height-md);
-    height: 100%;
-    color: #374151;
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-    transition: var(--transition-normal);
-    text-align: center;
-    
-    /* Enhanced hover state */
-    &:hover {
-        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-        color: #1f2937;
-    }
-}
-
-/* STEP 2: Enhanced Form Inputs - Improved Typography and Interaction */
-.fieldset-form.info-player .form-input{
-    margin: 0;
-    padding: var(--spacing-md) var(--spacing-lg);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-normal);
-    line-height: var(--line-height-normal);
-    background: #ffffff;
-    border: 1px solid #dee2e6;
-    border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
-    border-left: none;
-    transition: var(--transition-normal);
-    min-height: var(--form-height-md);
-    height: 100%;
-    display: flex;
-    align-items: center;
-    color: #374151;
-    
-    /* Enhanced focus state */
-    &:focus {
-        border-color: var(--bg-color-3);
-        box-shadow: var(--focus-ring);
-        outline: none;
-        border-left: 1px solid var(--bg-color-3);
-        background: #fefefe;
-        transform: translateY(-1px);
-    }
-    
-    /* Enhanced hover state */
-    &:hover {
-        border-color: #adb5bd;
-        background: #fafafa;
-        transform: translateY(-0.5px);
-    }
-    
-    /* Placeholder styling */
-    &::placeholder {
-        color: #9ca3af;
-        font-weight: var(--font-weight-normal);
-        opacity: 0.7;
-    }
-}
-
-.fieldset-form.info-player .form-input-y{
-    margin: 0;
-    padding: var(--spacing-md) var(--spacing-lg);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-normal);
-    line-height: var(--line-height-normal);
-    background: #ffffff;
-    border: 1px solid #dee2e6;
-    border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
-    border-top: none;
-    transition: var(--transition-normal);
-    min-height: var(--form-height-md);
-    height: 100%;
-    text-align: center;
-    color: #374151;
-    
-    /* Enhanced focus state */
-    &:focus {
-        border-color: var(--bg-color-3);
-        box-shadow: var(--focus-ring);
-        outline: none;
-        border-top: 1px solid var(--bg-color-3);
-        background: #fefefe;
-        transform: translateY(-1px);
-    }
-    
-    /* Enhanced hover state */
-    &:hover {
-        border-color: #adb5bd;
-        background: #fafafa;
-        transform: translateY(-0.5px);
-    }
-    
-    /* Placeholder styling */
-    &::placeholder {
-        color: #9ca3af;
-        font-weight: var(--font-weight-normal);
-        opacity: 0.7;
-    }
-}
-
-/* STEP 1 & 2: Enhanced Character Image Component - Critical Alignment and Typography */
-
-.characterImageInput{
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
-    gap: 0;
-    border-radius: var(--border-radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-    border: 1px solid #e5e7eb;
-    transition: var(--transition-normal);
-    background: #ffffff;
-    max-width: 100%;
-    height: 100%;
-    position: relative;
-    
-    /* Enhanced hover state */
-    &:hover {
-        box-shadow: var(--shadow-lg);
-        transform: translateY(-2px);
-        border-color: var(--bg-color-3);
-    }
-    
-    /* File input styling - Enhanced button design */
-    & .inputImageFile{
-        grid-column: 1;
-        grid-row: 1;
-        width: 100%;
-        border: none;
-        border-bottom: 1px solid #e5e7eb;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        transition: var(--transition-normal);
-        min-height: var(--form-height-md);
-        position: relative;
-        
-        &:hover {
-            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-        }
-        
-        /* Enhanced file selector button */
-        &::file-selector-button{
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--bg-color-3) 0%, color-mix(in srgb, var(--bg-color-3) 90%, black) 100%);
-            border: none;
-            color: white;
-            font-weight: var(--font-weight-semibold);
-            font-size: var(--font-size-sm);
-            line-height: var(--line-height-tight);
-            letter-spacing: 0.025em;
-            cursor: pointer;
-            transition: var(--transition-normal);
-            padding: 0 var(--spacing-lg);
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-            position: relative;
-            
-            /* Enhanced hover state */
-            &:hover {
-                background: linear-gradient(135deg, color-mix(in srgb, var(--bg-color-3) 85%, black) 0%, color-mix(in srgb, var(--bg-color-3) 80%, black) 100%);
-                transform: translateY(-1px);
-                box-shadow: var(--shadow-sm);
-            }
-            
-            &:active {
-                transform: translateY(0);
-            }
-        }
-    }
-    
-    /* Character image preview - Enhanced display */
-    & .characterImagePreview{
-        width: 100%;
-        height: 100%;
-        grid-column: 1;
-        grid-row: 2;
-        object-fit: cover;
-        object-position: center top;
-        border: none;
-        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-        transition: var(--transition-normal);
-        min-height: 8rem;
-        
-        /* Enhanced hover interaction */
-        &:hover {
-            transform: scale(1.02);
-            filter: brightness(1.05) contrast(1.02);
-        }
-        
-        /* Focus state for accessibility */
-        &:focus {
-            outline: 2px solid var(--bg-color-3);
-            outline-offset: 2px;
-        }
-    }
-    
-    /* Empty state - Enhanced placeholder design */
-    & .CharacterImageEmpty{
-        width: 100%;
-        height: 100%;
-        grid-column: 1;
-        grid-row: 2;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-        color: #6b7280;
-        font-size: var(--font-size-sm);
-        font-weight: var(--font-weight-medium);
-        line-height: var(--line-height-relaxed);
-        border: 2px dashed #d1d5db;
-        margin: var(--spacing-md);
-        border-radius: var(--border-radius-md);
-        transition: var(--transition-normal);
-        min-height: 8rem;
-        text-align: center;
-        padding: var(--spacing-lg);
-        position: relative;
-        
-        /* Enhanced hover state */
-        &:hover {
-            border-color: var(--bg-color-3);
-            color: var(--bg-color-3);
-            background: linear-gradient(135deg, rgba(242, 175, 41, 0.05) 0%, rgba(242, 175, 41, 0.02) 100%);
-            transform: scale(1.01);
-        }
-        
-        /* Add subtle icon or visual cue */
-        &::before {
-            content: "📷";
-            font-size: var(--font-size-2xl);
-            margin-bottom: var(--spacing-sm);
-            opacity: 0.6;
-            display: block;
-        }
-        
-        /* Improved text content */
-        &::after {
-            content: "Haz clic para subir imagen";
-            font-size: var(--font-size-xs);
-            opacity: 0.8;
-            margin-top: var(--spacing-xs);
-            display: block;
-        }
-    }
-}
-
-/* stats-player */
-.fieldset-form.stats-player{
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: 4rem repeat(20, 2.5rem);
-    grid-row-gap: 0px;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafb 100%);
-    border: 1px solid #e2e8f0;
-    box-shadow: var(--shadow-lg);
-    
-    &:hover {
-        box-shadow: var(--shadow-xl);
-        transform: translateY(-2px);
-        border-color: rgba(242, 175, 41, 0.3);
-    }
-    
-    & .form-lbl{
-        margin-right: 0.5rem;
-        border: 1px solid #e2e8f0;
-        border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        font-weight: var(--font-weight-semibold);
-        font-size: var(--font-size-sm);
-        letter-spacing: 0.025em;
-        color: #475569;
-        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-        transition: var(--transition-normal);
-        
-        &:hover {
-            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
-            color: #334155;
-        }
-    }
-    
-    & .stats-main{
-        min-width: 80px;
-        text-align: center;
-        margin: 0;
-        margin-right: 0.5rem;
-        margin-left: 0.5rem;
-        border: 1px solid #e2e8f0;
-        border-radius: 0;
-        background: linear-gradient(135deg, #fef7e3 0%, #fbbf24 5%, #f59e0b 100%);
-        color: white;
-        font-weight: var(--font-weight-bold);
-        font-size: var(--font-size-lg);
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        transition: var(--transition-normal);
-        
-        &:focus {
-            box-shadow: var(--focus-ring), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            transform: scale(1.02);
-        }
-    }
-}
-
-.fieldset-form.stats-player .stats-sub{
-    min-width: 80px;
-    margin: 0;
-    border: 1px solid #e2e8f0;
-    border-radius: 0;
-    background: #ffffff;
-    font-weight: var(--font-weight-medium);
-    transition: var(--transition-fast);
-    
-    &:focus {
-        border-color: var(--bg-color-3);
-        box-shadow: var(--focus-ring);
-        background: #fefefe;
-    }
-    
-    &:hover {
-        background: #f8fafc;
-        border-color: #cbd5e1;
-    }
-}
-
-.fieldset-form.stats-player .stats-sub-end{
-    min-width: 80px;
-    margin: 0;
-    border: 1px solid #e2e8f0;
-    border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
-    background: #ffffff;
-    font-weight: var(--font-weight-medium);
-    transition: var(--transition-fast);
-    
-    &:focus {
-        border-color: var(--bg-color-3);
-        box-shadow: var(--focus-ring);
-        background: #fefefe;
-    }
-    
-    &:hover {
-        background: #f8fafc;
-        border-color: #cbd5e1;
-    }
-}
-
-/* skills-player - Enhanced visual design */
-.fieldset-form.skills-player{
-    grid-row-gap: 0px;
-    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-    border: 1px solid #e2e8f0;
-    box-shadow: var(--shadow-lg);
-    
-    &:hover {
-        box-shadow: var(--shadow-xl);
-        transform: translateY(-2px);
-        border-color: rgba(242, 175, 41, 0.3);
-    }
-    
-    & .form-lbl-skills{
-        display: flex;
-        align-items: center;
-        padding: var(--spacing-md) var(--spacing-lg);
-        margin-top: 0.5rem;
-        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-        border: 1px solid #cbd5e1;
-        border-radius: var(--border-radius-md);
-        font-size: var(--font-size-sm);
-        font-weight: var(--font-weight-semibold);
-        letter-spacing: 0.025em;
-        color: #475569;
-        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-        box-shadow: var(--shadow-sm);
-        transition: var(--transition-normal);
-        
-        &:hover {
-            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
-            color: #334155;
-            box-shadow: var(--shadow-md);
-        }
-    }
-    
-    & .skill-level{
-        min-width: 80px;
-        margin: 0;
-        border: 1px solid #e2e8f0;
-        border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
-        text-align: center;
-        font-weight: var(--font-weight-bold);
-        font-size: var(--font-size-xl);
-        color: var(--bg-color-3);
-        background: linear-gradient(135deg, #fef7e3 0%, #ffffff 100%);
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-        transition: var(--transition-normal);
-        
-        &:focus {
-            box-shadow: var(--focus-ring), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-            transform: scale(1.02);
-        }
-    }
-}
-
-.fieldset-form.skills-player .stats-sub{
-    min-width: 80px;
-    margin: 0;
-    border: 1px solid #e2e8f0;
-    border-radius: 0;
-    background: #ffffff;
-    font-weight: var(--font-weight-medium);
-    transition: var(--transition-fast);
-    
-    &:focus {
-        border-color: var(--bg-color-3);
-        box-shadow: var(--focus-ring);
-        background: #fefefe;
-    }
-    
-    &:hover {
-        background: #f8fafc;
-        border-color: #cbd5e1;
-    }
-}
-
-.fieldset-form.skills-player .stats-sub-end{
-    min-width: 80px;
-    margin: 0;
-    border: 1px solid #e2e8f0;
-    border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
-    background: #ffffff;
-    font-weight: var(--font-weight-medium);
-    transition: var(--transition-fast);
-    
-    &:focus {
-        border-color: var(--bg-color-3);
-        box-shadow: var(--focus-ring);
-        background: #fefefe;
-    }
-    
-    &:hover {
-        background: #f8fafc;
-        border-color: #cbd5e1;
-    }
-}
-
-/* initial-armament - Enhanced visual design */
-.fieldset-form.initial-armament{
-    background: linear-gradient(135deg, #ffffff 0%, #fefcf3 100%);
-    border: 1px solid #e2e8f0;
-    box-shadow: var(--shadow-lg);
-    
-    &:hover {
-        box-shadow: var(--shadow-xl);
-        transform: translateY(-2px);
-        border-color: rgba(242, 175, 41, 0.3);
-    }
-    
-    & .form-lbl{
-        margin: 0;
-        background: linear-gradient(135deg, #fef7e3 0%, #fed7aa 100%);
-        border: 1px solid #f59e0b;
-        border-radius: var(--border-radius-md) 0 0 var(--border-radius-md);
-        font-weight: var(--font-weight-semibold);
-        color: #92400e;
-        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-        box-shadow: var(--shadow-sm);
-        transition: var(--transition-normal);
-        
-        &:hover {
-            background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
-            color: #78350f;
-        }
-    }
-    
-    & .form-input{
-        min-width: 80px;
-        margin: 0;
-        border: 1px solid #e2e8f0;
-        border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
-        background: #ffffff;
-        transition: var(--transition-normal);
-        
-        &:focus {
-            border-color: var(--bg-color-3);
-            box-shadow: var(--focus-ring);
-            background: #fefefe;
-        }
-        
-        &:hover {
-            background: #fefcf3;
-            border-color: #f59e0b;
-        }
-    }
-}
-
-/* inventory-player - Enhanced visual design */
-.fieldset-form.inventory-player{
-    grid-template-columns: 1fr 1fr 100px;
-    grid-template-rows: repeat(20, 2.5rem);
-    grid-row-gap: 0px;
-    background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
-    border: 1px solid #e0e7ff;
-    box-shadow: var(--shadow-lg);
-    
-    &:hover {
-        box-shadow: var(--shadow-xl);
-        transform: translateY(-2px);
-        border-color: rgba(59, 130, 246, 0.3);
-    }
-}
-
-.fieldset-form.inventory-player .form-lbl{
-    margin-top: 0.5rem;
-    margin-right: 0.5rem;
-    border: 1px solid #c7d2fe;
-    border-radius: var(--border-radius-md);
-    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-    font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-sm);
-    color: #3730a3;
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition-normal);
-    
-    &:hover {
-        background: linear-gradient(135deg, #c7d2fe 0%, #a5b4fc 100%);
-        color: #312e81;
-        box-shadow: var(--shadow-md);
-    }
-}
-
-.fieldset-form.inventory-player .form-lbl-coins{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-md) var(--spacing-sm);
-    background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%);
-    border: 1px solid #f59e0b;
-    border-radius: var(--border-radius-md);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    color: #92400e;
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition-normal);
-    
-    &:hover {
-        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-        color: #78350f;
-        box-shadow: var(--shadow-md);
-    }
-}
-
-.fieldset-form.inventory-player .form-input{
-    margin: 0;
-    border: 1px solid #e0e7ff;
-    border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
-    background: #ffffff;
-    transition: var(--transition-normal);
-    
-    &:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        background: #fefefe;
-    }
-    
-    &:hover {
-        background: #f0f9ff;
-        border-color: #a5b4fc;
-    }
-}
-
-.fieldset-form.inventory-player .object-item{
-    display: grid;
-    grid-template-columns: 1fr 60px 40px;
-    padding: 0 0.5rem;
-    margin-top: 0rem;
-    margin-right: 0.5rem;
-    background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
-    border: 1px solid #e5e7eb;
-    border-radius: var(--border-radius-md);
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition-normal);
-    
-    &:hover {
-        background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
-        box-shadow: var(--shadow-md);
-        border-color: #d1d5db;
-    }
-}
-
-.fieldset-form.inventory-player .form-input-count{
-    max-width: 60px;
-    border: 1px solid #e0e7ff;
-    border-radius: var(--border-radius-sm);
-    text-align: right;
-    background: #f8fafc;
-    font-weight: var(--font-weight-semibold);
-    transition: var(--transition-fast);
-    
-    &:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
-        background: #ffffff;
-    }
-    
-    &:hover {
-        background: #ffffff;
-        border-color: #a5b4fc;
-    }
-}
-
-.fieldset-form.inventory-player .btn-delete-object{
-    padding: var(--spacing-xs) var(--spacing-sm);
-    max-width: 40px;
-    color: #dc2626;
-    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-    border: 1px solid #fecaca;
-    border-radius: var(--border-radius-sm);
-    transition: var(--transition-normal);
-    
-    &:hover {
-        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-        color: #991b1b;
-        border-color: #f87171;
-        transform: scale(1.05);
-        box-shadow: var(--shadow-md);
-    }
-    
-    &:active {
-        transform: scale(0.95);
-    }
-}
-
-.fieldset-form.inventory-player .btn-add-object{
-    border: 1px solid #e0e7ff;
-    border-radius: var(--border-radius-md);
-    background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
-    color: #5b21b6;
-    font-weight: var(--font-weight-semibold);
-    transition: var(--transition-normal);
-    box-shadow: var(--shadow-sm);
-    
-    &:hover {
-        background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%);
-        color: #4c1d95;
-        border-color: #8b5cf6;
-        transform: translateY(-1px);
-        box-shadow: var(--shadow-md);
-    }
-    
-    &:active {
-        transform: translateY(0);
-    }
-}
-.panel-save{
-    position: fixed;
-    right: 1rem;
-    bottom: 1rem;
-    width: 5rem;
-    height: 5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-md);
-    border-radius: var(--border-radius-xl);
-    color: #ffffff;
-    background: linear-gradient(135deg, rgba(51, 51, 51, 0.9) 0%, rgba(17, 24, 39, 0.95) 100%);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: var(--shadow-xl), 0 0 0 1px rgba(0, 0, 0, 0.05);
-    transition: var(--transition-normal);
-    z-index: 50;
-    
-    &:hover {
-        transform: translateY(-2px) scale(1.05);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(242, 175, 41, 0.2);
-        background: linear-gradient(135deg, rgba(242, 175, 41, 0.9) 0%, rgba(217, 119, 6, 0.95) 100%);
-    }
-}
-
-.panel-save .btn-save-character{
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--border-radius-lg);
-    transition: var(--transition-normal);
-    
-    &:hover .icon{
-        transform: scale(1.3) rotate(15deg);
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-    }
-    
-    & .icon{
-        transform: scale(1.1);
-        transition: var(--transition-normal);
-        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
-    }
-}
-
-/* Enhanced dialog system */
-.dialog{
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    padding: var(--spacing-2xl);
-    border-radius: var(--border-radius-xl);
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    min-height: 40rem;
-    max-width: 90vw;
-    max-height: 90vh;
-    margin: auto;
-    
-    & .dialog-body{
-        min-height: 40rem;
-        overflow-y: auto;
-        scrollbar-width: thin;
-        scrollbar-color: var(--bg-color-3) #f1f5f9;
-        border-radius: var(--border-radius-lg);
-        padding: var(--spacing-lg);
-        
-        /* Enhanced scrollbar styling for webkit browsers */
-        &::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        &::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: var(--border-radius-md);
-        }
-        
-        &::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, var(--bg-color-3) 0%, #d97706 100%);
-            border-radius: var(--border-radius-md);
-            border: 1px solid #f59e0b;
-        }
-        
-        &::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-        }
-    }
-}
-
-/* Responsive dialog adjustments */
-@media (max-height: 900px) {
-    .dialog{
-        min-height: 35rem;
-        
-        & .dialog-body{
-            min-height: 35rem;
-        }
-    }
-}
-
-@media (max-height: 750px) {
-    .dialog{
-        min-height: 30rem;
-        
-        & .dialog-body{
-            min-height: 30rem;
-        }
-    }
-}
-
-@media (max-height: 550px) {
-    .dialog{
-        min-height: 25rem;
-        
-        & .dialog-body{
-            min-height: 25rem;
-        }
-    }
-}
-
-.dialog-card{
-    padding: var(--spacing-lg);
-    background: linear-gradient(135deg, var(--bg-color-2) 0%, #0f172a 100%);
-    border-radius: var(--border-radius-lg);
-    border: 1px solid #374151;
-    box-shadow: var(--shadow-lg);
-    color: #ffffff;
-    margin-bottom: var(--spacing-lg);
-    transition: var(--transition-normal);
-    
-    &:hover {
-        transform: translateY(-1px);
-        box-shadow: var(--shadow-xl);
-        border-color: var(--bg-color-3);
-    }
-}
-
-.dialog-table{
-    padding: var(--spacing-lg);
-    background: linear-gradient(135deg, var(--bg-color-3) 0%, #f59e0b 100%);
-    border-radius: var(--border-radius-lg);
-    border: 1px solid #d97706;
-    box-shadow: var(--shadow-md);
-    color: #000000;
-    
-    & td {
-        padding: var(--spacing-xs) var(--spacing-sm);
-        vertical-align: middle;
-    }
-    
-    & th {
-        padding: var(--spacing-sm) var(--spacing-md);
-        font-weight: var(--font-weight-semibold);
-        background: rgba(0, 0, 0, 0.1);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-    }
-}
-
-/* Enhanced stats-player-header */
-.stats-player-header{
-    min-width: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-right: 0.5rem;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    border: 1px solid #cbd5e1;
-    border-radius: var(--border-radius-md);
-    padding: var(--spacing-sm);
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition-normal);
-    
-    &:hover {
-        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
-        box-shadow: var(--shadow-md);
-        transform: translateY(-1px);
-    }
-    
-    & .btn-roll{
-        fill: var(--bg-color-btn-dice);
-        transition: var(--transition-fast);
-        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
-        
-        &:hover {
-            fill: #d97706;
-            transform: scale(1.1) rotate(15deg);
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-        }
-    }
-}
-
-/* Enhanced alignment options */
-.alignment-options {
-    display: flex;
+    grid-template-columns: 1fr;
     gap: var(--spacing-md);
-    margin: var(--spacing-lg) 0;
+    padding: var(--spacing-lg);
+    
+    @media (max-width: 767px) {
+        /* Mobile: Simple stack */
+        padding: var(--spacing-md);
+    }
+    
+    @media (min-width: 768px) {
+        /* Tablet and up: More padding and spacing */
+        padding: var(--spacing-xl);
+        gap: var(--spacing-lg);
+    }
+    
+    @media (min-width: 1024px) {
+        /* Desktop: Even more space */
+        padding: var(--spacing-2xl);
+        gap: var(--spacing-xl);
+    }
+    
+    /* The header is now managed within the CharacterStats component */
+    .stats-player-header {
+        display: none; /* Remove legacy header */
+    }
 }
 
-.alignment-options .orden,
-.alignment-options .caos {
-    padding: var(--spacing-md) var(--spacing-xl);
-    border: 2px solid transparent;
-    border-radius: var(--border-radius-lg);
-    cursor: pointer;
-    transition: var(--transition-normal);
-    font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-base);
-    text-align: center;
-    background: linear-gradient(135deg, var(--bg-color-1) 0%, #f3f4f6 100%);
-    color: var(--bg-color-2);
-    box-shadow: var(--shadow-sm);
-    position: relative;
-    overflow: hidden;
+/* 4. Initial Armament Section - Enhanced */
+.fieldset-form.initial-armament {
+    /* Responsive grid layout */
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(6, auto);
+    }
     
-    /* Subtle gradient overlay */
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(6, auto);
+    }
+    
+    /* Better content organization */
+    .weapon-section {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .skills-section {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-lg);
+    }
+}
+
+/* 5. Skills Player Section - Enhanced */
+.fieldset-form.skills-player {
+    /* Responsive skill layout */
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(8, auto);
+    }
+    
+    @media (min-width: 768px) and (max-width: 1023px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(6, auto);
+    }
+    
+    @media (min-width: 1024px) and (max-width: 1599px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(4, auto);
+    }
+    
+    @media (min-width: 1600px) {
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(4, auto);
+    }
+}
+
+/* 6. Inventory Player Section - Enhanced */
+.fieldset-form.inventory-player {
+    /* Responsive inventory layout */
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    @media (min-width: 1024px) {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    @media (min-width: 1600px) {
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: auto 1fr auto;
+    }
+}
+/* =====================================================
+   GRID PERFORMANCE AND OPTIMIZATION ENHANCEMENTS
+   ===================================================== */
+
+/* Container queries for advanced responsive behavior */
+/* Nota: Adaptado para complementar en lugar de conflictuar con media queries */
+@container (min-width: 600px) and (max-width: 767px) {
+    .fieldset-form.info-player {
+        /* Solo aplicar en contenedores grandes pero viewport pequeño */
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+}
+
+@container (min-width: 800px) {
+    .fieldset-form.stats-player {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* CSS Subgrid support for future enhancement */
+@supports (grid-template-rows: subgrid) {
+    .fieldset-form {
+        display: grid;
+        grid-template-rows: subgrid;
+    }
+}
+
+/* Grid layout debugging utilities (development only) */
+.debug-grid {
+    position: relative;
+    
     &::before {
         content: '';
         position: absolute;
         top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: left 0.5s ease;
-    }
-    
-    &:hover::before {
-        left: 100%;
-    }
-}
-
-.alignment-options .orden {
-    &:hover,
-    &.selected {
-        background: linear-gradient(135deg, var(--bg-form-orden) 0%, #0369a1 100%);
-        color: white;
-        border-color: var(--bg-form-orden);
-        box-shadow: var(--shadow-lg), 0 0 0 3px rgba(14, 121, 178, 0.2);
-        transform: translateY(-2px);
-    }
-}
-
-.alignment-options .caos {
-    &:hover,
-    &.selected {
-        background: linear-gradient(135deg, var(--bg-form-caos) 0%, #dc2626 100%);
-        color: white;
-        border-color: var(--bg-form-caos);
-        box-shadow: var(--shadow-lg), 0 0 0 3px rgba(228, 87, 46, 0.2);
-        transform: translateY(-2px);
-    }
-}
-
-/* Enhanced modal fix class */
-.modal-fix {
-    z-index: 100 !important; 
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background: rgba(0, 0, 0, 0.8) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
-}
-
-.modal-fix .dialog-body {
-    max-height: 70vh !important;
-    overflow-y: auto !important;
-}
-
-.modal-fix * {
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
-/* Enhanced button styles */
-.btn-dialog-accept{
-    background: linear-gradient(135deg, var(--bg-color-3) 0%, #f59e0b 100%);
-    border: 1px solid #d97706;
-    border-radius: var(--border-radius-lg);
-    color: white;
-    font-weight: var(--font-weight-semibold);
-    padding: var(--spacing-md) var(--spacing-xl);
-    box-shadow: var(--shadow-md);
-    transition: var(--transition-normal);
-    
-    &:hover {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        transform: translateY(-1px);
-        box-shadow: var(--shadow-lg);
-    }
-    
-    &:active {
-        transform: translateY(0);
-    }
-}
-
-/* Required input styling enhancement */
-.fieldset-form{
-    & .form-input.required-input,
-    & .form-input-y.required-input{
-        border-width: 2px;
-        border-style: solid;
-        border-color: var(--required-color);
-        background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
-        box-shadow: 0 0 0 3px rgba(230, 52, 98, 0.1);
-        animation: pulse-error 2s infinite;
-    }
-}
-
-@keyframes pulse-error {
-    0%, 100% {
-        box-shadow: 0 0 0 3px rgba(230, 52, 98, 0.1);
-    }
-    50% {
-        box-shadow: 0 0 0 6px rgba(230, 52, 98, 0.2);
-    }
-}
-
-/* Advanced responsive optimizations */
-@media (max-width: 480px) {
-    .form-sheet {
-        padding: var(--spacing-md);
-        gap: var(--spacing-md);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            linear-gradient(to right, rgba(255, 0, 0, 0.1) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 0, 0, 0.1) 1px, transparent 1px);
+        background-size: 
+            calc(100% / var(--grid-columns, 12)) 
+            calc(100% / var(--grid-rows, 12));
+        pointer-events: none;
+        z-index: 9999;
     }
     
     .fieldset-form {
-        padding: var(--spacing-lg);
-        margin-bottom: var(--spacing-lg);
-    }
-    
-    .fieldset-form legend {
-        font-size: var(--font-size-base);
-        padding: var(--spacing-sm) var(--spacing-lg);
-    }
-    
-    .panel-save {
-        width: 4rem;
-        height: 4rem;
-        right: 0.5rem;
-        bottom: 0.5rem;
-    }
-    
-    .alignment-options {
-        flex-direction: column;
-        gap: var(--spacing-sm);
-    }
-    
-    .alignment-options .orden,
-    .alignment-options .caos {
-        padding: var(--spacing-sm) var(--spacing-lg);
-        font-size: var(--font-size-sm);
+        border: 1px dashed rgba(0, 255, 0, 0.5);
+        position: relative;
+        
+        &::after {
+            content: attr(class);
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 4px;
+            font-size: 10px;
+            z-index: 10000;
+        }
     }
 }
 
-@media (min-width: 1200px) {
-    .form-sheet {
-        max-width: 1800px;
-        grid-template-columns: repeat(4, 1fr);
-        gap: var(--spacing-4xl);
-        padding: var(--spacing-4xl);
-    }
+/* Layout shift prevention */
+.form-sheet {
+    /* Prevent cumulative layout shift */
+    content-visibility: auto;
+    contain-intrinsic-size: 100vh;
+}
+
+.fieldset-form {
+    /* Minimize reflows during dynamic content loading */
+    contain: layout style;
     
-    .fieldset-form {
-        padding: var(--spacing-4xl);
-    }
-    
-    .fieldset-form legend {
-        font-size: var(--font-size-xl);
-        padding: var(--spacing-lg) var(--spacing-3xl);
+    /* Optimize for animations */
+    &:has(.loading) {
+        contain: layout style paint;
     }
 }
 
-/* Print styles for better accessibility */
-@media print {
-    .panel-save,
-    .btn-delete-object,
-    .btn-add-object {
-        display: none !important;
-    }
-    
-    .form-sheet {
-        background: white !important;
-        box-shadow: none !important;
-    }
-    
-    .fieldset-form {
-        break-inside: avoid;
-        box-shadow: none !important;
-        border: 1px solid #000 !important;
+/* =====================================================
+   ACCESSIBILITY AND USER EXPERIENCE IMPROVEMENTS
+   ===================================================== */
+
+/* Focus management for grid navigation */
+.form-sheet {
+    /* Ensure logical focus order */
+    &:focus-within {
+        scroll-behavior: smooth;
     }
 }
 
-/* High contrast mode support */
+.fieldset-form {
+    /* Screen reader navigation support */
+    &[aria-expanded="false"] {
+        max-height: 4rem;
+        overflow: hidden;
+        
+        legend::after {
+            content: " (minimized)";
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+    }
+    
+    /* Keyboard navigation enhancement */
+    &:focus-within {
+        z-index: 10;
+        box-shadow: 
+            var(--shadow-lg),
+            0 0 0 3px rgba(var(--primary-rgb), 0.2);
+    }
+}
+
+/* High contrast mode optimizations */
 @media (prefers-contrast: high) {
+    .form-sheet {
+        gap: var(--spacing-xl);
+    }
+    
     .fieldset-form {
-        border: 2px solid #000;
+        border: 3px solid #000;
+        background: #fff;
+        
+        &:focus-within {
+            border-color: #0066cc;
+        }
     }
     
-    .form-lbl,
-    .form-lbl-y {
-        background: #000 !important;
-        color: #fff !important;
-    }
-    
-    .form-input,
-    .form-input-y {
-        border: 2px solid #000 !important;
-        background: #fff !important;
-        color: #000 !important;
-    }
+    .grid-area-title { background: #000; color: #fff; }
+    .grid-area-info { background: #f0f0f0; }
+    .grid-area-stats { background: #e0e0e0; }
+    .grid-area-armament { background: #d0d0d0; }
+    .grid-area-skills { background: #c0c0c0; }
+    .grid-area-inventory { background: #b0b0b0; }
 }
 
-/* Reduced motion support */
+/* Reduced motion optimizations */
 @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
+    .form-sheet {
+        scroll-behavior: auto;
+        animation: none;
+    }
+    
+    .fieldset-form {
+        transition: none;
+        transform: none !important;
+    }
+    
+    * {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
-        transform: none !important;
     }
 }
 
+/* Print optimizations for grid layout */
+@media print {
+    .form-sheet {
+        display: block !important;
+        grid-template-areas: none !important;
+        gap: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+    }
+    
+    .fieldset-form {
+        display: block !important;
+        grid-template-columns: none !important;
+        grid-area: auto !important;
+        page-break-inside: avoid;
+        margin-bottom: 1rem;
+        border: 1px solid #000;
+        background: white !important;
+    }
+    
+    .panel-save,
+    .debug-grid::before,
+    .fieldset-form::after {
+        display: none !important;
+    }
+}
+
+.character-basic-info {
+    /* Ensure no internal borders/dividers */
+    border-right: none;
+    position: relative;
+    width: 100%;
+}
+
+/* Aplicar estos estilos automáticamente a los componentes info del personaje */
+.character-basic-info .form-field,
+.character-basic-info .info-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    border-right: none; /* Ensure no internal dividers */
+    position: relative;
+    width: 100%;
+    justify-content: space-between;
+}
+
+/* Specific styles for labels in character-basic-info to make them more compact */
+.character-basic-info .form-lbl,
+.character-basic-info .form-lbl-y {
+    min-width: 140px;
+    max-width: 140px;
+    flex: 0 0 140px;
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.character-basic-info .form-input,
+.character-basic-info .form-input-y,
+.character-basic-info .alignment-options {
+    flex: 1 1 70%;
+    min-width: 0; /* Evita que los inputs se desborden */
+}
+
+/* Mejorar el equilibrio entre etiquetas e inputs */
+.horizontal-field {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    justify-content: space-between;
+}
+
+/* =====================================================
+   ENHANCED GRID LAYOUT OPTIMIZATION
+   ===================================================== */
+
+/* Grid container performance optimization */
+.form-sheet {
+    /* Improve rendering performance */
+    will-change: contents;
+    contain: layout style;
+    
+    /* Enhanced content flow */
+    overflow: visible;
+    scroll-snap-type: y mandatory;
+    
+    /* Improved mobile-first approach */
+    @media (max-width: 767px) {
+        /* Ensure proper stacking on mobile */
+        grid-template-rows: auto auto auto auto auto auto;
+        scroll-padding-top: var(--spacing-lg);
+        
+        /* Mobile scroll snap points */
+        .fieldset-form {
+            scroll-snap-align: start;
+            scroll-margin-top: var(--spacing-lg);
+        }
+    }
+    /* Enhanced tablet optimization */
+    @media (min-width: 768px) and (max-width: 1023px) {
+        /* More balanced tablet grid */
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        grid-template-areas:
+            "title title title title title title title title"
+            "info info info info info info info info"
+            "stats stats stats stats armament armament armament armament"
+            "skills skills skills skills inventory inventory inventory inventory";
+        
+        /* Better content distribution */
+        .fieldset-form.stats-player,
+        .fieldset-form.initial-armament {
+            min-height: 350px;
+        }
+        
+        .fieldset-form.skills-player,
+        .fieldset-form.inventory-player {
+            min-height: 400px;
+        }
+    }
+    /* Enhanced desktop layout */
+    @media (min-width: 1024px) and (max-width: 1599px) {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        grid-template-areas:
+            "title title title title title title title title"
+            "info info info info info info info info"
+            "stats stats stats stats armament armament armament armament"
+            "skills skills skills skills inventory inventory inventory inventory";
+        
+        /* Optimized fieldset heights for desktop */
+        .fieldset-form.stats-player {
+            min-height: 400px;
+        }
+        
+        .fieldset-form.initial-armament {
+            min-height: 400px;
+        }
+        
+        .fieldset-form.skills-player {
+            min-height: 450px;
+        }
+        
+        .fieldset-form.inventory-player {
+            min-height: 500px;
+        }
+    }
+    
+    /* Ultra-wide optimizations */
+    @media (min-width: 1600px) {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        grid-template-areas:
+            "title title title title title title title title"
+            "info info info info info info info info"
+            "stats stats stats stats armament armament armament armament"
+            "skills skills skills skills inventory inventory inventory inventory";
+        
+        /* Maximum content optimization */
+        .fieldset-form.stats-player,
+        .fieldset-form.initial-armament,
+        .fieldset-form.skills-player {
+            min-height: 500px;
+        }
+        
+        .fieldset-form.inventory-player {
+            min-height: 600px;
+        }
+    }
+}
+
+/* =====================================================
+   ENHANCED FIELDSET GRID CONFIGURATIONS
+   ===================================================== */
+
+/* 1. Form Title Section - Enhanced */
+.fieldset-form.form-title {
+    /* Improved layout */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: auto;
+    
+    /* Better responsive behavior */
+    @media (max-width: 767px) {
+        padding: var(--spacing-lg);
+    }
+    
+    @media (min-width: 768px) {
+        padding: var(--spacing-xl);
+    }
+    
+    @media (min-width: 1024px) {
+        padding: var(--spacing-2xl);
+    }
+}
+
+/* 2. Info Player Section - Enhanced */
+.fieldset-form.info-player {
+    /* Mobile-first grid */
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: var(--spacing-md);
+    
+    /* Establecer variables CSS personalizadas para control centralizado */
+    --info-field-min-width: 180px;
+    --info-field-height: 3.5rem;
+    
+    @media (min-width: 768px) {
+        /* Usar auto-fit para distribución automática y adaptable de columnas */
+        grid-template-columns: repeat(auto-fit, minmax(var(--info-field-min-width), 1fr));
+        grid-auto-rows: minmax(var(--info-field-height), auto);
+        
+        /* Ajustar el ancho mínimo para tablet */
+        --info-field-min-width: 200px;
+    }
+    
+    @media (min-width: 1024px) {
+        /* Aumentar ligeramente el ancho mínimo para desktop */
+        --info-field-min-width: 220px;
+        --info-field-height: 3.75rem;
+        gap: var(--spacing-lg);
+    }
+    
+    @media (min-width: 1600px) {
+        /* Pantallas extra grandes */
+        --info-field-min-width: 240px;
+        --info-field-height: 4rem;
+    }
+    
+    /* Enhanced visual separation - ahora usa una variable CSS para posicionamiento */
+    --separator-position: 50%;
+    
+    &::after {
+        @media (min-width: 768px) {
+            content: '';
+            position: absolute;
+            top: 3rem;
+            left: var(--separator-position);
+            bottom: 2rem;
+            width: 1px;
+            background: linear-gradient(180deg, 
+                transparent 0%, 
+                color-mix(in srgb, var(--border-light) 60%, transparent) 20%, 
+                color-mix(in srgb, var(--border-light) 60%, transparent) 80%, 
+                transparent 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 767px) {
+            display: none;
+        }
+    }
+    
+    /* Clases para ajustar el ancho de elementos específicos */
+    .form-field-full {
+        grid-column: 1 / -1;
+    }
+    
+    .form-field-half {
+        @media (min-width: 768px) {
+            min-width: calc(var(--info-field-min-width) * 1.5);
+        }
+    }
+}
+
+
+/* 3. Stats Player Section - Enhanced */
+.fieldset-form.stats-player {
+    /* Base styles for all screen sizes */
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    
+    @media (max-width: 767px) {
+        /* Mobile: Simple stack */
+        padding: var(--spacing-md);
+    }
+    
+    @media (min-width: 768px) {
+        /* Tablet and up: More padding and spacing */
+        padding: var(--spacing-xl);
+        gap: var(--spacing-lg);
+    }
+    
+    @media (min-width: 1024px) {
+        /* Desktop: Even more space */
+        padding: var(--spacing-2xl);
+        gap: var(--spacing-xl);
+    }
+    
+    /* The header is now managed within the CharacterStats component */
+    .stats-player-header {
+        display: none; /* Remove legacy header */
+    }
+}
+
+/* 4. Initial Armament Section - Enhanced */
+.fieldset-form.initial-armament {
+    /* Responsive grid layout */
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(6, auto);
+    }
+    
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(6, auto);
+    }
+    
+    /* Better content organization */
+    .weapon-section {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .skills-section {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-lg);
+    }
+}
+
+/* 5. Skills Player Section - Enhanced */
+.fieldset-form.skills-player {
+    /* Responsive skill layout */
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(8, auto);
+    }
+    
+    @media (min-width: 768px) and (max-width: 1023px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(6, auto);
+    }
+    
+    @media (min-width: 1024px) and (max-width: 1599px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(4, auto);
+    }
+    
+    @media (min-width: 1600px) {
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(4, auto);
+    }
+}
+
+/* 6. Inventory Player Section - Enhanced */
+.fieldset-form.inventory-player {
+    /* Responsive inventory layout */
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    @media (min-width: 1024px) {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    @media (min-width: 1600px) {
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: auto 1fr auto;
+    }
+}
+
+
+/* =====================================================
+   GRID PERFORMANCE AND OPTIMIZATION ENHANCEMENTS
+   ===================================================== */
+
+/* Container queries for advanced responsive behavior */
+/* Nota: Adaptado para complementar en lugar de conflictuar con media queries */
+@container (min-width: 600px) and (max-width: 767px) {
+    .fieldset-form.info-player {
+        /* Solo aplicar en contenedores grandes pero viewport pequeño */
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+}
+
+@container (min-width: 800px) {
+    .fieldset-form.stats-player {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* CSS Subgrid support for future enhancement */
+@supports (grid-template-rows: subgrid) {
+    .fieldset-form {
+        display: grid;
+        grid-template-rows: subgrid;
+    }
+}
+
+/* Grid layout debugging utilities (development only) */
+.debug-grid {
+    position: relative;
+    
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            linear-gradient(to right, rgba(255, 0, 0, 0.1) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 0, 0, 0.1) 1px, transparent 1px);
+        background-size: 
+            calc(100% / var(--grid-columns, 12)) 
+            calc(100% / var(--grid-rows, 12));
+        pointer-events: none;
+        z-index: 9999;
+    }
+    
+    .fieldset-form {
+        border: 1px dashed rgba(0, 255, 0, 0.5);
+        position: relative;
+        
+        &::after {
+            content: attr(class);
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 4px;
+            font-size: 10px;
+            z-index: 10000;
+        }
+    }
+}
+
+/* Layout shift prevention */
+.form-sheet {
+    /* Prevent cumulative layout shift */
+    content-visibility: auto;
+    contain-intrinsic-size: 100vh;
+}
+
+.fieldset-form {
+    /* Minimize reflows during dynamic content loading */
+    contain: layout style;
+    
+    /* Optimize for animations */
+    &:has(.loading) {
+        contain: layout style paint;
+    }
+}
+
+/* =====================================================
+   ACCESSIBILITY AND USER EXPERIENCE IMPROVEMENTS
+   ===================================================== */
+
+/* Focus management for grid navigation */
+.form-sheet {
+    /* Ensure logical focus order */
+    &:focus-within {
+        scroll-behavior: smooth;
+    }
+}
+
+.fieldset-form {
+    /* Screen reader navigation support */
+    &[aria-expanded="false"] {
+        max-height: 4rem;
+        overflow: hidden;
+        
+        legend::after {
+            content: " (minimized)";
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+    }
+    
+    /* Keyboard navigation enhancement */
+    &:focus-within {
+        z-index: 10;
+        box-shadow: 
+            var(--shadow-lg),
+            0 0 0 3px rgba(var(--primary-rgb), 0.2);
+    }
+}
+
+/* High contrast mode optimizations */
+@media (prefers-contrast: high) {
+    .form-sheet {
+        gap: var(--spacing-xl);
+    }
+    
+    .fieldset-form {
+        border: 3px solid #000;
+        background: #fff;
+        
+        &:focus-within {
+            border-color: #0066cc;
+        }
+    }
+    
+    .grid-area-title { background: #000; color: #fff; }
+    .grid-area-info { background: #f0f0f0; }
+    .grid-area-stats { background: #e0e0e0; }
+    .grid-area-armament { background: #d0d0d0; }
+    .grid-area-skills { background: #c0c0c0; }
+    .grid-area-inventory { background: #b0b0b0; }
+}
+
+/* Reduced motion optimizations */
+@media (prefers-reduced-motion: reduce) {
+    .form-sheet {
+        scroll-behavior: auto;
+        animation: none;
+    }
+    
+    .fieldset-form {
+        transition: none;
+        transform: none !important;
+    }
+    
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Print optimizations for grid layout */
+@media print {
+    .form-sheet {
+        display: block !important;
+        grid-template-areas: none !important;
+        gap: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+    }
+    
+    .fieldset-form {
+        display: block !important;
+        grid-template-columns: none !important;
+        grid-area: auto !important;
+        page-break-inside: avoid;
+        margin-bottom: 1rem;
+        border: 1px solid #000;
+        background: white !important;
+    }
+    
+    .panel-save,
+    .debug-grid::before,
+    .fieldset-form::after {
+        display: none !important;
+    }
+}
+
+.character-basic-info {
+    /* Ensure no internal borders/dividers */
+    border-right: none;
+    position: relative;
+    width: 100%;
+}
+
+/* Aplicar estos estilos automáticamente a los componentes info del personaje */
+.character-basic-info .form-field,
+.character-basic-info .info-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    border-right: none; /* Ensure no internal dividers */
+    position: relative;
+    width: 100%;
+    justify-content: space-between;
+}
+
+/* Specific styles for labels in character-basic-info to make them more compact */
+.character-basic-info .form-lbl,
+.character-basic-info .form-lbl-y {
+    min-width: 140px;
+    max-width: 140px;
+    flex: 0 0 140px;
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.character-basic-info .form-input,
+.character-basic-info .form-input-y,
+.character-basic-info .alignment-options {
+    flex: 1 1 70%;
+    min-width: 0; /* Evita que los inputs se desborden */
+}
+
+/* Mejorar el equilibrio entre etiquetas e inputs */
+.horizontal-field {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    justify-content: space-between;
+}
+
+/* =====================================================
+   ENHANCED GRID LAYOUT OPTIMIZATION
+   ===================================================== */
+
+/* Grid container performance optimization */
+.form-sheet {
+    /* Improve rendering performance */
+    will-change: contents;
+    contain: layout style;
+    
+    /* Enhanced content flow */
+    overflow: visible;
+    scroll-snap-type: y mandatory;
+    
+    /* Improved mobile-first approach */
+    @media (max-width: 767px) {
+        /* Ensure proper stacking on mobile */
+        grid-template-rows: auto auto auto auto auto auto;
+        scroll-padding-top: var(--spacing-lg);
+        
+        /* Mobile scroll snap points */
+        .fieldset-form {
+            scroll-snap-align: start;
+            scroll-margin-top: var(--spacing-lg);
+        }
+    }
+    /* Enhanced tablet optimization */
+    @media (min-width: 768px) and (max-width: 1023px) {
+        /* More balanced tablet grid */
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        grid-template-areas:
+            "title title title title title title title title"
+            "info info info info info info info info"
+            "stats stats stats stats armament armament armament armament"
+            "skills skills skills skills inventory inventory inventory inventory";
+        
+        /* Better content distribution */
+        .fieldset-form.stats-player,
+        .fieldset-form.initial-armament {
+            min-height: 350px;
+        }
+        
+        .fieldset-form.skills-player,
+        .fieldset-form.inventory-player {
+            min-height: 400px;
+        }
+    }
+    /* Enhanced desktop layout */
+    @media (min-width: 1024px) and (max-width: 1599px) {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        grid-template-areas:
+            "title title title title title title title title"
+            "info info info info info info info info"
+            "stats stats stats stats armament armament armament armament"
+            "skills skills skills skills inventory inventory inventory inventory";
+        
+        /* Optimized fieldset heights for desktop */
+        .fieldset-form.stats-player {
+            min-height: 400px;
+        }
+        
+        .fieldset-form.initial-armament {
+            min-height: 400px;
+        }
+        
+        .fieldset-form.skills-player {
+            min-height: 450px;
+        }
+        
+        .fieldset-form.inventory-player {
+            min-height: 500px;
+        }
+    }
+    
+    /* Ultra-wide optimizations */
+    @media (min-width: 1600px) {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        grid-template-areas:
+            "title title title title title title title title"
+            "info info info info info info info info"
+            "stats stats stats stats armament armament armament armament"
+            "skills skills skills skills inventory inventory inventory inventory";
+        
+        /* Maximum content optimization */
+        .fieldset-form.stats-player,
+        .fieldset-form.initial-armament,
+        .fieldset-form.skills-player {
+            min-height: 500px;
+        }
+        
+        .fieldset-form.inventory-player {
+            min-height: 600px;
+        }
+    }
+}
+
+/* =====================================================
+   ENHANCED FIELDSET GRID CONFIGURATIONS
+   ===================================================== */
+
+/* 1. Form Title Section - Enhanced */
+.fieldset-form.form-title {
+    /* Improved layout */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: auto;
+    
+    /* Better responsive behavior */
+    @media (max-width: 767px) {
+        padding: var(--spacing-lg);
+    }
+    
+    @media (min-width: 768px) {
+        padding: var(--spacing-xl);
+    }
+    
+    @media (min-width: 1024px) {
+        padding: var(--spacing-2xl);
+    }
+}
+
+/* 2. Info Player Section - Enhanced */
+.fieldset-form.info-player {
+    /* Mobile-first grid */
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: var(--spacing-md);
+    
+    /* Establecer variables CSS personalizadas para control centralizado */
+    --info-field-min-width: 180px;
+    --info-field-height: 3.5rem;
+    
+    @media (min-width: 768px) {
+        /* Usar auto-fit para distribución automática y adaptable de columnas */
+        grid-template-columns: repeat(auto-fit, minmax(var(--info-field-min-width), 1fr));
+        grid-auto-rows: minmax(var(--info-field-height), auto);
+        
+        /* Ajustar el ancho mínimo para tablet */
+        --info-field-min-width: 200px;
+    }
+    
+    @media (min-width: 1024px) {
+        /* Aumentar ligeramente el ancho mínimo para desktop */
+        --info-field-min-width: 220px;
+        --info-field-height: 3.75rem;
+        gap: var(--spacing-lg);
+    }
+    
+    @media (min-width: 1600px) {
+        /* Pantallas extra grandes */
+        --info-field-min-width: 240px;
+        --info-field-height: 4rem;
+    }
+    
+    /* Enhanced visual separation - ahora usa una variable CSS para posicionamiento */
+    --separator-position: 50%;
+    
+    &::after {
+        @media (min-width: 768px) {
+            content: '';
+            position: absolute;
+            top: 3rem;
+            left: var(--separator-position);
+            bottom: 2rem;
+            width: 1px;
+            background: linear-gradient(180deg, 
+                transparent 0%, 
+                color-mix(in srgb, var(--border-light) 60%, transparent) 20%, 
+                color-mix(in srgb, var(--border-light) 60%, transparent) 80%, 
+                transparent 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 767px) {
+            display: none;
+        }
+    }
+    
+    /* Clases para ajustar el ancho de elementos específicos */
+    .form-field-full {
+        grid-column: 1 / -1;
+    }
+    
+    .form-field-half {
+        @media (min-width: 768px) {
+            min-width: calc(var(--info-field-min-width) * 1.5);
+        }
+    }
+}
+
+
+/* 3. Stats Player Section - Enhanced */
+.fieldset-form.stats-player {
+    /* Base styles for all screen sizes */
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    
+    @media (max-width: 767px) {
+        /* Mobile: Simple stack */
+        padding: var(--spacing-md);
+    }
+    
+    @media (min-width: 768px) {
+        /* Tablet and up: More padding and spacing */
+        padding: var(--spacing-xl);
+        gap: var(--spacing-lg);
+    }
+    
+    @media (min-width: 1024px) {
+        /* Desktop: Even more space */
+        padding: var(--spacing-2xl);
+        gap: var(--spacing-xl);
+    }
+    
+    /* The header is now managed within the CharacterStats component */
+    .stats-player-header {
+        display: none; /* Remove legacy header */
+    }
+}
+
+/* 4. Initial Armament Section - Enhanced */
+.fieldset-form.initial-armament {
+    /* Responsive grid layout */
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(6, auto);
+    }
+    
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(6, auto);
+    }
+    
+    /* Better content organization */
+    .weapon-section {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .skills-section {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-lg);
+    }
+}
+
+/* 5. Skills Player Section - Enhanced */
+.fieldset-form.skills-player {
+    /* Responsive skill layout */
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(8, auto);
+    }
+    
+    @media (min-width: 768px) and (max-width: 1023px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(6, auto);
+    }
+    
+    @media (min-width: 1024px) and (max-width: 1599px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(4, auto);
+    }
+    
+    @media (min-width: 1600px) {
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(4, auto);
+    }
+}
+
+/* 6. Inventory Player Section - Enhanced */
+.fieldset-form.inventory-player {
+    /* Responsive inventory layout */
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    @media (min-width: 1024px) {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    @media (min-width: 1600px) {
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: auto 1fr auto;
+    }
+}
+
+
+/* =====================================================
+   GRID PERFORMANCE AND OPTIMIZATION ENHANCEMENTS
+   ===================================================== */
+
+/* Container queries for advanced responsive behavior */
+/* Nota: Adaptado para complementar en lugar de conflictuar con media queries */
+@container (min-width: 600px) and (max-width: 767px) {
+    .fieldset-form.info-player {
+        /* Solo aplicar en contenedores grandes pero viewport pequeño */
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+}
+
+@container (min-width: 800px) {
+    .fieldset-form.stats-player {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* CSS Subgrid support for future enhancement */
+@supports (grid-template-rows: subgrid) {
+    .fieldset-form {
+        display: grid;
+        grid-template-rows: subgrid;
+    }
+}
+
+/* Grid layout debugging utilities (development only) */
+.debug-grid {
+    position: relative;
+    
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            linear-gradient(to right, rgba(255, 0, 0, 0.1) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 0, 0, 0.1) 1px, transparent 1px);
+        background-size: 
+            calc(100% / var(--grid-columns, 12)) 
+            calc(100% / var(--grid-rows, 12));
+        pointer-events: none;
+        z-index: 9999;
+    }
+    
+    .fieldset-form {
+        border: 1px dashed rgba(0, 255, 0, 0.5);
+        position: relative;
+        
+        &::after {
+            content: attr(class);
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 4px;
+            font-size: 10px;
+            z-index: 10000;
+        }
+    }
+}
+
+/* Layout shift prevention */
+.form-sheet {
+    /* Prevent cumulative layout shift */
+    content-visibility: auto;
+    contain-intrinsic-size: 100vh;
+}
+
+.fieldset-form {
+    /* Minimize reflows during dynamic content loading */
+    contain: layout style;
+    
+    /* Optimize for animations */
+    &:has(.loading) {
+        contain: layout style paint;
+    }
+}
+
+/* =====================================================
+   ACCESSIBILITY AND USER EXPERIENCE IMPROVEMENTS
+   ===================================================== */
+
+/* Focus management for grid navigation */
+.form-sheet {
+    /* Ensure logical focus order */
+    &:focus-within {
+        scroll-behavior: smooth;
+    }
+}
+
+.fieldset-form {
+    /* Screen reader navigation support */
+    &[aria-expanded="false"] {
+        max-height: 4rem;
+        overflow: hidden;
+        
+        legend::after {
+            content: " (minimized)";
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+    }
+    
+    /* Keyboard navigation enhancement */
+    &:focus-within {
+        z-index: 10;
+        box-shadow: 
+            var(--shadow-lg),
+            0 0 0 3px rgba(var(--primary-rgb), 0.2);
+    }
+}
+
+/* High contrast mode optimizations */
+@media (prefers-contrast: high) {
+    .form-sheet {
+        gap: var(--spacing-xl);
+    }
+    
+    .fieldset-form {
+        border: 3px solid #000;
+        background: #fff;
+        
+        &:focus-within {
+            border-color: #0066cc;
+        }
+    }
+    
+    .grid-area-title { background: #000; color: #fff; }
+    .grid-area-info { background: #f0f0f0; }
+    .grid-area-stats { background: #e0e0e0; }
+    .grid-area-armament { background: #d0d0d0; }
+    .grid-area-skills { background: #c0c0c0; }
+    .grid-area-inventory { background: #b0b0b0; }
+}
+
+/* Reduced motion optimizations */
+@media (prefers-reduced-motion: reduce) {
+    .form-sheet {
+        scroll-behavior: auto;
+        animation: none;
+    }
+    
+    .fieldset-form {
+        transition: none;
+        transform: none !important;
+    }
+    
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Print optimizations for grid layout */
+@media print {
+    .form-sheet {
+        display: block !important;
+        grid-template-areas: none !important;
+        gap: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+    }
+    
+    .fieldset-form {
+        display: block !important;
+        grid-template-columns: none !important;
+        grid-area: auto !important;
+        page-break-inside: avoid;
+        margin-bottom: 1rem;
+        border: 1px solid #000;
+        background: white !important;
+    }
+    
+    .panel-save,
+    .debug-grid::before,
+    .fieldset-form::after {
+        display: none !important;
+    }
+}
+
+.character-basic-info {
+    /* Ensure no internal borders/dividers */
+    border-right: none;
+    position: relative;
+    width: 100%;
+}
+
+/* Aplicar estos estilos automáticamente a los componentes info del personaje */
+.character-basic-info .form-field,
+.character-basic-info .info-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    border-right: none; /* Ensure no internal dividers */
+    position: relative;
+    width: 100%;
+    justify-content: space-between;
+}
+
+/* Specific styles for labels in character-basic-info to make them more compact */
+.character-basic-info .form-lbl,
+.character-basic-info .form-lbl-y {
+    min-width: 140px;
+    max-width: 140px;
+    flex: 0 0 140px;
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.character-basic-info .form-input,
+.character-basic-info .form-input-y,
+.character-basic-info .alignment-options {
+    flex: 1 1 70%;
+    min-width: 0; /* Evita que los inputs se desborden */
+}
+
+/* Mejorar el equilibrio entre etiquetas e inputs */
+.horizontal-field {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    justify-content: space-between;
+}
+
+/* =====================================================
+   ENHANCED GRID LAYOUT OPTIMIZATION
+   ===================================================== */
+
+/* Grid container performance optimization */
+.form-sheet {
+    /* Improve rendering performance */
+    will-change: contents;
+    contain: layout style;
+    
+    /* Enhanced content flow */
+    overflow: visible;
+    scroll-snap-type: y mandatory;
+    
+    /* Improved mobile-first approach */
+    @media (max-width: 767px) {
+        /* Ensure proper stacking on mobile */
+        grid-template-rows: auto auto auto auto auto auto;
+        scroll-padding-top: var(--spacing-lg);
+        
+        /* Mobile scroll snap points */
+        .fieldset-form {
+            scroll-snap-align: start;
+            scroll-margin-top: var(--spacing-lg);
+        }
+    }
+    /* Enhanced tablet optimization */
+    @media (min-width: 768px) and (max-width: 1023px) {
+        /* More balanced tablet grid */
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        grid-template-areas:
+            "title title title title title title title title"
+            "info info info info info info info info"
+            "stats stats stats stats armament armament armament armament"
+            "skills skills skills skills inventory inventory inventory inventory";
+        
+        /* Better content distribution */
+        .fieldset-form.stats-player,
+        .fieldset-form.initial-armament {
+            min-height: 350px;
+        }
+        
+        .fieldset-form.skills-player,
+        .fieldset-form.inventory-player {
+            min-height: 400px;
+        }
+    }
+    /* Enhanced desktop layout */
+    @media (min-width: 1024px) and (max-width: 1599px) {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        grid-template-areas:
+            "title title title title title title title title"
+            "info info info info info info info info"
+            "stats stats stats stats armament armament armament armament"
+            "skills skills skills skills inventory inventory inventory inventory";
+        
+        /* Optimized fieldset heights for desktop */
+        .fieldset-form.stats-player {
+            min-height: 400px;
+        }
+        
+        .fieldset-form.initial-armament {
+            min-height: 400px;
+        }
+        
+        .fieldset-form.skills-player {
+            min-height: 450px;
+        }
+        
+        .fieldset-form.inventory-player {
+            min-height: 500px;
+        }
+    }
+    
+    /* Ultra-wide optimizations */
+    @media (min-width: 1600px) {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        grid-template-areas:
+            "title title title title title title title title"
+            "info info info info info info info info"
+            "stats stats stats stats armament armament armament armament"
+            "skills skills skills skills inventory inventory inventory inventory";
+        
+        /* Maximum content optimization */
+        .fieldset-form.stats-player,
+        .fieldset-form.initial-armament,
+        .fieldset-form.skills-player {
+            min-height: 500px;
+        }
+        
+        .fieldset-form.inventory-player {
+            min-height: 600px;
+        }
+    }
+}
+
+/* =====================================================
+   ENHANCED FIELDSET GRID CONFIGURATIONS
+   ===================================================== */
+
+/* 1. Form Title Section - Enhanced */
+.fieldset-form.form-title {
+    /* Improved layout */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: auto;
+    
+    /* Better responsive behavior */
+    @media (max-width: 767px) {
+        padding: var(--spacing-lg);
+    }
+    
+    @media (min-width: 768px) {
+        padding: var(--spacing-xl);
+    }
+    
+    @media (min-width: 1024px) {
+        padding: var(--spacing-2xl);
+    }
+}
+
+/* 2. Info Player Section - Enhanced */
+.fieldset-form.info-player {
+    /* Mobile-first grid */
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: var(--spacing-md);
+    
+    /* Establecer variables CSS personalizadas para control centralizado */
+    --info-field-min-width: 180px;
+    --info-field-height: 3.5rem;
+    
+    @media (min-width: 768px) {
+        /* Usar auto-fit para distribución automática y adaptable de columnas */
+        grid-template-columns: repeat(auto-fit, minmax(var(--info-field-min-width), 1fr));
+        grid-auto-rows: minmax(var(--info-field-height), auto);
+        
+        /* Ajustar el ancho mínimo para tablet */
+        --info-field-min-width: 200px;
+    }
+    
+    @media (min-width: 1024px) {
+        /* Aumentar ligeramente el ancho mínimo para desktop */
+        --info-field-min-width: 220px;
+        --info-field-height: 3.75rem;
+        gap: var(--spacing-lg);
+    }
+    
+    @media (min-width: 1600px) {
+        /* Pantallas extra grandes */
+        --info-field-min-width: 240px;
+        --info-field-height: 4rem;
+    }
+    
+    /* Enhanced visual separation - ahora usa una variable CSS para posicionamiento */
+    --separator-position: 50%;
+    
+    &::after {
+        @media (min-width: 768px) {
+            content: '';
+            position: absolute;
+            top: 3rem;
+            left: var(--separator-position);
+            bottom: 2rem;
+            width: 1px;
+            background: linear-gradient(180deg, 
+                transparent 0%, 
+                color-mix(in srgb, var(--border-light) 60%, transparent) 20%, 
+                color-mix(in srgb, var(--border-light) 60%, transparent) 80%, 
+                transparent 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 767px) {
+            display: none;
+        }
+    }
+    
+    /* Clases para ajustar el ancho de elementos específicos */
+    .form-field-full {
+        grid-column: 1 / -1;
+    }
+    
+    .form-field-half {
+        @media (min-width: 768px) {
+            min-width: calc(var(--info-field-min-width) * 1.5);
+        }
+    }
+}
+
+
+/* 3. Stats Player Section - Enhanced */
+.fieldset-form.stats-player {
+    /* Base styles for all screen sizes */
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    
+    @media (max-width: 767px) {
+        /* Mobile: Simple stack */
+        padding: var(--spacing-md);
+    }
+    
+    @media (min-width: 768px) {
+        /* Tablet and up: More padding and spacing */
+        padding: var(--spacing-xl);
+        gap: var(--spacing-lg);
+    }
+    
+    @media (min-width: 1024px) {
+        /* Desktop: Even more space */
+        padding: var(--spacing-2xl);
+        gap: var(--spacing-xl);
+    }
+    
+    /* The header is now managed within the CharacterStats component */
+  }
+
+.alignment-options button {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-md);
+  font-weight: var(--font-weight-medium);
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-medium);
+  background-color: white;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: center;
+  min-width: 80px;
+  margin: 0 0.25rem;
+  position: relative;
+  outline: none;
+}
+
+.alignment-options button.orden {
+  border-color: var(--bg-form-orden);
+  color: var(--bg-form-orden);
+}
+
+.alignment-options button.orden:hover,
+.alignment-options button.orden.selected {
+  background-color: var(--bg-form-orden);
+  color: white;
+}
+
+.alignment-options button.neutral {
+  border-color: var(--bg-form-neutral);
+  color: var(--bg-form-neutral);
+}
+
+.alignment-options button.neutral:hover,
+.alignment-options button.neutral.selected {
+  background-color: var(--bg-form-neutral);
+  color: white;
+}
+
+.alignment-options button.caos {
+  border-color: var(--bg-form-caos);
+  color: var(--bg-form-caos);
+}
+
+.alignment-options button.caos:hover,
+.alignment-options button.caos.selected {
+  background-color: var(--bg-form-caos);
+  color: white;
+}
+
+/* Estilos con mayor especificidad para los botones de alineación */
+.character-basic-info .info-group .alignment-options button.orden,
+.character-basic-info .info-group .alignment-options button.neutral,
+.character-basic-info .info-group .alignment-options button.caos {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  min-height: 38px;
+  font-size: var(--font-size-sm);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.character-basic-info .info-group .alignment-options button.orden.selected,
+.character-basic-info .info-group .alignment-options button.neutral.selected,
+.character-basic-info .info-group .alignment-options button.caos.selected {
+  font-weight: var(--font-weight-bold);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Estilos adicionales para el contenedor de alineación */
+.info-group .alignment-options.field-input {
+  display: flex;
+  gap: 0.5rem;
+  min-height: var(--form-height-sm);
+  padding: 0.25rem;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-light);
+}

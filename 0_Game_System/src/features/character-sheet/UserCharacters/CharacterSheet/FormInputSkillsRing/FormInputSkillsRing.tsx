@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect } from 'react'
+import { ChangeEvent, useEffect, useRef } from 'react'
 import { SkillTypes, SkillsAcquired, Skill } from '@/shared/utils/types/typesCharacterSheet'
 
 interface RingTypes {
@@ -28,18 +28,59 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({
     onSelectChange, 
     onSelectTypeChange 
 }) => {
+    // Usar useRef para almacenar la última actualización enviada y evitar repeticiones
+    const lastUpdateRef = useRef<{ring: string, stat: string}>({ring: '', stat: ''});
+    
     useEffect(() => {
-        if (values.ring && skillList.skills.length === 0) {
-            const ringType = ringTypes.find(ring => ring.id === values.ring);
-            const stat: string = ringType?.stat || '';
-            if (stat !== '') {
-                onSelectTypeChange(id, stat);
+        // Evitar ejecuciones innecesarias si no hay un anillo seleccionado
+        if (!values.ring) return;
+
+        // Guardar valores actuales para comparación
+        const currentRingType = values.ring;
+        const ringTypeObj = ringTypes.find(ring => ring.id === currentRingType);
+        const currentStat = ringTypeObj?.stat || '';
+
+        // Verificar si esta actualización ya fue procesada
+        if (lastUpdateRef.current.ring === currentRingType && 
+            lastUpdateRef.current.stat === currentStat) {
+            return;
+        }
+
+        // Solo realizar la actualización si hay un tipo de anillo seleccionado y se necesita actualizar la lista
+        if (currentRingType && (
+            skillList.skills.length === 0 || // No hay habilidades cargadas
+            !skillList.id || // No hay ID de habilidad establecido
+            skillList.id !== currentStat // O la habilidad actual no corresponde al stat del anillo
+        )) {
+            // Solo llamar a onSelectTypeChange si realmente encontramos una estadística válida
+            if (currentStat !== '') {
+                console.debug(`Updating ring ${id} with stat ${currentStat}`);
+                
+                // Actualizar referencia para evitar procesamiento repetido
+                lastUpdateRef.current = {ring: currentRingType, stat: currentStat};
+                
+                // Usar un timeout para dividir las actualizaciones
+                const timeoutDuration = parseInt(id, 10) * 75; // Ampliar aún más el escalonamiento (0ms, 75ms, 150ms)
+                const timer = setTimeout(() => {
+                    onSelectTypeChange(id, currentStat);
+                }, timeoutDuration);
+                
+                return () => {
+                    clearTimeout(timer);
+                    // No reiniciar la referencia en cleanup para mantener el "procesado" 
+                    // en remontajes rápidos del componente
+                };
             }
         }
-    }, [id, values.ring, ringTypes, skillList.skills.length, onSelectTypeChange]);
+    // Dependencias específicas para prevenir bucles innecesarios
+    }, [id, values.ring, ringTypes, skillList.skills.length, skillList.id, onSelectTypeChange]);
+    
     const handleSkillTypeRingChange = (newRing: string) => {
         const ringType = ringTypes.find(ring => ring.id === newRing);
         const stat: string = ringType?.stat || '';
+        
+        // Verificar si ya estamos en el mismo valor para evitar updates redundantes
+        if (newRing === values.ring) return;
         
         if (stat !== '') {
             onSelectTypeChange(id, stat);
@@ -47,7 +88,11 @@ const FormInputSkillsRing: React.FC<FormInputSkillsRingProps> = ({
         
         onSelectChange(id, newRing, values.name || '', stat);
     };
+    
     const handleSkillChange = (id: string, newSkill: string) => {
+        // Verificar si ya estamos en el mismo valor para evitar updates redundantes
+        if (newSkill === values.name) return;
+        
         const stat: string = ringTypes.find(ring => ring.id === values.ring)?.stat || '';
         onSelectChange(id, values.ring, newSkill, stat);
     };

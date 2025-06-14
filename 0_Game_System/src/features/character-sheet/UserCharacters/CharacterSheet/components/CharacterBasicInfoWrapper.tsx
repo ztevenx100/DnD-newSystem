@@ -2,6 +2,7 @@ import React from 'react';
 import CharacterBasicInfo from './CharacterBasicInfo';
 import { useCharacterSheet } from '../context/CharacterSheetContext';
 import { Option } from '../context/CharacterSheetTypes';
+import './FormField.css'; // Importar los nuevos estilos para formularios adaptables
 
 interface CharacterBasicInfoWrapperProps {
   externalStyles: string;

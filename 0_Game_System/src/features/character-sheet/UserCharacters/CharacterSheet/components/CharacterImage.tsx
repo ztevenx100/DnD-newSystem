@@ -1,4 +1,5 @@
 import React from 'react';
+import './CharacterImage.css';
 
 interface CharacterImageProps {
   characterImage?: string;
@@ -25,14 +26,15 @@ export const CharacterImage: React.FC<CharacterImageProps> = ({
     onImageChange(urlImage, file);
   };
   return (
-    <>
+    <div className="character-image-container form-field-wide">
       <input 
         id="characterImage" 
         className="inputImageFile" 
         type="file" 
         onChange={handleFileChange}
         accept="image/*"
-      />      {characterImage ? (
+      />
+      {characterImage ? (
         <img 
           src={characterImage} 
           className="characterImagePreview" 
@@ -53,7 +55,10 @@ export const CharacterImage: React.FC<CharacterImageProps> = ({
       ) : (
         <div className="CharacterImageEmpty"></div>
       )}
-    </>
+      <label htmlFor="characterImage" className="image-upload-label">
+        Cambiar imagen
+      </label>
+    </div>
   );
 };
 

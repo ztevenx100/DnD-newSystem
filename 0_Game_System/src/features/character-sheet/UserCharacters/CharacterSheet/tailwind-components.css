@@ -1,0 +1,248 @@
+/* 
+  Componentes personalizados D&D usando CSS nativo (sin @apply)
+  Enfoque directo para evitar errores de procesamiento con directivas Tailwind
+*/
+
+/* disable language feature errors - start */
+/* stylelint-disable */
+/* postcss-nesting-enable */
+/* eslint-disable */
+/* CSS Language Feature: Unknown at rules */
+/* disable language feature errors - end */
+
+/* Componentes base de formulario */
+.fieldset-form {
+  display: grid;
+  border-radius: 0.5rem; /* rounded-lg */
+  background-color: rgba(255, 255, 255, 0.95); /* bg-white/95 */
+  backdrop-filter: blur(12px); /* backdrop-blur-md */
+  transition-property: all; /* transition-all */
+  transition-duration: 200ms; /* duration-200 */
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); /* ease-in-out */
+  border: 2px solid color-mix(in srgb, var(--bg-color-3) 20%, transparent);
+  gap: var(--grid-gap-relaxed);
+  
+  /* Mantener efectos hover personalizados */
+  &:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* shadow-lg */
+    transform: translateY(-0.125rem); /* -translate-y-0.5 */
+    box-shadow: 
+      0 12px 48px rgba(0, 0, 0, 0.12),
+      0 4px 12px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  }
+  
+  /* Estilos para legend que requieren CSS avanzado */
+  & legend {
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 700; /* font-bold */
+    color: var(--text-primary); /* text-text-primary */
+    padding-left: var(--spacing-xl); /* px-xl */ 
+    padding-right: var(--spacing-xl); /* px-xl */
+    padding-top: var(--spacing-sm); /* py-sm */
+    padding-bottom: var(--spacing-sm); /* py-sm */
+    border-radius: 0.375rem; /* rounded-md */
+    margin-bottom: var(--spacing-lg); /* mb-lg */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* shadow-md */
+    background: linear-gradient(135deg, var(--bg-color-3) 0%, color-mix(in srgb, var(--bg-color-3) 85%, white) 100%);
+    border: 2px solid color-mix(in srgb, var(--bg-color-3) 30%, transparent);
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    
+    & svg {
+      vertical-align: middle; /* align-middle */
+      margin-right: var(--spacing-sm); /* mr-sm */
+    }
+  }
+}
+/* Inputs y etiquetas base */
+.form-lbl, .form-lbl-y {
+  font-size: 0.875rem; /* text-sm */
+  font-weight: 500; /* font-medium */
+  color: var(--text-secondary); /* text-text-secondary */
+  padding-left: var(--spacing-md); /* px-md */
+  padding-right: var(--spacing-md); /* px-md */
+  padding-top: var(--spacing-sm); /* py-sm */
+  padding-bottom: var(--spacing-sm); /* py-sm */
+  border-radius: 0.125rem; /* rounded-sm */
+  display: flex; /* flex */
+  align-items: center; /* items-center */
+  justify-content: flex-start; /* justify-start */
+  margin-bottom: var(--spacing-xs); /* mb-xs */
+  transition-property: all; /* transition-all */
+  transition-duration: 150ms; /* duration-150 */
+  min-height: var(--form-height-sm);
+  border: 2px solid var(--border-light);
+  background-color: var(--bg-grey-lighter);
+  
+  &:hover {
+    border-color: var(--border-medium); /* border-border-medium */
+    background-color: color-mix(in srgb, var(--bg-grey-lighter) 95%, white);
+  }
+}
+
+.form-input, .form-input-y {
+  font-size: 0.875rem; /* text-sm */
+  color: var(--text-primary); /* text-text-primary */
+  padding-left: var(--spacing-md); /* px-md */
+  padding-right: var(--spacing-md); /* px-md */
+  padding-top: var(--spacing-sm); /* py-sm */
+  padding-bottom: var(--spacing-sm); /* py-sm */
+  border-radius: 0.125rem; /* rounded-sm */
+  transition-property: all; /* transition-all */
+  transition-duration: 150ms; /* duration-150 */
+  min-height: var(--form-height-sm);
+  border: 2px solid var(--border-medium);
+  
+  &:focus {
+    outline: none; /* outline-none */
+    border-color: var(--primary);
+    box-shadow: 
+      inset 0 1px 2px rgba(0, 0, 0, 0.05),
+      0 0 0 3px rgba(var(--primary-rgb), 0.1),
+      0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #fefefe;
+  }
+  
+  &:read-only {
+    color: var(--text-muted); /* text-text-muted */
+    cursor: not-allowed; /* cursor-not-allowed */
+    background-color: var(--bg-grey-lighter);
+    border-style: dashed;
+  }
+}
+  
+/* Entrada numérica */
+.numeric-input {
+  text-align: center; /* text-center */
+  font-weight: 600; /* font-semibold */
+  font-size: 1rem; /* text-base */
+  background-color: color-mix(in srgb, var(--primary) 3%, white);
+  
+  /* Mantenemos el CSS para quitar flechas */
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  &[type=number] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+}
+
+/* Estilos específicos para textarea */  
+textarea.form-input-y {
+  resize: vertical; /* resize-y */
+  min-height: 4rem; /* min-h-16 */
+  line-height: 1.625; /* leading-relaxed */
+  
+  &:focus {
+    min-height: 6rem; /* min-h-24 */
+  }
+}
+
+/* Tailwind no permite @apply dentro de @media, así que lo definimos fuera */
+@media (max-width: 767px) {
+  textarea.form-input-y {
+    min-height: 6rem; /* Equivalente a min-h-24 */
+  }
+}
+/* Componentes específicos de área - Mantener con CSS personalizado */
+.form-sheet {
+  display: grid; /* grid */
+  min-height: 100vh; /* min-h-screen */
+  width: 100%; /* w-full */
+  margin-left: auto; /* mx-auto */
+  margin-right: auto; /* mx-auto */
+  position: relative; /* relative */
+  overflow-x: hidden; /* overflow-x-hidden */
+  max-width: 100vw; /* Usando CSS plano en lugar de max-w-screen que no existe */
+  background: linear-gradient(135deg, var(--bg-main) 0%, color-mix(in srgb, var(--bg-main) 95%, white) 100%);
+  
+  /* El patrón de fondo debe mantenerse con CSS puro para efectos visuales avanzados */
+  &::before {
+    position: absolute; /* absolute */
+    top: 0; /* inset-0 */
+    right: 0; /* inset-0 */
+    bottom: 0; /* inset-0 */
+    left: 0; /* inset-0 */
+    opacity: 0.03; /* opacity-[0.03] */
+    pointer-events: none; /* pointer-events-none */
+    z-index: 0; /* z-0 */
+    content: '';
+    background-size: var(--spacing-3xl) var(--spacing-3xl);
+  }
+  
+  & > * {
+    position: relative; /* relative */
+    z-index: 1; /* z-[1] */
+  }
+  
+  /* Estilos específicos para orden/caos - mantener en CSS puro */
+  &.orden {
+    background: linear-gradient(135deg, var(--bg-form-orden) 0%, color-mix(in srgb, var(--bg-form-orden) 95%, white) 100%);
+    --bg-color-btn-dice: var(--bg-form-orden);
+    --required-color: var(--bg-form-orden);
+    --bg-title: var(--bg-form-orden);
+    --bg-loader: var(--bg-form-orden);
+    --current-focus-ring: var(--focus-ring-orden);
+  }
+  
+  &.caos {
+    background: linear-gradient(135deg, var(--bg-form-caos) 0%, color-mix(in srgb, var(--bg-form-caos) 95%, white) 100%);
+    --bg-color-btn-dice: var(--bg-form-caos);
+    --required-color: var(--bg-form-caos);
+    --bg-title: var(--bg-form-caos);
+    --bg-loader: var(--bg-form-caos);
+    --current-focus-ring: var(--focus-ring-caos);
+  }
+}
+/* Utilidades para focus ring personalizadas */
+.focus-ring {
+  &:focus {
+    outline: none; /* outline-none */
+    border-color: var(--bg-color-3);
+    box-shadow: var(--current-focus-ring);
+  }
+}
+.focus-ring-orden {
+  &:focus {
+    outline: none; /* outline-none */
+    border-color: var(--bg-form-orden);
+    box-shadow: var(--focus-ring-orden);
+  }
+}
+
+.focus-ring-caos {
+  &:focus {
+    outline: none; /* outline-none */
+    border-color: var(--bg-form-caos);
+    box-shadow: var(--focus-ring-caos);
+  }
+}
+
+
+/* 
+  Estas utilidades personalizadas no se pueden representar con Tailwind estándar
+  y deben mantenerse como CSS personalizado
+*/
+/* Grid auto-fit utilities que no tienen equivalente en Tailwind */
+.grid-auto-fit-xs { grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); }
+.grid-auto-fit-sm { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+.grid-auto-fit-md { grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
+.grid-auto-fit-lg { grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); }
+
+/* Utilidades para Container Queries - mantener como CSS personalizado */
+@container (min-width: 600px) {
+  .fieldset-form.info-player {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@container (min-width: 800px) {
+  .fieldset-form.stats-player {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

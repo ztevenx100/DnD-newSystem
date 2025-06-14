@@ -1,0 +1,102 @@
+/* Estilos para los conocimientos del personaje */
+.knowledge-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: rgba(var(--bg-color-3-rgb, 242, 175, 41), 0.05);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-md);
+}
+
+/* Título de la sección */
+.knowledge-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--border-light);
+}
+
+/* Contenedor de opciones */
+.knowledge-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--spacing-sm);
+}
+
+/* Opción individual */
+.knowledge-option {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-xs);
+}
+
+/* Checkbox estilizado */
+.knowledge-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 2px solid var(--border-medium);
+  border-radius: var(--border-radius-sm);
+  margin-right: var(--spacing-sm);
+  position: relative;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background-color: white;
+}
+
+.knowledge-checkbox:checked {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.knowledge-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 0.8rem;
+}
+
+.knowledge-checkbox:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Label para el checkbox */
+.knowledge-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+/* Estilos responsivos */
+@media (max-width: 767px) {
+  .knowledge-container {
+    margin-top: var(--spacing-lg);
+  }
+  
+  .knowledge-options {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .knowledge-container {
+    grid-column: auto / span 2;
+  }
+  
+  .knowledge-options {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .knowledge-container {
+    grid-column: auto / span 3;
+  }
+}
